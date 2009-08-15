@@ -1,0 +1,31 @@
+{
+		"font": "Lucida Grande",
+		"font_size": 9, "font_size_small": 8,
+		"font_color": [255, 255, 255, 255],
+		
+		"image": "theme.png",
+		
+		"window": {
+			"image_background": [0, 0, 55, 33],
+			"image_title_bar": [0, 33, 55, 26]
+		},
+		"button": {
+			"image_up": [55, 0, 36, 21],
+			"image_down": [55, 21, 36, 21]
+		},
+		"folding_box": {
+			"image": [91, 0, 31, 20],
+			"image_closed": [91, 20, 31, 20]
+		},
+		"textbox": {
+			"image": [122, 0, 16, 27]
+		},
+		"checkbox": {
+			"image_checked": [138, 0, 32, 22],
+			"image_unchecked": [138, 22, 32, 22]
+		},
+		"slider": {
+			"image_slider": [170, 0, 38, 16],
+			"image_knob": [170, 16, 15, 16]
+		}
+}
