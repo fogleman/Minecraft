@@ -2,6 +2,8 @@
 
 # import pyglet, as usual
 import pyglet
+# disable error checking for increased performance
+pyglet.options['debug_gl'] = False
 
 # and import out gui toolkit
 from simplui import *
