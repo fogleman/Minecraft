@@ -261,8 +261,8 @@ class NinePatch(object):
 				height + self.padding_bottom + self.padding_top
 			)
 	
-	def build_vertex_list(self, batch):
-		return batch.add_indexed(16, GL_QUADS, pyglet.graphics.TextureGroup(self.texture), self.indices, 'v2i', ('t2f', self.tex_coords))
+	def build_vertex_list(self, batch, group):
+		return batch.add_indexed(16, GL_QUADS, pyglet.graphics.TextureGroup(self.texture, group), self.indices, 'v2i', ('t2f', self.tex_coords))
 	
 	def update_vertex_list(self, vertex_list, x, y, width, height):
 		width = max(width, self.width + 2)

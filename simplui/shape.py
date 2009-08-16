@@ -40,6 +40,7 @@ class Rectangle(object):
 		self.x, self.y, self.w, self.h = 0, 0, 1, 1
 		self._visible = visible
 		self._batch = None
+		self._group = None
 		self._patch = None
 		self._vertices = None
 
@@ -63,6 +64,15 @@ class Rectangle(object):
 			self._build()
 	batch = property(_get_batch, _set_batch)
 	
+	def _get_group(self):
+		return self._group
+	def _set_group(self, group):
+		if group != self.group:
+			self._unbuild()
+			self._group = group
+			self._build()
+	group = property(_get_group, _set_group)
+	
 	def _get_patch(self):
 		return self._patch
 	def _set_patch(self, patch):
@@ -75,13 +85,17 @@ class Rectangle(object):
 	def _build(self):
 		if self._batch and self._patch and self._visible:
 			if self._vertices == None:
-				self._vertices = self._patch.build_vertex_list(self._batch)
+				self._vertices = self._patch.build_vertex_list(self._batch, self._group)
 			self._patch.update_vertex_list_around(self._vertices, self.x, self.y, self.w, self.h)
 	
 	def _unbuild(self):
 		if self._vertices != None:
 			self._vertices.delete()
 			self._vertices = None
+	
+	def _update(self):
+		self._unbuild()
+		self._build()
 	
 	def update(self, x, y, w, h):
 		self.x, self.y, self.w, self.h = x, y, w, h

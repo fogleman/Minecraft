@@ -98,14 +98,12 @@ class Frame(Container):
 		self.update_global_coords()
 		self.update_elements()
 		
-		image = self.theme['image']
-		
 		glPushAttrib(GL_ENABLE_BIT)
 		glEnable(GL_BLEND)
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 		
 		self.batch.draw()
 		
-		Container.draw(self)
+		#Container.draw(self)
 		
 		glPopAttrib()

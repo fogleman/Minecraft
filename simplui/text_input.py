@@ -54,10 +54,9 @@ class TextInput(Widget):
 		font = self.document.get_font()
 		height = font.ascent - font.descent
 		
-		self.layout.x, self.layout.y = 2, 2
 		self.caret = pyglet.text.caret.Caret(self.layout)
 		
-		self.elements['layout'] = self.layout
+		#self.elements['layout'] = self.layout
 		self.shapes['frame'] = Rectangle()
 		
 		self.action = kwargs.get('action', None)
@@ -82,12 +81,12 @@ class TextInput(Widget):
 			font = self.document.get_font()
 			height = font.ascent - font.descent
 			
-			self._pref_size = (self.w, patch.padding_bottom + height + patch.padding_top)
+			self._pref_size = (self.w, patch.padding_y + height)
 			
-			self.elements['layout'].width = self.w - patch.padding_left - patch.padding_right
-			self.elements['layout'].height = height
+			self.layout.width = self.w - patch.padding_x
+			self.layout.height = height
 	
-	def update_elements(self):		
+	def update_elements(self):
 		if self._dirty and self.theme:
 			patch = self.theme['textbox']['image']
 			
@@ -100,24 +99,35 @@ class TextInput(Widget):
 			elif self.valign == 'top':
 				bottom = self.h - self._pref_size[1]
 			
-			self.elements['layout'].x = self._gx + patch.padding_left
-			self.elements['layout'].y = self._gy + bottom + patch.padding_bottom
-			self.elements['layout'].width = self.w - patch.padding_left - patch.padding_right
+			self.layout.x = self._gx + patch.padding_left
+			self.layout.y = self._gy + bottom + patch.padding_bottom
+			self.layout.width = self.w - patch.padding_left - patch.padding_right
 			
-			self.shapes['frame'].update(self._gx + patch.padding_left, self._gy + bottom + patch.padding_bottom, self.w - patch.padding_left - patch.padding_right, height)
+			self.shapes['frame'].update(self._gx + patch.padding_left, self._gy + bottom + patch.padding_bottom, self.w - patch.padding_x, height)
 		
 		Widget.update_elements(self)
+	
+	def update_batch(self, batch):
+		Widget.update_batch(self, batch)
+		
+		if batch:
+			self.caret.delete()
+			self.layout.delete()
+			
+			self.layout = pyglet.text.layout.IncrementalTextLayout(self.document, self.layout.width, self.layout.height, multiline=False, batch=batch, group=self.text_group)
+			self.caret = pyglet.text.caret.Caret(self.layout)
+			self.caret.visible = False
 	
 	def on_mouse_press(self, x, y, button, modifiers):
 		if button == pyglet.window.mouse.LEFT and self.hit_test(x, y) and not self._focused:
 			self._focused = True
 			self.find_root().focus.append(self)
 			self.caret.visible = True
-			self.caret.on_mouse_press(x - self._gx - 2, y - self._gy - 2, button, modifiers)
+			self.caret.on_mouse_press(x, y, button, modifiers)
 			return pyglet.event.EVENT_HANDLED
 		if button == pyglet.window.mouse.LEFT and self._focused:
 			if self.hit_test(x, y):
-				self.caret.on_mouse_press(x - self._gx - 2, y - self._gy - 2, button, modifiers)
+				self.caret.on_mouse_press(x, y, button, modifiers)
 			else:
 				self.caret.visible = False
 				self.find_root().focus.pop()

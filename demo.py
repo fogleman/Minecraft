@@ -7,7 +7,7 @@ import pyglet
 from simplui import *
 
 # create a basic pyglet window
-window = pyglet.window.Window(800, 600, caption='gui demo')
+window = pyglet.window.Window(800, 600, caption='gui demo', vsync=False)
 
 # load some gui themes
 themes = [Theme('themes/macos'), Theme('themes/pywidget')]
@@ -125,6 +125,9 @@ def update_stats(dt):
 		element. text = '%.1f fps' % (fps)
 
 pyglet.clock.schedule_interval(update_stats, 0.5)
+
+# change the background colour
+pyglet.gl.glClearColor(0.8, 0.8, 1.0, 1.0)
 
 # finally, run the application...
 pyglet.app.run()

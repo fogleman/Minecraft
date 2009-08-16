@@ -176,9 +176,9 @@ class Container(Widget):
 		return Rect(self._gx, self._gy, self.w, self.h)
 	
 	def draw(self):
-		if self.visible:
-			for k, e in self.elements.iteritems():
-				e.draw()
+		#if self.visible:
+		#	for k, e in self.elements.iteritems():
+		#		e.draw()
 		
 		for c in self.children:
 			c.draw()

@@ -39,6 +39,9 @@ from shape import Rectangle
 from geometry import Rect
 
 class Widget(object):
+	shape_group = pyglet.graphics.OrderedGroup(0)
+	text_group = pyglet.graphics.OrderedGroup(1)
+	
 	"""Base class for all GUI elements"""
 	def __init__(self, **kwargs):
 		'''Initialise a Widget
@@ -120,6 +123,9 @@ class Widget(object):
 		self._visible = visible
 		for k, s in self.shapes.iteritems():
 			s.visible = visible
+		from pyglet_utils import replace_layout_batch
+		for k, e in self.elements.iteritems():
+			replace_layout_batch(e, batch=(self._batch if visible else None))
 	visible = property(_get_visible, _set_visible)
 	
 	def remove_from_parent(self):
@@ -168,8 +174,14 @@ class Widget(object):
 	def update_batch(self, batch):
 		self._batch = batch
 		
+		from pyglet_utils import replace_layout_batch
+		
 		for k, e in self.shapes.iteritems():
 			e.batch = batch
+			e.group = self.shape_group
+		
+		for k, e in self.elements.iteritems():
+			replace_layout_batch(e, batch=batch, group=self.text_group)
 	
 	def determine_size(self):
 		return self._pref_size
@@ -206,6 +218,7 @@ class Widget(object):
 		return Rect(self._gx, self._gy, self.w, self.h)
 	
 	def draw(self):
-		if self.visible:
-			for k, e in self.elements.iteritems():
-					e.draw()
+		#if self.visible:
+		#	for k, e in self.elements.iteritems():
+		#			e.draw()
+		pass
