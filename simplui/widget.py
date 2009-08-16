@@ -176,6 +176,8 @@ class Widget(object):
 		
 		for k, e in self.elements.iteritems():
 			e.update_batch((batch if self.visible else None), text_group)
+		
+		self._dirty = True
 	
 	def determine_size(self):
 		return self._pref_size
@@ -206,13 +208,7 @@ class Widget(object):
 		pass
 	
 	def hit_test(self, x, y):
-		return (x >= self._gx and x <= self._gx + self.w) and (y >= self._gy and y <= self._gy + self.h)
+		return self.bounds().hit_test(x, y)
 	
 	def bounds(self):
 		return Rect(self._gx, self._gy, self.w, self.h)
-	
-	def draw(self):
-		#if self.visible:
-		#	for k, e in self.elements.iteritems():
-		#			e.draw()
-		pass

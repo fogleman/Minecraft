@@ -174,14 +174,6 @@ class Container(Widget):
 	
 	def clip_rect(self):
 		return Rect(self._gx, self._gy, self.w, self.h)
-	
-	def draw(self):
-		#if self.visible:
-		#	for k, e in self.elements.iteritems():
-		#		e.draw()
-		
-		for c in self.children:
-			c.draw()
 
 class SingleContainer(Container):
 	"""Utility base class for containers restricted to a single child"""
@@ -198,7 +190,8 @@ class SingleContainer(Container):
 		if self._content:
 			Container.remove(self, self._content)
 		self._content = content
-		Container.add(self, self._content)
+		if self._content:
+			Container.add(self, self._content)
 		self.find_root().update_layout()
 	content = property(_get_content, _set_content)
 	
@@ -208,9 +201,12 @@ class SingleContainer(Container):
 		raise UserWarning('remove from the content element')
 	
 	def determine_size(self):
-		return self._content.determine_size()
+		if self._content:
+			return self._content.determine_size()
+		return (0, 0)
 	
 	def reset_size(self, w, h):
 		Widget.reset_size(self, w, h)
 		
-		self._content.reset_size(w, h)
+		if self._content:
+			self._content.reset_size(w, h)

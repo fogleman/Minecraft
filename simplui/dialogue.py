@@ -70,11 +70,20 @@ class Dialogue(SingleContainer):
 		SingleContainer.update_theme(self, theme)
 		
 		if theme:
-			self.shapes['background'].patch = theme['window']['image_background']
-			self.shapes['title_bar'].patch = theme['window']['image_title_bar']
+			background_patch = theme['window']['image_background']
+			title_patch = theme['window']['image_title_bar']
+			
+			self.shapes['background'].patch = background_patch
+			self.shapes['title_bar'].patch = title_patch
+			
 			self.elements['title'].font_name = theme['font']
 			self.elements['title'].font_size = theme['font_size_small']
 			self.elements['title'].color = theme['font_color']
+			
+			font = self.elements['title'].document.get_font()
+			height = font.ascent - font.descent
+			
+			self._pref_size = (title_patch.padding_x + self.elements['title'].content_width, background_patch.padding_y + title_patch.padding_y + height)
 	
 	def update_elements(self):
 		if self._dirty and self.theme:
@@ -95,6 +104,11 @@ class Dialogue(SingleContainer):
 			self.elements['title'].y = self._gy + self.h + title_bar.padding_bottom - font.descent
 		
 		SingleContainer.update_elements(self)
+	
+	def determine_size(self):
+		if self._content:
+			return self._content.determine_size()
+		return self._pref_size
 	
 	def reset_size(self, w, h):
 		self._y += self._h - h

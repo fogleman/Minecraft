@@ -92,6 +92,10 @@ dialogue = Dialogue('Inspector', x=200, y=500, content=
 # add the dialogue to the frame
 frame.add( dialogue )
 
+# create and add a second window
+dialogue2 = Dialogue('Window 2', x=500,y=550)
+frame.add( dialogue2 )
+
 # remove and add the dialogue from the screen on user input of CTRL/CMD + I
 def on_key_press(sym, mod):
 	if sym == pyglet.window.key.I and mod & pyglet.window.key.MOD_ACCEL:

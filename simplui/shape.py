@@ -108,8 +108,6 @@ class EditableLabel(object):
 			self.layout._document.remove_handlers(self.layout)
 		self.layout._document = None
 		
-		print 'deleted'
-		
 		self.layout = pyglet.text.layout.IncrementalTextLayout(self.document, self.layout.width, self.layout.height, multiline=False, batch=batch, group=group)
 		self.caret = pyglet.text.caret.Caret(self.layout)
 		self.caret.visible = False
