@@ -57,7 +57,7 @@ class Frame(Container):
 		return self._theme
 	def _set_theme(self, theme):
 		self.update_theme(theme)
-		self.update_batch(pyglet.graphics.Batch())
+		self.update_batch(pyglet.graphics.Batch(), None)
 		self.update_layout()
 	theme = property(_get_theme, _set_theme)
 	

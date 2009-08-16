@@ -87,11 +87,11 @@ class Container(Widget):
 		for c in self.children:
 			c.update_theme(theme)
 	
-	def update_batch(self, batch):
-		Widget.update_batch(self, batch)
+	def update_batch(self, batch, group):
+		Widget.update_batch(self, batch, group)
 		
 		for c in self.children:
-			c.update_batch(batch)
+			c.update_batch(batch, group)
 	
 	def update_names(self, oldname=None):
 		Widget.update_names(self, oldname)
@@ -110,7 +110,7 @@ class Container(Widget):
 		child.parent = self
 		
 		child.update_theme(self.theme)
-		child.update_batch(self.batch)
+		child.update_batch(self._batch, self._group)
 		self.find_root().update_layout()
 		
 		child.update_names()
@@ -121,7 +121,7 @@ class Container(Widget):
 		self.children.remove(child)
 		child.parent = None
 		
-		child.update_batch(None)
+		child.update_batch(None, None)
 		self.find_root().update_layout()
 	
 	def on_mouse_press(self, x, y, button, modifiers):

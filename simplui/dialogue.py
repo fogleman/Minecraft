@@ -33,7 +33,7 @@
 
 import pyglet
 
-from shape import Rectangle
+from shape import Rectangle, BasicLabel
 from geometry import Rect
 from container import Container, SingleContainer
 
@@ -52,7 +52,7 @@ class Dialogue(SingleContainer):
 		
 		self.shapes['background'] = Rectangle()
 		self.shapes['title_bar'] = Rectangle()
-		self.elements['title'] = pyglet.text.Label(title, anchor_x='center')
+		self.elements['title'] = BasicLabel(title, anchor_x='center')
 		
 		self.topbar = Rect(0, 0, 0, 15)
 		

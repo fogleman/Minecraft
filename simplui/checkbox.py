@@ -33,7 +33,7 @@
 
 import pyglet
 
-from shape import Rectangle
+from shape import Rectangle, BasicLabel
 from widget import Widget
 
 class Checkbox(Widget):
@@ -46,7 +46,7 @@ class Checkbox(Widget):
 		value -- initial value
 		action -- callback to be invoked when the value changes
 		'''
-		label = pyglet.text.Label(text, font_size=8, color=(0,0,0,255), x=15, y=0, anchor_x='left', anchor_y='bottom')
+		label = BasicLabel(text, font_size=8, color=(0,0,0,255), x=15, y=0, anchor_x='left', anchor_y='bottom')
 		
 		Widget.__init__(self, **kwargs)
 		self.elements['label'] = label

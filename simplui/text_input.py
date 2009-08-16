@@ -33,7 +33,7 @@
 
 import pyglet
 
-from shape import Rectangle
+from shape import Rectangle, EditableLabel
 from widget import Widget
 
 class TextInput(Widget):
@@ -48,25 +48,27 @@ class TextInput(Widget):
 		'''
 		Widget.__init__(self, **kwargs)
 		
-		self.document = pyglet.text.document.UnformattedDocument(kwargs.get('text', ''))
-		self.layout = pyglet.text.layout.IncrementalTextLayout(self.document, 1, 1, multiline=False)
+		self.label = EditableLabel(kwargs.get('text', ''))
 		
-		font = self.document.get_font()
+		'''self.document = pyglet.text.document.UnformattedDocument(kwargs.get('text', ''))
+		self.layout = pyglet.text.layout.IncrementalTextLayout(self.document, 1, 1, multiline=False)
+		self.caret = pyglet.text.caret.Caret(self.layout)
+		self.elements['layout'] = self.layout'''
+		
+		font = self.label.document.get_font()
 		height = font.ascent - font.descent
 		
-		self.caret = pyglet.text.caret.Caret(self.layout)
-		
-		#self.elements['layout'] = self.layout
 		self.shapes['frame'] = Rectangle()
+		self.elements['label'] = self.label
 		
 		self.action = kwargs.get('action', None)
 		self._focused = False
-		self.caret.visible = False
+		self.label.caret.visible = False
 	
 	def _get_text(self):
-		return self.document.text
+		return self.label.text
 	def _set_text(self, text):
-		self.document.text = text
+		self.label.text = text
 	text = property(_get_text, _set_text)
 	
 	def update_theme(self, theme):
@@ -76,21 +78,21 @@ class TextInput(Widget):
 			patch = theme['textbox']['image']
 			
 			self.shapes['frame'].patch = patch
-			self.document.set_style(0, len(self.document.text), {'font_size': theme['font_size'], 'color': theme['font_color']})
+			self.label.document.set_style(0, len(self.label.document.text), {'font_size': theme['font_size'], 'color': theme['font_color']})
 			
-			font = self.document.get_font()
+			font = self.label.document.get_font()
 			height = font.ascent - font.descent
 			
 			self._pref_size = (self.w, patch.padding_y + height)
 			
-			self.layout.width = self.w - patch.padding_x
-			self.layout.height = height
+			self.label.layout.width = self.w - patch.padding_x
+			self.label.layout.height = height
 	
 	def update_elements(self):
 		if self._dirty and self.theme:
 			patch = self.theme['textbox']['image']
 			
-			font = self.document.get_font()
+			font = self.label.document.get_font()
 			height = font.ascent - font.descent
 			
 			bottom = 0
@@ -99,37 +101,42 @@ class TextInput(Widget):
 			elif self.valign == 'top':
 				bottom = self.h - self._pref_size[1]
 			
-			self.layout.x = self._gx + patch.padding_left
-			self.layout.y = self._gy + bottom + patch.padding_bottom
-			self.layout.width = self.w - patch.padding_left - patch.padding_right
+			self.label.layout.x = self._gx + patch.padding_left
+			self.label.layout.y = self._gy + bottom + patch.padding_bottom
+			self.label.layout.width = self.w - patch.padding_left - patch.padding_right
 			
 			self.shapes['frame'].update(self._gx + patch.padding_left, self._gy + bottom + patch.padding_bottom, self.w - patch.padding_x, height)
 		
 		Widget.update_elements(self)
 	
-	def update_batch(self, batch):
-		Widget.update_batch(self, batch)
+	'''def update_batch(self, batch, group):
+		old_batch = self._batch
 		
-		if batch:
+		Widget.update_batch(self, batch, group)
+		
+		if old_batch and self.visible:
 			self.caret.delete()
 			self.layout.delete()
+		
+		if batch and self.visible:
+			text_group = pyglet.graphics.OrderedGroup(1, group)
 			
-			self.layout = pyglet.text.layout.IncrementalTextLayout(self.document, self.layout.width, self.layout.height, multiline=False, batch=batch, group=self.text_group)
+			self.layout = pyglet.text.layout.IncrementalTextLayout(self.document, self.layout.width, self.layout.height, multiline=False, batch=batch, group=text_group)
 			self.caret = pyglet.text.caret.Caret(self.layout)
-			self.caret.visible = False
+			self.caret.visible = False'''
 	
 	def on_mouse_press(self, x, y, button, modifiers):
 		if button == pyglet.window.mouse.LEFT and self.hit_test(x, y) and not self._focused:
 			self._focused = True
 			self.find_root().focus.append(self)
-			self.caret.visible = True
-			self.caret.on_mouse_press(x, y, button, modifiers)
+			self.label.caret.visible = True
+			self.label.caret.on_mouse_press(x, y, button, modifiers)
 			return pyglet.event.EVENT_HANDLED
 		if button == pyglet.window.mouse.LEFT and self._focused:
 			if self.hit_test(x, y):
-				self.caret.on_mouse_press(x, y, button, modifiers)
+				self.label.caret.on_mouse_press(x, y, button, modifiers)
 			else:
-				self.caret.visible = False
+				self.label.caret.visible = False
 				self.find_root().focus.pop()
 				self._focused = False
 				if self.action:
@@ -141,7 +148,7 @@ class TextInput(Widget):
 	
 	def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
 		if self._focused:
-			self.caret.on_mouse_drag(x - self._gx - 2, y - self._gy - 2, dx, dy, button, modifiers)
+			self.label.caret.on_mouse_drag(x, y, dx, dy, button, modifiers)
 			return pyglet.event.EVENT_HANDLED
 				
 		Widget.on_mouse_drag(self, x, y, dx, dy, button, modifiers)
@@ -149,7 +156,7 @@ class TextInput(Widget):
 	
 	def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
 		if self._focused:
-			self.caret.on_mouse_scroll(x - self._gx - 2, y - self._gy - 2, scroll_x, scroll_y)
+			self.label.caret.on_mouse_scroll(x, y, scroll_x, scroll_y)
 			return pyglet.event.EVENT_HANDLED
 		
 		Widget.on_mouse_scroll(self, x, y, scroll_x, scroll_y)
@@ -159,7 +166,7 @@ class TextInput(Widget):
 		from pyglet.window import key
 		
 		if self._focused and symbol in (key.ENTER, key.TAB):
-			self.caret.visible = False
+			self.label.caret.visible = False
 			self.find_root().focus.pop()
 			self._focused = False
 			if self.action:
@@ -171,7 +178,7 @@ class TextInput(Widget):
 	
 	def on_text(self, text):
 		if self._focused:
-			self.caret.on_text(text)
+			self.label.caret.on_text(text)
 			return pyglet.event.EVENT_HANDLED
 		
 		Widget.on_text(self, text)
@@ -179,7 +186,7 @@ class TextInput(Widget):
 	
 	def on_text_motion(self, motion, select=False):
 		if self._focused:
-			self.caret.on_text_motion(motion, select)
+			self.label.caret.on_text_motion(motion, select)
 			return pyglet.event.EVENT_HANDLED
 		
 		Widget.on_text_motion(self, motion, select)

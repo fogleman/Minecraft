@@ -33,7 +33,7 @@
 
 import pyglet
 
-from shape import Rectangle
+from shape import Rectangle, BasicLabel
 from widget import Widget
 
 class Label(Widget):
@@ -47,11 +47,11 @@ class Label(Widget):
 		kwargs.setdefault('halign', 'left')
 		Widget.__init__(self, **kwargs)
 		
-		content = pyglet.text.Label(text, font_size=8, color=(0,0,0,255), x=0, y=0, anchor_x='left', anchor_y='bottom')
-		font = content.document.get_font()
+		self.content = BasicLabel(text, font_size=8, color=(0,0,0,255), x=0, y=0, anchor_x='left', anchor_y='bottom')
+		font = self.content.document.get_font()
 		height = font.ascent - font.descent
 		
-		self.elements['content'] = content
+		self.elements['content'] = self.content
 	
 	def _get_text(self):
 		return self.elements['content'].text
@@ -63,22 +63,19 @@ class Label(Widget):
 		Widget.update_theme(self, theme)
 		
 		if theme:
-			content = self.elements['content']
-			content.font_name = self.theme['font']
-			content.font_size = self.theme['font_size']
-			content.color = theme['font_color']
+			self.content.font_name = self.theme['font']
+			self.content.font_size = self.theme['font_size']
+			self.content.color = theme['font_color']
 			
-			font = content.document.get_font()
+			font = self.content.document.get_font()
 			height = font.ascent - font.descent
 			
-			self._w, self._h = content.content_width, height
+			self._w, self._h = self.content.content_width, height
 			
-			self._pref_size = (content.content_width, height)
+			self._pref_size = (self.content.content_width, height)
 	
 	def update_elements(self):		
 		if self._dirty and self.theme:
-			content = self.elements['content']
-			
 			left = 0
 			if self.halign == 'center':
 				left = self.w/2 - self._pref_size[0]/2
@@ -91,7 +88,7 @@ class Label(Widget):
 			elif self.valign == 'top':
 				bottom = self.h - self._pref_size[1]
 			
-			content.x = self._gx + left
-			content.y = self._gy + bottom
+			self.content.x = self._gx + left
+			self.content.y = self._gy + bottom
 		
 		Widget.update_elements(self)

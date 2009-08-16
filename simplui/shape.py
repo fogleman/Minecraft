@@ -38,73 +38,78 @@ class Rectangle(object):
 	"""Basic rectangular element for renderering and hit testing"""
 	def __init__(self, visible=True):
 		self.x, self.y, self.w, self.h = 0, 0, 1, 1
-		self._visible = visible
+		self._patch = None
 		self._batch = None
 		self._group = None
-		self._patch = None
 		self._vertices = None
-
-	def _get_visible(self):
-		return self._visible
-	def _set_visible(self, visible):
-		if visible != self.visible:
-			self._visible = visible
-			if visible:
-				self._build()
-			else:
-				self._unbuild()
-	visible = property(_get_visible, _set_visible)
-	
-	def _get_batch(self):
-		return self._batch
-	def _set_batch(self, batch):
-		if batch != self.batch:
-			self._unbuild()
-			self._batch = batch
-			self._build()
-	batch = property(_get_batch, _set_batch)
-	
-	def _get_group(self):
-		return self._group
-	def _set_group(self, group):
-		if group != self.group:
-			self._unbuild()
-			self._group = group
-			self._build()
-	group = property(_get_group, _set_group)
 	
 	def _get_patch(self):
 		return self._patch
 	def _set_patch(self, patch):
-		if patch != self.patch:
-			self._unbuild()
-			self._patch = patch
-			self._build()
+		self._patch = patch
+		self.update_batch(self._batch, self._group)
 	patch = property(_get_patch, _set_patch)
 	
-	def _build(self):
-		if self._batch and self._patch and self._visible:
-			if self._vertices == None:
-				self._vertices = self._patch.build_vertex_list(self._batch, self._group)
-			self._patch.update_vertex_list_around(self._vertices, self.x, self.y, self.w, self.h)
-	
-	def _unbuild(self):
-		if self._vertices != None:
+	def update_batch(self, batch, group):	
+		self._batch, self._group = batch, group
+		
+		if self._vertices:
 			self._vertices.delete()
 			self._vertices = None
-	
-	def _update(self):
-		self._unbuild()
-		self._build()
+		
+		if self.patch and batch:
+			self._vertices = self.patch.build_vertex_list(batch, group)
 	
 	def update(self, x, y, w, h):
 		self.x, self.y, self.w, self.h = x, y, w, h
 		
-		if self._patch and self._batch and self._visible:
-			self._patch.update_vertex_list_around(self._vertices, x, y, w, h)
+		if self._vertices:
+			self.patch.update_vertex_list_around(self._vertices, x, y, w, h)
 	
 	def update_in(self, x, y, w, h):
 		self.x, self.y, self.w, self.h = x, y, w, h
 		
-		if self._patch and self._batch and self._visible:
-			self._patch.update_vertex_list(self._vertices, x, y, w, h)
+		if self._vertices:
+			self.patch.update_vertex_list(self._vertices, x, y, w, h)
+
+class BasicLabel(pyglet.text.Label):
+	def update_batch(self, batch, group):
+		self.delete()
+		
+		if not batch:
+			batch = pyglet.graphics.Batch()
+			self._own_batch = True
+		else:
+			self._own_batch = False
+		
+		self.batch = batch
+		
+		self._init_groups(group)
+		self._update()
+
+class EditableLabel(object):
+	def __init__(self, text):
+		self.document = pyglet.text.document.UnformattedDocument(text)
+		self.layout = pyglet.text.layout.IncrementalTextLayout(self.document, 1, 1, multiline=False)
+		self.caret = pyglet.text.caret.Caret(self.layout)
+	
+	def _get_text(self):
+		return self.document.text
+	def _set_text(self, text):
+		self.document.text = text
+	text = property(_get_text, _set_text)
+	
+	def update_batch(self, batch, group):
+		self.caret.delete()
+		self.layout.delete()
+		
+		self.layout.batch = None
+		if self.layout._document:
+			self.layout._document.remove_handlers(self.layout)
+		self.layout._document = None
+		
+		print 'deleted'
+		
+		self.layout = pyglet.text.layout.IncrementalTextLayout(self.document, self.layout.width, self.layout.height, multiline=False, batch=batch, group=group)
+		self.caret = pyglet.text.caret.Caret(self.layout)
+		self.caret.visible = False

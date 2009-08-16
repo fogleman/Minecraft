@@ -39,9 +39,6 @@ from shape import Rectangle
 from geometry import Rect
 
 class Widget(object):
-	shape_group = pyglet.graphics.OrderedGroup(0)
-	text_group = pyglet.graphics.OrderedGroup(1)
-	
 	"""Base class for all GUI elements"""
 	def __init__(self, **kwargs):
 		'''Initialise a Widget
@@ -60,6 +57,7 @@ class Widget(object):
 		self.parent = None
 		self._theme = None
 		self._batch = None
+		self._group = None
 		
 		self._dirty = False
 		
@@ -121,11 +119,7 @@ class Widget(object):
 		return self._visible
 	def _set_visible(self, visible):
 		self._visible = visible
-		for k, s in self.shapes.iteritems():
-			s.visible = visible
-		from pyglet_utils import replace_layout_batch
-		for k, e in self.elements.iteritems():
-			replace_layout_batch(e, batch=(self._batch if visible else None))
+		self.update_batch(self._batch, self._group)
 	visible = property(_get_visible, _set_visible)
 	
 	def remove_from_parent(self):
@@ -171,17 +165,17 @@ class Widget(object):
 		self._theme = theme
 		self._dirty = True
 	
-	def update_batch(self, batch):
-		self._batch = batch
+	def update_batch(self, batch, group):
+		self._batch, self._group = batch, group
 		
-		from pyglet_utils import replace_layout_batch
+		shape_group = pyglet.graphics.OrderedGroup(0, group)
+		text_group = pyglet.graphics.OrderedGroup(1, group)
 		
 		for k, e in self.shapes.iteritems():
-			e.batch = batch
-			e.group = self.shape_group
+			e.update_batch((batch if self.visible else None), shape_group)
 		
 		for k, e in self.elements.iteritems():
-			replace_layout_batch(e, batch=batch, group=self.text_group)
+			e.update_batch((batch if self.visible else None), text_group)
 	
 	def determine_size(self):
 		return self._pref_size

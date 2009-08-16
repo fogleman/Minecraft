@@ -33,7 +33,7 @@
 
 import pyglet
 
-from shape import Rectangle
+from shape import Rectangle, BasicLabel
 from geometry import Rect
 from widget import Widget
 
@@ -47,7 +47,7 @@ class Button(Widget):
 		'''
 		Widget.__init__(self, **kwargs)
 		
-		self.elements['label'] = pyglet.text.Label(text, font_size=8, color=(0,0,0,255), anchor_x='left', anchor_y='bottom')
+		self.elements['label'] = BasicLabel(text, font_size=8, color=(0,0,0,255), anchor_x='left', anchor_y='bottom')
 		self.shapes['frame'] = Rectangle()
 		self.active_region = Rect(0, 0, 0, 0)
 		
