@@ -35,6 +35,7 @@ import pyglet
 
 from shape import Rectangle, BasicLabel
 from widget import Widget
+from geometry import Size
 
 class Checkbox(Widget):
 	"""Clickable checkbox with textual label"""
@@ -84,7 +85,7 @@ class Checkbox(Widget):
 			font = label.document.get_font()
 			height = font.ascent - font.descent
 			
-			self._pref_size = (patch.padding_left + label.content_width + patch.padding_right, patch.padding_bottom + height + patch.padding_top)
+			self._pref_size = Size(patch.padding_left + label.content_width + patch.padding_right, patch.padding_bottom + height + patch.padding_top)
 			
 			self.shapes['box'].patch = patch
 	

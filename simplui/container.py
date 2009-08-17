@@ -205,8 +205,8 @@ class SingleContainer(Container):
 			self._content.determine_size()
 			self._pref_size = self._content._pref_size
 	
-	def reset_size(self, w, h):
-		Widget.reset_size(self, w, h)
+	def reset_size(self, size):
+		Widget.reset_size(self, size)
 		
 		if self._content:
-			self._content.reset_size(w, h)
+			self._content.reset_size(size)

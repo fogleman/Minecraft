@@ -34,7 +34,7 @@
 import pyglet
 
 from shape import Rectangle, BasicLabel
-from geometry import Rect
+from geometry import Rect, Size
 from widget import Widget
 
 class Button(Widget):
@@ -74,7 +74,7 @@ class Button(Widget):
 			font = label.document.get_font()
 			height = font.ascent - font.descent
 			
-			self._pref_size = (patch.padding_left + label.content_width + patch.padding_right, patch.padding_bottom + height + patch.padding_top)
+			self._pref_size = Size(patch.padding_left + label.content_width + patch.padding_right, patch.padding_bottom + height + patch.padding_top)
 			
 			label.x = patch.padding_left + label.content_width/2
 			label.y = patch.padding_bottom + height/2 - font.descent

@@ -36,6 +36,7 @@ import pyglet
 from shape import Rectangle
 from widget import Widget
 from container import Container
+from geometry import Size
 
 class Layout(Container):
 	def __init__(self, axis, **kwargs):
@@ -57,15 +58,15 @@ class Layout(Container):
 			h += min[self._axis] + self.padding[self._axis]
 		
 		if self._axis == 1:
-			self._pref_size = (w + self.padding[1-self._axis]*2, h)
+			self._pref_size = Size(w + self.padding[1-self._axis]*2, h)
 		else:
-			self._pref_size = (h, w + self.padding[1-self._axis]*2)
+			self._pref_size = Size(h, w + self.padding[1-self._axis]*2)
 	
-	def reset_size(self, w, h):
-		Widget.reset_size(self, w, h)
+	def reset_size(self, size):
+		Widget.reset_size(self, size)
 				
 		minh = self._pref_size[self._axis]
-		freeh = (w, h)[self._axis] - minh
+		freeh = size[self._axis] - minh
 		
 		flexible = [c for c in self.children if c.expandable[self._axis]]
 		l = len(flexible)
@@ -85,7 +86,7 @@ class Layout(Container):
 			
 			min = c._pref_size
 			if c.expandable[1-self._axis]:
-				nw = (w, h)[1-self._axis] - self.padding[1-self._axis]*2
+				nw = size[1-self._axis] - self.padding[1-self._axis]*2
 			else:
 				nw = min[1-self._axis]
 			if c.expandable[self._axis]:
@@ -94,9 +95,9 @@ class Layout(Container):
 				nh = min[self._axis]
 			
 			if self._axis == 1:
-				c.reset_size(nw, nh)
+				c.reset_size(Size(nw, nh))
 			else:
-				c.reset_size(nh, nw)
+				c.reset_size(Size(nh, nw))
 			
 			th += nh + self.padding[self._axis]
 

@@ -34,7 +34,7 @@
 import pyglet
 
 from shape import Rectangle, BasicLabel
-from geometry import Rect
+from geometry import Rect, Size
 from widget import Widget
 from container import Container, SingleContainer
 
@@ -116,15 +116,15 @@ class FoldingBox(SingleContainer):
 		size = self._content._pref_size
 		
 		if self.collapsed:
-			self._pref_size = (size[0], self._top_h)
+			self._pref_size = Size(size[0], self._top_h)
 		else:
-			self._pref_size = (size[0], size[1] + self._top_h)
+			self._pref_size = Size(size[0], size[1] + self._top_h)
 	
-	def reset_size(self, w, h):
-		Widget.reset_size(self, w, h)
+	def reset_size(self, size):
+		Widget.reset_size(self, size)
 		
 		if not self.collapsed:
-			self._content.reset_size(w, h - self._top_h)
+			self._content.reset_size(Size(size.w, size.h - self._top_h))
 	
 	def on_mouse_press(self, x, y, button, modifiers):
 		if button == pyglet.window.mouse.LEFT and \

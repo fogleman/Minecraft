@@ -34,7 +34,7 @@
 import pyglet
 
 from shape import Rectangle, BasicLabel
-from geometry import Rect
+from geometry import Rect, Size
 from container import Container, SingleContainer
 
 class Dialogue(SingleContainer):
@@ -83,7 +83,7 @@ class Dialogue(SingleContainer):
 			font = self.elements['title'].document.get_font()
 			height = font.ascent - font.descent
 			
-			self._pref_size = (title_patch.padding_x + self.elements['title'].content_width, background_patch.padding_y + title_patch.padding_y + height)
+			self._pref_size = Size(title_patch.padding_x + self.elements['title'].content_width, background_patch.padding_y + title_patch.padding_y + height)
 	
 	def update_elements(self):
 		if self._dirty and self.theme:
@@ -105,9 +105,9 @@ class Dialogue(SingleContainer):
 		
 		SingleContainer.update_elements(self)
 	
-	def reset_size(self, w, h):
-		self._y += self._h - h
-		SingleContainer.reset_size(self, w, h)
+	def reset_size(self, size):
+		self._y += self._h - size.h
+		SingleContainer.reset_size(self, size)
 	
 	def bounds(self):
 		return Rect(self._gx, self._gy, self.w, self.h + self.topbar.h)

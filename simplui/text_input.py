@@ -35,6 +35,7 @@ import pyglet
 
 from shape import Rectangle, EditableLabel
 from widget import Widget
+from geometry import Size
 
 class TextInput(Widget):
 	"""Text input field"""
@@ -49,11 +50,6 @@ class TextInput(Widget):
 		Widget.__init__(self, **kwargs)
 		
 		self.label = EditableLabel(kwargs.get('text', ''))
-		
-		'''self.document = pyglet.text.document.UnformattedDocument(kwargs.get('text', ''))
-		self.layout = pyglet.text.layout.IncrementalTextLayout(self.document, 1, 1, multiline=False)
-		self.caret = pyglet.text.caret.Caret(self.layout)
-		self.elements['layout'] = self.layout'''
 		
 		font = self.label.document.get_font()
 		height = font.ascent - font.descent
@@ -83,7 +79,7 @@ class TextInput(Widget):
 			font = self.label.document.get_font()
 			height = font.ascent - font.descent
 			
-			self._pref_size = (self.w, patch.padding_y + height)
+			self._pref_size = Size(self.w, patch.padding_y + height)
 			
 			self.label.layout.width = self.w - patch.padding_x
 			self.label.layout.height = height
@@ -108,22 +104,6 @@ class TextInput(Widget):
 			self.shapes['frame'].update(self._gx + patch.padding_left, self._gy + bottom + patch.padding_bottom, self.w - patch.padding_x, height)
 		
 		Widget.update_elements(self)
-	
-	'''def update_batch(self, batch, group):
-		old_batch = self._batch
-		
-		Widget.update_batch(self, batch, group)
-		
-		if old_batch and self.visible:
-			self.caret.delete()
-			self.layout.delete()
-		
-		if batch and self.visible:
-			text_group = pyglet.graphics.OrderedGroup(1, group)
-			
-			self.layout = pyglet.text.layout.IncrementalTextLayout(self.document, self.layout.width, self.layout.height, multiline=False, batch=batch, group=text_group)
-			self.caret = pyglet.text.caret.Caret(self.layout)
-			self.caret.visible = False'''
 	
 	def on_mouse_press(self, x, y, button, modifiers):
 		if button == pyglet.window.mouse.LEFT and self.hit_test(x, y) and not self._focused:

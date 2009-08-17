@@ -35,6 +35,7 @@ import pyglet
 
 from shape import Rectangle
 from widget import Widget
+from geometry import Size
 
 class Slider(Widget):
 	"""Value slider"""
@@ -96,7 +97,7 @@ class Slider(Widget):
 			patch = theme['slider']['image_slider']
 			patch_knob = theme['slider']['image_knob']
 			
-			self._pref_size = (self.w, patch.padding_bottom + patch.padding_top)
+			self._pref_size = Size(self.w, patch.padding_bottom + patch.padding_top)
 			
 			self.shapes['track'].patch = patch						
 			self.shapes['knob'].patch = patch_knob

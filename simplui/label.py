@@ -35,6 +35,7 @@ import pyglet
 
 from shape import Rectangle, BasicLabel
 from widget import Widget
+from geometry import Size
 
 class Label(Widget):
 	"""Textual label"""
@@ -72,7 +73,7 @@ class Label(Widget):
 			
 			self._w, self._h = self.content.content_width, height
 			
-			self._pref_size = (self.content.content_width, height)
+			self._pref_size = Size(self.content.content_width, height)
 	
 	def update_elements(self):		
 		if self._dirty and self.theme:

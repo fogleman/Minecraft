@@ -36,7 +36,7 @@ from pyglet.gl import *
 
 from shape import Rectangle
 
-from geometry import Rect
+from geometry import Rect, Size
 
 class Widget(object):
 	"""Base class for all GUI elements"""
@@ -50,7 +50,7 @@ class Widget(object):
 		self._w, self._h = kwargs.get('w', 0), kwargs.get('h', 0)
 		self._gx, self._gy = self._x, self._y
 		
-		self._pref_size = (0, 0)
+		self._pref_size = Size()
 		
 		self._name = kwargs.get('name')
 		
@@ -182,8 +182,8 @@ class Widget(object):
 	def determine_size(self):
 		pass
 	
-	def reset_size(self, w, h):
-		self._w, self._h = w, h
+	def reset_size(self, size):
+		self._w, self._h = size
 		self._dirty = True
 	
 	def on_mouse_press(self, x, y, button, modifiers):
