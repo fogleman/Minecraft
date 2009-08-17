@@ -93,7 +93,17 @@ dialogue = Dialogue('Inspector', x=200, y=500, content=
 frame.add( dialogue )
 
 # create and add a second window
-dialogue2 = Dialogue('Window 2', x=500,y=550)
+dialogue2 = Dialogue('Window 2', x=500, y=550, content=
+	# lets try a flow layout...
+	FlowLayout(w=250, children=[
+		Label('Hello, World!'),
+		Button('OK'),
+		Button('I do nothing'),
+		Label('Something'),
+		Button('Random'),
+		Label('Nothing'),
+		])
+	)
 frame.add( dialogue2 )
 
 # remove and add the dialogue from the screen on user input of CTRL/CMD + I

@@ -110,6 +110,7 @@ from dialogue import Dialogue
 
 from container import Container
 from layout import HLayout, VLayout
+from flow_layout import FlowLayout
 from folding_box import FoldingBox
 
 from label import Label
