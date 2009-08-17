@@ -119,8 +119,8 @@ class Frame(Container):
 	
 	def update_layout(self):
 		for c in self.children:
-			size = c.determine_size()
-			c.reset_size(*size)
+			c.determine_size()
+			c.reset_size(*c._pref_size)
 	
 	def draw(self):
 		self.update_global_coords()

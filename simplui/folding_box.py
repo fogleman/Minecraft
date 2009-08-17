@@ -112,10 +112,13 @@ class FoldingBox(SingleContainer):
 		SingleContainer.update_elements(self)
 	
 	def determine_size(self):
-		size = self._content.determine_size()
+		self._content.determine_size()
+		size = self._content._pref_size
+		
 		if self.collapsed:
-			return (size[0], self._top_h)
-		return (size[0], size[1] + self._top_h)
+			self._pref_size = (size[0], self._top_h)
+		else:
+			self._pref_size = (size[0], size[1] + self._top_h)
 	
 	def reset_size(self, w, h):
 		Widget.reset_size(self, w, h)

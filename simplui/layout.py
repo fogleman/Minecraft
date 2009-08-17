@@ -49,20 +49,22 @@ class Layout(Container):
 	def determine_size(self):
 		w, h = 0, self.padding[self._axis]
 		for c in self.children:
-			min = c.determine_size()
+			c.determine_size()
+			min = c._pref_size
+			
 			if min[1-self._axis] > w:
 				w = min[1-self._axis]
 			h += min[self._axis] + self.padding[self._axis]
 		
 		if self._axis == 1:
-			return (w + self.padding[1-self._axis]*2, h)
+			self._pref_size = (w + self.padding[1-self._axis]*2, h)
 		else:
-			return (h, w + self.padding[1-self._axis]*2)
+			self._pref_size = (h, w + self.padding[1-self._axis]*2)
 	
 	def reset_size(self, w, h):
 		Widget.reset_size(self, w, h)
 				
-		minh = self.determine_size()[self._axis]
+		minh = self._pref_size[self._axis]
 		freeh = (w, h)[self._axis] - minh
 		
 		flexible = [c for c in self.children if c.expandable[self._axis]]
@@ -81,7 +83,7 @@ class Layout(Container):
 			else:
 				c._y, c._x = self.padding[1-self._axis], th
 			
-			min = c.determine_size()
+			min = c._pref_size
 			if c.expandable[1-self._axis]:
 				nw = (w, h)[1-self._axis] - self.padding[1-self._axis]*2
 			else:

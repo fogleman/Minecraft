@@ -180,7 +180,7 @@ class Widget(object):
 		self._dirty = True
 	
 	def determine_size(self):
-		return self._pref_size
+		pass
 	
 	def reset_size(self, w, h):
 		self._w, self._h = w, h

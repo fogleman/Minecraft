@@ -105,11 +105,6 @@ class Dialogue(SingleContainer):
 		
 		SingleContainer.update_elements(self)
 	
-	def determine_size(self):
-		if self._content:
-			return self._content.determine_size()
-		return self._pref_size
-	
 	def reset_size(self, w, h):
 		self._y += self._h - h
 		SingleContainer.reset_size(self, w, h)
