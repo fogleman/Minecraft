@@ -6,7 +6,7 @@ EXTENSIONS = [
 ]
 
 def print_data(data):
-    size = 64
+    size = 72
     offset = 0
     length = len(data)
     while offset < length:
