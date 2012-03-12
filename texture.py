@@ -104,8 +104,8 @@ GENERATE_COMPILED_VERSION = False
 #                        keith.brafford@gmail.com
 #                        Embedded Excellence, Inc.
 #
-# Version:      1.1
-# Date:         4 December 2011
+# Version:      1.4
+# Date:         12 March 2012
 #
 # License:      wxWindows license
 #
@@ -153,9 +153,9 @@ GENERATE_COMPILED_VERSION = False
 # 
 #----------------------------------------------------------------------------
 
-__version__ = "1.2"
+__version__ = "1.4"
 __author__  = "Keith Brafford <keith.brafford@gmail.com>"
-__date__    = "5 January 2012"
+__date__    = "12 March 2012"
 
 import wx
 from wx.lib.embeddedimage import PyEmbeddedImage
