@@ -3,10 +3,6 @@ from pyglet.window import key
 import StringIO
 import base64
 import math
-import random
-import time
-
-SECTOR_SIZE = 16
 
 def cube_vertices(x, y, z, n):
     return [
@@ -64,50 +60,24 @@ def normalize(position):
     x, y, z = (int(round(x)), int(round(y)), int(round(z)))
     return (x, y, z)
 
-def sectorize(position):
-    x, y, z = normalize(position)
-    x, y, z = x / SECTOR_SIZE, y / SECTOR_SIZE, z / SECTOR_SIZE
-    return (x, 0, z)
-
 class Model(object):
     def __init__(self):
         self.batch = pyglet.graphics.Batch()
         self.group = TextureGroup(TEXTURE_DATA)
         self.world = {}
         self.shown = {}
-        self._shown = {}
-        self.sectors = {}
-        self.queue = []
         self.initialize()
     def initialize(self):
-        n = 80
+        n = 8
         s = 1
         y = 0
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
-                self.init_block((x, y - 2, z), GRASS)
-                self.init_block((x, y - 3, z), STONE)
+                self.add_block((x, y - 2, z), STONE)
+                self.add_block((x, y + 4, z), STONE)
                 if x in (-n, n) or z in (-n, n):
-                    for dy in xrange(-2, 3):
-                        self.init_block((x, y + dy, z), STONE)
-        o = n - 10
-        for _ in xrange(120):
-            a = random.randint(-o, o)
-            b = random.randint(-o, o)
-            c = -1
-            h = random.randint(1, 6)
-            s = random.randint(4, 8)
-            d = 1
-            t = random.choice([GRASS, SAND, BRICK])
-            for y in xrange(c, c + h):
-                for x in xrange(a - s, a + s + 1):
-                    for z in xrange(b - s, b + s + 1):
-                        if (x - a) ** 2 + (z - b) ** 2 > (s + 1) ** 2:
-                            continue
-                        if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
-                            continue
-                        self.init_block((x, y, z), t)
-                s -= d
+                    for dy in xrange(-2, 5):
+                        self.add_block((x, y + dy, z), STONE)
     def hit_test(self, position, vector, max_distance=8):
         m = 8
         x, y, z = position
@@ -126,116 +96,25 @@ class Model(object):
             if (x + dx, y + dy, z + dz) not in self.world:
                 return True
         return False
-    def init_block(self, position, texture):
-        self.add_block(position, texture, False)
-    def add_block(self, position, texture, sync=True):
+    def add_block(self, position, texture):
         if position in self.world:
-            self.remove_block(position, sync)
+            self.remove_block(position)
         self.world[position] = texture
-        self.sectors.setdefault(sectorize(position), []).append(position)
-        if sync:
-            if self.exposed(position):
-                self.show_block(position)
-            self.check_neighbors(position)
-    def remove_block(self, position, sync=True):
+        self.show_block(position)
+    def remove_block(self, position):
         del self.world[position]
-        self.sectors[sectorize(position)].remove(position)
-        if sync:
-            if position in self.shown:
-                self.hide_block(position)
-            self.check_neighbors(position)
-    def check_neighbors(self, position):
+        if position in self.shown:
+            self.hide_block(position)
+    def show_block(self, position):
         x, y, z = position
-        for dx, dy, dz in FACES:
-            key = (x + dx, y + dy, z + dz)
-            if key not in self.world:
-                continue
-            if self.exposed(key):
-                if key not in self.shown:
-                    self.show_block(key)
-            else:
-                if key in self.shown:
-                    self.hide_block(key)
-    def show_blocks(self):
-        for position in self.world:
-            if position not in self.shown and self.exposed(position):
-                self.show_block(position)
-    def show_block(self, position, immediate=True):
-        texture = self.world[position]
-        self.shown[position] = texture
-        if immediate:
-            self._show_block(position, texture)
-        else:
-            self.enqueue(self._show_block, position, texture)
-    def _show_block(self, position, texture):
-        x, y, z = position
-        # only show exposed faces
-        index = 0
         count = 24
         vertex_data = cube_vertices(x, y, z, 0.5)
-        texture_data = list(texture)
-        for dx, dy, dz in []:#FACES:
-            if (x + dx, y + dy, z + dz) in self.world:
-                count -= 4
-                i = index * 12
-                j = index * 8
-                del vertex_data[i:i + 12]
-                del texture_data[j:j + 8]
-            else:
-                index += 1
-        # create vertex list
-        self._shown[position] = self.batch.add(count, GL_QUADS, self.group, 
+        texture_data = list(self.world[position])
+        self.shown[position] = self.batch.add(count, GL_QUADS, self.group, 
             ('v3f/static', vertex_data),
             ('t2f/static', texture_data))
-    def hide_block(self, position, immediate=True):
-        self.shown.pop(position)
-        if immediate:
-            self._hide_block(position)
-        else:
-            self.enqueue(self._hide_block, position)
-    def _hide_block(self, position):
-        self._shown.pop(position).delete()
-    def show_sector(self, sector):
-        for position in self.sectors.get(sector, []):
-            if position not in self.shown and self.exposed(position):
-                self.show_block(position, False)
-    def hide_sector(self, sector):
-        for position in self.sectors.get(sector, []):
-            if position in self.shown:
-                self.hide_block(position, False)
-    def change_sectors(self, before, after):
-        before_set = set()
-        after_set = set()
-        pad = 4
-        for dx in xrange(-pad, pad + 1):
-            for dy in [0]: # xrange(-pad, pad + 1):
-                for dz in xrange(-pad, pad + 1):
-                    if dx ** 2 + dy ** 2 + dz ** 2 > (pad + 1) ** 2:
-                        continue
-                    if before:
-                        x, y, z = before
-                        before_set.add((x + dx, y + dy, z + dz))
-                    if after:
-                        x, y, z = after
-                        after_set.add((x + dx, y + dy, z + dz))
-        show = after_set - before_set
-        hide = before_set - after_set
-        for sector in show:
-            self.show_sector(sector)
-        for sector in hide:
-            self.hide_sector(sector)
-    def enqueue(self, func, *args):
-        self.queue.append((func, args))
-    def dequeue(self):
-        func, args = self.queue.pop(0)
-        func(*args)
-    def process_queue(self):
-        start = time.clock()
-        while self.queue and time.clock() - start < 1 / 60.0:
-            self.dequeue()
-    def process_entire_queue(self):
-        while self.queue:
-            self.dequeue()
+    def hide_block(self, position):
+        self.shown.pop(position).delete()
 
 class Window(pyglet.window.Window):
     def __init__(self, *args, **kwargs):
@@ -287,13 +166,6 @@ class Window(pyglet.window.Window):
             dz = 0.0
         return (dx, dy, dz)
     def update(self, dt):
-        self.model.process_queue()
-        sector = sectorize(self.position)
-        if sector != self.sector:
-            self.model.change_sectors(self.sector, sector)
-            if self.sector is None:
-                self.model.process_entire_queue()
-            self.sector = sector
         m = 8
         dt = min(dt, 0.2)
         for _ in xrange(m):
@@ -434,7 +306,7 @@ class Window(pyglet.window.Window):
         x, y, z = self.position
         self.label.text = '%02d (%.2f, %.2f, %.2f) %d / %d' % (
             pyglet.clock.get_fps(), x, y, z, 
-            len(self.model._shown), len(self.model.world))
+            len(self.model.shown), len(self.model.world))
         self.label.draw()
     def draw_reticle(self):
         glColor3d(0, 0, 0)
