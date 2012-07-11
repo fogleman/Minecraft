@@ -1,3 +1,4 @@
+from ctypes import *
 from pyglet.gl import *
 from pyglet.window import key
 import StringIO
@@ -66,18 +67,49 @@ class Model(object):
         self.group = TextureGroup(TEXTURE_DATA)
         self.world = {}
         self.shown = {}
-        self.initialize()
-    def initialize(self):
-        n = 8
-        s = 1
-        y = 0
-        for x in xrange(-n, n + 1, s):
-            for z in xrange(-n, n + 1, s):
-                self.add_block((x, y - 2, z), STONE)
-                self.add_block((x, y + 4, z), STONE)
-                if x in (-n, n) or z in (-n, n):
+        self.create_room(back=False)
+        self.create_room(offset=(-1, 0, 0), rotation=3)
+        self.create_room(offset=(1, 0, 0), rotation=1)
+        self.create_room(offset=(1, 0, -1), rotation=0)
+        self.create_room(offset=(-1, 0, -1), rotation=0)
+        self.create_room(offset=(1, 0, 1), rotation=2)
+        self.create_room(offset=(-1, 0, 1), rotation=2)
+        self.create_room(offset=(0, 0, -1), rotation=3)
+        self.create_room(offset=(0, 0, 1), rotation=1)
+    def create_room(self, size=8, offset=(0, 0, 0), back=True, rotation=0):
+        n = size
+        m = size * 2 + 1
+        x, y, z = offset
+        x, y, z = x * m, y * m, z * m
+        for dx in xrange(-n, n + 1):
+            for dz in xrange(-n, n + 1):
+                if dx in (-n, n) or dz in (-n, n):
                     for dy in xrange(-2, 5):
-                        self.add_block((x, y + dy, z), STONE)
+                        self.add_block((x + dx, y + dy, z + dz), BRICK)
+                self.add_block((x + dx, y - 2, z + dz), STONE)
+                self.add_block((x + dx, y + 4, z + dz), STONE)
+        faces = [
+            ( 0,-n),
+            ( n, 0),
+            ( 0, n),
+            (-n, 0),
+        ]
+        rotations = [
+            (0, 1, 2, 1),
+            (1, 0, 1, 2),
+            (2, 1, 0, 1),
+            (1, 2, 1, 0),
+        ]
+        for (bx, bz), info in zip(faces, rotations[rotation]):
+            if info == 0:
+                continue
+            if info == 2 and not back:
+                continue
+            for dy in xrange(-1, 3):
+                for d in xrange(-1, 2):
+                    dx = d if not bx else bx
+                    dz = d if not bz else bz
+                    self.remove_block((x + dx, y + dy, z + dz))
     def hit_test(self, position, vector, max_distance=8):
         m = 8
         x, y, z = position
@@ -172,7 +204,7 @@ class Window(pyglet.window.Window):
             self._update(dt / m)
     def _update(self, dt):
         # walking
-        speed = 15 if self.flying else 5
+        speed = 15 if self.flying else 8
         d = dt * speed
         dx, dy, dz = self.get_motion_vector()
         dx, dy, dz = dx * d, dy * d, dz * d
@@ -229,6 +261,7 @@ class Window(pyglet.window.Window):
         else:
             self.set_exclusive_mouse(True)
     def on_mouse_motion(self, x, y, dx, dy):
+        dy *= -1
         if self.exclusive:
             m = 0.5
             x, y = self.rotation
