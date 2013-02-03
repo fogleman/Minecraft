@@ -358,7 +358,7 @@ class Window(pyglet.window.Window):
             self.set_exclusive_mouse(True)
     def on_mouse_motion(self, x, y, dx, dy):
         if self.exclusive:
-            m = 0.5
+            m = 0.15
             x, y = self.rotation
             x, y = x + dx * m, y + dy * m
             y = max(-90, min(90, y))
@@ -374,7 +374,7 @@ class Window(pyglet.window.Window):
             self.strafe[1] += 1
         elif symbol == key.SPACE:
             if self.dy == 0:
-                self.dy = 0.05
+                self.dy = 0.065
         elif symbol == key.ESCAPE:
             self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
