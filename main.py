@@ -1,10 +1,9 @@
 from pyglet.gl import *
 from pyglet.window import key
-import StringIO
-import base64
 import math
 import random
 import time
+from ctypes import c_float
 
 SECTOR_SIZE = 16
 
@@ -51,8 +50,7 @@ FACES = [
 class TextureGroup(pyglet.graphics.Group):
     def __init__(self, data):
         super(TextureGroup, self).__init__()
-        fp = StringIO.StringIO(base64.b64decode(data))
-        self.texture = pyglet.image.load('__file__.png', file=fp).get_texture()
+        self.texture = pyglet.image.load('texture.png').get_texture()
     def set_state(self):
         glEnable(self.texture.target)
         glBindTexture(self.texture.target, self.texture.id)
