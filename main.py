@@ -306,8 +306,8 @@ class Window(pyglet.window.Window):
         dx, dy, dz = dx * d, dy * d, dz * d
         # gravity
         if not self.flying:
-            self.dy -= dt / 4
-            self.dy = max(self.dy, -0.5)
+            self.dy -= dt * 0.044 # g force, should be = jump_speed * 0.5 / max_jump_height
+            self.dy = max(self.dy, -0.5) # terminal velocity
             dy += self.dy
         # collisions
         x, y, z = self.position
@@ -374,7 +374,7 @@ class Window(pyglet.window.Window):
             self.strafe[1] += 1
         elif symbol == key.SPACE:
             if self.dy == 0:
-                self.dy = 0.065
+                self.dy = 0.015 # jump speed
         elif symbol == key.ESCAPE:
             self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
