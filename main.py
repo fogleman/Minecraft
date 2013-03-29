@@ -425,9 +425,20 @@ class Window(pyglet.window.Window):
         self.set_3d()
         glColor3d(1, 1, 1)
         self.model.batch.draw()
+        self.draw_focused_block()
         self.set_2d()
         self.draw_label()
         self.draw_reticle()
+    def draw_focused_block(self):
+        vector = self.get_sight_vector()
+        block = self.model.hit_test(self.position, vector)[0]
+        if block:
+            x, y, z = block
+            vertex_data = cube_vertices(x, y, z, 0.51)
+            glColor3d(0, 0, 0)
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+            pyglet.graphics.draw(24, GL_QUADS, ('v3f/static', vertex_data))
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
     def draw_label(self):
         x, y, z = self.position
         self.label.text = '%02d (%.2f, %.2f, %.2f) %d / %d' % (
