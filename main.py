@@ -1,5 +1,6 @@
 from pyglet.gl import *
 from pyglet.window import key
+from ctypes import c_float
 import StringIO
 import base64
 import math
