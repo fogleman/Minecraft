@@ -1,3 +1,5 @@
+# Minecraft
+
 Simple Minecraft-inspired demo written in Python and Pyglet
 
-Video: http://www.youtube.com/watch?v=kC3lwK631X8
+http://www.youtube.com/watch?v=kC3lwK631X8
