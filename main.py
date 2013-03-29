@@ -48,9 +48,9 @@ FACES = [
 ]
 
 class TextureGroup(pyglet.graphics.Group):
-    def __init__(self):
+    def __init__(self, path):
         super(TextureGroup, self).__init__()
-        self.texture = pyglet.image.load('texture.png').get_texture()
+        self.texture = pyglet.image.load(path).get_texture()
     def set_state(self):
         glEnable(self.texture.target)
         glBindTexture(self.texture.target, self.texture.id)
@@ -70,7 +70,7 @@ def sectorize(position):
 class Model(object):
     def __init__(self):
         self.batch = pyglet.graphics.Batch()
-        self.group = TextureGroup()
+        self.group = TextureGroup('texture.png')
         self.world = {}
         self.shown = {}
         self._shown = {}
