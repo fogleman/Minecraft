@@ -3,6 +3,7 @@ from pyglet.window import key
 import math
 import random
 import time
+import argparse
 
 SECTOR_SIZE = 16
 
@@ -462,13 +463,19 @@ def setup():
     glEnable(GL_CULL_FACE)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-    setup_fog()
 
-def main():
-    window = Window(width=800, height=600, caption='Pyglet', resizable=True)
+def main(options):
+    window = Window(width=options.width, height=options.height, caption='Pyglet', resizable=True)
     window.set_exclusive_mouse(True)
     setup()
+    if not options.hide_fog:
+        setup_fog()
     pyglet.app.run()
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-width", type=int, default=800)
+    parser.add_argument("-height", type=int, default=600)
+    parser.add_argument("--hide-fog", action="store_true", default=False)
+    options = parser.parse_args()
+    main(options)
