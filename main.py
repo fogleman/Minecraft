@@ -4,6 +4,7 @@ from ctypes import c_float
 import math
 import random
 import time
+from blocks import *
 
 SECTOR_SIZE = 16
 
@@ -16,27 +17,6 @@ def cube_vertices(x, y, z, n):
         x-n,y-n,z+n, x+n,y-n,z+n, x+n,y+n,z+n, x-n,y+n,z+n, # front
         x+n,y-n,z-n, x-n,y-n,z-n, x-n,y+n,z-n, x+n,y+n,z-n, # back
     ]
-
-def tex_coord(x, y, n=4):
-    m = 1.0 / n
-    dx = x * m
-    dy = y * m
-    return dx, dy, dx + m, dy, dx + m, dy + m, dx, dy + m
-
-def tex_coords(top, bottom, side):
-    top = tex_coord(*top)
-    bottom = tex_coord(*bottom)
-    side = tex_coord(*side)
-    result = []
-    result.extend(top)
-    result.extend(bottom)
-    result.extend(side * 4)
-    return result
-
-GRASS = tex_coords((1, 0), (0, 1), (0, 0))
-SAND = tex_coords((1, 1), (1, 1), (1, 1))
-BRICK = tex_coords((2, 0), (2, 0), (2, 0))
-STONE = tex_coords((2, 1), (2, 1), (2, 1))
 
 FACES = [
     ( 0, 1, 0),
@@ -83,11 +63,11 @@ class Model(object):
         y = 0
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
-                self.init_block((x, y - 2, z), GRASS)
-                self.init_block((x, y - 3, z), STONE)
+                self.init_block((x, y - 2, z), grass_block)
+                self.init_block((x, y - 3, z), stone_block)
                 if x in (-n, n) or z in (-n, n):
                     for dy in xrange(-2, 3):
-                        self.init_block((x, y + dy, z), STONE)
+                        self.init_block((x, y + dy, z), stone_block)
         o = n - 10
         for _ in xrange(120):
             a = random.randint(-o, o)
@@ -96,7 +76,7 @@ class Model(object):
             h = random.randint(1, 6)
             s = random.randint(4, 8)
             d = 1
-            t = random.choice([GRASS, SAND, BRICK])
+            t = random.choice([grass_block, sand_block, brick_block, dirt_block])
             for y in xrange(c, c + h):
                 for x in xrange(a - s, a + s + 1):
                     for z in xrange(b - s, b + s + 1):
@@ -124,12 +104,12 @@ class Model(object):
             if (x + dx, y + dy, z + dz) not in self.world:
                 return True
         return False
-    def init_block(self, position, texture):
-        self.add_block(position, texture, False)
-    def add_block(self, position, texture, sync=True):
+    def init_block(self, position, block):
+        self.add_block(position, block, False)
+    def add_block(self, position, block, sync=True):
         if position in self.world:
             self.remove_block(position, sync)
-        self.world[position] = texture
+        self.world[position] = block
         self.sectors.setdefault(sectorize(position), []).append(position)
         if sync:
             if self.exposed(position):
@@ -159,19 +139,19 @@ class Model(object):
             if position not in self.shown and self.exposed(position):
                 self.show_block(position)
     def show_block(self, position, immediate=True):
-        texture = self.world[position]
-        self.shown[position] = texture
+        block = self.world[position]
+        self.shown[position] = block
         if immediate:
-            self._show_block(position, texture)
+            self._show_block(position, block)
         else:
-            self.enqueue(self._show_block, position, texture)
-    def _show_block(self, position, texture):
+            self.enqueue(self._show_block, position, block)
+    def _show_block(self, position, block):
         x, y, z = position
         # only show exposed faces
         index = 0
         count = 24
         vertex_data = cube_vertices(x, y, z, 0.5)
-        texture_data = list(texture)
+        texture_data = block_texture(block)
         for dx, dy, dz in []:#FACES:
             if (x + dx, y + dy, z + dz) in self.world:
                 count -= 4
@@ -346,12 +326,12 @@ class Window(pyglet.window.Window):
             block, previous = self.model.hit_test(self.position, vector)
             if button == pyglet.window.mouse.LEFT:
                 if block:
-                    texture = self.model.world[block]
-                    if texture != STONE:
+                    hit_block = self.model.world[block]
+                    if hit_block != stone_block:
                         self.model.remove_block(block)
             else:
                 if previous:
-                    self.model.add_block(previous, BRICK)
+                    self.model.add_block(previous, brick_block)
         else:
             self.set_exclusive_mouse(True)
     def on_mouse_motion(self, x, y, dx, dy):
