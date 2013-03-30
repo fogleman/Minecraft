@@ -6,6 +6,7 @@ import time
 import argparse
 
 SECTOR_SIZE = 16
+DRAW_DISTANCE = 60.0
 
 def cube_vertices(x, y, z, n):
     return [
@@ -412,7 +413,7 @@ class Window(pyglet.window.Window):
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        gluPerspective(65.0, width / float(height), 0.1, 60.0)
+        gluPerspective(65.0, width / float(height), 0.1, DRAW_DISTANCE)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         x, y = self.rotation
@@ -456,7 +457,7 @@ def setup_fog():
     glFogi(GL_FOG_MODE, GL_LINEAR)
     glFogf(GL_FOG_DENSITY, 0.35)
     glFogf(GL_FOG_START, 20.0)
-    glFogf(GL_FOG_END, 60.0)
+    glFogf(GL_FOG_END, DRAW_DISTANCE)
 
 def setup():
     glClearColor(0.53, 0.81, 0.98, 1)
@@ -477,5 +478,10 @@ if __name__ == '__main__':
     parser.add_argument("-width", type=int, default=800)
     parser.add_argument("-height", type=int, default=600)
     parser.add_argument("--hide-fog", action="store_true", default=False)
+    parser.add_argument("-draw-distance", choices=['short', 'medium', 'long'], default='short')
     options = parser.parse_args()
+    if options.draw_distance == 'medium':
+        DRAW_DISTANCE *= 1.5
+    elif options.draw_distance == 'long':
+        DRAW_DISTANCE *= 2.0
     main(options)
