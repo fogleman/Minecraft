@@ -6,45 +6,46 @@ def tex_coord(x, y, n=4):
 
 # Blocks
 class Block(object):
-    def __init__(self, top, bottom, side):
+    def __init__(self, top, bottom, side, hardness):
         self.top = top
         self.bottom = bottom
         self.side = side
+        self.hardness = hardness
 
 class AirBlock(Block):
     def __init__(self):
         # Air block has no texture
-        super(AirBlock, self).__init__(tex_coord(-1,-1), tex_coord(-1,-1), tex_coord(-1,-1))
+        super(AirBlock, self).__init__(tex_coord(-1,-1), tex_coord(-1,-1), tex_coord(-1,-1), 0)
     def id(self):
         return 0
 
 class StoneBlock(Block):
     def __init__(self):
-        super(StoneBlock, self).__init__(tex_coord(2,1), tex_coord(2,1), tex_coord(2,1))
+        super(StoneBlock, self).__init__(tex_coord(2,1), tex_coord(2,1), tex_coord(2,1), 1.5)
     def id(self):
         return 1
 
 class GrassBlock(Block):
     def __init__(self):
-        super(GrassBlock, self).__init__(tex_coord(1,0), tex_coord(0,1), tex_coord(0,0))
+        super(GrassBlock, self).__init__(tex_coord(1,0), tex_coord(0,1), tex_coord(0,0), 0.6)
     def id(self):
         return 2
 
 class DirtBlock(Block):
     def __init__(self):
-        super(DirtBlock, self).__init__(tex_coord(0,1), tex_coord(0,1), tex_coord(0,1))
+        super(DirtBlock, self).__init__(tex_coord(0,1), tex_coord(0,1), tex_coord(0,1), 0.5)
     def id(self):
         return 3
 
 class SandBlock(Block):
     def __init__(self):
-        super(SandBlock, self).__init__(tex_coord(1,1), tex_coord(1,1), tex_coord(1,1))
+        super(SandBlock, self).__init__(tex_coord(1,1), tex_coord(1,1), tex_coord(1,1), 0.5)
     def id(self):
         return 12
 
 class BrickBlock(Block):
     def __init__(self):
-        super(BrickBlock, self).__init__(tex_coord(2,0), tex_coord(2,0), tex_coord(2,0))
+        super(BrickBlock, self).__init__(tex_coord(2,0), tex_coord(2,0), tex_coord(2,0), 1.5)
     def id(self):
         return 43
 
