@@ -1,6 +1,5 @@
 from pyglet.gl import *
 from pyglet.window import key
-from ctypes import c_float
 import math
 import random
 import time
@@ -451,7 +450,7 @@ class Window(pyglet.window.Window):
 
 def setup_fog():
     glEnable(GL_FOG)
-    glFogfv(GL_FOG_COLOR, (c_float * 4)(0.53, 0.81, 0.98, 1))
+    glFogfv(GL_FOG_COLOR, (GLfloat * 4)(0.53, 0.81, 0.98, 1))
     glHint(GL_FOG_HINT, GL_DONT_CARE)
     glFogi(GL_FOG_MODE, GL_LINEAR)
     glFogf(GL_FOG_DENSITY, 0.35)
