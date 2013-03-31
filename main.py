@@ -77,7 +77,7 @@ class Model(object):
             h = random.randint(1, 6)
             s = random.randint(4, 8)
             d = 1
-            t = random.choice([grass_block, sand_block, brick_block, dirt_block])
+            t = random.choice(BLOCKS)
             for y in xrange(c, c + h):
                 for x in xrange(a - s, a + s + 1):
                     for z in xrange(b - s, b + s + 1):
