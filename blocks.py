@@ -11,25 +11,42 @@ class Block(object):
         self.bottom = bottom
         self.side = side
 
-class GrassBlock(Block):
+class AirBlock(Block):
     def __init__(self):
-        super(GrassBlock, self).__init__(tex_coord(1,0), tex_coord(0,1), tex_coord(0,0))
-
-class SandBlock(Block):
-    def __init__(self):
-        super(SandBlock, self).__init__(tex_coord(1,1), tex_coord(1,1), tex_coord(1,1))
-
-class BrickBlock(Block):
-    def __init__(self):
-        super(BrickBlock, self).__init__(tex_coord(2,0), tex_coord(2,0), tex_coord(2,0))
+        # Air block has no texture
+        super(AirBlock, self).__init__(tex_coord(-1,-1), tex_coord(-1,-1), tex_coord(-1,-1))
+    def id(self):
+        return 0
 
 class StoneBlock(Block):
     def __init__(self):
         super(StoneBlock, self).__init__(tex_coord(2,1), tex_coord(2,1), tex_coord(2,1))
+    def id(self):
+        return 1
+
+class GrassBlock(Block):
+    def __init__(self):
+        super(GrassBlock, self).__init__(tex_coord(1,0), tex_coord(0,1), tex_coord(0,0))
+    def id(self):
+        return 2
 
 class DirtBlock(Block):
     def __init__(self):
         super(DirtBlock, self).__init__(tex_coord(0,1), tex_coord(0,1), tex_coord(0,1))
+    def id(self):
+        return 3
+
+class SandBlock(Block):
+    def __init__(self):
+        super(SandBlock, self).__init__(tex_coord(1,1), tex_coord(1,1), tex_coord(1,1))
+    def id(self):
+        return 12
+
+class BrickBlock(Block):
+    def __init__(self):
+        super(BrickBlock, self).__init__(tex_coord(2,0), tex_coord(2,0), tex_coord(2,0))
+    def id(self):
+        return 43
 
 def block_texture(block):
     result = []
@@ -38,6 +55,7 @@ def block_texture(block):
     result.extend(block.side * 4)
     return result
 
+air_block = AirBlock()
 grass_block = GrassBlock()
 sand_block = SandBlock()
 brick_block = BrickBlock()
