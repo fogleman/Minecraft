@@ -41,7 +41,7 @@ class Recipes(object):
 
 			# line length should not be greater than 3
 			if len(line) > 3:
-				# print('add_recipe(): line length should be <= 3!')
+				print('add_recipe(): line length should be <= 3!')
 				return
 
 			for c in line:
@@ -57,6 +57,7 @@ class Recipes(object):
 
 	def add_recipe(self, shape, ingre, output):
 		self.recipes.append(Recipe(self.parse_recipe(shape, ingre), output))
+		self.nr_recipes += 1
 
 	def craft(self, input_blocks):
 		id_list = []
@@ -68,8 +69,29 @@ class Recipes(object):
 			if r.ingre == id_list:
 				return r.output
 
+class SmeltingRecipe(object):
+	def __init__(self, ingre, output):
+		# what blocks are needed to craft this block/item
+		self.ingre = ingre
+		self.output = output.id()
+
+class SmeltingRecipes(object):
+	def __init__(self):
+		self.nr_recipes = 0
+		self.recipes = []
+
+	def add_recipe(self, ingre, output):
+		self.recipes.append(SmeltingRecipe(ingre, output))
+		self.nr_recipes += 1
+
+	def smelt(self, ingre):
+		for r in self.recipes:
+			if r.ingre == ingre:
+				return r.output
+
 
 recipes = Recipes()
+smelting = SmeltingRecipes()
 
 # a test: 
 # grass | grass
