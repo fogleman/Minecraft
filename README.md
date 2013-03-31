@@ -11,6 +11,6 @@ http://www.youtube.com/watch?v=kC3lwK631X8
     cd Minecraft
     python main.py
 
-On Mac OS X, you may have an issue with running Pyglet in 64-bit mode. Try this...
+Pyglet 1.1.4 can't run in 64-bit mode. Using Pyglet 1.2 fixes this problem.
 
-    arch -i386 python main.py
+    pip install https://pyglet.googlecode.com/files/pyglet-1.2alpha1.tar.gz 
