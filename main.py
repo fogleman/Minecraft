@@ -1,6 +1,5 @@
 from pyglet.gl import *
 from pyglet.window import key
-# from ctypes import c_float
 import math
 import random
 import time
@@ -9,7 +8,9 @@ from blocks import *
 
 SECTOR_SIZE = 16
 DRAW_DISTANCE = 60.0
-blockType = 1
+FOV = 65.0 #TODO add menu option to change FOV
+NEAR_CLIP_DISTANCE = 0.1 #TODO make min and max clip distance dynamic
+FAR_CLIP_DISTANCE = 200.0 # Maximum render distance, ignoring effects of sector_size and fog
 
 def cube_vertices(x, y, z, n):
     return [
@@ -221,8 +222,8 @@ class Model(object):
 
 class Window(pyglet.window.Window):
     def __init__(self, *args, **kwargs):
+        self.show_gui = kwargs.pop('show_gui', True)
         super(Window, self).__init__(*args, **kwargs)
-        self.show_gui = False
         self.exclusive = False
         self.flying = False
         self.strafe = [0, 0]
@@ -276,6 +277,7 @@ class Window(pyglet.window.Window):
             dx = 0.0
             dz = 0.0
         return (dx, dy, dz)
+
     def update_preview(self):
         block_side = 64
         x, y = int(BLOCKS[self.selected_block].side[0] * 4), int(BLOCKS[self.selected_block].side[1] * 4)
@@ -336,7 +338,9 @@ class Window(pyglet.window.Window):
                         self.dy = 0
                     break
         return tuple(p)
+
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
+        return
         if self.exclusive and scroll_y != 0:
             self.selected_block += scroll_y
             if self.selected_block >= len(BLOCKS):
@@ -345,6 +349,7 @@ class Window(pyglet.window.Window):
                 self.selected_block = len(BLOCKS) - 1
             if self.show_gui:
                 self.update_preview()
+
     def on_mouse_press(self, x, y, button, modifiers):
         if self.exclusive:
             vector = self.get_sight_vector()
@@ -352,13 +357,14 @@ class Window(pyglet.window.Window):
             if button == pyglet.window.mouse.LEFT:
                 if block:
                     hit_block = self.model.world[block]
-                    if hit_block != bed_block: # was stone_block
+                    if hit_block != bed_block:
                         self.model.remove_block(block)
             else:
                 if previous:
                     self.model.add_block(previous, self.block)
         else:
             self.set_exclusive_mouse(True)
+
     def on_mouse_motion(self, x, y, dx, dy):
         if self.exclusive:
             m = 0.15
@@ -379,37 +385,29 @@ class Window(pyglet.window.Window):
             if self.flying:
                 self.dy = 0.045 # jump speed
             elif self.dy == 0:
-                 self.dy = 0.015 # jump speed
+                self.dy = 0.015 # jump speed
         elif symbol == key.LSHIFT or symbol == key.RSHIFT:
             if self.flying:
                 self.dy = -0.045 # inversed jump speed
-        elif symbol in self.num_keys:
-            self.block = self.inventory[(symbol - self.num_keys[0]) % len(self.inventory)]
         elif symbol == key.ESCAPE:
             self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
             self.flying = not self.flying
-        elif synbol == key.B:
+        elif symbol == key.B:
             self.show_gui = not self.show_gui
-        elif symbol == key._1:
-            global blockType
-            blockType = 1
-        elif symbol == key._2:
-            global blockType
-            blockType = 2
-        elif symbol == key._3:
-            global blockType
-            blockType = 3
-        elif symbol == key._4:
-            global blockType
-            blockType = 4
-        elif symbol == key._5:
-            global blockType
-            blockType = 5
-        elif symbol == key._6:
-            global blockType
-            blockType = 6
-
+        elif symbol in self.num_keys:
+            self.block = self.inventory[(symbol - self.num_keys[0]) % len(self.inventory)]
+            self.selected_block = self.selected_block - 48
+           # print self.num_keys[0]
+           # print self.block
+           # print self.selected_block - 48
+            block_side = 64
+            print self.selected_block
+            x = int(BLOCKS[self.selected_block-1].side[0] * 4)
+            y = int(BLOCKS[self.selected_block-1].side[1] * 4)
+            block_icon = self.model.group.texture.get_region(x * block_side, y * block_side, block_side, block_side)
+            width, height = self.get_size()
+            self.block_preview = pyglet.sprite.Sprite(block_icon, x=width-(block_side + 30), y=30)
 
     def on_key_release(self, symbol, modifiers):
         if symbol == key.W:
@@ -448,7 +446,8 @@ class Window(pyglet.window.Window):
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        gluPerspective(65.0, width / float(height), 0.1, DRAW_DISTANCE)
+        #gluPerspective(65.0, width / float(height), 0.1, DRAW_DISTANCE)
+        gluPerspective(FOV, width / float(height), NEAR_CLIP_DISTANCE, FAR_CLIP_DISTANCE)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         x, y = self.rotation
@@ -463,7 +462,9 @@ class Window(pyglet.window.Window):
         self.model.batch.draw()
         self.draw_focused_block()
         self.set_2d()
-        self.draw_label()
+        if self.show_gui:
+            self.draw_label()
+            self.block_preview.draw()
         self.draw_reticle()
     def draw_focused_block(self):
         vector = self.get_sight_vector()
@@ -476,12 +477,11 @@ class Window(pyglet.window.Window):
             pyglet.graphics.draw(24, GL_QUADS, ('v3f/static', vertex_data))
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
     def draw_label(self):
-        if self.show_gui:
-            x, y, z = self.position
-            self.label.text = '%02d (%.2f, %.2f, %.2f) %d / %d' % (
+        x, y, z = self.position
+        self.label.text = '%02d (%.2f, %.2f, %.2f) %d / %d' % (
             pyglet.clock.get_fps(), x, y, z,
             len(self.model._shown), len(self.model.world))
-            self.label.draw()
+        self.label.draw()
     def draw_reticle(self):
         glColor3d(0, 0, 0)
         self.reticle.draw(GL_LINES)
@@ -492,23 +492,28 @@ def setup_fog():
     glHint(GL_FOG_HINT, GL_DONT_CARE)
     glFogi(GL_FOG_MODE, GL_LINEAR)
     glFogf(GL_FOG_DENSITY, 0.35)
-    glFogf(GL_FOG_START, 20.0)
-    glFogf(GL_FOG_END, DRAW_DISTANCE)
-    #glFogf(GL_FOG_END, 60.0)
+#    glFogf(GL_FOG_START, 20.0)
+#    glFogf(GL_FOG_END, DRAW_DISTANCE)
+    glFogf(GL_FOG_START, 60.0)
+    glFogf(GL_FOG_END, 80)
 
 def setup():
     glClearColor(0.5, 0.69, 1.0, 1)
     glEnable(GL_CULL_FACE)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-    setup_fog()
 
 def main(options):
+
     if options.draw_distance == 'medium':
         DRAW_DISTANCE *= 1.5
     elif options.draw_distance == 'long':
         DRAW_DISTANCE *= 2.0
-    window = Window(width=options.width, height=options.height, caption='pyCraftr', resizable=True)
+    try:
+        config = Config(sample_buffers=1, samples=0, depth_size=8) #TODO Break anti-aliasing/multisampling into an explicit menu option
+        window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=config)
+    except pyglet.window.NoSuchConfigException:
+        window = Window( width=options.width, height=options.height, caption='pyCraftr_No-Conf', resizable=True)
     window.set_exclusive_mouse(True)
     setup()
     if not options.hide_fog:
@@ -517,10 +522,10 @@ def main(options):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-width", type=int, default=800)
-    parser.add_argument("-height", type=int, default=600)
+    parser.add_argument("-width", type=int, default=850)
+    parser.add_argument("-height", type=int, default=480)
     parser.add_argument("--hide-fog", action="store_true", default=False)
-#    parser.add_argument("--show-gui", action="store_true", default=True)
+    parser.add_argument("--show-gui", action="store_true", default=True)
     parser.add_argument("-draw-distance", choices=['short', 'medium', 'long'], default='short')
     options = parser.parse_args()
     main(options)
