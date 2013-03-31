@@ -221,18 +221,21 @@ class Model(object):
 
 class Window(pyglet.window.Window):
     def __init__(self, *args, **kwargs):
-        self.show_gui = False
         super(Window, self).__init__(*args, **kwargs)
+        self.show_gui = False
         self.exclusive = False
         self.flying = False
         self.strafe = [0, 0]
         self.position = (0, 0, 0)
-        self.rotation = (0, 0)
+        self.rotation = (-20, 0)
         self.sector = None
         self.reticle = None
         self.block_preview = None
         self.selected_block = 0
         self.dy = 0
+        self.inventory = BLOCKS
+        self.block = self.inventory[0]
+        self.num_keys = [key._0, key._1, key._2, key._3, key._4, key._5, key._6, key._7, key._8, key._9]
         self.model = Model()
         self.label = pyglet.text.Label('', font_name='Arial', font_size=8,
             x=10, y=self.height - 10, anchor_x='left', anchor_y='top',
@@ -303,6 +306,9 @@ class Window(pyglet.window.Window):
             self.dy -= dt * 0.022 # g force, should be = jump_speed * 0.5 / max_jump_height
             self.dy = max(self.dy, -0.5) # terminal velocity
             dy += self.dy
+        else:
+            self.dy = max(self.dy, -0.5) # terminal velocity
+            dy += self.dy
         # collisions
         x, y, z = self.position
         x, y, z = self.collide((x + dx, y + dy, z + dz), 2)
@@ -350,26 +356,7 @@ class Window(pyglet.window.Window):
                         self.model.remove_block(block)
             else:
                 if previous:
-                    global blockType
-                    if blockType == 1:
-                        self.model.add_block(previous, grass_block)
-                        self.block_preview = blockType
-                    elif blockType == 2:
-                        self.model.add_block(previous, sand_block)
-                        self.block_preview = blockType
-                    elif blockType == 3:
-                        self.model.add_block(previous, brick_block)
-                        self.block_preview = blockType
-                    elif blockType == 4:
-                        self.model.add_block(previous, stone_block)
-                        self.block_preview = blockType
-                    elif blockType == 5:
-                        self.model.add_block(previous, dirt_block)
-                        self.block_preview = blockType
-                    elif blockType == 6:
-                        self.model.add_block(previous, glass_block)
-                        self.block_preview = blockType
-
+                    self.model.add_block(previous, self.block)
         else:
             self.set_exclusive_mouse(True)
     def on_mouse_motion(self, x, y, dx, dy):
@@ -389,13 +376,20 @@ class Window(pyglet.window.Window):
         elif symbol == key.D:
             self.strafe[1] += 1
         elif symbol == key.SPACE:
-            if self.dy == 0:
-                self.dy = 0.015 # jump speed
+            if self.flying:
+                self.dy = 0.045 # jump speed
+            elif self.dy == 0:
+                 self.dy = 0.015 # jump speed
+        elif symbol == key.LSHIFT or symbol == key.RSHIFT:
+            if self.flying:
+                self.dy = -0.045 # inversed jump speed
+        elif symbol in self.num_keys:
+            self.block = self.inventory[(symbol - self.num_keys[0]) % len(self.inventory)]
         elif symbol == key.ESCAPE:
             self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
             self.flying = not self.flying
-        elif synbol == key.Q:
+        elif synbol == key.B:
             self.show_gui = not self.show_gui
         elif symbol == key._1:
             global blockType
@@ -426,6 +420,8 @@ class Window(pyglet.window.Window):
             self.strafe[1] += 1
         elif symbol == key.D:
             self.strafe[1] -= 1
+        elif (symbol == key.SPACE or symbol == key.LSHIFT or symbol == key.RSHIFT) and self.flying:
+            self.dy = 0
     def on_resize(self, width, height):
         # label
         self.label.y = height - 10
@@ -480,12 +476,12 @@ class Window(pyglet.window.Window):
             pyglet.graphics.draw(24, GL_QUADS, ('v3f/static', vertex_data))
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
     def draw_label(self):
-        x, y, z = self.position
-        global blockType
-        self.label.text = '%02d (%.2f, %.2f, %.2f) %d / %d' % (
+        if self.show_gui:
+            x, y, z = self.position
+            self.label.text = '%02d (%.2f, %.2f, %.2f) %d / %d' % (
             pyglet.clock.get_fps(), x, y, z,
             len(self.model._shown), len(self.model.world))
-        self.label.draw()
+            self.label.draw()
     def draw_reticle(self):
         glColor3d(0, 0, 0)
         self.reticle.draw(GL_LINES)
