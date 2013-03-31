@@ -1,10 +1,15 @@
 from pyglet.gl import *
 from pyglet.window import key
+# from ctypes import c_float
 import math
 import random
 import time
+import argparse
+from blocks import *
 
 SECTOR_SIZE = 16
+DRAW_DISTANCE = 60.0
+blockType = 1
 
 def cube_vertices(x, y, z, n):
     return [
@@ -15,27 +20,6 @@ def cube_vertices(x, y, z, n):
         x-n,y-n,z+n, x+n,y-n,z+n, x+n,y+n,z+n, x-n,y+n,z+n, # front
         x+n,y-n,z-n, x-n,y-n,z-n, x-n,y+n,z-n, x+n,y+n,z-n, # back
     ]
-
-def tex_coord(x, y, n=4):
-    m = 1.0 / n
-    dx = x * m
-    dy = y * m
-    return dx, dy, dx + m, dy, dx + m, dy + m, dx, dy + m
-
-def tex_coords(top, bottom, side):
-    top = tex_coord(*top)
-    bottom = tex_coord(*bottom)
-    side = tex_coord(*side)
-    result = []
-    result.extend(top)
-    result.extend(bottom)
-    result.extend(side * 4)
-    return result
-
-GRASS = tex_coords((1, 0), (0, 1), (0, 0))
-SAND = tex_coords((1, 1), (1, 1), (1, 1))
-BRICK = tex_coords((2, 0), (2, 0), (2, 0))
-STONE = tex_coords((2, 1), (2, 1), (2, 1))
 
 FACES = [
     ( 0, 1, 0),
@@ -82,11 +66,12 @@ class Model(object):
         y = 0
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
-                self.init_block((x, y - 2, z), GRASS)
-                self.init_block((x, y - 3, z), STONE)
+                self.init_block((x, y - 2, z), grass_block)
+                self.init_block((x, y - 3, z), dirt_block)
+                self.init_block((x, y - 4, z), bed_block) # was stone_block
                 if x in (-n, n) or z in (-n, n):
-                    for dy in xrange(-2, 3):
-                        self.init_block((x, y + dy, z), STONE)
+                    for dy in xrange(-3, 10): #was -2 ,6
+                        self.init_block((x, y + dy, z), stone_block)
         o = n - 10
         for _ in xrange(120):
             a = random.randint(-o, o)
@@ -95,7 +80,7 @@ class Model(object):
             h = random.randint(1, 6)
             s = random.randint(4, 8)
             d = 1
-            t = random.choice([GRASS, SAND, BRICK])
+            t = random.choice([grass_block, sand_block, dirt_block]) # removed brick_block
             for y in xrange(c, c + h):
                 for x in xrange(a - s, a + s + 1):
                     for z in xrange(b - s, b + s + 1):
@@ -123,12 +108,12 @@ class Model(object):
             if (x + dx, y + dy, z + dz) not in self.world:
                 return True
         return False
-    def init_block(self, position, texture):
-        self.add_block(position, texture, False)
-    def add_block(self, position, texture, sync=True):
+    def init_block(self, position, block):
+        self.add_block(position, block, False)
+    def add_block(self, position, block, sync=True):
         if position in self.world:
             self.remove_block(position, sync)
-        self.world[position] = texture
+        self.world[position] = block
         self.sectors.setdefault(sectorize(position), []).append(position)
         if sync:
             if self.exposed(position):
@@ -158,19 +143,19 @@ class Model(object):
             if position not in self.shown and self.exposed(position):
                 self.show_block(position)
     def show_block(self, position, immediate=True):
-        texture = self.world[position]
-        self.shown[position] = texture
+        block = self.world[position]
+        self.shown[position] = block
         if immediate:
-            self._show_block(position, texture)
+            self._show_block(position, block)
         else:
-            self.enqueue(self._show_block, position, texture)
-    def _show_block(self, position, texture):
+            self.enqueue(self._show_block, position, block)
+    def _show_block(self, position, block):
         x, y, z = position
         # only show exposed faces
         index = 0
         count = 24
         vertex_data = cube_vertices(x, y, z, 0.5)
-        texture_data = list(texture)
+        texture_data = block_texture(block)
         for dx, dy, dz in []:#FACES:
             if (x + dx, y + dy, z + dz) in self.world:
                 count -= 4
@@ -181,7 +166,7 @@ class Model(object):
             else:
                 index += 1
         # create vertex list
-        self._shown[position] = self.batch.add(count, GL_QUADS, self.group, 
+        self._shown[position] = self.batch.add(count, GL_QUADS, self.group,
             ('v3f/static', vertex_data),
             ('t2f/static', texture_data))
     def hide_block(self, position, immediate=True):
@@ -236,6 +221,7 @@ class Model(object):
 
 class Window(pyglet.window.Window):
     def __init__(self, *args, **kwargs):
+        self.show_gui = False
         super(Window, self).__init__(*args, **kwargs)
         self.exclusive = False
         self.flying = False
@@ -244,11 +230,15 @@ class Window(pyglet.window.Window):
         self.rotation = (0, 0)
         self.sector = None
         self.reticle = None
+        self.block_preview = None
+        self.selected_block = 0
         self.dy = 0
         self.model = Model()
-        self.label = pyglet.text.Label('', font_name='Arial', font_size=18, 
-            x=10, y=self.height - 10, anchor_x='left', anchor_y='top', 
+        self.label = pyglet.text.Label('', font_name='Arial', font_size=8,
+            x=10, y=self.height - 10, anchor_x='left', anchor_y='top',
             color=(0, 0, 0, 255))
+        if self.show_gui:
+            self.update_preview()
         pyglet.clock.schedule_interval(self.update, 1.0 / 60)
     def set_exclusive_mouse(self, exclusive):
         super(Window, self).set_exclusive_mouse(exclusive)
@@ -283,6 +273,13 @@ class Window(pyglet.window.Window):
             dx = 0.0
             dz = 0.0
         return (dx, dy, dz)
+    def update_preview(self):
+        block_side = 64
+        x, y = int(BLOCKS[self.selected_block].side[0] * 4), int(BLOCKS[self.selected_block].side[1] * 4)
+        block_icon = self.model.group.texture.get_region(x * block_side, y * block_side, block_side, block_side)
+        width, height = self.get_size()
+        self.block_preview = pyglet.sprite.Sprite(block_icon, x=width-(block_side + 30), y=30)
+
     def update(self, dt):
         self.model.process_queue()
         sector = sectorize(self.position)
@@ -303,7 +300,7 @@ class Window(pyglet.window.Window):
         dx, dy, dz = dx * d, dy * d, dz * d
         # gravity
         if not self.flying:
-            self.dy -= dt * 0.044 # g force, should be = jump_speed * 0.5 / max_jump_height
+            self.dy -= dt * 0.022 # g force, should be = jump_speed * 0.5 / max_jump_height
             self.dy = max(self.dy, -0.5) # terminal velocity
             dy += self.dy
         # collisions
@@ -334,23 +331,45 @@ class Window(pyglet.window.Window):
                     break
         return tuple(p)
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
-        return
-        x, y, z = self.position
-        dx, dy, dz = self.get_sight_vector()
-        d = scroll_y * 10
-        self.position = (x + dx * d, y + dy * d, z + dz * d)
+        if self.exclusive and scroll_y != 0:
+            self.selected_block += scroll_y
+            if self.selected_block >= len(BLOCKS):
+                self.selected_block = 0
+            elif self.selected_block < 0:
+                self.selected_block = len(BLOCKS) - 1
+            if self.show_gui:
+                self.update_preview()
     def on_mouse_press(self, x, y, button, modifiers):
         if self.exclusive:
             vector = self.get_sight_vector()
             block, previous = self.model.hit_test(self.position, vector)
             if button == pyglet.window.mouse.LEFT:
                 if block:
-                    texture = self.model.world[block]
-                    if texture != STONE:
+                    hit_block = self.model.world[block]
+                    if hit_block != bed_block: # was stone_block
                         self.model.remove_block(block)
             else:
                 if previous:
-                    self.model.add_block(previous, BRICK)
+                    global blockType
+                    if blockType == 1:
+                        self.model.add_block(previous, grass_block)
+                        self.block_preview = blockType
+                    elif blockType == 2:
+                        self.model.add_block(previous, sand_block)
+                        self.block_preview = blockType
+                    elif blockType == 3:
+                        self.model.add_block(previous, brick_block)
+                        self.block_preview = blockType
+                    elif blockType == 4:
+                        self.model.add_block(previous, stone_block)
+                        self.block_preview = blockType
+                    elif blockType == 5:
+                        self.model.add_block(previous, dirt_block)
+                        self.block_preview = blockType
+                    elif blockType == 6:
+                        self.model.add_block(previous, glass_block)
+                        self.block_preview = blockType
+
         else:
             self.set_exclusive_mouse(True)
     def on_mouse_motion(self, x, y, dx, dy):
@@ -376,6 +395,28 @@ class Window(pyglet.window.Window):
             self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
             self.flying = not self.flying
+        elif synbol == key.Q:
+            self.show_gui = not self.show_gui
+        elif symbol == key._1:
+            global blockType
+            blockType = 1
+        elif symbol == key._2:
+            global blockType
+            blockType = 2
+        elif symbol == key._3:
+            global blockType
+            blockType = 3
+        elif symbol == key._4:
+            global blockType
+            blockType = 4
+        elif symbol == key._5:
+            global blockType
+            blockType = 5
+        elif symbol == key._6:
+            global blockType
+            blockType = 6
+
+
     def on_key_release(self, symbol, modifiers):
         if symbol == key.W:
             self.strafe[0] += 1
@@ -411,7 +452,7 @@ class Window(pyglet.window.Window):
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        gluPerspective(65.0, width / float(height), 0.1, 60.0)
+        gluPerspective(65.0, width / float(height), 0.1, DRAW_DISTANCE)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         x, y = self.rotation
@@ -440,8 +481,9 @@ class Window(pyglet.window.Window):
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
     def draw_label(self):
         x, y, z = self.position
+        global blockType
         self.label.text = '%02d (%.2f, %.2f, %.2f) %d / %d' % (
-            pyglet.clock.get_fps(), x, y, z, 
+            pyglet.clock.get_fps(), x, y, z,
             len(self.model._shown), len(self.model.world))
         self.label.draw()
     def draw_reticle(self):
@@ -455,7 +497,8 @@ def setup_fog():
     glFogi(GL_FOG_MODE, GL_LINEAR)
     glFogf(GL_FOG_DENSITY, 0.35)
     glFogf(GL_FOG_START, 20.0)
-    glFogf(GL_FOG_END, 60.0)
+    glFogf(GL_FOG_END, DRAW_DISTANCE)
+    #glFogf(GL_FOG_END, 60.0)
 
 def setup():
     glClearColor(0.5, 0.69, 1.0, 1)
@@ -464,11 +507,24 @@ def setup():
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
     setup_fog()
 
-def main():
-    window = Window(width=800, height=600, caption='Pyglet', resizable=True)
+def main(options):
+    if options.draw_distance == 'medium':
+        DRAW_DISTANCE *= 1.5
+    elif options.draw_distance == 'long':
+        DRAW_DISTANCE *= 2.0
+    window = Window(width=options.width, height=options.height, caption='pyCraftr', resizable=True)
     window.set_exclusive_mouse(True)
     setup()
+    if not options.hide_fog:
+        setup_fog()
     pyglet.app.run()
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-width", type=int, default=800)
+    parser.add_argument("-height", type=int, default=600)
+    parser.add_argument("--hide-fog", action="store_true", default=False)
+#    parser.add_argument("--show-gui", action="store_true", default=True)
+    parser.add_argument("-draw-distance", choices=['short', 'medium', 'long'], default='short')
+    options = parser.parse_args()
+    main(options)
