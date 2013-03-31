@@ -464,9 +464,8 @@ def setup():
     glEnable(GL_CULL_FACE)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-    setup_fog()
 
-def main():
+def main(options):
     window = Window(width=options.width, height=options.height, caption='Pyglet', resizable=True)
     window.set_exclusive_mouse(True)
     setup()
@@ -485,4 +484,4 @@ if __name__ == '__main__':
         DRAW_DISTANCE *= 1.5
     elif options.draw_distance == 'long':
         DRAW_DISTANCE *= 2.0
-    main()
+    main(options)
