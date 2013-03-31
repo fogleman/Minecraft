@@ -1,4 +1,5 @@
 from blocks import *
+from items import *
 
 class Recipe(object):
 	# ingre is a list that contains the ids of the ingredients
