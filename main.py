@@ -241,7 +241,7 @@ class Window(pyglet.window.Window):
         self.flying = False
         self.strafe = [0, 0]
         self.position = (0, 0, 0)
-        self.rotation = (0, 0)
+        self.rotation = (-20, 0)
         self.sector = None
         self.reticle = None
         self.dy = 0
@@ -304,6 +304,9 @@ class Window(pyglet.window.Window):
         # gravity
         if not self.flying:
             self.dy -= dt * 0.044 # g force, should be = jump_speed * 0.5 / max_jump_height
+            self.dy = max(self.dy, -0.5) # terminal velocity
+            dy += self.dy
+        else:
             self.dy = max(self.dy, -0.5) # terminal velocity
             dy += self.dy
         # collisions
@@ -370,8 +373,13 @@ class Window(pyglet.window.Window):
         elif symbol == key.D:
             self.strafe[1] += 1
         elif symbol == key.SPACE:
-            if self.dy == 0:
+            if self.flying:
+                self.dy = 0.045 # jump speed
+            elif self.dy == 0:
                 self.dy = 0.015 # jump speed
+        elif symbol == key.LSHIFT or symbol == key.RSHIFT:
+            if self.flying:
+                self.dy = -0.045 # inversed jump speed
         elif symbol == key.ESCAPE:
             self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
@@ -385,6 +393,8 @@ class Window(pyglet.window.Window):
             self.strafe[1] += 1
         elif symbol == key.D:
             self.strafe[1] -= 1
+        elif (symbol == key.SPACE or symbol == key.LSHIFT or symbol == key.RSHIFT) and self.flying:
+            self.dy = 0
     def on_resize(self, width, height):
         # label
         self.label.y = height - 10
