@@ -61,3 +61,5 @@ sand_block = SandBlock()
 brick_block = BrickBlock()
 stone_block = StoneBlock() 
 dirt_block = DirtBlock()
+
+BLOCKS = [grass_block, sand_block, brick_block, dirt_block]

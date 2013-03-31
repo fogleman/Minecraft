@@ -218,6 +218,7 @@ class Model(object):
 
 class Window(pyglet.window.Window):
     def __init__(self, *args, **kwargs):
+        self.show_gui = kwargs.pop('show_gui', False)
         super(Window, self).__init__(*args, **kwargs)
         self.exclusive = False
         self.flying = False
@@ -226,11 +227,15 @@ class Window(pyglet.window.Window):
         self.rotation = (0, 0)
         self.sector = None
         self.reticle = None
+        self.block_preview = None
+        self.selected_block = 0
         self.dy = 0
         self.model = Model()
         self.label = pyglet.text.Label('', font_name='Arial', font_size=18, 
             x=10, y=self.height - 10, anchor_x='left', anchor_y='top', 
             color=(0, 0, 0, 255))
+        if self.show_gui:
+            self.update_preview()
         pyglet.clock.schedule_interval(self.update, 1.0 / 60)
     def set_exclusive_mouse(self, exclusive):
         super(Window, self).set_exclusive_mouse(exclusive)
@@ -265,6 +270,14 @@ class Window(pyglet.window.Window):
             dx = 0.0
             dz = 0.0
         return (dx, dy, dz)
+        
+    def update_preview(self):
+        block_side = 64
+        x, y = int(BLOCKS[self.selected_block].side[0] * 4), int(BLOCKS[self.selected_block].side[1] * 4)
+        block_icon = self.model.group.texture.get_region(x * block_side, y * block_side, block_side, block_side)
+        width, height = self.get_size()
+        self.block_preview = pyglet.sprite.Sprite(block_icon, x=width-(block_side + 30), y=30)
+        
     def update(self, dt):
         self.model.process_queue()
         sector = sectorize(self.position)
@@ -315,12 +328,17 @@ class Window(pyglet.window.Window):
                         self.dy = 0
                     break
         return tuple(p)
+        
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
-        return
-        x, y, z = self.position
-        dx, dy, dz = self.get_sight_vector()
-        d = scroll_y * 10
-        self.position = (x + dx * d, y + dy * d, z + dz * d)
+        if self.exclusive and scroll_y != 0:
+            self.selected_block += scroll_y
+            if self.selected_block >= len(BLOCKS):
+                self.selected_block = 0
+            elif self.selected_block < 0:
+                self.selected_block = len(BLOCKS) - 1
+            if self.show_gui:
+                self.update_preview()
+                
     def on_mouse_press(self, x, y, button, modifiers):
         if self.exclusive:
             vector = self.get_sight_vector()
@@ -332,9 +350,10 @@ class Window(pyglet.window.Window):
                         self.model.remove_block(block)
             else:
                 if previous:
-                    self.model.add_block(previous, brick_block)
+                    self.model.add_block(previous, BLOCKS[self.selected_block])
         else:
             self.set_exclusive_mouse(True)
+            
     def on_mouse_motion(self, x, y, dx, dy):
         if self.exclusive:
             m = 0.15
@@ -408,7 +427,9 @@ class Window(pyglet.window.Window):
         self.model.batch.draw()
         self.draw_focused_block()
         self.set_2d()
-        self.draw_label()
+        if self.show_gui:
+            self.draw_label()
+            self.block_preview.draw()
         self.draw_reticle()
     def draw_focused_block(self):
         vector = self.get_sight_vector()
@@ -446,7 +467,12 @@ def setup():
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
 def main(options):
-    window = Window(width=options.width, height=options.height, caption='Pyglet', resizable=True)
+    if options.draw_distance == 'medium':
+        DRAW_DISTANCE *= 1.5
+    elif options.draw_distance == 'long':
+        DRAW_DISTANCE *= 2.0
+    window = Window(show_gui=options.show_gui, width=options.width, height=options.height,
+        caption='Pyglet', resizable=True)
     window.set_exclusive_mouse(True)
     setup()
     if not options.hide_fog:
@@ -458,10 +484,7 @@ if __name__ == '__main__':
     parser.add_argument("-width", type=int, default=800)
     parser.add_argument("-height", type=int, default=600)
     parser.add_argument("--hide-fog", action="store_true", default=False)
+    parser.add_argument("--show-gui", action="store_true", default=False)
     parser.add_argument("-draw-distance", choices=['short', 'medium', 'long'], default='short')
     options = parser.parse_args()
-    if options.draw_distance == 'medium':
-        DRAW_DISTANCE *= 1.5
-    elif options.draw_distance == 'long':
-        DRAW_DISTANCE *= 2.0
     main(options)
