@@ -224,7 +224,7 @@ class Window(pyglet.window.Window):
         self.flying = False
         self.strafe = [0, 0]
         self.position = (0, 0, 0)
-        self.rotation = (0, 0)
+        self.rotation = (-20, 0)
         self.sector = None
         self.reticle = None
         self.block_preview = None
@@ -301,6 +301,9 @@ class Window(pyglet.window.Window):
             self.dy -= dt * 0.044 # g force, should be = jump_speed * 0.5 / max_jump_height
             self.dy = max(self.dy, -0.5) # terminal velocity
             dy += self.dy
+        else:
+            self.dy = max(self.dy, -0.5) # terminal velocity
+            dy += self.dy
         # collisions
         x, y, z = self.position
         x, y, z = self.collide((x + dx, y + dy, z + dz), 2)
@@ -371,8 +374,13 @@ class Window(pyglet.window.Window):
         elif symbol == key.D:
             self.strafe[1] += 1
         elif symbol == key.SPACE:
-            if self.dy == 0:
+            if self.flying:
+                self.dy = 0.045 # jump speed
+            elif self.dy == 0:
                 self.dy = 0.015 # jump speed
+        elif symbol == key.LSHIFT or symbol == key.RSHIFT:
+            if self.flying:
+                self.dy = -0.045 # inversed jump speed
         elif symbol == key.ESCAPE:
             self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
@@ -386,6 +394,8 @@ class Window(pyglet.window.Window):
             self.strafe[1] += 1
         elif symbol == key.D:
             self.strafe[1] -= 1
+        elif (symbol == key.SPACE or symbol == key.LSHIFT or symbol == key.RSHIFT) and self.flying:
+            self.dy = 0
     def on_resize(self, width, height):
         # label
         self.label.y = height - 10
@@ -453,7 +463,7 @@ class Window(pyglet.window.Window):
 
 def setup_fog():
     glEnable(GL_FOG)
-    glFogfv(GL_FOG_COLOR, (GLfloat * 4)(0.53, 0.81, 0.98, 1))
+    glFogfv(GL_FOG_COLOR, (GLfloat * 4)(0.5, 0.69, 1.0, 1))
     glHint(GL_FOG_HINT, GL_DONT_CARE)
     glFogi(GL_FOG_MODE, GL_LINEAR)
     glFogf(GL_FOG_DENSITY, 0.35)
@@ -461,7 +471,7 @@ def setup_fog():
     glFogf(GL_FOG_END, DRAW_DISTANCE)
 
 def setup():
-    glClearColor(0.53, 0.81, 0.98, 1)
+    glClearColor(0.5, 0.69, 1.0, 1)
     glEnable(GL_CULL_FACE)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
