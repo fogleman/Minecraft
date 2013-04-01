@@ -55,7 +55,7 @@ class ItemSelector(object):
         blocks_image = pyglet.image.load('texture.png')
         blocks_grid = pyglet.image.ImageGrid(blocks_image, 4, 4)
         foreground = pyglet.graphics.OrderedGroup(1)
-        self.current_index = 0
+        self.current_index = 4
         self.max_items = 9
         self.slots = [
             pyglet.sprite.Sprite(blocks_grid[1], batch=self.batch, group=foreground),
@@ -140,7 +140,7 @@ class Model(object):
                             continue
                         self.init_block((x, y, z), t)
                 s -= d
-    def hit_test(self, position, vector, max_distance=8):
+    def hit_test(self, position, vector, max_distance=4):
         m = 8
         x, y, z = position
         dx, dy, dz = vector
