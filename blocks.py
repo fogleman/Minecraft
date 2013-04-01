@@ -4,6 +4,8 @@ def tex_coord(x, y, n=4):
     dy = y * m
     return dx, dy, dx + m, dy, dx + m, dy + m, dx, dy + m
 
+BLOCKS_DIR = {}
+
 # Blocks
 class Block(object):
     def __init__(self, top, bottom, side, hardness):
@@ -11,6 +13,11 @@ class Block(object):
         self.bottom = bottom
         self.side = side
         self.hardness = hardness
+        BLOCKS_DIR[self.id()] = self
+    def drop(self):
+        return self.id()
+    def icon_index(self):
+        return -1
 
 class AirBlock(Block):
     def __init__(self):
@@ -30,24 +37,34 @@ class GrassBlock(Block):
         super(GrassBlock, self).__init__(tex_coord(1,0), tex_coord(0,1), tex_coord(0,0), 0.6)
     def id(self):
         return 2
+    def drop(self):
+        return DirtBlock().id()
+    def icon_index(self):
+        return 1
 
 class DirtBlock(Block):
     def __init__(self):
         super(DirtBlock, self).__init__(tex_coord(0,1), tex_coord(0,1), tex_coord(0,1), 0.5)
     def id(self):
         return 3
+    def icon_index(self):
+        return 4
 
 class SandBlock(Block):
     def __init__(self):
         super(SandBlock, self).__init__(tex_coord(1,1), tex_coord(1,1), tex_coord(1,1), 0.5)
     def id(self):
         return 12
+    def icon_index(self):
+        return 5
 
 class BrickBlock(Block):
     def __init__(self):
         super(BrickBlock, self).__init__(tex_coord(2,0), tex_coord(2,0), tex_coord(2,0), 1.5)
     def id(self):
         return 43
+    def icon_index(self):
+        return 2
 
 def block_texture(block):
     result = []

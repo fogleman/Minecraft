@@ -5,6 +5,7 @@ import random
 import time
 import argparse
 from blocks import *
+from inventory import *
 
 SECTOR_SIZE = 16
 DRAW_DISTANCE = 60.0
@@ -49,56 +50,60 @@ def sectorize(position):
     return (x, 0, z)
 
 class ItemSelector(object):
-    def __init__(self, width, height):
+    def __init__(self, width, height, inventory):
+        self.inventory = inventory
         self.batch = pyglet.graphics.Batch()
         image = pyglet.image.load('slots.png')
         blocks_image = pyglet.image.load('texture.png')
-        blocks_grid = pyglet.image.ImageGrid(blocks_image, 4, 4)
-        foreground = pyglet.graphics.OrderedGroup(1)
-        self.current_index = 4
+        self.blocks_grid = pyglet.image.ImageGrid(blocks_image, 4, 4)
+        self.foreground = pyglet.graphics.OrderedGroup(1)
         self.max_items = 9
-        self.slots = [
-            pyglet.sprite.Sprite(blocks_grid[1], batch=self.batch, group=foreground),
-            pyglet.sprite.Sprite(blocks_grid[5], batch=self.batch, group=foreground),
-            pyglet.sprite.Sprite(blocks_grid[2], batch=self.batch, group=foreground),
-            pyglet.sprite.Sprite(blocks_grid[4], batch=self.batch, group=foreground)
-        ]
-        self.frame = pyglet.sprite.Sprite(image.get_region(0, 38, 318, 38), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
-        self.active = pyglet.sprite.Sprite(image.get_region(0, 0, 38, 38), batch=self.batch, group=pyglet.graphics.OrderedGroup(2))
+        self.current_index = 4
+        frame_size = 38
+        self.frame = pyglet.sprite.Sprite(image.get_region(0, frame_size, 318, frame_size), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
+        self.active = pyglet.sprite.Sprite(image.get_region(0, 0, frame_size, frame_size), batch=self.batch, group=pyglet.graphics.OrderedGroup(2))
         self.set_position(width, height)
         
     def change_index(self, change):
         self.set_index(self.current_index + change)
                 
     def set_index(self, index):
-        old = self.current_index
+        if self.current_index == index:
+            return
         self.current_index = index
         if self.current_index >= self.max_items:
             self.current_index = 0
         elif self.current_index < 0:
             self.current_index = self.max_items - 1;
-        if self.current_index != old:
-            self.update()
+        self.update_current()
+            
+    def update_items(self):
+        self.slots = []
+        self.icons = []
+        x = self.frame.x + 3
+        items = self.inventory.get_items()
+        for item in items:
+            self.slots.append(item)
+            icon = pyglet.sprite.Sprite(self.blocks_grid[BLOCKS_DIR[item].icon_index()], batch=self.batch, group=self.foreground)
+            icon.scale = 0.5
+            icon.x = x
+            icon.y = self.frame.y + 3
+            x += 32 + 3
+            self.icons.append(icon)
         
-    def update(self):
+    def update_current(self):
         self.active.x = self.frame.x + (self.current_index * 35);
         
     def set_position(self, width, height):
         self.frame.x = (width - self.frame.width) / 2
         self.frame.y = 32
-        self.active.y = self.frame.y
-        x = self.frame.x + 3
-        for slot in self.slots:
-            slot.scale = 0.5
-            slot.x = x
-            slot.y = self.frame.y + 3
-            x += 32 + 3
-            
-        self.update()
+        self.active.y = self.frame.y            
+        self.update_current()
+        self.update_items()
         
     def get_current(self):
         if self.current_index < len(self.slots):
-            return BLOCKS[self.current_index]
+            return BLOCKS_DIR[self.slots[self.current_index]]
         return False
 
 class Model(object):
@@ -285,7 +290,8 @@ class Window(pyglet.window.Window):
             key._1, key._2, key._3, key._4, key._5,
             key._6, key._7, key._8, key._9, key._0]
         self.model = Model()
-        self.item_list = ItemSelector(self.width, self.height)
+        self.inventory = Inventory()
+        self.item_list = ItemSelector(self.width, self.height, self.inventory)
         if self.show_gui:
             self.label = pyglet.text.Label('', font_name='Arial', font_size=18, 
                 x=10, y=self.height - 10, anchor_x='left', anchor_y='top', 
@@ -392,11 +398,15 @@ class Window(pyglet.window.Window):
                     hit_block = self.model.world[block]
                     if hit_block != stone_block:
                         self.model.remove_block(block)
+                        self.inventory.add_item(hit_block.drop())
+                        self.item_list.update_items()
             else:
                 if previous:
                     current_block = self.item_list.get_current()
                     if current_block:
+                        self.inventory.remove_item(current_block.id())
                         self.model.add_block(previous, current_block)
+                        self.item_list.update_items()
         else:
             self.set_exclusive_mouse(True)
             
@@ -444,7 +454,6 @@ class Window(pyglet.window.Window):
             self.dy = 0
     def on_resize(self, width, height):
         # label
-        self.label.y = height - 10
         # reticle
         if self.reticle:
             self.reticle.delete()
@@ -454,6 +463,7 @@ class Window(pyglet.window.Window):
             ('v2i', (x - n, y, x + n, y, x, y - n, x, y + n))
         )
         if self.show_gui:
+            self.label.y = height - 10
             self.item_list.set_position(width, height)
             
     def set_2d(self):
