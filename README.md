@@ -17,24 +17,25 @@ On Mac OS X, you may have an issue with running Pyglet in 64-bit mode. Try this.
 
 ## How to Play
 
-Moving:
+### Moving
 
 - W: forward
 - S: back
 - A: strafe left
-- F: strafe right
+- D: strafe right
 - Mouse: look around
 - Space: jump
 - Tab: toggle flying mode
 
-Building:
-- selecting type of block to create:
-    - 0: sand 
-    - 1: grass 
-    - 2: brick
-- Mouse right-click: create block 
-- Mouse left- click: remove block
+### Building
 
-Quitting:
+- Selecting type of block to create:
+    - 1: brick
+    - 2: grass
+    - 3: sand
+- Mouse left-click: remove block
+- Mouse right-click: create block
+
+### Quitting
+
 - ESC: release mouse, then close window
-
