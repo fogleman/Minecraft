@@ -245,6 +245,11 @@ class Window(pyglet.window.Window):
         self.sector = None
         self.reticle = None
         self.dy = 0
+        self.inventory = [BRICK, GRASS, SAND]
+        self.block = self.inventory[0]
+        self.num_keys = [
+            key._1, key._2, key._3, key._4, key._5,
+            key._6, key._7, key._8, key._9, key._0]
         self.model = Model()
         self.label = pyglet.text.Label('', font_name='Arial', font_size=18, 
             x=10, y=self.height - 10, anchor_x='left', anchor_y='top', 
@@ -353,7 +358,7 @@ class Window(pyglet.window.Window):
                         self.model.remove_block(block)
             else:
                 if previous:
-                    self.model.add_block(previous, BRICK)
+                    self.model.add_block(previous, self.block)
         else:
             self.set_exclusive_mouse(True)
     def on_mouse_motion(self, x, y, dx, dy):
@@ -384,6 +389,9 @@ class Window(pyglet.window.Window):
             self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
             self.flying = not self.flying
+        elif symbol in self.num_keys:
+            index = (symbol - self.num_keys[0]) % len(self.inventory)
+            self.block = self.inventory[index]
     def on_key_release(self, symbol, modifiers):
         if symbol == key.W:
             self.strafe[0] += 1
