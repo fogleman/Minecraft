@@ -7,10 +7,12 @@ http://www.youtube.com/watch?v=kC3lwK631X8
 ## How to Run
 
     pip install pyglet
-    git clone https://github.com/fogleman/Minecraft.git
+    git clone https://github.com/ronmurphy/Minecraft.git
     cd Minecraft
     python main.py
 
 On Mac OS X, you may have an issue with running Pyglet in 64-bit mode. Try this...
 
     arch -i386 python main.py
+
+Original code from fogleman.
