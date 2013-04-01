@@ -257,6 +257,10 @@ class Window(pyglet.window.Window):
             self.model = Model(initialize=False)
             self.model.world = self.save[0]
             self.model.sectors = self.save[1]
+            self.strafe = self.save[2]
+            self.position = self.save[3]
+            self.rotation = self.save[4]
+            self.flying = self.save[5]
         self.block = self.inventory[0]
         self.num_keys = [
             key._1, key._2, key._3, key._4, key._5,
@@ -434,7 +438,7 @@ class Window(pyglet.window.Window):
             width, height = self.get_size()
             self.block_preview = pyglet.sprite.Sprite(block_icon, x=width-(block_side + 30), y=30)
         elif symbol == key.V:
-            pickle.dump((self.model.world, self.model.sectors), open(SAVE_FILENAME, "wb"))
+            pickle.dump((self.model.world, self.model.sectors, self.strafe, self.position, self.rotation, self.flying), open(SAVE_FILENAME, "wb"))
 
     def on_key_release(self, symbol, modifiers):
         if symbol == key.W:
