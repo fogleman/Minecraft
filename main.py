@@ -48,6 +48,54 @@ def sectorize(position):
     x, y, z = x / SECTOR_SIZE, y / SECTOR_SIZE, z / SECTOR_SIZE
     return (x, 0, z)
 
+class ItemSelector(object):
+    def __init__(self, width, height):
+        self.batch = pyglet.graphics.Batch()
+        image = pyglet.image.load('slots.png')
+        blocks_image = pyglet.image.load('texture.png')
+        blocks_grid = pyglet.image.ImageGrid(blocks_image, 4, 4)
+        foreground = pyglet.graphics.OrderedGroup(1)
+        self.current_index = 0
+        self.max_items = 9
+        self.slots = [
+            pyglet.sprite.Sprite(blocks_grid[1], batch=self.batch, group=foreground),
+            pyglet.sprite.Sprite(blocks_grid[5], batch=self.batch, group=foreground),
+            pyglet.sprite.Sprite(blocks_grid[2], batch=self.batch, group=foreground),
+            pyglet.sprite.Sprite(blocks_grid[4], batch=self.batch, group=foreground)
+        ]
+        self.frame = pyglet.sprite.Sprite(image.get_region(0, 38, 318, 38), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
+        self.active = pyglet.sprite.Sprite(image.get_region(0, 0, 38, 38), batch=self.batch, group=pyglet.graphics.OrderedGroup(2))
+        self.set_position(width, height)
+        
+    def change_index(self, change):
+        self.current_index += change
+        if self.current_index >= self.max_items:
+            self.current_index = 0
+        elif self.current_index < 0:
+            self.current_index = self.max_items - 1;
+        self.update()
+        
+    def update(self):
+        self.active.x = self.frame.x + (self.current_index * 35);
+        
+    def set_position(self, width, height):
+        self.frame.x = (width - self.frame.width) / 2
+        self.frame.y = 32
+        self.active.y = self.frame.y
+        x = self.frame.x + 3
+        for slot in self.slots:
+            slot.scale = 0.5
+            slot.x = x
+            slot.y = self.frame.y + 3
+            x += 32 + 3
+            
+        self.update()
+        
+    def get_current(self):
+        if self.current_index < len(self.slots):
+            return BLOCKS[self.current_index]
+        return False
+
 class Model(object):
     def __init__(self):
         self.batch = pyglet.graphics.Batch()
@@ -227,15 +275,13 @@ class Window(pyglet.window.Window):
         self.rotation = (-20, 0)
         self.sector = None
         self.reticle = None
-        self.block_preview = None
-        self.selected_block = 0
         self.dy = 0
         self.model = Model()
-        self.label = pyglet.text.Label('', font_name='Arial', font_size=18, 
-            x=10, y=self.height - 10, anchor_x='left', anchor_y='top', 
-            color=(0, 0, 0, 255))
+        self.item_list = ItemSelector(self.width, self.height)
         if self.show_gui:
-            self.update_preview()
+            self.label = pyglet.text.Label('', font_name='Arial', font_size=18, 
+                x=10, y=self.height - 10, anchor_x='left', anchor_y='top', 
+                color=(0, 0, 0, 255))
         pyglet.clock.schedule_interval(self.update, 1.0 / 60)
     def set_exclusive_mouse(self, exclusive):
         super(Window, self).set_exclusive_mouse(exclusive)
@@ -270,13 +316,6 @@ class Window(pyglet.window.Window):
             dx = 0.0
             dz = 0.0
         return (dx, dy, dz)
-        
-    def update_preview(self):
-        block_side = 64
-        x, y = int(BLOCKS[self.selected_block].side[0] * 4), int(BLOCKS[self.selected_block].side[1] * 4)
-        block_icon = self.model.group.texture.get_region(x * block_side, y * block_side, block_side, block_side)
-        width, height = self.get_size()
-        self.block_preview = pyglet.sprite.Sprite(block_icon, x=width-(block_side + 30), y=30)
         
     def update(self, dt):
         self.model.process_queue()
@@ -334,13 +373,7 @@ class Window(pyglet.window.Window):
         
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
         if self.exclusive and scroll_y != 0:
-            self.selected_block += scroll_y
-            if self.selected_block >= len(BLOCKS):
-                self.selected_block = 0
-            elif self.selected_block < 0:
-                self.selected_block = len(BLOCKS) - 1
-            if self.show_gui:
-                self.update_preview()
+            self.item_list.change_index(scroll_y)
                 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.exclusive:
@@ -353,7 +386,9 @@ class Window(pyglet.window.Window):
                         self.model.remove_block(block)
             else:
                 if previous:
-                    self.model.add_block(previous, BLOCKS[self.selected_block])
+                    current_block = self.item_list.get_current()
+                    if current_block:
+                        self.model.add_block(previous, current_block)
         else:
             self.set_exclusive_mouse(True)
             
@@ -407,6 +442,9 @@ class Window(pyglet.window.Window):
         self.reticle = pyglet.graphics.vertex_list(4,
             ('v2i', (x - n, y, x + n, y, x, y - n, x, y + n))
         )
+        if self.show_gui:
+            self.item_list.set_position(width, height)
+            
     def set_2d(self):
         width, height = self.get_size()
         glDisable(GL_DEPTH_TEST)
@@ -439,7 +477,7 @@ class Window(pyglet.window.Window):
         self.set_2d()
         if self.show_gui:
             self.draw_label()
-            self.block_preview.draw()
+            self.draw_item_slots()
         self.draw_reticle()
     def draw_focused_block(self):
         vector = self.get_sight_vector()
@@ -457,6 +495,8 @@ class Window(pyglet.window.Window):
             pyglet.clock.get_fps(), x, y, z, 
             len(self.model._shown), len(self.model.world))
         self.label.draw()
+    def draw_item_slots(self):
+        self.item_list.batch.draw()
     def draw_reticle(self):
         glColor3d(0, 0, 0)
         self.reticle.draw(GL_LINES)
