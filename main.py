@@ -68,12 +68,17 @@ class ItemSelector(object):
         self.set_position(width, height)
         
     def change_index(self, change):
-        self.current_index += change
+        self.set_index(self.current_index + change)
+                
+    def set_index(self, index):
+        old = self.current_index
+        self.current_index = index
         if self.current_index >= self.max_items:
             self.current_index = 0
         elif self.current_index < 0:
             self.current_index = self.max_items - 1;
-        self.update()
+        if self.current_index != old:
+            self.update()
         
     def update(self):
         self.active.x = self.frame.x + (self.current_index * 35);
@@ -276,6 +281,9 @@ class Window(pyglet.window.Window):
         self.sector = None
         self.reticle = None
         self.dy = 0
+        self.num_keys = [
+            key._1, key._2, key._3, key._4, key._5,
+            key._6, key._7, key._8, key._9, key._0]
         self.model = Model()
         self.item_list = ItemSelector(self.width, self.height)
         if self.show_gui:
@@ -420,6 +428,9 @@ class Window(pyglet.window.Window):
             self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
             self.flying = not self.flying
+        elif symbol in self.num_keys:
+            index = (symbol - self.num_keys[0])
+            self.item_list.set_index(index)
     def on_key_release(self, symbol, modifiers):
         if symbol == key.W:
             self.strafe[0] += 1
