@@ -4,6 +4,8 @@ import math
 import random
 import time
 import argparse
+import os
+import cPickle as pickle
 from blocks import *
 
 SECTOR_SIZE = 16
@@ -12,6 +14,7 @@ FOV = 65.0 #TODO add menu option to change FOV
 NEAR_CLIP_DISTANCE = 0.1 #TODO make min and max clip distance dynamic
 FAR_CLIP_DISTANCE = 200.0 # Maximum render distance, ignoring effects of sector_size and fog
 WORLDTYPE = 0 #0 = flat, 1 = normal
+SAVE_FILENAME = 'save.dat'
 
 def cube_vertices(x, y, z, n):
     return [
@@ -53,7 +56,8 @@ def sectorize(position):
     return (x, 0, z)
 
 class Model(object):
-    def __init__(self):
+    #def __init__(self):
+    def __init__(self, initialize=True):
         self.batch = pyglet.graphics.Batch()
         self.group = TextureGroup('texture.png')
         self.world = {}
@@ -61,7 +65,9 @@ class Model(object):
         self._shown = {}
         self.sectors = {}
         self.queue = []
-        self.initialize()
+        #self.initialize()
+        if initialize:
+            self.initialize()
     def initialize(self):
         n = 80
         s = 1
@@ -228,6 +234,11 @@ class Model(object):
 class Window(pyglet.window.Window):
     def __init__(self, *args, **kwargs):
         self.show_gui = kwargs.pop('show_gui', True)
+        if 'save' in kwargs and kwargs['save'] != None:
+            self.save = kwargs['save']
+        else:
+            self.save = None
+        del kwargs['save']
         super(Window, self).__init__(*args, **kwargs)
         self.exclusive = False
         self.flying = False
@@ -240,11 +251,17 @@ class Window(pyglet.window.Window):
         self.selected_block = 0
         self.dy = 0
         self.inventory = BLOCKS
+        if self.save == None:
+            self.model = Model()
+        else:
+            self.model = Model(initialize=False)
+            self.model.world = self.save[0]
+            self.model.sectors = self.save[1]
         self.block = self.inventory[0]
         self.num_keys = [
             key._1, key._2, key._3, key._4, key._5,
             key._6, key._7, key._8, key._9, key._0]
-        self.model = Model()
+        #self.model = Model()
         self.label = pyglet.text.Label('', font_name='Arial', font_size=8,
             x=10, y=self.height - 10, anchor_x='left', anchor_y='top',
             color=(0, 0, 0, 255))
@@ -416,6 +433,8 @@ class Window(pyglet.window.Window):
             block_icon = self.model.group.texture.get_region(x * block_side, y * block_side, block_side, block_side)
             width, height = self.get_size()
             self.block_preview = pyglet.sprite.Sprite(block_icon, x=width-(block_side + 30), y=30)
+        elif symbol == key.V:
+            pickle.dump((self.model.world, self.model.sectors), open(SAVE_FILENAME, "wb"))
 
     def on_key_release(self, symbol, modifiers):
         if symbol == key.W:
@@ -512,16 +531,18 @@ def setup():
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
 def main(options):
-
+    save = None
+    if os.path.exists(SAVE_FILENAME):
+        save = pickle.load(open(SAVE_FILENAME, "rb"))
     if options.draw_distance == 'medium':
         DRAW_DISTANCE *= 1.5
     elif options.draw_distance == 'long':
         DRAW_DISTANCE *= 2.0
     try:
-        config = Config(sample_buffers=1, samples=0, depth_size=8) #TODO Break anti-aliasing/multisampling into an explicit menu option
-        window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=config)
+        config = Config(sample_buffers=1, samples=0, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
+        window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=config, save=save)
     except pyglet.window.NoSuchConfigException:
-        window = Window( width=options.width, height=options.height, caption='pyCraftr_No-Conf', resizable=True)
+        window = Window( width=options.width, height=options.height, caption='pyCraftr_No-Conf', resizable=True, save=save)
     window.set_exclusive_mouse(True)
     setup()
     if not options.hide_fog:
