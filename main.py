@@ -262,6 +262,10 @@ class Window(pyglet.window.Window):
             self.model = Model(initialize=False)
             self.model.world = self.save[0]
             self.model.sectors = self.save[1]
+            self.strafe = self.save[2]
+            self.position = self.save[3]
+            self.rotation = self.save[4]
+            self.flying = self.save[5]
         self.num_keys = [
             key._1, key._2, key._3, key._4, key._5,
             key._6, key._7, key._8, key._9, key._0]
@@ -399,7 +403,7 @@ class Window(pyglet.window.Window):
             index = (symbol - self.num_keys[0]) % len(self.inventory)
             self.block = self.inventory[index]
         elif symbol == key.V:
-            pickle.dump((self.model.world, self.model.sectors), open(SAVE_FILENAME, "wb"))
+            pickle.dump((self.model.world, self.model.sectors, self.strafe, self.position, self.rotation, self.flying), open(SAVE_FILENAME, "wb"))
     def on_key_release(self, symbol, modifiers):
         if symbol == key.W:
             self.strafe[0] += 1
