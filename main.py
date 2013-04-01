@@ -11,6 +11,7 @@ DRAW_DISTANCE = 60.0
 FOV = 65.0 #TODO add menu option to change FOV
 NEAR_CLIP_DISTANCE = 0.1 #TODO make min and max clip distance dynamic
 FAR_CLIP_DISTANCE = 200.0 # Maximum render distance, ignoring effects of sector_size and fog
+WORLDTYPE = 0 #0 = flat, 1 = normal
 
 def cube_vertices(x, y, z, n):
     return [
@@ -74,6 +75,7 @@ class Model(object):
                     for dy in xrange(-3, 10): #was -2 ,6
                         self.init_block((x, y + dy, z), stone_block)
         o = n - 10
+
         for _ in xrange(120):
             a = random.randint(-o, o)
             b = random.randint(-o, o)
@@ -91,6 +93,9 @@ class Model(object):
                             continue
                         self.init_block((x, y, z), t)
                 s -= d
+
+
+
     def hit_test(self, position, vector, max_distance=8):
         m = 8
         x, y, z = position
@@ -236,7 +241,9 @@ class Window(pyglet.window.Window):
         self.dy = 0
         self.inventory = BLOCKS
         self.block = self.inventory[0]
-        self.num_keys = [key._0, key._1, key._2, key._3, key._4, key._5, key._6, key._7, key._8, key._9]
+        self.num_keys = [
+            key._1, key._2, key._3, key._4, key._5,
+            key._6, key._7, key._8, key._9, key._0]
         self.model = Model()
         self.label = pyglet.text.Label('', font_name='Arial', font_size=8,
             x=10, y=self.height - 10, anchor_x='left', anchor_y='top',
@@ -395,16 +402,17 @@ class Window(pyglet.window.Window):
             self.flying = not self.flying
         elif symbol == key.B:
             self.show_gui = not self.show_gui
+        elif symbol == key.F3:
+            self.show_gui = not self.show_gui
         elif symbol in self.num_keys:
-            self.block = self.inventory[(symbol - self.num_keys[0]) % len(self.inventory)]
-            self.selected_block = self.selected_block - 48
-           # print self.num_keys[0]
-           # print self.block
-           # print self.selected_block - 48
+            #self.block = self.inventory[(symbol - self.num_keys[0]) % len(self.inventory)]
+            index = (symbol - self.num_keys[0]) % len(self.inventory)
+            self.block = self.inventory[index]
+            self.selected_block = self.block
             block_side = 64
             print self.selected_block
-            x = int(BLOCKS[self.selected_block-1].side[0] * 4)
-            y = int(BLOCKS[self.selected_block-1].side[1] * 4)
+            x = int(BLOCKS[index].side[0] * 4)
+            y = int(BLOCKS[index].side[1] * 4)
             block_icon = self.model.group.texture.get_region(x * block_side, y * block_side, block_side, block_side)
             width, height = self.get_size()
             self.block_preview = pyglet.sprite.Sprite(block_icon, x=width-(block_side + 30), y=30)
