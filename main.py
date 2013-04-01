@@ -101,9 +101,13 @@ class ItemSelector(object):
         self.update_current()
         self.update_items()
         
-    def get_current(self):
+    def get_current_block(self):
         if self.current_index < len(self.slots):
-            return BLOCKS_DIR[self.slots[self.current_index]]
+            item_id = self.slots[self.current_index]
+            if self.inventory.get_item(item_id) > 0:
+                self.inventory.remove_item(item_id)
+                self.update_items()
+                return BLOCKS_DIR[item_id]
         return False
 
 class Model(object):
@@ -402,11 +406,9 @@ class Window(pyglet.window.Window):
                         self.item_list.update_items()
             else:
                 if previous:
-                    current_block = self.item_list.get_current()
+                    current_block = self.item_list.get_current_block()
                     if current_block:
-                        self.inventory.remove_item(current_block.id())
                         self.model.add_block(previous, current_block)
-                        self.item_list.update_items()
         else:
             self.set_exclusive_mouse(True)
             
