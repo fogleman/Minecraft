@@ -49,18 +49,31 @@ def sectorize(position):
     x, y, z = x / SECTOR_SIZE, y / SECTOR_SIZE, z / SECTOR_SIZE
     return (x, 0, z)
 
+class Player(object):
+    def __init__(self):
+        self.inventory = Inventory()
+        self.quick_slots = QuickSlots()
+        
+    def add_item(self, item_id):
+        if self.quick_slots.add_item(item_id):
+            return True
+        elif self.inventory.add_item(item_id):
+            return True
+        return False
+
 class ItemSelector(object):
-    def __init__(self, width, height, inventory):
-        self.inventory = inventory
+    def __init__(self, width, height, player, model):
         self.batch = pyglet.graphics.Batch()
-        image = pyglet.image.load('slots.png')
-        blocks_image = pyglet.image.load('texture.png')
-        self.blocks_grid = pyglet.image.ImageGrid(blocks_image, 4, 4)
-        self.foreground = pyglet.graphics.OrderedGroup(1)
+        self.group = pyglet.graphics.OrderedGroup(1)
+        self.model = model
+        self.player = player
         self.max_items = 9
         self.current_index = 4
-        frame_size = 38
-        self.frame = pyglet.sprite.Sprite(image.get_region(0, frame_size, 318, frame_size), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
+        self.icon_size = self.model.group.texture.width / 4
+        
+        image = pyglet.image.load('slots.png')
+        frame_size = image.height / 2
+        self.frame = pyglet.sprite.Sprite(image.get_region(0, frame_size, image.width, frame_size), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
         self.active = pyglet.sprite.Sprite(image.get_region(0, 0, frame_size, frame_size), batch=self.batch, group=pyglet.graphics.OrderedGroup(2))
         self.set_position(width, height)
         
@@ -78,17 +91,20 @@ class ItemSelector(object):
         self.update_current()
             
     def update_items(self):
-        self.slots = []
         self.icons = []
         x = self.frame.x + 3
-        items = self.inventory.get_items()
+        items = self.player.quick_slots.get_items()
         for item in items:
-            self.slots.append(item)
-            icon = pyglet.sprite.Sprite(self.blocks_grid[BLOCKS_DIR[item].icon_index()], batch=self.batch, group=self.foreground)
+            if not item:
+                x += (self.icon_size * 0.5) + 3
+                continue
+            block = BLOCKS_DIR[item.type]
+            block_icon = self.model.group.texture.get_region(int(block.side[0] * 4) * self.icon_size, int(block.side[1] * 4) * self.icon_size, self.icon_size, self.icon_size)
+            icon = pyglet.sprite.Sprite(block_icon, batch=self.batch, group=self.group)
             icon.scale = 0.5
             icon.x = x
             icon.y = self.frame.y + 3
-            x += 32 + 3
+            x += (self.icon_size * 0.5) + 3
             self.icons.append(icon)
         
     def update_current(self):
@@ -96,18 +112,18 @@ class ItemSelector(object):
         
     def set_position(self, width, height):
         self.frame.x = (width - self.frame.width) / 2
-        self.frame.y = 32
+        self.frame.y = self.icon_size * 0.5
         self.active.y = self.frame.y            
         self.update_current()
         self.update_items()
         
     def get_current_block(self):
-        if self.current_index < len(self.slots):
-            item_id = self.slots[self.current_index]
-            if self.inventory.get_item(item_id) > 0:
-                self.inventory.remove_item(item_id)
-                self.update_items()
-                return BLOCKS_DIR[item_id]
+        item = self.player.quick_slots.at(self.current_index)
+        if item:
+            item_id = item.type
+            self.player.quick_slots.remove_item(item_id)
+            self.update_items()
+            return BLOCKS_DIR[item_id]
         return False
 
 class Model(object):
@@ -294,8 +310,8 @@ class Window(pyglet.window.Window):
             key._1, key._2, key._3, key._4, key._5,
             key._6, key._7, key._8, key._9, key._0]
         self.model = Model()
-        self.inventory = Inventory()
-        self.item_list = ItemSelector(self.width, self.height, self.inventory)
+        self.player = Player()
+        self.item_list = ItemSelector(self.width, self.height, self.player, self.model)
         if self.show_gui:
             self.label = pyglet.text.Label('', font_name='Arial', font_size=18, 
                 x=10, y=self.height - 10, anchor_x='left', anchor_y='top', 
@@ -391,7 +407,7 @@ class Window(pyglet.window.Window):
         
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
         if self.exclusive and scroll_y != 0:
-            self.item_list.change_index(scroll_y)
+            self.item_list.change_index(scroll_y*-1)
                 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.exclusive:
@@ -402,8 +418,8 @@ class Window(pyglet.window.Window):
                     hit_block = self.model.world[block]
                     if hit_block != stone_block:
                         self.model.remove_block(block)
-                        self.inventory.add_item(hit_block.drop())
-                        self.item_list.update_items()
+                        if self.player.add_item(hit_block.drop()):
+                            self.item_list.update_items()
             else:
                 if previous:
                     current_block = self.item_list.get_current_block()
@@ -500,7 +516,7 @@ class Window(pyglet.window.Window):
         self.set_2d()
         if self.show_gui:
             self.draw_label()
-            self.draw_item_slots()
+            self.item_list.batch.draw()
         self.draw_reticle()
     def draw_focused_block(self):
         vector = self.get_sight_vector()
@@ -518,8 +534,6 @@ class Window(pyglet.window.Window):
             pyglet.clock.get_fps(), x, y, z, 
             len(self.model._shown), len(self.model.world))
         self.label.draw()
-    def draw_item_slots(self):
-        self.item_list.batch.draw()
     def draw_reticle(self):
         glColor3d(0, 0, 0)
         self.reticle.draw(GL_LINES)
@@ -541,9 +555,9 @@ def setup():
 
 def main(options):
     if options.draw_distance == 'medium':
-        DRAW_DISTANCE *= 1.5
+        DRAW_DISTANCE = 60.0 * 1.5
     elif options.draw_distance == 'long':
-        DRAW_DISTANCE *= 2.0
+        DRAW_DISTANCE = 60.0 * 2.0
     window = Window(show_gui=options.show_gui, width=options.width, height=options.height,
         caption='Pyglet', resizable=True)
     window.set_exclusive_mouse(True)
