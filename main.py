@@ -7,6 +7,7 @@ import argparse
 import os
 import cPickle as pickle
 from blocks import *
+from items import *
 from inventory import *
 from entity import *
 

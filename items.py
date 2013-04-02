@@ -1,4 +1,4 @@
-
+from blocks import *
 # items and blocks share a common id table
 # ids of items should be >= ITEM_ID_MIN
 ITEM_ID_MIN = 256
@@ -6,8 +6,8 @@ ITEM_ID_MIN = 256
 ITEMS_DIR = []
 
 class Item(object):
-    def __init__(self):
-        self.max_stack_size = 0
+    def __init__(self, max_stack_size):
+        self.max_stack_size = max_stack_size
         ITEMS_DIR[self.id()] = self
 
     def on_right_click(self):
@@ -21,6 +21,10 @@ class ItemStack(object):
         self.amount = amount
         self.durability = durability
         self.data = data
+        if type >= ITEM_ID_MIN:
+            self.max_stack_size = ITEMS_DIR[type].max_stack_size
+        else:
+            self.max_stack_size = BLOCKS_DIR[type].max_stack_size
         
     def change_amount(self, change=0):
         if change == 0:
