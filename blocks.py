@@ -8,12 +8,13 @@ BLOCKS_DIR = {}
 
 # Blocks
 class Block(object):
-    def __init__(self, top, bottom, side, hardness, max_stack_size):
+    def __init__(self, top, bottom, side, hardness, max_stack_size, amount_label_color=(255, 255, 255, 255)):
         self.top = top
         self.bottom = bottom
         self.side = side
         self.hardness = hardness
         self.max_stack_size = max_stack_size
+        self.amount_label_color = amount_label_color
         BLOCKS_DIR[self.id()] = self
     def drop(self):
         return self.id()
@@ -47,7 +48,7 @@ class DirtBlock(Block):
 
 class SandBlock(Block):
     def __init__(self):
-        super(SandBlock, self).__init__(tex_coord(1,1), tex_coord(1,1), tex_coord(1,1), 0.5, 64)
+        super(SandBlock, self).__init__(tex_coord(1,1), tex_coord(1,1), tex_coord(1,1), 0.5, 64, (0, 0, 0, 255))
     def id(self):
         return 12
 
@@ -59,7 +60,7 @@ class BrickBlock(Block):
 
 class GlassBlock(Block):
     def __init__(self):
-        super(GlassBlock, self).__init__(tex_coord(3,1), tex_coord(3,1), tex_coord(3,1), 0.2, 64)
+        super(GlassBlock, self).__init__(tex_coord(3,1), tex_coord(3,1), tex_coord(3,1), 0.2, 64, (0, 0, 0, 255))
     def id(self):
         return 20
 
@@ -84,7 +85,7 @@ class ChestBlock(Block):
 
 class SandstoneBlock(Block):
     def __init__(self):
-        super(SandstoneBlock, self).__init__(tex_coord(2, 2), tex_coord(2, 2), tex_coord(2, 2), 0, 64)
+        super(SandstoneBlock, self).__init__(tex_coord(2, 2), tex_coord(2, 2), tex_coord(2, 2), 0, 64, (0, 0, 0, 255))
     def id(self):
         return 24
 

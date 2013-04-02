@@ -83,6 +83,8 @@ class ItemSelector(object):
     def __init__(self, width, height, player, model):
         self.batch = pyglet.graphics.Batch()
         self.group = pyglet.graphics.OrderedGroup(1)
+        self.amount_labels_group = pyglet.graphics.OrderedGroup(2)
+        self.amount_labels = []
         self.model = model
         self.player = player
         self.max_items = 9
@@ -111,8 +113,12 @@ class ItemSelector(object):
             
     def update_items(self):
         self.icons = []
+        for amount_label in self.amount_labels:
+            amount_label.delete()
+        self.amount_labels = []
         x = self.frame.x + 3
         items = self.player.quick_slots.get_items()
+        items = items[:self.max_items]
         for item in items:
             if not item:
                 x += (self.icon_size * 0.5) + 3
@@ -124,6 +130,12 @@ class ItemSelector(object):
             icon.x = x
             icon.y = self.frame.y + 3
             x += (self.icon_size * 0.5) + 3
+            amount_label = pyglet.text.Label(str(item.amount), font_name='Arial', font_size=9, 
+                x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom', 
+                color=(block.amount_label_color), batch=self.batch, group=self.amount_labels_group)
+            print(block)
+            print(block.amount_label_color)
+            self.amount_labels.append(amount_label)
             self.icons.append(icon)
         
     def update_current(self):
