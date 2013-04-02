@@ -13,7 +13,9 @@ DRAW_DISTANCE = 60.0
 FOV = 65.0 #TODO add menu option to change FOV
 NEAR_CLIP_DISTANCE = 0.1 #TODO make min and max clip distance dynamic
 FAR_CLIP_DISTANCE = 200.0 # Maximum render distance, ignoring effects of sector_size and fog
-WORLDTYPE = 0 #0 = flat, 1 = normal
+WORLDTYPE = 0 #1=grass,2=dirt,3=sand,4=islands
+HILLHEIGHT = 6  #height of the hills, increase for mountains :D
+FLATWORLD=0  # dont make mountains,  make a flat world
 SAVE_FILENAME = 'save.dat'
 
 def cube_vertices(x, y, z, n):
@@ -75,9 +77,9 @@ class Model(object):
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
                 if WORLDTYPE == 0:
-                    self.init_block((x, y - 2, z), dirt_block)
-                if WORLDTYPE == 1:
                     self.init_block((x, y - 2, z), grass_block)
+                if WORLDTYPE == 1:
+                    self.init_block((x, y - 2, z), dirt_block)
                 if WORLDTYPE == 2:
                     self.init_block((x, y - 2, z), sand_block)
                 if WORLDTYPE == 3:
@@ -89,12 +91,16 @@ class Model(object):
                     for dy in xrange(-3, 10): #was -2 ,6
                         self.init_block((x, y + dy, z), stone_block)
         o = n - 10
+        if HILLHEIGHT > 6:
+            o = n - 10 + HILLHEIGHT - 6
+        if FLATWORLD == 1:
+            return
         for _ in xrange(120):
             a = random.randint(-o, o)
             b = random.randint(-o, o)
             c = -1
-            h = random.randint(1, 6)
-            s = random.randint(4, 8)
+            h = random.randint(1, HILLHEIGHT)
+            s = random.randint(4, HILLHEIGHT + 2)
             d = 1
             t = random.choice([grass_block, sand_block, dirt_block]) # removed brick_block
             for y in xrange(c, c + h):
@@ -569,7 +575,13 @@ def main(options):
         DRAW_DISTANCE *= 2.0
     global WORLDTYPE
     WORLDTYPE = options.terrain
+    global HILLHEIGHT
+    HILLHEIGHT = options.hillheight
+    global FLATWORLD
+    FLATWORLD = options.flat
     print WORLDTYPE
+    print HILLHEIGHT
+    print FLATWORLD
     try:
         config = Config(sample_buffers=1, samples=0, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
         window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=config, save=save)
@@ -586,6 +598,8 @@ if __name__ == '__main__':
     parser.add_argument("-width", type=int, default=850)
     parser.add_argument("-height", type=int, default=480)
     parser.add_argument("-terrain", type=int, default=0)
+    parser.add_argument("-hillheight", type=int, default=6)
+    parser.add_argument("-flat", type=int, default=0)
     parser.add_argument("--hide-fog", action="store_true", default=False)
     parser.add_argument("--show-gui", action="store_true", default=True)
     parser.add_argument("-draw-distance", choices=['short', 'medium', 'long'], default='short')
