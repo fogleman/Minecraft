@@ -1,8 +1,9 @@
 from pyglet.gl import *
-from pyglet.window import key
 import math
 import random
 import time
+from settings.keys import *
+
 
 SECTOR_SIZE = 16
 
@@ -278,9 +279,6 @@ class Window(pyglet.window.Window):
         self.dy = 0
         self.inventory = [BRICK, GRASS, SAND]
         self.block = self.inventory[0]
-        self.num_keys = [
-            key._1, key._2, key._3, key._4, key._5,
-            key._6, key._7, key._8, key._9, key._0]
         self.model = Model()
         self.label = pyglet.text.Label('', font_name='Arial', font_size=18, 
             x=10, y=self.height - 10, anchor_x='left', anchor_y='top', 
@@ -356,7 +354,7 @@ class Window(pyglet.window.Window):
         pad = 0.25
         p = list(position)
         np = normalize(position)
-        for face in FACES: # check all surrounding blocks
+        for face in FACES:  # check all surrounding blocks
             for i in xrange(3): # check each dimension independently
                 if not face[i]:
                     continue
@@ -407,33 +405,35 @@ class Window(pyglet.window.Window):
             self.rotation = (x, y)
 
     def on_key_press(self, symbol, modifiers):
-        if symbol == key.W:
+        if symbol == MOVE_FORWARD:
             self.strafe[0] -= 1
-        elif symbol == key.S:
+        elif symbol == MOVE_BACKWARDS:
             self.strafe[0] += 1
-        elif symbol == key.A:
+        elif symbol == MOVE_LEFT:
             self.strafe[1] -= 1
-        elif symbol == key.D:
+        elif symbol == MOVE_RIGHT:
             self.strafe[1] += 1
-        elif symbol == key.SPACE:
+        elif symbol == JUMP:
             if self.dy == 0:
                 self.dy = 0.015  # jump speed
-        elif symbol == key.ESCAPE:
+        elif symbol == RELEASE_MOUSE:
             self.set_exclusive_mouse(False)
-        elif symbol == key.TAB:
+        elif symbol == FLY:
             self.flying = not self.flying
-        elif symbol in self.num_keys:
-            index = (symbol - self.num_keys[0]) % len(self.inventory)
+        elif symbol in INVENTORY_KEYS:
+            index = INVENTORY_KEYS.index(symbol)
+            # FIXME: Remove the following line when the inventory is complete.
+            index %= len(self.inventory)
             self.block = self.inventory[index]
 
     def on_key_release(self, symbol, modifiers):
-        if symbol == key.W:
+        if symbol == MOVE_FORWARD:
             self.strafe[0] += 1
-        elif symbol == key.S:
+        elif symbol == MOVE_BACKWARDS:
             self.strafe[0] -= 1
-        elif symbol == key.A:
+        elif symbol == MOVE_LEFT:
             self.strafe[1] += 1
-        elif symbol == key.D:
+        elif symbol == MOVE_RIGHT:
             self.strafe[1] -= 1
 
     def on_resize(self, width, height):
