@@ -72,19 +72,19 @@ class WaterBlock(Block):
     def __init__(self):
         super(WaterBlock, self).__init__(tex_coord(0, 2), tex_coord(0, 2), tex_coord(0, 2), 0)
     def id(self):
-        return 0
+        return 8
 
 class ChestBlock(Block):
     def __init__(self):
         super(ChestBlock, self).__init__(tex_coord(1, 2), tex_coord(1, 2), tex_coord(1, 2), 0)
     def id(self):
-        return 0
+        return 54
 
 class SandstoneBlock(Block):
     def __init__(self):
         super(SandstoneBlock, self).__init__(tex_coord(2, 2), tex_coord(2, 2), tex_coord(2, 2), 0)
     def id(self):
-        return 0
+        return 24
 
 class MarbleBlock(Block):
     def __init__(self):

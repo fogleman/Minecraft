@@ -62,6 +62,10 @@ class Player(object):
     def __init__(self):
         self.inventory = Inventory(27)
         self.quick_slots = Inventory(9)
+        initial_items = [dirt_block, sand_block, brick_block, stone_block, glass_block, water_block, chest_block, sandstone_block, marble_block]
+        for item in initial_items:
+            quantity = random.randint(1, 10)
+            self.quick_slots.add_item(item.id(), quantity)
         
     def add_item(self, item_id):
         if self.quick_slots.add_item(item_id):
