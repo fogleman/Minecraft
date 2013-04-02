@@ -60,6 +60,10 @@ See the [https://github.com/fogleman/Minecraft/wiki](wiki) for this project to i
 - Mouse left-click: remove block
 - Mouse right-click: create block
 
+### GUI
+
+- Toggle UI: B / F3
+
 ### Quitting
 
 - ESC: release mouse, then close window
