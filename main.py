@@ -3,6 +3,7 @@ from pyglet.window import key
 import math
 import random
 import time
+from collections import deque
 
 SECTOR_SIZE = 16
 
@@ -74,7 +75,7 @@ class Model(object):
         self.shown = {}
         self._shown = {}
         self.sectors = {}
-        self.queue = []
+        self.queue = deque()  #note: could add limit here
         self.initialize()
     def initialize(self):
         n = 80
@@ -224,7 +225,7 @@ class Model(object):
     def enqueue(self, func, *args):
         self.queue.append((func, args))
     def dequeue(self):
-        func, args = self.queue.pop(0)
+        func, args = self.queue.popleft()
         func(*args)
     def process_queue(self):
         start = time.clock()
