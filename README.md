@@ -29,7 +29,7 @@ The API could contain functionality for the following:
 ## How to Run
 
     pip install pyglet
-    git clone https://github.com/ggaughan/Minecraft.git
+    git clone https://github.com/fogleman/Minecraft.git
     cd Minecraft
     python main.py
 
