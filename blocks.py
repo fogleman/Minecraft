@@ -61,6 +61,53 @@ class BedrockBlock(Block):
     def id(self):
         return 7
 
+class WaterBlock(Block):
+    def __init__(self):
+        super(WaterBlock, self).__init__(tex_coord(0, 2), tex_coord(0, 2), tex_coord(0, 2), 0)
+    def id(self):
+        return 0
+
+class ChestBlock(Block):
+    def __init__(self):
+        super(ChestBlock, self).__init__(tex_coord(1, 2), tex_coord(1, 2), tex_coord(1, 2), 0)
+    def id(self):
+        return 0
+
+class SandstoneBlock(Block):
+    def __init__(self):
+        super(SandstoneBlock, self).__init__(tex_coord(2, 2), tex_coord(2, 2), tex_coord(2, 2), 0)
+    def id(self):
+        return 0
+
+class MarbleBlock(Block):
+    def __init__(self):
+        super(MarbleBlock, self).__init__(tex_coord(3, 2), tex_coord(3, 2), tex_coord(3, 2), 0)
+    def id(self):
+        return 0
+
+class StonebrickBlock(Block):
+    def __init__(self):
+        super(StonebrickBlock, self).__init__(tex_coord(0, 3), tex_coord(0, 3), tex_coord(0, 3), 0)
+    def id(self):
+        return 0
+
+class LWoodBlock(Block):
+    def __init__(self):
+        super(LWoodBlock, self).__init__(tex_coord(3, 3), tex_coord(3, 3), tex_coord(3, 3), 0)
+    def id(self):
+        return 0
+
+class MWoodBlock(Block):
+    def __init__(self):
+        super(MWoodBlock, self).__init__(tex_coord(2, 3), tex_coord(2, 3), tex_coord(2, 3), 0)
+    def id(self):
+        return 0
+
+class DWoodBlock(Block):
+    def __init__(self):
+        super(DWoodBlock, self).__init__(tex_coord(1, 3), tex_coord(1, 3), tex_coord(1, 3), 0)
+    def id(self):
+        return 0
 
 def block_texture(block):
     result = []
@@ -77,6 +124,14 @@ stone_block = StoneBlock()
 dirt_block = DirtBlock()
 glass_block = GlassBlock()
 bed_block = BedrockBlock()
+water_block = WaterBlock()
+chest_block = ChestBlock()
+sandstone_block = SandstoneBlock()
+marble_block = MarbleBlock()
+stonebrick_block = StonebrickBlock()
+lw_block = LWoodBlock()
+mw_block = MWoodBlock()
+dw_block = DWoodBlock()
 
-BLOCKS = [grass_block, sand_block, brick_block, dirt_block, stone_block, glass_block, bed_block]
+BLOCKS = [chest_block, grass_block, sandstone_block, brick_block, stonebrick_block, marble_block, glass_block, lw_block, mw_block, dw_block]
 
