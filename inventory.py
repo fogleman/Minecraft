@@ -1,10 +1,10 @@
 from items import *
 
 class Inventory(object):
-    def __init__(self):
-        self.slot_count = 27
-        self.slots = []
-	      
+    def __init__(self, slot_count = 27):
+        self.slot_count = slot_count
+        self.slots = [None] * self.slot_count
+          
     def add_item(self, item_id, quantity = 1):
         if quantity < 1:
             return False
@@ -13,20 +13,17 @@ class Inventory(object):
         
         if item_stack:
             item_stack.change_amount(quantity)
-        else:
-            if len(list(self.slots)) == self.slot_count:
-                return False
-            item_stack = ItemStack(type=item_id, amount=quantity)
-            
+        else:            
             index = next((index for index,value in enumerate(self.slots) if not value), -1)
             
-            if index == -1:
-                self.slots.append(item_stack)
-            else:
-                self.slots[index] = item_stack
+            if index == -1 and len(self.slots) == self.slot_count:
+                return False
+
+            item_stack = ItemStack(type=item_id, amount=quantity)
+            self.slots.insert(index, item_stack)
             
         return True
-	      
+          
     def remove_item(self, item_id, quantity = 1):
         if quantity < 1:
             return False
@@ -40,8 +37,8 @@ class Inventory(object):
         return False
             
     def at(self, index):
-        index = int(index)
-        if index >= 0 and index < len(self.slots):
+        index = int(indexs)
+        if index >= 0 and index < self.slot_count:
             return self.slots[index]
         return None
         
@@ -56,6 +53,5 @@ class Inventory(object):
         
 
 class QuickSlots(Inventory):
-    def __init__(self):
-        super(QuickSlots, self).__init__()
-        self.slot_count = 9
+    def __init__(self, slot_count = 9):
+        super(QuickSlots, self).__init__(slot_count)
