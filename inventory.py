@@ -49,8 +49,3 @@ class Inventory(object):
 
     def get_items(self):
         return self.slots
-        
-
-class QuickSlots(Inventory):
-    def __init__(self, slot_count = 9):
-        super(QuickSlots, self).__init__(slot_count)

@@ -60,8 +60,8 @@ def sectorize(position):
 
 class Player(object):
     def __init__(self):
-        self.inventory = Inventory()
-        self.quick_slots = QuickSlots()
+        self.inventory = Inventory(27)
+        self.quick_slots = Inventory(9)
         
     def add_item(self, item_id):
         if self.quick_slots.add_item(item_id):
