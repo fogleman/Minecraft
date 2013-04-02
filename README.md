@@ -56,14 +56,14 @@ See the [https://github.com/fogleman/Minecraft/wiki](wiki) for this project to i
 
 ### Building
 
-- Selecting item in inventory: 1 - 9
+- 1 - 9: Selecting item in inventory
 - Mouse left-click: remove block
 - Mouse right-click: create block
 
 ### GUI
 
-- Toggle UI: B / F3
-- Saving: V (save filename in command-line arguments)
+- B / F3: Toggle UI
+- V: Saving (save filename in command-line arguments)
 
 ### Quitting
 
