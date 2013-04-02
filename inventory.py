@@ -4,7 +4,7 @@ class Inventory(object):
     def __init__(self, slot_count = 27):
         self.slot_count = slot_count
         self.slots = [None] * self.slot_count
-          
+
     def add_item(self, item_id, quantity = 1):
         if quantity < 1:
             return False
@@ -50,8 +50,3 @@ class Inventory(object):
 
     def get_items(self):
         return self.slots
-        
-
-class QuickSlots(Inventory):
-    def __init__(self, slot_count = 9):
-        super(QuickSlots, self).__init__(slot_count)
