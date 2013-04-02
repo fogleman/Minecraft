@@ -31,8 +31,8 @@ Or try Pyglet 1.2 alpha, which supports 64-bit mode:
 
 For pip:
 
-- Mac or Linux: install with `sudo easy_install pip` (Mac or Linux) - or find a package called something like 'python-pip' in Linux and install in your package manager.
-- Windows: [http://stackoverflow.com/a/12476379/992887](install Distribute then Pip) using the linked .MSI installers.
+- Mac or Linux: install with `sudo easy_install pip` (Mac or Linux) - or (Linux) find a package called something like 'python-pip' in your package manager.
+- Windows: [install Distribute then Pip](http://stackoverflow.com/a/12476379/992887) using the linked .MSI installers.
 
 For git:
 
