@@ -7,7 +7,7 @@ class Recipe(object):
 	def __init__(self, ingre, output):
 		# what blocks are needed to craft this block/item
 		self.ingre = ingre
-		self.output = output.id()
+		self.output = output
 
 class Recipes(object):
 	def __init__(self):
