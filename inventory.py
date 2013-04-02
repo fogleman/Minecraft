@@ -93,11 +93,9 @@ class Inventory(object):
     def sort(self, reverse=True):
         if self.sort_mode == 0:
             self.sort_with_key(key=lambda x: x.id() if x != None else -sys.maxint - 1, reverse=True) 
-        elif self.sort_mode == 1:
-            self.sort_with_key(key=lambda x: x.id() if x != None else sys.maxint - 1, reverse=False) 
-        if self.sort_mode == 2:
+        if self.sort_mode == 1:
             self.sort_with_key(key=lambda x: x.amount if x != None else -sys.maxint - 1, reverse=True)
-        elif self.sort_mode == 3:
+        elif self.sort_mode == 2:
             self.sort_with_key(key=lambda x: x.amount if x != None else sys.maxint - 1, reverse=False)
 
     def sort_with_key(self, key, reverse=True):
@@ -105,10 +103,10 @@ class Inventory(object):
 
     def change_sort_mode(self, change=1):
         self.sort_mode += change
-        if self.sort_mode > 3:
+        if self.sort_mode > 2:
             self.sort_mode = 0
         elif self.sort_mode < 0:
-            self.sort_mode = 3
+            self.sort_mode = 2
         self.sort()
 
     def at(self, index):
