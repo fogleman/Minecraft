@@ -19,6 +19,7 @@ WORLDTYPE = 0 #1=grass,2=dirt,3=sand,4=islands
 HILLHEIGHT = 6  #height of the hills, increase for mountains :D
 FLATWORLD=0  # dont make mountains,  make a flat world
 SAVE_FILENAME = 'save.dat'
+DISABLE_SAVE = True
 
 def cube_vertices(x, y, z, n):
     return [
@@ -428,7 +429,8 @@ class Window(pyglet.window.Window):
         self.player.position = (x, y, z)
 
     def save_to_file(self):
-        pickle.dump((self.model.world, self.model.sectors, self.strafe, self.player), open(SAVE_FILENAME, "wb"))
+        if DISABLE_SAVE:
+            pickle.dump((self.model.world, self.model.sectors, self.strafe, self.player), open(SAVE_FILENAME, "wb"))
 
     def collide(self, position, height):
         pad = 0.25
@@ -614,8 +616,10 @@ def setup():
 def main(options):
     save_object = None
     global SAVE_FILENAME
+    global DISABLE_SAVE    
     SAVE_FILENAME = options.save
-    if os.path.exists(SAVE_FILENAME):
+    DISABLE_SAVE = options.disable_save
+    if os.path.exists(SAVE_FILENAME) and options.disable_save:
         save_object = pickle.load(open(SAVE_FILENAME, "rb"))
     if options.draw_distance == 'medium':
         DRAW_DISTANCE = 60.0 * 1.5
@@ -640,7 +644,7 @@ def main(options):
     if not options.hide_fog:
         setup_fog()
     pyglet.app.run()
-    if options.disable_auto_save:
+    if options.disable_auto_save and options.disable_save:
         window.save_to_file()
 
 if __name__ == '__main__':
@@ -655,5 +659,6 @@ if __name__ == '__main__':
     parser.add_argument("--disable-auto-save", action="store_false", default=True)
     parser.add_argument("-draw-distance", choices=['short', 'medium', 'long'], default='short')
     parser.add_argument("-save", type=unicode, default=SAVE_FILENAME)
+    parser.add_argument("--disable-save", action="store_false", default=True)
     options = parser.parse_args()
     main(options)
