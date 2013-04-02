@@ -4,7 +4,7 @@ class Inventory(object):
     def __init__(self, slot_count = 27):
         self.slot_count = slot_count
         self.slots = [None] * self.slot_count
-	      
+
     def add_item(self, item_id, quantity = 1):
         if quantity < 1:
             return False
@@ -23,7 +23,7 @@ class Inventory(object):
             self.slots.insert(index, item_stack)
             
         return True
-	      
+          
     def remove_item(self, item_id, quantity = 1):
         if quantity < 1:
             return False
@@ -37,6 +37,7 @@ class Inventory(object):
         return False
             
     def at(self, index):
+        index = int(index)
         if index >= 0 and index < self.slot_count:
             return self.slots[index]
         return None
