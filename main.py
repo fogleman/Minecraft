@@ -339,9 +339,10 @@ class Window(pyglet.window.Window):
 
     def update_preview(self):
         block_side = 64
-        x, y = int(BLOCKS[self.selected_block].side[0] * 4), int(BLOCKS[self.selected_block].side[1] * 4)
+        x, y = int(BLOCKS[self.selected_block].side[0] * 8), int(BLOCKS[self.selected_block].side[1] * 8)  # was *4
         block_icon = self.model.group.texture.get_region(x * block_side, y * block_side, block_side, block_side)
         width, height = self.get_size()
+        #self.block_preview = pyglet.sprite.Sprite(block_icon, x=width-(block_side + 30), y=30)
         self.block_preview = pyglet.sprite.Sprite(block_icon, x=width-(block_side + 30), y=30)
 
     def update(self, dt):
@@ -463,11 +464,12 @@ class Window(pyglet.window.Window):
             self.selected_block = self.block
             block_side = 64
             print self.selected_block
-            x = int(BLOCKS[index].side[0] * 4)
-            y = int(BLOCKS[index].side[1] * 4)
+            x = int(BLOCKS[index].side[0] * 8)  #was *4
+            y = int(BLOCKS[index].side[1] * 8)  # was *4
             block_icon = self.model.group.texture.get_region(x * block_side, y * block_side, block_side, block_side)
             width, height = self.get_size()
             self.block_preview = pyglet.sprite.Sprite(block_icon, x=width-(block_side + 30), y=30)
+            #self.block_preview = pyglet.sprite.Sprite(block_icon, x=width-(block_side + 30), y=30)
         elif symbol == key.V:
             pickle.dump((self.model.world, self.model.sectors, self.strafe, self.position, self.rotation, self.flying), open(SAVE_FILENAME, "wb"))
 
