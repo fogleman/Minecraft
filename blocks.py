@@ -1,8 +1,10 @@
-def tex_coord(x, y, n=8):
+def tex_coord(x, y, n=4):
     m = 1.0 / n
     dx = x * m
     dy = y * m
     return dx, dy, dx + m, dy, dx + m, dy + m, dx, dy + m
+
+BLOCKS_DIR = {}
 
 # Blocks
 class Block(object):
@@ -11,6 +13,9 @@ class Block(object):
         self.bottom = bottom
         self.side = side
         self.hardness = hardness
+        BLOCKS_DIR[self.id()] = self
+    def drop(self):
+        return self.id()
 
 class AirBlock(Block):
     def __init__(self):
@@ -30,6 +35,8 @@ class GrassBlock(Block):
         super(GrassBlock, self).__init__(tex_coord(1,0), tex_coord(0,1), tex_coord(0,0), 0.6)
     def id(self):
         return 2
+    def drop(self):
+        return DirtBlock().id()
 
 class DirtBlock(Block):
     def __init__(self):
@@ -65,19 +72,19 @@ class WaterBlock(Block):
     def __init__(self):
         super(WaterBlock, self).__init__(tex_coord(0, 2), tex_coord(0, 2), tex_coord(0, 2), 0)
     def id(self):
-        return 0
+        return 8
 
 class ChestBlock(Block):
     def __init__(self):
         super(ChestBlock, self).__init__(tex_coord(1, 2), tex_coord(1, 2), tex_coord(1, 2), 0)
     def id(self):
-        return 0
+        return 54
 
 class SandstoneBlock(Block):
     def __init__(self):
         super(SandstoneBlock, self).__init__(tex_coord(2, 2), tex_coord(2, 2), tex_coord(2, 2), 0)
     def id(self):
-        return 0
+        return 24
 
 class MarbleBlock(Block):
     def __init__(self):
@@ -132,6 +139,3 @@ stonebrick_block = StonebrickBlock()
 lw_block = LWoodBlock()
 mw_block = MWoodBlock()
 dw_block = DWoodBlock()
-
-BLOCKS = [chest_block, grass_block, sandstone_block, brick_block, stonebrick_block, marble_block, glass_block, lw_block, mw_block, dw_block]
-

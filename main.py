@@ -7,6 +7,7 @@ import argparse
 import os
 import cPickle as pickle
 from blocks import *
+from inventory import *
 
 SECTOR_SIZE = 16
 DRAW_DISTANCE = 60.0
@@ -56,6 +57,90 @@ def sectorize(position):
     x, y, z = normalize(position)
     x, y, z = x / SECTOR_SIZE, y / SECTOR_SIZE, z / SECTOR_SIZE
     return (x, 0, z)
+
+class Player(object):
+    def __init__(self):
+        self.health = 20
+        self.inventory = Inventory(27)
+        self.quick_slots = Inventory(9)
+        #initial_items = [dirt_block, sand_block, brick_block, stone_block, glass_block, water_block, chest_block, sandstone_block, marble_block]
+        initial_items = [chest_block, grass_block, sandstone_block, brick_block, stonebrick_block, marble_block, glass_block, lw_block, mw_block, dw_block]
+        for item in initial_items:
+            quantity = random.randint(1, 3)
+            self.quick_slots.add_item(item.id(), quantity)
+
+    def add_item(self, item_id):
+        if self.quick_slots.add_item(item_id):
+            return True
+        elif self.inventory.add_item(item_id):
+            return True
+        return False
+
+class ItemSelector(object):
+    def __init__(self, width, height, player, model):
+        self.batch = pyglet.graphics.Batch()
+        self.group = pyglet.graphics.OrderedGroup(1)
+        self.model = model
+        self.player = player
+        self.max_items = 9
+        self.current_index = 4
+        self.icon_size = self.model.group.texture.width / 4
+
+        image = pyglet.image.load('slots.png')
+        frame_size = image.height / 2
+        self.frame = pyglet.sprite.Sprite(image.get_region(0, frame_size, image.width, frame_size), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
+        self.active = pyglet.sprite.Sprite(image.get_region(0, 0, frame_size, frame_size), batch=self.batch, group=pyglet.graphics.OrderedGroup(2))
+        self.set_position(width, height)
+
+    def change_index(self, change):
+        self.set_index(self.current_index + change)
+
+    def set_index(self, index):
+        index = int(index)
+        if self.current_index == index:
+            return
+        self.current_index = index
+        if self.current_index >= self.max_items:
+            self.current_index = 0
+        elif self.current_index < 0:
+            self.current_index = self.max_items - 1;
+        self.update_current()
+
+    def update_items(self):
+        self.icons = []
+        x = self.frame.x + 3
+        items = self.player.quick_slots.get_items()
+        for item in items:
+            if not item:
+                x += (self.icon_size * 0.5) + 3
+                continue
+            block = BLOCKS_DIR[item.type]
+            block_icon = self.model.group.texture.get_region(int(block.side[0] * 4) * self.icon_size, int(block.side[1] * 4) * self.icon_size, self.icon_size, self.icon_size)
+            icon = pyglet.sprite.Sprite(block_icon, batch=self.batch, group=self.group)
+            icon.scale = 0.5
+            icon.x = x
+            icon.y = self.frame.y + 3
+            x += (self.icon_size * 0.5) + 3
+            self.icons.append(icon)
+
+    def update_current(self):
+        self.active.x = self.frame.x + (self.current_index * 35);
+
+    def set_position(self, width, height):
+        self.frame.x = (width - self.frame.width) / 2
+        self.frame.y = self.icon_size * 0.5
+        self.active.y = self.frame.y
+        self.update_current()
+        self.update_items()
+
+    def get_current_block(self):
+        item = self.player.quick_slots.at(self.current_index)
+        if item:
+            item_id = item.type
+            self.player.quick_slots.remove_item(item_id)
+            self.update_items()
+            return BLOCKS_DIR[item_id]
+        return False
 
 class Model(object):
     #def __init__(self):
@@ -112,26 +197,6 @@ class Model(object):
                             continue
                         self.init_block((x, y, z), t)
                 s -= d
-            #
-                    #for _ in xrange(120):
-                        #a = random.randint(-o, o)
-                        #b = random.randint(-o, o)
-                        #c = -1
-                        #h = random.randint(1, 6)
-                        #s = random.randint(4, 8)
-                        #d = 1
-                        #t = random.choice([grass_block, sand_block, dirt_block]) # removed brick_block
-                        #for y in xrange(c, c + h):
-                            #for x in xrange(a - s, a + s + 1):
-                                #for z in xrange(b - s, b + s + 1):
-                                    #if (x - a) ** 2 + (z - b) ** 2 > (s + 1) ** 2:
-                                        #continue
-                                    #if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
-                                        #continue
-                                    #self.init_block((x, y, z), t)
-                            #s -= d
-
-
 
     def hit_test(self, position, vector, max_distance=8):
         m = 8
@@ -278,12 +343,10 @@ class Window(pyglet.window.Window):
         self.rotation = (-20, 0)
         self.sector = None
         self.reticle = None
-        self.block_preview = None
-        self.selected_block = 0
         self.dy = 0
-        self.inventory = BLOCKS
         if self.save == None:
             self.model = Model()
+            self.player = Player()
         else:
             self.model = Model(initialize=False)
             self.model.world = self.save[0]
@@ -292,16 +355,15 @@ class Window(pyglet.window.Window):
             self.position = self.save[3]
             self.rotation = self.save[4]
             self.flying = self.save[5]
-        self.block = self.inventory[0]
+            self.player = self.save[6]
+        self.item_list = ItemSelector(self.width, self.height, self.player, self.model)
         self.num_keys = [
             key._1, key._2, key._3, key._4, key._5,
             key._6, key._7, key._8, key._9, key._0]
-        #self.model = Model()
-        self.label = pyglet.text.Label('', font_name='Arial', font_size=8,
-            x=10, y=self.height - 10, anchor_x='left', anchor_y='top',
-            color=(0, 0, 0, 255))
         if self.show_gui:
-            self.update_preview()
+            self.label = pyglet.text.Label('', font_name='Arial', font_size=18,
+                x=10, y=self.height - 10, anchor_x='left', anchor_y='top',
+                color=(0, 0, 0, 255))
         pyglet.clock.schedule_interval(self.update, 1.0 / 60)
     def set_exclusive_mouse(self, exclusive):
         super(Window, self).set_exclusive_mouse(exclusive)
@@ -336,14 +398,6 @@ class Window(pyglet.window.Window):
             dx = 0.0
             dz = 0.0
         return (dx, dy, dz)
-
-    def update_preview(self):
-        block_side = 64
-        x, y = int(BLOCKS[self.selected_block].side[0] * 8), int(BLOCKS[self.selected_block].side[1] * 8)  # was *4
-        block_icon = self.model.group.texture.get_region(x * block_side, y * block_side, block_side, block_side)
-        width, height = self.get_size()
-        #self.block_preview = pyglet.sprite.Sprite(block_icon, x=width-(block_side + 30), y=30)
-        self.block_preview = pyglet.sprite.Sprite(block_icon, x=width-(block_side + 30), y=30)
 
     def update(self, dt):
         self.model.process_queue()
@@ -400,15 +454,8 @@ class Window(pyglet.window.Window):
         return tuple(p)
 
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
-        return
         if self.exclusive and scroll_y != 0:
-            self.selected_block += scroll_y
-            if self.selected_block >= len(BLOCKS):
-                self.selected_block = 0
-            elif self.selected_block < 0:
-                self.selected_block = len(BLOCKS) - 1
-            if self.show_gui:
-                self.update_preview()
+            self.item_list.change_index(scroll_y*-1)
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.exclusive:
@@ -419,9 +466,13 @@ class Window(pyglet.window.Window):
                     hit_block = self.model.world[block]
                     if hit_block != bed_block:
                         self.model.remove_block(block)
+                        if self.player.add_item(hit_block.drop()):
+                            self.item_list.update_items()
             else:
                 if previous:
-                    self.model.add_block(previous, self.block)
+                    current_block = self.item_list.get_current_block()
+                    if current_block:
+                        self.model.add_block(previous, current_block)
         else:
             self.set_exclusive_mouse(True)
 
@@ -453,25 +504,13 @@ class Window(pyglet.window.Window):
             self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
             self.flying = not self.flying
-        elif symbol == key.B:
-            self.show_gui = not self.show_gui
-        elif symbol == key.F3:
+        elif symbol == key.B or symbol == key.F3:
             self.show_gui = not self.show_gui
         elif symbol in self.num_keys:
-            #self.block = self.inventory[(symbol - self.num_keys[0]) % len(self.inventory)]
-            index = (symbol - self.num_keys[0]) % len(self.inventory)
-            self.block = self.inventory[index]
-            self.selected_block = self.block
-            block_side = 64
-            print self.selected_block
-            x = int(BLOCKS[index].side[0] * 8)  #was *4
-            y = int(BLOCKS[index].side[1] * 8)  # was *4
-            block_icon = self.model.group.texture.get_region(x * block_side, y * block_side, block_side, block_side)
-            width, height = self.get_size()
-            self.block_preview = pyglet.sprite.Sprite(block_icon, x=width-(block_side + 30), y=30)
-            #self.block_preview = pyglet.sprite.Sprite(block_icon, x=width-(block_side + 30), y=30)
+            index = (symbol - self.num_keys[0])
+            self.item_list.set_index(index)
         elif symbol == key.V:
-            pickle.dump((self.model.world, self.model.sectors, self.strafe, self.position, self.rotation, self.flying), open(SAVE_FILENAME, "wb"))
+            pickle.dump((self.model.world, self.model.sectors, self.strafe, self.position, self.rotation, self.flying, self.player), open(SAVE_FILENAME, "wb"))
 
     def on_key_release(self, symbol, modifiers):
         if symbol == key.W:
@@ -486,7 +525,6 @@ class Window(pyglet.window.Window):
             self.dy = 0
     def on_resize(self, width, height):
         # label
-        self.label.y = height - 10
         # reticle
         if self.reticle:
             self.reticle.delete()
@@ -495,6 +533,10 @@ class Window(pyglet.window.Window):
         self.reticle = pyglet.graphics.vertex_list(4,
             ('v2i', (x - n, y, x + n, y, x, y - n, x, y + n))
         )
+        if self.show_gui:
+            self.label.y = height - 10
+            self.item_list.set_position(width, height)
+
     def set_2d(self):
         width, height = self.get_size()
         glDisable(GL_DEPTH_TEST)
@@ -510,8 +552,8 @@ class Window(pyglet.window.Window):
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        #gluPerspective(65.0, width / float(height), 0.1, DRAW_DISTANCE)
-        gluPerspective(FOV, width / float(height), NEAR_CLIP_DISTANCE, FAR_CLIP_DISTANCE)
+        gluPerspective(65.0, width / float(height), 0.1, DRAW_DISTANCE)
+        #gluPerspective(FOV, width / float(height), NEAR_CLIP_DISTANCE, FAR_CLIP_DISTANCE)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         x, y = self.rotation
@@ -528,7 +570,7 @@ class Window(pyglet.window.Window):
         self.set_2d()
         if self.show_gui:
             self.draw_label()
-            self.block_preview.draw()
+            self.item_list.batch.draw()
         self.draw_reticle()
     def draw_focused_block(self):
         vector = self.get_sight_vector()
@@ -556,9 +598,7 @@ def setup_fog():
     glHint(GL_FOG_HINT, GL_DONT_CARE)
     glFogi(GL_FOG_MODE, GL_LINEAR)
     glFogf(GL_FOG_DENSITY, 0.35)
-#    glFogf(GL_FOG_START, 20.0)
-#    glFogf(GL_FOG_END, DRAW_DISTANCE)
-    glFogf(GL_FOG_START, 60.0)
+    glFogf(GL_FOG_START, 20.0)
     glFogf(GL_FOG_END, 80)
 
 def setup():
@@ -572,9 +612,9 @@ def main(options):
     if os.path.exists(SAVE_FILENAME):
         save = pickle.load(open(SAVE_FILENAME, "rb"))
     if options.draw_distance == 'medium':
-        DRAW_DISTANCE *= 1.5
+        DRAW_DISTANCE = 60.0 * 1.5
     elif options.draw_distance == 'long':
-        DRAW_DISTANCE *= 2.0
+        DRAW_DISTANCE = 60.0 * 2.0
     global WORLDTYPE
     WORLDTYPE = options.terrain
     global HILLHEIGHT
@@ -584,11 +624,14 @@ def main(options):
     print WORLDTYPE
     print HILLHEIGHT
     print FLATWORLD
+
     try:
         config = Config(sample_buffers=1, samples=0, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
         window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=config, save=save)
     except pyglet.window.NoSuchConfigException:
         window = Window( width=options.width, height=options.height, caption='pyCraftr_No-Conf', resizable=True, save=save)
+
+    #'window = Window(width=options.width, height=options.height, caption='pyCraftr_No-Conf', resizable=True, save=save)
     window.set_exclusive_mouse(True)
     setup()
     if not options.hide_fog:
