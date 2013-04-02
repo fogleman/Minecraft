@@ -117,6 +117,7 @@ class ItemSelector(object):
         self.amount_labels = []
         x = self.frame.x + 3
         items = self.player.quick_slots.get_items()
+        items = items[:self.max_items]
         for item in items:
             if not item:
                 x += (self.icon_size * 0.5) + 3

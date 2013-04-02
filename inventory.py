@@ -16,7 +16,7 @@ class Inventory(object):
         else:            
             index = next((index for index,value in enumerate(self.slots) if not value), -1)
             
-            if index == -1 and len(self.slots) == self.slot_count:
+            if (index == -1 or index >= self.slot_count) and len(self.slots) == self.slot_count:
                 return False
 
             item_stack = ItemStack(type=item_id, amount=quantity)
