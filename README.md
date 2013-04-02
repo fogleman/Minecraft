@@ -7,7 +7,7 @@ http://www.youtube.com/watch?v=kC3lwK631X8
 ## How to Run
 
     pip install pyglet
-    git clone https://github.com/fogleman/Minecraft.git
+    git clone https://github.com/avelanarius/Minecraft.git
     cd Minecraft
     python main.py
 
@@ -50,18 +50,36 @@ See the [https://github.com/fogleman/Minecraft/wiki](wiki) for this project to i
 - A: strafe left
 - D: strafe right
 - Mouse: look around
-- Space: jump
+- Space: jump / (in flying mode) fly
+- Shift: (in flying mode) fly down
 - Tab: toggle flying mode
 
 ### Building
 
-- Selecting type of block to create:
-    - 1: brick
-    - 2: grass
-    - 3: sand
+- Selecting item in inventory: 1 - 9
 - Mouse left-click: remove block
 - Mouse right-click: create block
 
 ### Quitting
 
 - ESC: release mouse, then close window
+
+### Command-line arguments
+    usage: main.py [-h] [-width WIDTH] [-height HEIGHT] [-terrain TERRAIN]
+                   [-hillheight HILLHEIGHT] [-flat FLAT] [--hide-fog] [--show-gui]
+                   [--disable-auto-save] [-draw-distance {short,medium,long}]
+                   [-save SAVE] [--disable-save]
+    
+    optional arguments:
+      -h, --help            show this help message and exit
+      -width WIDTH
+      -height HEIGHT
+      -terrain TERRAIN
+      -hillheight HILLHEIGHT
+      -flat FLAT
+      --hide-fog
+      --show-gui
+      --disable-auto-save
+      -draw-distance {short,medium,long}
+      -save SAVE
+      --disable-save
