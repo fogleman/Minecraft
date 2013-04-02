@@ -179,15 +179,23 @@ class Model(object):
                     self.init_block((x, y - 2, z), water_block)
                 if WORLDTYPE == 4:
                     self.init_block((x, y - 2, z), grass_block)
+                if WORLDTYPE == 5:
+                    t = random.choice([grass_block, grass_block, dirt_block, stone_block])
+                    self.init_block((x, y - 2, z), t)
+                    #self.init_block((x, y - 2, z), grass_block)
+                    #self.init_block((x, y - 2, z), grass_block)
                 #self.init_block((x, y - 2, z), water_block)
+                #if WORLDTYPE != 5:
+                    #self.init_block((x, y - 2, z), grass_block)
+
                 self.init_block((x, y - 3, z), dirt_block)
                 self.init_block((x, y - 4, z), bed_block) # was stone_block
                 if x in (-n, n) or z in (-n, n):
                     for dy in xrange(-3, 10): #was -2 ,6
                         self.init_block((x, y + dy, z), stone_block)
-        o = n - 10
-        if HILLHEIGHT > 6:
-            o = n - 10 + HILLHEIGHT / 2
+        #o = n - 10
+        #if HILLHEIGHT <> 6:
+        o = n - 10 + HILLHEIGHT -6
         if FLATWORLD == 1:
             return
         for _ in xrange(120):
@@ -207,6 +215,8 @@ class Model(object):
                 t = random.choice([grass_block, sand_block]) # removed brick_block
             if WORLDTYPE == 4:
                 t = random.choice([grass_block, sand_block, dirt_block]) # removed brick_block
+            if WORLDTYPE == 5:
+                t = random.choice([stone_block]) # removed brick_block
             for y in xrange(c, c + h):
                 for x in xrange(a - s, a + s + 1):
                     for z in xrange(b - s, b + s + 1):
@@ -215,7 +225,13 @@ class Model(object):
                         if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
                             continue
                         self.init_block((x, y, z), t)
+
+                    #if WORLDTYPE == 5: # cover the mountains of stone with grass
+                        #self.init_block((x + 1, y + 1, z + 1), grass_block)
                 s -= d
+                # below makes floating 'extreme hills' blocks...
+            #if WORLDTYPE == 5: # cover the mountains of stone with grass
+                #self.init_block((x, y - 1, z), grass_block)
 
     def hit_test(self, position, vector, max_distance=8):
         m = 8
@@ -569,7 +585,11 @@ class Window(pyglet.window.Window):
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        glOrtho(0, width, 0, height, -1, 1)
+        #glOrtho(0, width, 0, height, -1, 1)
+        if width != 0:
+            glOrtho(0, width, 0, height, -1, 1)
+        else:
+            glOrtho(0, 1, 0, 1, -1, 1)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
     def set_3d(self):
@@ -578,7 +598,11 @@ class Window(pyglet.window.Window):
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        gluPerspective(FOV, width / float(height), NEAR_CLIP_DISTANCE, FAR_CLIP_DISTANCE)
+        #gluPerspective(FOV, width / float(height), NEAR_CLIP_DISTANCE, FAR_CLIP_DISTANCE)
+        if width != float(height):
+            gluPerspective(FOV, width / float(height), NEAR_CLIP_DISTANCE, FAR_CLIP_DISTANCE)
+        else:
+            gluPerspective(FOV, 1, NEAR_CLIP_DISTANCE, FAR_CLIP_DISTANCE)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         x, y = self.player.rotation
@@ -655,11 +679,31 @@ def main(options):
     elif options.draw_distance == 'long':
         DRAW_DISTANCE *= 2.0
     global WORLDTYPE
-    WORLDTYPE = options.terrain
     global HILLHEIGHT
-    HILLHEIGHT = options.hillheight
-    global FLATWORLD
-    FLATWORLD = options.flat
+
+    if options.terrain == "plains":
+        WORLDTYPE = 0
+        HILLHEIGHT = 2
+    if options.terrain == "mountains":
+        WORLDTYPE = 5
+        HILLHEIGHT = 16
+    if options.terrain == "desert":
+        WORLDTYPE = 2
+        HILLHEIGHT = 5
+    if options.terrain == "island":
+        WORLDTYPE = 3
+        HILLHEIGHT = 8
+
+
+#    WORLDTYPE = options.terrain
+    if options.hillheight <> 6:
+        HILLHEIGHT = options.hillheight
+
+    if options.flat > 0:
+        global FLATWORLD
+        FLATWORLD = options.flat
+
+
 
     #try:
         #config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
@@ -679,7 +723,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-width", type=int, default=850)
     parser.add_argument("-height", type=int, default=480)
-    parser.add_argument("-terrain", type=int, default=0)
+    parser.add_argument("-terrain", type=str, default="grass")
     parser.add_argument("-hillheight", type=int, default=6)
     parser.add_argument("-flat", type=int, default=0)
     parser.add_argument("--hide-fog", action="store_true", default=False)
