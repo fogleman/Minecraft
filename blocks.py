@@ -1,4 +1,4 @@
-def tex_coord(x, y, n=4):
+def tex_coord(x, y, n=8):
     m = 1.0 / n
     dx = x * m
     dy = y * m
@@ -123,7 +123,7 @@ def block_texture(block):
     result = []
     result.extend(block.top)
     result.extend(block.bottom)
-    result.extend(block.side * 4)
+    result.extend(block.side * 4) #4
     return result
 
 air_block = AirBlock()

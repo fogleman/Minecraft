@@ -68,10 +68,14 @@ class Player(Entity):
         self.quick_slots = Inventory(9)
         self.flying = flying
         initial_items = [dirt_block, sand_block, brick_block, stone_block, glass_block, water_block, chest_block, sandstone_block, marble_block]
+        
         for item in initial_items:
             quantity = random.randint(1, 10)
-            self.quick_slots.add_item(item.id(), quantity)
-        
+            if FLATWORLD == 1:
+                self.quick_slots.add_item(item.id(), 99)
+            if FLATWORLD == 0:
+                self.quick_slots.add_item(item.id(), quantity)
+
     def add_item(self, item_id):
         if self.quick_slots.add_item(item_id):
             return True
@@ -88,9 +92,9 @@ class ItemSelector(object):
         self.model = model
         self.player = player
         self.max_items = 9
-        self.current_index = 4
-        self.icon_size = self.model.group.texture.width / 4
-        
+        self.current_index = 1
+        self.icon_size = self.model.group.texture.width / 8 #4
+
         image = pyglet.image.load('slots.png')
         frame_size = image.height / 2
         self.frame = pyglet.sprite.Sprite(image.get_region(0, frame_size, image.width, frame_size), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
@@ -99,7 +103,7 @@ class ItemSelector(object):
         
     def change_index(self, change):
         self.set_index(self.current_index + change)
-                
+            
     def set_index(self, index):
         index = int(index)
         if self.current_index == index:
@@ -124,7 +128,8 @@ class ItemSelector(object):
                 x += (self.icon_size * 0.5) + 3
                 continue
             block = BLOCKS_DIR[item.type]
-            block_icon = self.model.group.texture.get_region(int(block.side[0] * 4) * self.icon_size, int(block.side[1] * 4) * self.icon_size, self.icon_size, self.icon_size)
+            #block_icon = self.model.group.texture.get_region(int(block.side[0] * 4) * self.icon_size, int(block.side[1] * 4) * self.icon_size, self.icon_size, self.icon_size)
+            block_icon = self.model.group.texture.get_region(int(block.side[0] * 8) * self.icon_size, int(block.side[1] * 8) * self.icon_size, self.icon_size, self.icon_size)
             icon = pyglet.sprite.Sprite(block_icon, batch=self.batch, group=self.group)
             icon.scale = 0.5
             icon.x = x
@@ -145,7 +150,7 @@ class ItemSelector(object):
         self.active.y = self.frame.y            
         self.update_current()
         self.update_items()
-        
+
     def get_current_block(self):
         item = self.player.quick_slots.at(self.current_index)
         if item:
@@ -183,6 +188,8 @@ class Model(object):
                     self.init_block((x, y - 2, z), sand_block)
                 if WORLDTYPE == 3:
                     self.init_block((x, y - 2, z), water_block)
+                if WORLDTYPE == 4:
+                    self.init_block((x, y - 2, z), grass_block)
                 #self.init_block((x, y - 2, z), water_block)
                 self.init_block((x, y - 3, z), dirt_block)
                 self.init_block((x, y - 4, z), bed_block) # was stone_block
@@ -191,7 +198,7 @@ class Model(object):
                         self.init_block((x, y + dy, z), stone_block)
         o = n - 10
         if HILLHEIGHT > 6:
-            o = n - 10 + HILLHEIGHT - 6
+            o = n - 10 + HILLHEIGHT / 2
         if FLATWORLD == 1:
             return
         for _ in xrange(120):
@@ -201,7 +208,16 @@ class Model(object):
             h = random.randint(1, HILLHEIGHT)
             s = random.randint(4, HILLHEIGHT + 2)
             d = 1
-            t = random.choice([grass_block, sand_block, dirt_block]) # removed brick_block
+            if WORLDTYPE == 0:
+                t = random.choice([grass_block]) # removed brick_block
+            if WORLDTYPE == 1:
+                t = random.choice([dirt_block]) # removed brick_block
+            if WORLDTYPE == 2:
+                t = random.choice([sand_block]) # removed brick_block
+            if WORLDTYPE == 3:
+                t = random.choice([grass_block, sand_block]) # removed brick_block
+            if WORLDTYPE == 4:
+                t = random.choice([grass_block, sand_block, dirt_block]) # removed brick_block
             for y in xrange(c, c + h):
                 for x in xrange(a - s, a + s + 1):
                     for z in xrange(b - s, b + s + 1):
@@ -280,7 +296,7 @@ class Model(object):
         texture_data = block_texture(block)
         for dx, dy, dz in []:#FACES:
             if (x + dx, y + dy, z + dz) in self.world:
-                count -= 4
+                count -= 8 #4
                 i = index * 12
                 j = index * 8
                 del vertex_data[i:i + 12]
@@ -370,8 +386,8 @@ class Window(pyglet.window.Window):
             key._1, key._2, key._3, key._4, key._5,
             key._6, key._7, key._8, key._9, key._0]
         if self.show_gui:
-            self.label = pyglet.text.Label('', font_name='Arial', font_size=18, 
-                x=10, y=self.height - 10, anchor_x='left', anchor_y='top', 
+            self.label = pyglet.text.Label('', font_name='Arial', font_size=8,
+                x=10, y=self.height - 10, anchor_x='left', anchor_y='top',
                 color=(0, 0, 0, 255))
         pyglet.clock.schedule_interval(self.update, 1.0 / 60)
     def set_exclusive_mouse(self, exclusive):
@@ -470,7 +486,7 @@ class Window(pyglet.window.Window):
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
         if self.exclusive and scroll_y != 0:
             self.item_list.change_index(scroll_y*-1)
-            
+
     def on_mouse_press(self, x, y, button, modifiers):
         if self.exclusive:
             vector = self.get_sight_vector()
@@ -532,6 +548,7 @@ class Window(pyglet.window.Window):
         elif symbol == key.M:
             self.player.quick_slots.change_sort_mode()
             self.item_list.update_items()
+
     def on_key_release(self, symbol, modifiers):
         if symbol == key.W:
             self.strafe[0] += 1
@@ -543,6 +560,9 @@ class Window(pyglet.window.Window):
             self.strafe[1] -= 1
         elif (symbol == key.SPACE or symbol == key.LSHIFT or symbol == key.RSHIFT) and self.player.flying:
             self.dy = 0
+        elif symbol == key.M:
+            self.player.quick_slots.change_sort_mode()
+            self.item_list.update_items()
     def on_resize(self, width, height):
         # label
         # reticle
@@ -556,7 +576,7 @@ class Window(pyglet.window.Window):
         if self.show_gui:
             self.label.y = height - 10
             self.item_list.set_position(width, height)
-            
+
     def set_2d(self):
         width, height = self.get_size()
         glDisable(GL_DEPTH_TEST)
@@ -650,14 +670,13 @@ def main(options):
     HILLHEIGHT = options.hillheight
     global FLATWORLD
     FLATWORLD = options.flat
-    '''
-    try:
-        config = Config(sample_buffers=1, samples=0, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
-        window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=config, save=save_object)
-    except pyglet.window.NoSuchConfigException:
-        window = Window( width=options.width, height=options.height, caption='pyCraftr_No-Conf', resizable=True, save=save_object)
-    '''
-    window = Window(width=options.width, height=options.height, caption='pyCraftr_No-Conf', resizable=True, save=save_object)
+
+    #try:
+        #config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
+        #window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=config, save=save_object)
+    #except pyglet.window.NoSuchConfigException:
+    window = Window( width=options.width, height=options.height, caption='pyCraftr_No-Conf', resizable=True, save=save_object)
+    
     window.set_exclusive_mouse(True)
     setup()
     if not options.hide_fog:

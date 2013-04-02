@@ -28,7 +28,7 @@ class Inventory(object):
                 if not item_stack:
                     # find an empty slot to store these items
                     index = self.find_empty_slot()
-            
+
                     if index == -1 and len(self.slots) == self.slot_count:
                         return retval
 
@@ -57,7 +57,6 @@ class Inventory(object):
         else:            
             while quantity > 0:
                 index = self.find_empty_slot()
-            
                 retval = False
                 if index == -1 and len(self.slots) == self.slot_count:
                     return retval
@@ -114,7 +113,7 @@ class Inventory(object):
         if index >= 0 and index < self.slot_count:
             return self.slots[index]
         return None
-        
+
     def get_index(self, item_id):
         return next((index for index, x in enumerate(self.slots) if x and x.type == item_id), -1)
 
