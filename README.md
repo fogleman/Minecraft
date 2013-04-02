@@ -63,6 +63,7 @@ See the [https://github.com/fogleman/Minecraft/wiki](wiki) for this project to i
 ### GUI
 
 - Toggle UI: B / F3
+- Saving: v (save filename in command-line arguments)
 
 ### Quitting
 
