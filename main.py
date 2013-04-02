@@ -397,8 +397,8 @@ class Window(pyglet.window.Window):
         x, y = self.player.rotation
         m = math.cos(math.radians(y))
         dy = math.sin(math.radians(y))
-        dx = math.cos(math.radians(x - 90)) * m
-        dz = math.sin(math.radians(x - 90)) * m
+        dx = math.sin(math.radians(x)) * m
+        dz = math.cos(math.radians(x)) * m
         return (dx, dy, dz)
     def get_motion_vector(self):
         if any(self.strafe):
@@ -676,7 +676,7 @@ def main(options):
         #window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=config, save=save_object)
     #except pyglet.window.NoSuchConfigException:
     window = Window( width=options.width, height=options.height, caption='pyCraftr_No-Conf', resizable=True, save=save_object)
-    
+
     window.set_exclusive_mouse(True)
     setup()
     if not options.hide_fog:
