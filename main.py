@@ -358,18 +358,19 @@ class Window(pyglet.window.Window):
         self.sector = None
         self.reticle = None
         self.dy = 0
-        if self.save == None:
+        save_len = -1 if self.save == None else len(self.save)
+        self.player = Player()
+        if self.save == None or save_len < 2: # Model.world and model.sectors
             self.model = Model()
-            self.player = Player()
         else:
             self.model = Model(initialize=False)
             self.model.world = self.save[0]
             self.model.sectors = self.save[1]
-            self.strafe = self.save[2]
-            self.position = self.save[3]
-            self.rotation = self.save[4]
-            self.flying = self.save[5]
-            self.player = self.save[6]
+            if save_len > 2 and isinstance(self.save[3], list) and len(self.save[2]) == 2: self.strafe = self.save[2]
+            if save_len > 3 and isinstance(self.save[3], tuple) and len(self.save[3]) == 3: self.position = self.save[3]
+            if save_len > 4 and isinstance(self.save[4], tuple) and len(self.save[4]) == 2: self.rotation = self.save[4]
+            if save_len > 5 and isinstance(self.save[5], bool): self.flying = self.save[5]
+            if save_len > 6 and isinstance(self.save[6], Player): self.player = self.save[6]
         self.item_list = ItemSelector(self.width, self.height, self.player, self.model)
         self.num_keys = [
             key._1, key._2, key._3, key._4, key._5,
@@ -443,6 +444,10 @@ class Window(pyglet.window.Window):
         x, y, z = self.position
         x, y, z = self.collide((x + dx, y + dy, z + dz), 2)
         self.position = (x, y, z)
+
+    def save_to_file(self):
+        pickle.dump((self.model.world, self.model.sectors, self.strafe, self.position, self.rotation, self.flying, self.player), open(SAVE_FILENAME, "wb"))
+
     def collide(self, position, height):
         pad = 0.25
         p = list(position)
@@ -524,7 +529,7 @@ class Window(pyglet.window.Window):
             index = (symbol - self.num_keys[0])
             self.item_list.set_index(index)
         elif symbol == key.V:
-            pickle.dump((self.model.world, self.model.sectors, self.strafe, self.position, self.rotation, self.flying, self.player), open(SAVE_FILENAME, "wb"))
+            self.save_to_file()
 
     def on_key_release(self, symbol, modifiers):
         if symbol == key.W:
@@ -622,9 +627,11 @@ def setup():
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
 def main(options):
-    save = None
+    save_object = None
+    global SAVE_FILENAME
+    SAVE_FILENAME = options.save
     if os.path.exists(SAVE_FILENAME):
-        save = pickle.load(open(SAVE_FILENAME, "rb"))
+        save_object = pickle.load(open(SAVE_FILENAME, "rb"))
     if options.draw_distance == 'medium':
         DRAW_DISTANCE = 60.0 * 1.5
     elif options.draw_distance == 'long':
@@ -641,16 +648,18 @@ def main(options):
     '''
     try:
         config = Config(sample_buffers=1, samples=0, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
-        window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=config, save=save)
+        window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=config, save=save_object)
     except pyglet.window.NoSuchConfigException:
-        window = Window( width=options.width, height=options.height, caption='pyCraftr_No-Conf', resizable=True, save=save)
+        window = Window( width=options.width, height=options.height, caption='pyCraftr_No-Conf', resizable=True, save=save_object)
     '''
-    window = Window(width=options.width, height=options.height, caption='pyCraftr_No-Conf', resizable=True, save=save)
+    window = Window(width=options.width, height=options.height, caption='pyCraftr_No-Conf', resizable=True, save=save_object)
     window.set_exclusive_mouse(True)
     setup()
     if not options.hide_fog:
         setup_fog()
     pyglet.app.run()
+    if options.disable_auto_save:
+        window.save_to_file()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -661,6 +670,8 @@ if __name__ == '__main__':
     parser.add_argument("-flat", type=int, default=0)
     parser.add_argument("--hide-fog", action="store_true", default=False)
     parser.add_argument("--show-gui", action="store_true", default=True)
+    parser.add_argument("--disable-auto-save", action="store_false", default=True)
     parser.add_argument("-draw-distance", choices=['short', 'medium', 'long'], default='short')
+    parser.add_argument("-save", type=unicode, default=SAVE_FILENAME)
     options = parser.parse_args()
     main(options)
