@@ -153,7 +153,7 @@ class ItemSelector(object):
         item = self.player.quick_slots.at(self.current_index)
         if item:
             item_id = item.type
-            self.player.quick_slots.remove_item(item_id)
+            self.player.quick_slots.remove_by_index(self.current_index)
             self.update_items()
             if item_id >= ITEM_ID_MIN:
                 return ITEMS_DIR[item_id]
