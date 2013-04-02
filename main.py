@@ -1,11 +1,12 @@
 from pyglet.gl import *
 from pyglet.window import key
-import math
+from math import cos, sin, atan2, radians, degrees
 import random
 import time
 import argparse
 import os
 import cPickle as pickle
+from collections import deque
 from blocks import *
 from items import *
 from inventory import *
@@ -168,7 +169,7 @@ class Model(object):
         self.shown = {}
         self._shown = {}
         self.sectors = {}
-        self.queue = []
+        self.queue = deque()  #note: could add limit here
         if initialize:
             self.initialize()
     def initialize(self):
@@ -333,7 +334,7 @@ class Model(object):
     def enqueue(self, func, *args):
         self.queue.append((func, args))
     def dequeue(self):
-        func, args = self.queue.pop(0)
+        func, args = self.queue.popleft()
         func(*args)
     def process_queue(self):
         start = time.clock()
@@ -381,29 +382,29 @@ class Window(pyglet.window.Window):
         self.exclusive = exclusive
     def get_sight_vector(self):
         x, y = self.player.rotation
-        m = math.cos(math.radians(y))
-        dy = math.sin(math.radians(y))
-        dx = math.cos(math.radians(x - 90)) * m
-        dz = math.sin(math.radians(x - 90)) * m
+        m = cos(radians(y))
+        dy = sin(radians(y))
+        dx = cos(radians(x - 90)) * m
+        dz = sin(radians(x - 90)) * m
         return (dx, dy, dz)
     def get_motion_vector(self):
         if any(self.strafe):
             x, y = self.player.rotation
-            strafe = math.degrees(math.atan2(*self.strafe))
+            strafe = degrees(atan2(*self.strafe))
             if self.player.flying:
-                m = math.cos(math.radians(y))
-                dy = math.sin(math.radians(y))
+                m = cos(radians(y))
+                dy = sin(radians(y))
                 if self.strafe[1]:
                     dy = 0.0
                     m = 1
                 if self.strafe[0] > 0:
                     dy *= -1
-                dx = math.cos(math.radians(x + strafe)) * m
-                dz = math.sin(math.radians(x + strafe)) * m
+                dx = cos(radians(x + strafe)) * m
+                dz = sin(radians(x + strafe)) * m
             else:
                 dy = 0.0
-                dx = math.cos(math.radians(x + strafe))
-                dz = math.sin(math.radians(x + strafe))
+                dx = cos(radians(x + strafe))
+                dz = sin(radians(x + strafe))
         else:
             dy = 0.0
             dx = 0.0
@@ -577,7 +578,7 @@ class Window(pyglet.window.Window):
         glLoadIdentity()
         x, y = self.player.rotation
         glRotatef(x, 0, 1, 0)
-        glRotatef(-y, math.cos(math.radians(x)), 0, math.sin(math.radians(x)))
+        glRotatef(-y, cos(radians(x)), 0, sin(radians(x)))
         x, y, z = self.player.position
         glTranslatef(-x, -y, -z)
     def on_draw(self):
