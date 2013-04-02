@@ -13,14 +13,21 @@ class Inventory(object):
         
         if item_stack:
             item_stack.change_amount(quantity)
-        else:            
-            index = next((index for index,value in enumerate(self.slots) if not value), -1)
-            
-            if (index == -1 or index >= self.slot_count) and len(self.slots) == self.slot_count:
-                return False
+        else:          
+            if len(self.slots) < self.slot_count:
+                item_stack = ItemStack(type=item_id, amount=quantity)
+                self.slots.append(item_stack)              
+            else:
+                index = -1
+                for i, value in enumerate(self.slots):
+                    if value == None:
+                        index = i
 
-            item_stack = ItemStack(type=item_id, amount=quantity)
-            self.slots.insert(index, item_stack)
+                if index == -1:
+                    return False
+
+                item_stack = ItemStack(type=item_id, amount=quantity)
+                self.slots[index] = item_stack
             
         return True
           

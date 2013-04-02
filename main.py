@@ -132,6 +132,8 @@ class ItemSelector(object):
             amount_label = pyglet.text.Label(str(item.amount), font_name='Arial', font_size=9, 
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom', 
                 color=(block.amount_label_color), batch=self.batch, group=self.amount_labels_group)
+            print(block)
+            print(block.amount_label_color)
             self.amount_labels.append(amount_label)
             self.icons.append(icon)
         

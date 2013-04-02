@@ -59,7 +59,7 @@ class BrickBlock(Block):
 
 class GlassBlock(Block):
     def __init__(self):
-        super(GlassBlock, self).__init__(tex_coord(3,1), tex_coord(3,1), tex_coord(3,1), 0.2, (255, 255, 255, 255))
+        super(GlassBlock, self).__init__(tex_coord(3,1), tex_coord(3,1), tex_coord(3,1), 0.2, (0, 0, 0, 255))
     def id(self):
         return 20
 
