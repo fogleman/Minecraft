@@ -4,6 +4,7 @@ class Inventory(object):
     def __init__(self, slot_count = 27):
         self.slot_count = slot_count
         self.slots = [None] * self.slot_count
+        self.sort_mode = 0
 
     def find_empty_slot(self):
         return next((index for index,value in enumerate(self.slots) if not value), -1)
@@ -90,10 +91,21 @@ class Inventory(object):
             
 
     def sort(self, reverse=True):
-        self.sort_with_key(key=lambda x: x.id() if x != None else -1, reverse=reverse) 
+        if self.sort_mode == 0:
+            self.sort_with_key(key=lambda x: x.id() if x != None else -1, reverse=reverse) 
+        elif self.sort_mode == 1:
+            self.sort_with_key(key=lambda x: x.amount if x != None else -1, reverse=reverse)
 
     def sort_with_key(self, key, reverse=True):
         self.slots = sorted(self.slots, key=key, reverse=reverse) 
+
+    def change_sort_mode(self, change=1):
+        self.sort_mode += change
+        if self.sort_mode > 1:
+            self.sort_mode = 0
+        elif self.sort_mode < 0:
+            self.sort_mode = 1
+        self.sort()
 
     def at(self, index):
         index = int(index)

@@ -529,7 +529,9 @@ class Window(pyglet.window.Window):
             self.item_list.set_index(index)
         elif symbol == key.V:
             self.save_to_file()
-
+        elif symbol == key.M:
+            self.player.quick_slots.change_sort_mode()
+            self.item_list.update_items()
     def on_key_release(self, symbol, modifiers):
         if symbol == key.W:
             self.strafe[0] += 1

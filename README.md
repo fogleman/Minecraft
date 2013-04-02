@@ -64,6 +64,7 @@ See the [https://github.com/fogleman/Minecraft/wiki](wiki) for this project to i
 
 - B / F3: Toggle UI
 - V: Saving (save filename in command-line arguments)
+- M: Change inventory sorting (From id sorting to amount sorting)
 
 ### Quitting
 
