@@ -410,7 +410,10 @@ class Window(pyglet.window.Window):
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        glOrtho(0, width, 0, height, -1, 1)
+        if width != 0:
+            glOrtho(0, width, 0, height, -1, 1)
+        else:
+            glOrtho(0, 1, 0, 1, -1, 1)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
     def set_3d(self):
@@ -419,7 +422,10 @@ class Window(pyglet.window.Window):
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        gluPerspective(65.0, width / float(height), 0.1, 60.0)
+        if width != float(height):
+            gluPerspective(65.0, width / float(height), 0.1, 60.0)
+        else:
+            gluPerspective(65.0, 1, 0.1, 60.0)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         x, y = self.rotation
