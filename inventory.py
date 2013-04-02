@@ -9,6 +9,7 @@ class Inventory(object):
         return next((index for index,value in enumerate(self.slots) if not value), -1)
 
     def add_item(self, item_id, quantity = 1):
+        self.sort()
         if quantity < 1:
             return False
 
@@ -43,6 +44,7 @@ class Inventory(object):
                     capacity = max_size - item_stack.amount
                     if quantity < capacity:     # there is a slot with enough space
                         item_stack.change_amount(quantity)
+                        self.sort()
                         return True
                     else:   # overflow
                         quantity -= capacity
@@ -68,10 +70,11 @@ class Inventory(object):
 
                 self.slots.insert(index, item_stack)
                 retval = True
-            
+        self.sort()   
         return True
           
     def remove_item(self, item_id, quantity = 1):
+        self.sort()
         if quantity < 1:
             return False
             
@@ -80,9 +83,18 @@ class Inventory(object):
             self.slots[index].change_amount(quantity*-1)
             if self.slots[index].amount == 0:
                 self.slots[index] = None
+                self.sort()
                 return True
+        self.sort()
         return False
             
+
+    def sort(self, reverse=True):
+        self.sort_with_key(key=lambda x: x.id() if x != None else -1, reverse=reverse) 
+
+    def sort_with_key(self, key, reverse=True):
+        self.slots = sorted(self.slots, key=key, reverse=reverse) 
+
     def at(self, index):
         index = int(index)
         if index >= 0 and index < self.slot_count:
