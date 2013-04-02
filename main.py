@@ -138,7 +138,10 @@ class ItemSelector(object):
             item_id = item.type
             self.player.quick_slots.remove_item(item_id)
             self.update_items()
-            return BLOCKS_DIR[item_id]
+            if item_id >= ITEM_ID_MIN:
+                return ITEMS_DIR[item_id]
+            else:
+                return BLOCKS_DIR[item_id]
         return False
 
 class Model(object):
@@ -491,7 +494,11 @@ class Window(pyglet.window.Window):
                 if previous:
                     current_block = self.item_list.get_current_block()
                     if current_block:
-                        self.model.add_block(previous, current_block)
+                        # if current block is an item, call its on_right_click() method to handle this event
+                        if current_block.id() >= ITEM_ID_MIN:
+                            current_block.on_right_click()
+                        else:
+                            self.model.add_block(previous, current_block)
         else:
             self.set_exclusive_mouse(True)
             
