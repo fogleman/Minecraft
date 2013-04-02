@@ -365,6 +365,7 @@ class Window(pyglet.window.Window):
         self.dy = 0
         if self.save == None:
             self.model = Model()
+            self.player = Player()
         else:
             self.model = Model(initialize=False)
             self.model.world = self.save[0]
@@ -373,11 +374,11 @@ class Window(pyglet.window.Window):
             self.position = self.save[3]
             self.rotation = self.save[4]
             self.flying = self.save[5]
+            self.player = self.save[6]
+        self.item_list = ItemSelector(self.width, self.height, self.player, self.model)
         self.num_keys = [
             key._1, key._2, key._3, key._4, key._5,
             key._6, key._7, key._8, key._9, key._0]
-        self.player = Player()
-        self.item_list = ItemSelector(self.width, self.height, self.player, self.model)
         if self.show_gui:
             self.label = pyglet.text.Label('', font_name='Arial', font_size=18, 
                 x=10, y=self.height - 10, anchor_x='left', anchor_y='top', 
@@ -528,7 +529,7 @@ class Window(pyglet.window.Window):
             index = (symbol - self.num_keys[0])
             self.item_list.set_index(index)
         elif symbol == key.V:
-            pickle.dump((self.model.world, self.model.sectors, self.strafe, self.position, self.rotation, self.flying), open(SAVE_FILENAME, "wb"))
+            pickle.dump((self.model.world, self.model.sectors, self.strafe, self.position, self.rotation, self.flying, self.player), open(SAVE_FILENAME, "wb"))
 
     def on_key_release(self, symbol, modifiers):
         if symbol == key.W:
