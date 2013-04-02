@@ -351,7 +351,7 @@ class Window(pyglet.window.Window):
             self.model = Model(initialize=False)
             self.model.world = self.save[0]
             self.model.sectors = self.save[1]
-            if save_len > 2 and isinstance(self.save[3], list) and len(self.save[2]) == 2: self.strafe = self.save[2]
+            if save_len > 2 and isinstance(self.save[2], list) and len(self.save[2]) == 2: self.strafe = self.save[2]
             if save_len > 3 and isinstance(self.save[3], Player): self.player = self.save[3]
         self.item_list = ItemSelector(self.width, self.height, self.player, self.model)
         self.num_keys = [
