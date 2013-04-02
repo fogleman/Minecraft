@@ -74,14 +74,21 @@ class Model(object):
         y = 0
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
-                self.init_block((x, y - 2, z), grass_block)
+                if WORLDTYPE == 0:
+                    self.init_block((x, y - 2, z), dirt_block)
+                if WORLDTYPE == 1:
+                    self.init_block((x, y - 2, z), grass_block)
+                if WORLDTYPE == 2:
+                    self.init_block((x, y - 2, z), sand_block)
+                if WORLDTYPE == 3:
+                    self.init_block((x, y - 2, z), water_block)
+                #self.init_block((x, y - 2, z), water_block)
                 self.init_block((x, y - 3, z), dirt_block)
                 self.init_block((x, y - 4, z), bed_block) # was stone_block
                 if x in (-n, n) or z in (-n, n):
                     for dy in xrange(-3, 10): #was -2 ,6
                         self.init_block((x, y + dy, z), stone_block)
         o = n - 10
-
         for _ in xrange(120):
             a = random.randint(-o, o)
             b = random.randint(-o, o)
@@ -99,6 +106,24 @@ class Model(object):
                             continue
                         self.init_block((x, y, z), t)
                 s -= d
+            #
+                    #for _ in xrange(120):
+                        #a = random.randint(-o, o)
+                        #b = random.randint(-o, o)
+                        #c = -1
+                        #h = random.randint(1, 6)
+                        #s = random.randint(4, 8)
+                        #d = 1
+                        #t = random.choice([grass_block, sand_block, dirt_block]) # removed brick_block
+                        #for y in xrange(c, c + h):
+                            #for x in xrange(a - s, a + s + 1):
+                                #for z in xrange(b - s, b + s + 1):
+                                    #if (x - a) ** 2 + (z - b) ** 2 > (s + 1) ** 2:
+                                        #continue
+                                    #if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
+                                        #continue
+                                    #self.init_block((x, y, z), t)
+                            #s -= d
 
 
 
@@ -542,6 +567,9 @@ def main(options):
         DRAW_DISTANCE *= 1.5
     elif options.draw_distance == 'long':
         DRAW_DISTANCE *= 2.0
+    global WORLDTYPE
+    WORLDTYPE = options.terrain
+    print WORLDTYPE
     try:
         config = Config(sample_buffers=1, samples=0, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
         window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=config, save=save)
@@ -557,6 +585,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-width", type=int, default=850)
     parser.add_argument("-height", type=int, default=480)
+    parser.add_argument("-terrain", type=int, default=0)
     parser.add_argument("--hide-fog", action="store_true", default=False)
     parser.add_argument("--show-gui", action="store_true", default=True)
     parser.add_argument("-draw-distance", choices=['short', 'medium', 'long'], default='short')
