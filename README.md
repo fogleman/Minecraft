@@ -4,6 +4,28 @@ Simple Minecraft-inspired demo written in Python and Pyglet.
 
 http://www.youtube.com/watch?v=kC3lwK631X8
 
+## Goals and Vision
+
+I would like to see this project turn into an educational tool. Kids love Minecraft and Python is a great first language.
+This is a good opportunity to get children excited about programming.
+
+The code should become well commented and more easily configurable. It should be easy to make some simple changes
+and see the results quickly.
+
+I think it would be great to turn the project into more of a library / API... a Python package that you import and then
+use / configure to setup a world and run it. Something along these lines...
+
+    import mc
+    
+    world = mc.World(...)
+    world.set_block(x, y, z, mc.DIRT)
+    mc.run(world)
+
+The API could contain functionality for the following:
+
+- Easily configurable parameters like gravity, jump velocity, walking speed, etc.
+- Hooks for terrain generation.
+
 ## How to Run
 
     pip install pyglet
