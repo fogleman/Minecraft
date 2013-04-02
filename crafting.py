@@ -93,7 +93,7 @@ class SmeltingRecipes(object):
 recipes = Recipes()
 smelting = SmeltingRecipes()
 
-# a test: 
+# a test:
 # grass | grass
 #--------------  ---->  dirt
 # grass | grass
