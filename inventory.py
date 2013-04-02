@@ -1,4 +1,5 @@
 from items import *
+import sys
 
 class Inventory(object):
     def __init__(self, slot_count = 27):
@@ -89,22 +90,25 @@ class Inventory(object):
         self.sort()
         return False
             
-
     def sort(self, reverse=True):
         if self.sort_mode == 0:
-            self.sort_with_key(key=lambda x: x.id() if x != None else -1, reverse=reverse) 
+            self.sort_with_key(key=lambda x: x.id() if x != None else -sys.maxint - 1, reverse=True) 
         elif self.sort_mode == 1:
-            self.sort_with_key(key=lambda x: x.amount if x != None else -1, reverse=reverse)
+            self.sort_with_key(key=lambda x: x.id() if x != None else sys.maxint - 1, reverse=False) 
+        if self.sort_mode == 2:
+            self.sort_with_key(key=lambda x: x.amount if x != None else -sys.maxint - 1, reverse=True)
+        elif self.sort_mode == 3:
+            self.sort_with_key(key=lambda x: x.amount if x != None else sys.maxint - 1, reverse=False)
 
     def sort_with_key(self, key, reverse=True):
         self.slots = sorted(self.slots, key=key, reverse=reverse) 
 
     def change_sort_mode(self, change=1):
         self.sort_mode += change
-        if self.sort_mode > 1:
+        if self.sort_mode > 3:
             self.sort_mode = 0
         elif self.sort_mode < 0:
-            self.sort_mode = 1
+            self.sort_mode = 3
         self.sort()
 
     def at(self, index):
