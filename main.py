@@ -142,7 +142,6 @@ class ItemSelector(object):
         return False
 
 class Model(object):
-    #def __init__(self):
     def __init__(self, initialize=True):
         self.batch = pyglet.graphics.Batch()
         self.group = TextureGroup('texture.png')
@@ -151,7 +150,6 @@ class Model(object):
         self._shown = {}
         self.sectors = {}
         self.queue = []
-        #self.initialize()
         if initialize:
             self.initialize()
     def initialize(self):
@@ -196,26 +194,6 @@ class Model(object):
                             continue
                         self.init_block((x, y, z), t)
                 s -= d
-            #
-                    #for _ in xrange(120):
-                        #a = random.randint(-o, o)
-                        #b = random.randint(-o, o)
-                        #c = -1
-                        #h = random.randint(1, 6)
-                        #s = random.randint(4, 8)
-                        #d = 1
-                        #t = random.choice([grass_block, sand_block, dirt_block]) # removed brick_block
-                        #for y in xrange(c, c + h):
-                            #for x in xrange(a - s, a + s + 1):
-                                #for z in xrange(b - s, b + s + 1):
-                                    #if (x - a) ** 2 + (z - b) ** 2 > (s + 1) ** 2:
-                                        #continue
-                                    #if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
-                                        #continue
-                                    #self.init_block((x, y, z), t)
-                            #s -= d
-
-
 
     def hit_test(self, position, vector, max_distance=8):
         m = 8
@@ -576,8 +554,7 @@ class Window(pyglet.window.Window):
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        gluPerspective(65.0, width / float(height), 0.1, DRAW_DISTANCE)
-        #gluPerspective(FOV, width / float(height), NEAR_CLIP_DISTANCE, FAR_CLIP_DISTANCE)
+        gluPerspective(FOV, width / float(height), NEAR_CLIP_DISTANCE, FAR_CLIP_DISTANCE)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         x, y = self.rotation
@@ -647,9 +624,6 @@ def main(options):
     HILLHEIGHT = options.hillheight
     global FLATWORLD
     FLATWORLD = options.flat
-    print WORLDTYPE
-    print HILLHEIGHT
-    print FLATWORLD
     '''
     try:
         config = Config(sample_buffers=1, samples=0, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
