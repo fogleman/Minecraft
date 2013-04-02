@@ -8,11 +8,12 @@ BLOCKS_DIR = {}
 
 # Blocks
 class Block(object):
-    def __init__(self, top, bottom, side, hardness):
+    def __init__(self, top, bottom, side, hardness, amount_label_color):
         self.top = top
         self.bottom = bottom
         self.side = side
         self.hardness = hardness
+        self.amount_label_color = amount_label_color
         BLOCKS_DIR[self.id()] = self
     def drop(self):
         return self.id()
@@ -20,19 +21,19 @@ class Block(object):
 class AirBlock(Block):
     def __init__(self):
         # Air block has no texture
-        super(AirBlock, self).__init__(tex_coord(-1,-1), tex_coord(-1,-1), tex_coord(-1,-1), 0)
+        super(AirBlock, self).__init__(tex_coord(-1,-1), tex_coord(-1,-1), tex_coord(-1,-1), 0, (255, 255, 255, 255))
     def id(self):
         return 0
 
 class StoneBlock(Block):
     def __init__(self):
-        super(StoneBlock, self).__init__(tex_coord(2,1), tex_coord(2,1), tex_coord(2,1), 1.5)
+        super(StoneBlock, self).__init__(tex_coord(2,1), tex_coord(2,1), tex_coord(2,1), 1.5, (255, 255, 255, 255))
     def id(self):
         return 1
 
 class GrassBlock(Block):
     def __init__(self):
-        super(GrassBlock, self).__init__(tex_coord(1,0), tex_coord(0,1), tex_coord(0,0), 0.6)
+        super(GrassBlock, self).__init__(tex_coord(1,0), tex_coord(0,1), tex_coord(0,0), 0.6, (255, 255, 255, 255))
     def id(self):
         return 2
     def drop(self):
@@ -40,79 +41,79 @@ class GrassBlock(Block):
 
 class DirtBlock(Block):
     def __init__(self):
-        super(DirtBlock, self).__init__(tex_coord(0,1), tex_coord(0,1), tex_coord(0,1), 0.5)
+        super(DirtBlock, self).__init__(tex_coord(0,1), tex_coord(0,1), tex_coord(0,1), 0.5, (255, 255, 255, 255))
     def id(self):
         return 3
 
 class SandBlock(Block):
     def __init__(self):
-        super(SandBlock, self).__init__(tex_coord(1,1), tex_coord(1,1), tex_coord(1,1), 0.5)
+        super(SandBlock, self).__init__(tex_coord(1,1), tex_coord(1,1), tex_coord(1,1), 0.5, (0, 0, 0, 255))
     def id(self):
         return 12
 
 class BrickBlock(Block):
     def __init__(self):
-        super(BrickBlock, self).__init__(tex_coord(2,0), tex_coord(2,0), tex_coord(2,0), 1.5)
+        super(BrickBlock, self).__init__(tex_coord(2,0), tex_coord(2,0), tex_coord(2,0), 1.5, (255, 255, 255, 255))
     def id(self):
         return 45
 
 class GlassBlock(Block):
     def __init__(self):
-        super(GlassBlock, self).__init__(tex_coord(3,1), tex_coord(3,1), tex_coord(3,1), 0.2)
+        super(GlassBlock, self).__init__(tex_coord(3,1), tex_coord(3,1), tex_coord(3,1), 0.2, (255, 255, 255, 255))
     def id(self):
         return 20
 
 class BedrockBlock(Block):
     def __init__(self):
-        super(BedrockBlock, self).__init__(tex_coord(3,0), tex_coord(3,0), tex_coord(3,0), 99)
+        super(BedrockBlock, self).__init__(tex_coord(3,0), tex_coord(3,0), tex_coord(3,0), 99, (255, 255, 255, 255))
     def id(self):
         return 7
 
 class WaterBlock(Block):
     def __init__(self):
-        super(WaterBlock, self).__init__(tex_coord(0, 2), tex_coord(0, 2), tex_coord(0, 2), 0)
+        super(WaterBlock, self).__init__(tex_coord(0, 2), tex_coord(0, 2), tex_coord(0, 2), 0, (255, 255, 255, 255))
     def id(self):
         return 8
 
 class ChestBlock(Block):
     def __init__(self):
-        super(ChestBlock, self).__init__(tex_coord(1, 2), tex_coord(1, 2), tex_coord(1, 2), 0)
+        super(ChestBlock, self).__init__(tex_coord(1, 2), tex_coord(1, 2), tex_coord(1, 2), 0, (255, 255, 255, 255))
     def id(self):
         return 54
 
 class SandstoneBlock(Block):
     def __init__(self):
-        super(SandstoneBlock, self).__init__(tex_coord(2, 2), tex_coord(2, 2), tex_coord(2, 2), 0)
+        super(SandstoneBlock, self).__init__(tex_coord(2, 2), tex_coord(2, 2), tex_coord(2, 2), 0, (0, 0, 0, 255))
     def id(self):
         return 24
 
 class MarbleBlock(Block):
     def __init__(self):
-        super(MarbleBlock, self).__init__(tex_coord(3, 2), tex_coord(3, 2), tex_coord(3, 2), 0)
+        super(MarbleBlock, self).__init__(tex_coord(3, 2), tex_coord(3, 2), tex_coord(3, 2), 0, (255, 255, 255, 255))
     def id(self):
         return 0
 
 class StonebrickBlock(Block):
     def __init__(self):
-        super(StonebrickBlock, self).__init__(tex_coord(0, 3), tex_coord(0, 3), tex_coord(0, 3), 0)
+        super(StonebrickBlock, self).__init__(tex_coord(0, 3), tex_coord(0, 3), tex_coord(0, 3), 0, (255, 255, 255, 255))
     def id(self):
         return 0
 
 class LWoodBlock(Block):
     def __init__(self):
-        super(LWoodBlock, self).__init__(tex_coord(3, 3), tex_coord(3, 3), tex_coord(3, 3), 0)
+        super(LWoodBlock, self).__init__(tex_coord(3, 3), tex_coord(3, 3), tex_coord(3, 3), 0, (255, 255, 255, 255))
     def id(self):
         return 0
 
 class MWoodBlock(Block):
     def __init__(self):
-        super(MWoodBlock, self).__init__(tex_coord(2, 3), tex_coord(2, 3), tex_coord(2, 3), 0)
+        super(MWoodBlock, self).__init__(tex_coord(2, 3), tex_coord(2, 3), tex_coord(2, 3), 0, (255, 255, 255, 255))
     def id(self):
         return 0
 
 class DWoodBlock(Block):
     def __init__(self):
-        super(DWoodBlock, self).__init__(tex_coord(1, 3), tex_coord(1, 3), tex_coord(1, 3), 0)
+        super(DWoodBlock, self).__init__(tex_coord(1, 3), tex_coord(1, 3), tex_coord(1, 3), 0, (255, 255, 255, 255))
     def id(self):
         return 0
 
