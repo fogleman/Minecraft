@@ -40,6 +40,7 @@ class Inventory(object):
         return False
             
     def at(self, index):
+        index = int(index)
         if index >= 0 and index < len(self.slots):
             return self.slots[index]
         return None

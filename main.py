@@ -90,6 +90,7 @@ class ItemSelector(object):
         self.set_index(self.current_index + change)
                 
     def set_index(self, index):
+        index = int(index)
         if self.current_index == index:
             return
         self.current_index = index
