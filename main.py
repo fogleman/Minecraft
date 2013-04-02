@@ -60,6 +60,7 @@ def sectorize(position):
 
 class Player(object):
     def __init__(self):
+        self.health = 20
         self.inventory = Inventory(27)
         self.quick_slots = Inventory(9)
         initial_items = [dirt_block, sand_block, brick_block, stone_block, glass_block, water_block, chest_block, sandstone_block, marble_block]
