@@ -3,8 +3,11 @@ from pyglet.window import key
 import math
 import random
 import time
+import os
+import cPickle as pickle
 
 SECTOR_SIZE = 16
+SAVE_FILENAME = 'save.dat'
 
 def cube_vertices(x, y, z, n):
     return [
@@ -67,7 +70,7 @@ def sectorize(position):
     return (x, 0, z)
 
 class Model(object):
-    def __init__(self):
+    def __init__(self, initialize=True):
         self.batch = pyglet.graphics.Batch()
         self.group = TextureGroup('texture.png')
         self.world = {}
@@ -75,7 +78,8 @@ class Model(object):
         self._shown = {}
         self.sectors = {}
         self.queue = []
-        self.initialize()
+        if initialize:
+            self.initialize()
     def initialize(self):
         n = 80
         s = 1
@@ -236,6 +240,11 @@ class Model(object):
 
 class Window(pyglet.window.Window):
     def __init__(self, *args, **kwargs):
+        if 'save' in kwargs and kwargs['save'] != None:
+            self.save = kwargs['save']
+        else:
+            self.save = None
+        del kwargs['save']
         super(Window, self).__init__(*args, **kwargs)
         self.exclusive = False
         self.flying = False
@@ -247,10 +256,19 @@ class Window(pyglet.window.Window):
         self.dy = 0
         self.inventory = [BRICK, GRASS, SAND]
         self.block = self.inventory[0]
+        if self.save == None:
+            self.model = Model()
+        else:
+            self.model = Model(initialize=False)
+            self.model.world = self.save[0]
+            self.model.sectors = self.save[1]
+            self.strafe = self.save[2]
+            self.position = self.save[3]
+            self.rotation = self.save[4]
+            self.flying = self.save[5]
         self.num_keys = [
             key._1, key._2, key._3, key._4, key._5,
             key._6, key._7, key._8, key._9, key._0]
-        self.model = Model()
         self.label = pyglet.text.Label('', font_name='Arial', font_size=18, 
             x=10, y=self.height - 10, anchor_x='left', anchor_y='top', 
             color=(0, 0, 0, 255))
@@ -384,6 +402,8 @@ class Window(pyglet.window.Window):
         elif symbol in self.num_keys:
             index = (symbol - self.num_keys[0]) % len(self.inventory)
             self.block = self.inventory[index]
+        elif symbol == key.V:
+            pickle.dump((self.model.world, self.model.sectors, self.strafe, self.position, self.rotation, self.flying), open(SAVE_FILENAME, "wb"))
     def on_key_release(self, symbol, modifiers):
         if symbol == key.W:
             self.strafe[0] += 1
@@ -473,7 +493,10 @@ def setup():
     setup_fog()
 
 def main():
-    window = Window(width=800, height=600, caption='Pyglet', resizable=True)
+    save = None
+    if os.path.exists(SAVE_FILENAME):
+        save = pickle.load(open(SAVE_FILENAME, "rb"))
+    window = Window(width=800, height=600, caption='Pyglet', resizable=True, save=save)
     window.set_exclusive_mouse(True)
     setup()
     pyglet.app.run()
