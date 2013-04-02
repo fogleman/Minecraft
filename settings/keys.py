@@ -7,9 +7,9 @@ __all__ = (
 )
 
 
-MOVE_FORWARD = key.Z
+MOVE_FORWARD = key.W
 MOVE_BACKWARDS = key.S
-MOVE_LEFT = key.Q
+MOVE_LEFT = key.A
 MOVE_RIGHT = key.D
 
 JUMP = key.SPACE
