@@ -537,6 +537,7 @@ class Window(pyglet.window.Window):
         elif symbol == key.ESCAPE:
             self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
+            self.dy = 0
             self.player.flying = not self.player.flying
         elif symbol == key.B or symbol == key.F3:
             self.show_gui = not self.show_gui
@@ -676,7 +677,7 @@ def main(options):
         #window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=config, save=save_object)
     #except pyglet.window.NoSuchConfigException:
     window = Window( width=options.width, height=options.height, caption='pyCraftr_No-Conf', resizable=True, save=save_object)
-    
+
     window.set_exclusive_mouse(True)
     setup()
     if not options.hide_fog:
