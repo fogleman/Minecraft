@@ -73,6 +73,11 @@ def sectorize(position):
 def vec(*args):
     return (GLfloat * len(args))(*args)
 
+
+# Define a simple function to create GLfloat arrays of floats:
+def vec(*args):
+    return (GLfloat * len(args))(*args)
+
 class Player(Entity):
     def __init__(self, position, rotation, flying = False):
         super(Player, self).__init__(position, rotation, health = 20)
@@ -80,7 +85,6 @@ class Player(Entity):
         self.quick_slots = Inventory(9)
         self.flying = flying
         initial_items = [dirt_block, sand_block, brick_block, stone_block, glass_block, water_block, chest_block, sandstone_block, marble_block]
-        
         for item in initial_items:
             quantity = random.randint(1, 10)
             if FLATWORLD == 1:
@@ -140,7 +144,6 @@ class ItemSelector(object):
                 x += (self.icon_size * 0.5) + 3
                 continue
             block = BLOCKS_DIR[item.type]
-            #block_icon = self.model.group.texture.get_region(int(block.side[0] * 4) * self.icon_size, int(block.side[1] * 4) * self.icon_size, self.icon_size, self.icon_size)
             block_icon = self.model.group.texture.get_region(int(block.side[0] * 8) * self.icon_size, int(block.side[1] * 8) * self.icon_size, self.icon_size, self.icon_size)
             icon = pyglet.sprite.Sprite(block_icon, batch=self.batch, group=self.group)
             icon.scale = 0.5
@@ -202,15 +205,25 @@ class Model(object):
                     self.init_block((x, y - 2, z), water_block)
                 if WORLDTYPE == 4:
                     self.init_block((x, y - 2, z), grass_block)
+                if WORLDTYPE == 5:
+                    t = random.choice([grass_block, grass_block, dirt_block, stone_block])
+                    self.init_block((x, y - 2, z), t)
+                if WORLDTYPE == 6:
+                    self.init_block((x, y - 2, z), snowg_block)
+                    #self.init_block((x, y - 2, z), grass_block)
+                    #self.init_block((x, y - 2, z), grass_block)
                 #self.init_block((x, y - 2, z), water_block)
+                #if WORLDTYPE != 5:
+                    #self.init_block((x, y - 2, z), grass_block)
+
                 self.init_block((x, y - 3, z), dirt_block)
                 self.init_block((x, y - 4, z), bed_block) # was stone_block
                 if x in (-n, n) or z in (-n, n):
                     for dy in xrange(-3, 10): #was -2 ,6
                         self.init_block((x, y + dy, z), stone_block)
-        o = n - 10
-        if HILLHEIGHT > 6:
-            o = n - 10 + HILLHEIGHT / 2
+        #o = n - 10
+        #if HILLHEIGHT <> 6:
+        o = n - 10 + HILLHEIGHT -6
         if FLATWORLD == 1:
             return
         for _ in xrange(120):
@@ -230,6 +243,10 @@ class Model(object):
                 t = random.choice([grass_block, sand_block]) # removed brick_block
             if WORLDTYPE == 4:
                 t = random.choice([grass_block, sand_block, dirt_block]) # removed brick_block
+            if WORLDTYPE == 5:
+                t = random.choice([stone_block]) # removed brick_block
+            if WORLDTYPE == 6:
+                t = random.choice([snowg_block])
             for y in xrange(c, c + h):
                 for x in xrange(a - s, a + s + 1):
                     for z in xrange(b - s, b + s + 1):
@@ -238,7 +255,13 @@ class Model(object):
                         if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
                             continue
                         self.init_block((x, y, z), t)
+
+                    #if WORLDTYPE == 5: # cover the mountains of stone with grass
+                        #self.init_block((x + 1, y + 1, z + 1), grass_block)
                 s -= d
+                # below makes floating 'extreme hills' blocks...
+            #if WORLDTYPE == 5: # cover the mountains of stone with grass
+                #self.init_block((x, y - 1, z), grass_block)
 
     def hit_test(self, position, vector, max_distance=8):
         m = 8
@@ -473,6 +496,35 @@ class Window(pyglet.window.Window):
             else:
                 self.clock += 1
 
+    def update_time(self):
+        '''The idle function advances the time of day.
+           The day has 12 hours, from sunrise to sunset.
+           The time of day is converted to degrees and then to radians.'''
+        self.time_of_day += 1.0 / TIME_RATE
+        if self.time_of_day > 12.0:
+            self.time_of_day = 0.0
+
+        side = len(self.model.sectors) * 2.0
+
+        self.light_y = 0.6 * side * sin(self.time_of_day * HOUR_DEG * DEG_RAD)
+        self.light_z = 0.6 * side * cos(self.time_of_day * HOUR_DEG * DEG_RAD)
+
+        # Calculate sky colour according to time of day.
+        sin_t = sin(pi * self.time_of_day / 12.0)
+        global BACK_RED
+        global BACK_GREEN
+        global BACK_BLUE
+        BACK_RED = 0.3 * (1.0 - sin_t)
+        BACK_GREEN = 0.9 * sin_t
+        BACK_BLUE = min(sin_t + 0.4, 1.0)
+
+        self.count += 1
+        if fmod(self.count, TIME_RATE) == 0:
+            if self.clock == 18:
+                self.clock = 6
+            else:
+                self.clock += 1
+
     def update(self, dt):
         self.model.process_queue()
         sector = sectorize(self.player.position)
@@ -486,7 +538,7 @@ class Window(pyglet.window.Window):
         for _ in xrange(m):
             self._update(dt / m)
         self.update_time()
-        
+
     def _update(self, dt):
         # walking
         speed = 15 if self.player.flying else 5
@@ -665,12 +717,12 @@ class Window(pyglet.window.Window):
         glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, self.earth)
         glMaterialfv(GL_FRONT, GL_SPECULAR, self.white)
         glMaterialfv(GL_FRONT, GL_SHININESS, self.polished)
-        
+
     def clear(self):
         glClearColor(BACK_RED, BACK_GREEN, BACK_BLUE, 1.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         super(Window, self).clear()
-        
+
     def on_draw(self):
         self.clear()
         self.set_3d()
@@ -735,21 +787,43 @@ def main(options):
     elif options.draw_distance == 'long':
         DRAW_DISTANCE = 60.0 * 2.0
     global WORLDTYPE
-    WORLDTYPE = options.terrain
     global HILLHEIGHT
-    HILLHEIGHT = options.hillheight
-    global FLATWORLD
-    FLATWORLD = options.flat
+
+    if options.terrain == "plains":
+        WORLDTYPE = 0
+        HILLHEIGHT = 2
+    if options.terrain == "mountains":
+        WORLDTYPE = 5
+        HILLHEIGHT = 16
+    if options.terrain == "desert":
+        WORLDTYPE = 2
+        HILLHEIGHT = 5
+    if options.terrain == "island":
+        WORLDTYPE = 3
+        HILLHEIGHT = 8
+    if options.terrain == "snow":
+        WORLDTYPE = 6
+        HILLHEIGHT = 4
+
+
+#    WORLDTYPE = options.terrain
+    if options.hillheight <> 6:
+        HILLHEIGHT = options.hillheight
+
+    if options.flat > 0:
+        global FLATWORLD
+        FLATWORLD = options.flat
+
     global SHOW_FOG
     SHOW_FOG = not options.hide_fog
-    '''
-    try:
-        config = Config(sample_buffers=1, samples=0, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
-        window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=config, save=save_object)
-    except pyglet.window.NoSuchConfigException:
-        window = Window( width=options.width, height=options.height, caption='pyCraftr_No-Conf', resizable=True, save=save_object)
-    '''
-    window = Window(width=options.width, height=options.height, caption='pyCraftr_No-Conf', resizable=True, save=save_object)
+
+
+    #try:
+        #config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
+        #window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=config, save=save_object)
+    #except pyglet.window.NoSuchConfigException:
+    window = Window( width=options.width, height=options.height, caption='pyCraftr', resizable=True, save=save_object)
+
     window.set_exclusive_mouse(True)
     setup()
     if SHOW_FOG:
@@ -762,7 +836,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-width", type=int, default=850)
     parser.add_argument("-height", type=int, default=480)
-    parser.add_argument("-terrain", type=int, default=0)
+    parser.add_argument("-terrain", type=str, default="grass")
     parser.add_argument("-hillheight", type=int, default=6)
     parser.add_argument("-flat", type=int, default=0)
     parser.add_argument("--hide-fog", action="store_true", default=False)

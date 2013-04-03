@@ -64,14 +64,15 @@ See the [wiki](https://github.com/fogleman/Minecraft/wiki) for this project to i
 
 - B / F3: Toggle UI
 - V: Saving (save filename in command-line arguments)
-- M: Change inventory sorting
+- M: Sort items in the toolbar (3 choices)
+=======
 
 ### Quitting
 
 - ESC: release mouse, then close window
 
 ### Command-line arguments
-    usage: main.py [-h] [-width WIDTH] [-height HEIGHT] [-terrain TERRAIN]
+    usage: main.py [-h] [-width WIDTH] [-height HEIGHT] [-terrain plains/mountains/desert/islands]
                    [-hillheight HILLHEIGHT] [-flat FLAT] [--hide-fog] [--show-gui]
                    [--disable-auto-save] [-draw-distance {short,medium,long}]
                    [-save SAVE] [--disable-save]
@@ -80,7 +81,7 @@ See the [wiki](https://github.com/fogleman/Minecraft/wiki) for this project to i
       -h, --help            show this help message and exit
       -width WIDTH
       -height HEIGHT
-      -terrain TERRAIN
+      -terrain (choose from plains, mountains, desert or island)
       -hillheight HILLHEIGHT
       -flat FLAT
       --hide-fog

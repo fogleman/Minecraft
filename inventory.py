@@ -69,7 +69,8 @@ class Inventory(object):
                     item_stack = ItemStack(type=item_id, amount=quantity)
                     quantity = 0
 
-                self.slots.insert(index, item_stack)
+                #self.slots.insert(index, item_stack)
+                self.slots[index] = item_stack
                 retval = True
         self.sort()   
         return True
@@ -85,7 +86,6 @@ class Inventory(object):
     def remove_by_index(self, index, quantity = 1):
         if quantity < 1 or index < 0 or not self.slots[index]:
             return False
-            
         retval = False
         self.slots[index].change_amount(quantity*-1)
         if self.slots[index].amount == 0:
