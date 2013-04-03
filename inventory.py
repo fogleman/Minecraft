@@ -91,6 +91,7 @@ class Inventory(object):
         if self.slots[index].amount == 0:
             self.slots[index] = None
             retval = True
+        self.sort()
         return retval
             
     def sort(self, reverse=True):

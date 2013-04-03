@@ -512,8 +512,9 @@ class Window(pyglet.window.Window):
         self.clock = 6
         self.light_y = 1.0
         self.light_z = 1.0
-        self.earth = vec(0.6, 0.7, 0.2, 1.0)
+        self.earth = vec(0.8, 0.8, 0.8, 1.0)
         self.white = vec(1.0, 1.0, 1.0, 1.0)
+        self.ambient = vec(1.0, 1.0, 1.0, 1.0)
         self.polished = GLfloat(100.0)
         self.dy = 0
         save_len = -1 if self.save == None else len(self.save)
@@ -604,6 +605,8 @@ class Window(pyglet.window.Window):
 
         self.light_y = 2.0 * side * sin(time_of_day * HOUR_DEG * DEG_RAD)
         self.light_z = 2.0 * side * cos(time_of_day * HOUR_DEG * DEG_RAD)
+        ambient_value = 1.0 if time_of_day <= 2.5 else 1 - (time_of_day - 2.25) / 9.5
+        self.ambient = vec(ambient_value, ambient_value, ambient_value, 1.0)
 
         # Calculate sky colour according to time of day.
         sin_t = sin(pi * time_of_day / 12.0)
@@ -612,7 +615,7 @@ class Window(pyglet.window.Window):
         global BACK_BLUE
         BACK_RED = 0.1 * (1.0 - sin_t)
         BACK_GREEN = 0.9 * sin_t
-        BACK_BLUE = min(sin_t + 0.4, 1.0)
+        BACK_BLUE = min(sin_t + 0.4, 0.8)
     
         if fmod(self.count / 2, TIME_RATE) == 0:
             if self.clock == 18:
@@ -819,9 +822,13 @@ class Window(pyglet.window.Window):
         x, y, z = self.player.position
         glTranslatef(-x, -y, -z)
         glEnable(GL_LIGHTING)
+        glLightfv(GL_LIGHT0, GL_DIFFUSE, vec(0.9, 0.9, 0.9, 1.0))
+        glLightfv(GL_LIGHT0, GL_SPECULAR, vec(0.9, 0.9, 0.9, 1.0))
         glLightfv(GL_LIGHT0, GL_POSITION, vec(1.0, self.light_y, self.light_z, 1.0))
-        glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, self.earth)
-        glMaterialfv(GL_FRONT, GL_SPECULAR, self.white)
+        glLightfv(GL_LIGHT1, GL_AMBIENT, self.ambient)
+        glLightfv(GL_LIGHT2, GL_AMBIENT, self.ambient)
+        glMaterialfv(GL_FRONT, GL_AMBIENT, self.earth)
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, self.white)
         glMaterialfv(GL_FRONT, GL_SHININESS, self.polished)
 
     def clear(self):
@@ -876,9 +883,9 @@ def setup():
     glClearColor(BACK_RED, BACK_GREEN, BACK_BLUE, 1)
     glEnable(GL_LIGHTING)
     glEnable(GL_LIGHT0)
+    glEnable(GL_LIGHT1)
+    glEnable(GL_LIGHT2)
     glEnable(GL_CULL_FACE)
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, vec(0.9, 0.9, 0.6, 1.0))
-    glLightfv(GL_LIGHT0, GL_SPECULAR, vec(0.9, 0.9, 0.6, 1.0))
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
