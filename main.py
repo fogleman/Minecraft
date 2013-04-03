@@ -6,6 +6,7 @@ import time
 import argparse
 import os
 import cPickle as pickle
+import kytten #unused, future potential reference
 from collections import deque
 from blocks import *
 from items import *
@@ -32,6 +33,7 @@ BACK_BLUE = 0.0 # 0.98
 SHOW_FOG = True
 HALF_PI = pi / 2.0 # 90 degrees
 RND_FOREST = 10
+WORLDSIZE = 160
 
 def cube_vertices(x, y, z, n):
     return [
@@ -311,7 +313,8 @@ class Model(object):
         if initialize:
             self.initialize()
     def initialize(self):
-        n = 80
+        global WORLDSIZE
+        n = WORLDSIZE /2 #80
         s = 1
         y = 0
         global RND_FOREST
@@ -344,7 +347,8 @@ class Model(object):
         o = n - 10 + HILLHEIGHT -6
         if FLATWORLD == 1:
             return
-        for _ in xrange(120):
+        global WORLDSIZE
+        for _ in xrange(WORLDSIZE /2 + 40): #(120):
             a = random.randint(-o, o)
             b = random.randint(-o, o)
             c = -1
@@ -785,7 +789,7 @@ class Window(pyglet.window.Window):
             if self.player.flying:
                 self.dy = 0.045 # jump speed
             elif self.dy == 0:
-                self.dy = 0.015 # jump speed
+                self.dy = 0.016 # jump speed
         elif symbol == key.LSHIFT or symbol == key.RSHIFT:
             if self.player.flying:
                 self.dy = -0.045 # inversed jump speed
@@ -974,6 +978,7 @@ def main(options):
     global WORLDTYPE
     global HILLHEIGHT
     global RND_FOREST
+    global WORLDSIZE
 
     RND_FOREST = options.maxtrees
 
@@ -1003,8 +1008,9 @@ def main(options):
 #    print RND_FOREST
 
 #    WORLDTYPE = options.terrain
-    if options.hillheight <> 6:
-        HILLHEIGHT = options.hillheight
+#    if options.hillheight <> 6:
+    HILLHEIGHT = options.hillheight
+    WORLDSIZE = options.worldsize
 
     if options.flat > 0:
         global FLATWORLD
@@ -1046,6 +1052,7 @@ if __name__ == '__main__':
     parser.add_argument("-save", type=unicode, default=SAVE_FILENAME)
     parser.add_argument("--disable-save", action="store_false", default=True)
     parser.add_argument("--fast", action="store_true", default=False)
-    parser.add_argument("--maxtrees", type=int, default=10)
+    parser.add_argument("--maxtrees", type=int, default=50)
+    parser.add_argument("--worldsize", type=int, default=160)
     options = parser.parse_args()
     main(options)
