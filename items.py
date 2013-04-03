@@ -3,7 +3,7 @@ from blocks import *
 # ids of items should be >= ITEM_ID_MIN
 ITEM_ID_MIN = 256
 
-ITEMS_DIR = []
+ITEMS_DIR = {} #it was a empty list before, not a dict
 
 class Item(object):
     def __init__(self, max_stack_size):

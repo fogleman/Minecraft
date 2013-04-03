@@ -18,6 +18,7 @@ class Block(object):
         self.amount_label_color = amount_label_color
         self.transparent = False
         BLOCKS_DIR[self.id()] = self
+        
     def drop(self):
         return self.id()
 
