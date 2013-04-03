@@ -424,6 +424,7 @@ class Window(pyglet.window.Window):
             self.model.sectors = self.save[1]
             if save_len > 2 and isinstance(self.save[2], list) and len(self.save[2]) == 2: self.strafe = self.save[2]
             if save_len > 3 and isinstance(self.save[3], Player): self.player = self.save[3]
+            if save_len > 4 and isinstance(self.save[4], float): self.time_of_day = self.save[4]
         self.item_list = ItemSelector(self.width, self.height, self.player, self.model)
         self.num_keys = [
             key._1, key._2, key._3, key._4, key._5,
@@ -560,7 +561,7 @@ class Window(pyglet.window.Window):
 
     def save_to_file(self):
         if DISABLE_SAVE:
-            pickle.dump((self.model.world, self.model.sectors, self.strafe, self.player), open(SAVE_FILENAME, "wb"))
+            pickle.dump((self.model.world, self.model.sectors, self.strafe, self.player, self.time_of_day), open(SAVE_FILENAME, "wb"))
 
     def collide(self, position, height):
         pad = 0.25
