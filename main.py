@@ -1,7 +1,7 @@
 from pyglet.gl import *
 from pyglet.window import key
 #import math
-from math import cos, sin, atan2, radians, degrees
+from math import cos, sin, atan2, radians, degrees, pi, fmod
 import random
 import time
 import argparse
@@ -22,6 +22,13 @@ HILLHEIGHT = 6  #height of the hills, increase for mountains :D
 FLATWORLD=0  # dont make mountains,  make a flat world
 SAVE_FILENAME = 'save.dat'
 DISABLE_SAVE = True
+TIME_RATE = 60 # Rate of change (steps per hour).
+DEG_RAD = pi / 180.0
+HOUR_DEG = 15.0
+BACK_RED = 0.0 # 0.53
+BACK_GREEN = 0.0 # 0.81
+BACK_BLUE = 0.0 # 0.98
+SHOW_FOG = True
 
 def cube_vertices(x, y, z, n):
     return [
@@ -61,6 +68,11 @@ def sectorize(position):
     x, y, z = normalize(position)
     x, y, z = x / SECTOR_SIZE, y / SECTOR_SIZE, z / SECTOR_SIZE
     return (x, 0, z)
+
+
+# Define a simple function to create GLfloat arrays of floats:
+def vec(*args):
+    return (GLfloat * len(args))(*args)
 
 class Player(Entity):
     def __init__(self, position, rotation, flying = False):
@@ -390,6 +402,14 @@ class Window(pyglet.window.Window):
         self.strafe = [0, 0]
         self.sector = None
         self.reticle = None
+        self.time_of_day = 0.0
+        self.count = 0
+        self.clock = 6
+        self.light_y = 1.0
+        self.light_z = 1.0
+        self.earth = vec(0.6, 0.7, 0.2, 1.0)
+        self.white = vec(1.0, 1.0, 1.0, 1.0)
+        self.polished = GLfloat(100.0)
         self.dy = 0
         save_len = -1 if self.save == None else len(self.save)
         if self.save == None or save_len < 2: # Model.world and model.sectors
@@ -455,6 +475,35 @@ class Window(pyglet.window.Window):
             dz = 0.0
         return (dx, dy, dz)
 
+    def update_time(self):
+        '''The idle function advances the time of day.
+           The day has 12 hours, from sunrise to sunset.
+           The time of day is converted to degrees and then to radians.'''
+        self.time_of_day += 1.0 / TIME_RATE
+        if self.time_of_day > 12.0:
+            self.time_of_day = 0.0
+
+        side = len(self.model.sectors) * 2.0
+
+        self.light_y = 0.6 * side * sin(self.time_of_day * HOUR_DEG * DEG_RAD)
+        self.light_z = 0.6 * side * cos(self.time_of_day * HOUR_DEG * DEG_RAD)
+
+        # Calculate sky colour according to time of day.
+        sin_t = sin(pi * self.time_of_day / 12.0)
+        global BACK_RED
+        global BACK_GREEN
+        global BACK_BLUE
+        BACK_RED = 0.3 * (1.0 - sin_t)
+        BACK_GREEN = 0.9 * sin_t
+        BACK_BLUE = min(sin_t + 0.4, 1.0)
+
+        self.count += 1
+        if fmod(self.count, TIME_RATE) == 0:
+            if self.clock == 18:
+                self.clock = 6
+            else:
+                self.clock += 1
+
     def update(self, dt):
         self.model.process_queue()
         sector = sectorize(self.player.position)
@@ -467,6 +516,8 @@ class Window(pyglet.window.Window):
         dt = min(dt, 0.2)
         for _ in xrange(m):
             self._update(dt / m)
+        self.update_time()
+
     def _update(self, dt):
         # walking
         speed = 15 if self.player.flying else 5
@@ -620,6 +671,8 @@ class Window(pyglet.window.Window):
         glLoadIdentity()
     def set_3d(self):
         width, height = self.get_size()
+        if SHOW_FOG:
+            glFogfv(GL_FOG_COLOR, vec(BACK_RED, BACK_GREEN, BACK_BLUE, 1.0))
         glEnable(GL_DEPTH_TEST)
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
@@ -637,6 +690,17 @@ class Window(pyglet.window.Window):
         glRotatef(-y, cos(radians(x)), 0, sin(radians(x)))
         x, y, z = self.player.position
         glTranslatef(-x, -y, -z)
+        glEnable(GL_LIGHTING)
+        glLightfv(GL_LIGHT0, GL_POSITION, vec(1.0, self.light_y, self.light_z, 1.0))
+        glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, self.earth)
+        glMaterialfv(GL_FRONT, GL_SPECULAR, self.white)
+        glMaterialfv(GL_FRONT, GL_SHININESS, self.polished)
+
+    def clear(self):
+        glClearColor(BACK_RED, BACK_GREEN, BACK_BLUE, 1.0)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        super(Window, self).clear()
+
     def on_draw(self):
         self.clear()
         self.set_3d()
@@ -649,6 +713,7 @@ class Window(pyglet.window.Window):
             self.item_list.batch.draw()
         self.draw_reticle()
     def draw_focused_block(self):
+        glDisable(GL_LIGHTING)
         vector = self.get_sight_vector()
         block = self.model.hit_test(self.player.position, vector)[0]
         if block:
@@ -670,7 +735,8 @@ class Window(pyglet.window.Window):
 
 def setup_fog():
     glEnable(GL_FOG)
-    glFogfv(GL_FOG_COLOR, (GLfloat * 4)(0.5, 0.69, 1.0, 1))
+    #glFogfv(GL_FOG_COLOR, (GLfloat * 4)(0.5, 0.69, 1.0, 1))
+    glFogfv(GL_FOG_COLOR, vec(0.5, 0.69, 1.0, 1))
     glHint(GL_FOG_HINT, GL_DONT_CARE)
     glFogi(GL_FOG_MODE, GL_LINEAR)
     glFogf(GL_FOG_DENSITY, 0.35)
@@ -688,8 +754,13 @@ def setup_fog():
     #glFogf(GL_FOG_END, 80)
 
 def setup():
-    glClearColor(0.5, 0.69, 1.0, 1)
+    #glClearColor(0.5, 0.69, 1.0, 1)
+    glClearColor(BACK_RED, BACK_GREEN, BACK_BLUE, 1)
+    glEnable(GL_LIGHTING)
+    glEnable(GL_LIGHT0)
     glEnable(GL_CULL_FACE)
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, vec(0.9, 0.9, 0.6, 1.0))
+    glLightfv(GL_LIGHT0, GL_SPECULAR, vec(0.9, 0.9, 0.6, 1.0))
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
@@ -733,6 +804,8 @@ def main(options):
         global FLATWORLD
         FLATWORLD = options.flat
 
+    global SHOW_FOG
+    SHOW_FOG = not options.hide_fog
 
 
     #try:
@@ -743,7 +816,8 @@ def main(options):
 
     window.set_exclusive_mouse(True)
     setup()
-    if not options.hide_fog:
+    #if not options.hide_fog:
+    if SHOW_FOG:
         setup_fog()
     pyglet.app.run()
     if options.disable_auto_save and options.disable_save:
