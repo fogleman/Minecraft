@@ -1,8 +1,11 @@
-from pyglet.gl import *
-from pyglet.window import key
 import math
 import random
 import time
+
+from pyglet import image
+from pyglet.gl import *
+from pyglet.graphics import TextureGroup
+from pyglet.window import key
 
 
 # Size of sectors used to ease block loading.
@@ -61,20 +64,6 @@ FACES = [
 ]
 
 
-class TextureGroup(pyglet.graphics.Group):
-
-    def __init__(self, path):
-        super(TextureGroup, self).__init__()
-        self.texture = pyglet.image.load(path).get_texture()
-
-    def set_state(self):
-        glEnable(self.texture.target)
-        glBindTexture(self.texture.target, self.texture.id)
-
-    def unset_state(self):
-        glDisable(self.texture.target)
-
-
 def normalize(position):
     """ Accepts `position` of arbitrary precision and returns the block
     containing that position.
@@ -113,13 +102,12 @@ def sectorize(position):
 class Model(object):
 
     def __init__(self):
-        texture = pyglet.image.load(TEXTURE_PATH).get_texture()
 
         # A Batch is a collection of vertex lists for batched rendering.
         self.batch = pyglet.graphics.Batch()
 
         # A TextureGroup manages an OpenGL texture.
-        self.group = TextureGroup('texture.png')
+        self.group = TextureGroup(image.load(TEXTURE_PATH).get_texture())
 
         # A mapping from position to the texture of the block at that position.
         self.world = {}
