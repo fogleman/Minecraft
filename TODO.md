@@ -1,6 +1,9 @@
+# Terrain
+
+* Don't generate grass blocks under other grass blocks (should be dirt instead!)
+
 # Items
 
-* stack splitting and merging
 * return extra amount to inventory if quick access is full?
 
 # Inventory
