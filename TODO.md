@@ -1,6 +1,6 @@
 # Terrain
 
-* Don't generate grass blocks under other grass blocks (should be dirt instead!)
+* Enable blending mode to get semi-transparent textures working. Render in the right order so they show up correctly.
 
 # Items
 
