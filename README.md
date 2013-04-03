@@ -7,7 +7,7 @@ http://www.youtube.com/watch?v=kC3lwK631X8
 ## How to Run
 
     pip install pyglet
-    git clone https://github.com/avelanarius/Minecraft.git
+    git clone https://github.com/ronmurphy/Minecraft.git
     cd Minecraft
     python main.py
 
@@ -70,7 +70,7 @@ See the [https://github.com/fogleman/Minecraft/wiki](wiki) for this project to i
 - ESC: release mouse, then close window
 
 ### Command-line arguments
-    usage: main.py [-h] [-width WIDTH] [-height HEIGHT] [-terrain TERRAIN]
+    usage: main.py [-h] [-width WIDTH] [-height HEIGHT] [-terrain plains/mountains/desert/islands]
                    [-hillheight HILLHEIGHT] [-flat FLAT] [--hide-fog] [--show-gui]
                    [--disable-auto-save] [-draw-distance {short,medium,long}]
                    [-save SAVE] [--disable-save]

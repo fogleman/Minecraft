@@ -1,6 +1,7 @@
 from pyglet.gl import *
 from pyglet.window import key
-import math
+#import math
+from math import cos, sin, atan2, radians, degrees
 import random
 import time
 import argparse
@@ -86,6 +87,8 @@ class ItemSelector(object):
     def __init__(self, width, height, player, model):
         self.batch = pyglet.graphics.Batch()
         self.group = pyglet.graphics.OrderedGroup(1)
+        self.amount_labels_group = pyglet.graphics.OrderedGroup(2)
+        self.amount_labels = []
         self.model = model
         self.player = player
         self.max_items = 9
@@ -114,6 +117,9 @@ class ItemSelector(object):
 
     def update_items(self):
         self.icons = []
+        for amount_label in self.amount_labels:
+            amount_label.delete()
+        self.amount_labels = []
         x = self.frame.x + 3
         items = self.player.quick_slots.get_items()
         for item in items:
@@ -121,13 +127,16 @@ class ItemSelector(object):
                 x += (self.icon_size * 0.5) + 3
                 continue
             block = BLOCKS_DIR[item.type]
-            #block_icon = self.model.group.texture.get_region(int(block.side[0] * 4) * self.icon_size, int(block.side[1] * 4) * self.icon_size, self.icon_size, self.icon_size)
             block_icon = self.model.group.texture.get_region(int(block.side[0] * 8) * self.icon_size, int(block.side[1] * 8) * self.icon_size, self.icon_size, self.icon_size)
             icon = pyglet.sprite.Sprite(block_icon, batch=self.batch, group=self.group)
             icon.scale = 0.5
             icon.x = x
             icon.y = self.frame.y + 3
             x += (self.icon_size * 0.5) + 3
+            amount_label = pyglet.text.Label(str(item.amount), font_name='Arial', font_size=9,
+                x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
+                color=(block.amount_label_color), batch=self.batch, group=self.amount_labels_group)
+            self.amount_labels.append(amount_label)
             self.icons.append(icon)
 
     def update_current(self):
@@ -144,7 +153,8 @@ class ItemSelector(object):
         item = self.player.quick_slots.at(self.current_index)
         if item:
             item_id = item.type
-            self.player.quick_slots.remove_item(item_id)
+            #self.player.quick_slots.remove_item(item_id)
+            self.player.quick_slots.remove_by_index(self.current_index)
             self.update_items()
             if item_id >= ITEM_ID_MIN:
                 return ITEMS_DIR[item_id]
@@ -161,6 +171,7 @@ class Model(object):
         self._shown = {}
         self.sectors = {}
         self.queue = []
+        #self.queue = deque()
         if initialize:
             self.initialize()
     def initialize(self):
@@ -400,29 +411,40 @@ class Window(pyglet.window.Window):
         self.exclusive = exclusive
     def get_sight_vector(self):
         x, y = self.player.rotation
-        m = math.cos(math.radians(y))
-        dy = math.sin(math.radians(y))
-        dx = math.cos(math.radians(x - 90)) * m
-        dz = math.sin(math.radians(x - 90)) * m
+        #m = math.cos(math.radians(y))
+        #dy = math.sin(math.radians(y))
+        #dx = math.cos(math.radians(x - 90)) * m
+        #dz = math.sin(math.radians(x - 90)) * m
+        m = cos(radians(y)) #new
+        dy = sin(radians(y))  #new
+        dx = cos(radians(x - 90)) * m  #new
+        dz = sin(radians(x - 90)) * m  #new
         return (dx, dy, dz)
     def get_motion_vector(self):
         if any(self.strafe):
             x, y = self.player.rotation
-            strafe = math.degrees(math.atan2(*self.strafe))
+            #strafe = math.degrees(math.atan2(*self.strafe))
+            strafe = degrees(atan2(*self.strafe))
             if self.player.flying:
-                m = math.cos(math.radians(y))
-                dy = math.sin(math.radians(y))
+                #m = math.cos(math.radians(y))
+                #dy = math.sin(math.radians(y))
+                m = cos(radians(y))
+                dy = sin(radians(y))
                 if self.strafe[1]:
                     dy = 0.0
                     m = 1
                 if self.strafe[0] > 0:
                     dy *= -1
-                dx = math.cos(math.radians(x + strafe)) * m
-                dz = math.sin(math.radians(x + strafe)) * m
+                #dx = math.cos(math.radians(x + strafe)) * m
+                #dz = math.sin(math.radians(x + strafe)) * m
+                dx = cos(radians(x + strafe)) * m
+                dz = sin(radians(x + strafe)) * m
             else:
                 dy = 0.0
-                dx = math.cos(math.radians(x + strafe))
-                dz = math.sin(math.radians(x + strafe))
+                #dx = math.cos(math.radians(x + strafe))
+                #dz = math.sin(math.radians(x + strafe))
+                dx = cos(radians(x + strafe))
+                dz = sin(radians(x + strafe))
         else:
             dy = 0.0
             dx = 0.0
@@ -607,7 +629,8 @@ class Window(pyglet.window.Window):
         glLoadIdentity()
         x, y = self.player.rotation
         glRotatef(x, 0, 1, 0)
-        glRotatef(-y, math.cos(math.radians(x)), 0, math.sin(math.radians(x)))
+        #glRotatef(-y, math.cos(math.radians(x)), 0, math.sin(math.radians(x)))
+        glRotatef(-y, cos(radians(x)), 0, sin(radians(x)))
         x, y, z = self.player.position
         glTranslatef(-x, -y, -z)
     def on_draw(self):

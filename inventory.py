@@ -81,13 +81,25 @@ class Inventory(object):
             return False
 
         index = self.get_index(item_id)
-        if index >= 0:
-            self.slots[index].change_amount(quantity*-1)
-            if self.slots[index].amount == 0:
-                self.slots[index] = None
-                return True
-        self.sort()
-        return False
+        #if index >= 0:
+            #self.slots[index].change_amount(quantity*-1)
+            #if self.slots[index].amount == 0:
+                #self.slots[index] = None
+                #return True
+        #self.sort()
+        #return False
+        return self.remove_by_index(index, quantity)
+
+    def remove_by_index(self, index, quantity = 1):
+        if quantity < 1 or index < 0 or not self.slots[index]:
+            return False
+
+        retval = False
+        self.slots[index].change_amount(quantity*-1)
+        if self.slots[index].amount == 0:
+            self.slots[index] = None
+            retval = True
+        return retval
 
 
     def sort(self, reverse=True):
