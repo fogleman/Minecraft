@@ -26,6 +26,10 @@ class ItemStack(object):
         else:
             self.max_stack_size = BLOCKS_DIR[type].max_stack_size
             
+    # for debugging
+    def __repr__(self):
+        return '{ Item stack with type = ' + str(self.type) + ' }' 
+
     def change_amount(self, change=0):
         if change == 0:
             return
