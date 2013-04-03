@@ -655,13 +655,12 @@ class Window(pyglet.window.Window):
             if button == pyglet.window.mouse.LEFT:
                 if block:
                     hit_block = self.model.world[block]
-                    if hit_block != bed_block:
+                    if hit_block.hardness >= 0:
                         self.model.remove_block(block)
-                        item_id = hit_block.drop_id if type(hit_block.drop_id) is int else hit_block.drop_id()
-                        if self.player.add_item(item_id):
+                        if hit_block.drop_id is not None \
+                                and self.player.add_item(hit_block.drop_id):
                             self.item_list.update_items()
                             self.inventory_list.update_items()
-                            pass
             else:
                 if previous:
                     current_block = self.item_list.get_current_block()

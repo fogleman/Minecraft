@@ -57,8 +57,8 @@ class GrassBlock(Block):
     id = 2
 
     def __init__(self):
-        self.drop_id = DirtBlock.id
         super(GrassBlock, self).__init__()
+        self.drop_id = DirtBlock.id
 
 
 class DirtBlock(Block):
@@ -171,6 +171,7 @@ class SnowGrassBlock(Block):
     id = 2
 
     def __init__(self):
+        super(SnowGrassBlock, self).__init__()
         self.drop_id = DirtBlock.id
 
 
@@ -188,7 +189,10 @@ class LeafBlock(Block):
     side = tex_coord(7, 2)
     hardness = 0.6
     id = 18.0
-    drop_id = None
+
+    def __init__(self):
+        super(LeafBlock, self).__init__()
+        self.drop_id = None
 
 
 air_block = AirBlock()
