@@ -472,6 +472,8 @@ class Window(pyglet.window.Window):
         '''The idle function advances the time of day.
            The day has 12 hours, from sunrise to sunset.
            The time of day is converted to degrees and then to radians.'''
+        if not self.exclusive:
+            return
         self.time_of_day += 1.0 / TIME_RATE
         if self.time_of_day > 12.0:
             self.time_of_day = 0.0
@@ -490,35 +492,6 @@ class Window(pyglet.window.Window):
         BACK_GREEN = 0.9 * sin_t
         BACK_BLUE = min(sin_t + 0.4, 1.0)
         
-        self.count += 1
-        if fmod(self.count, TIME_RATE) == 0:
-            if self.clock == 18:
-                self.clock = 6
-            else:
-                self.clock += 1
-
-    def update_time(self):
-        '''The idle function advances the time of day.
-           The day has 12 hours, from sunrise to sunset.
-           The time of day is converted to degrees and then to radians.'''
-        self.time_of_day += 1.0 / TIME_RATE
-        if self.time_of_day > 12.0:
-            self.time_of_day = 0.0
-
-        side = len(self.model.sectors) * 2.0
-
-        self.light_y = 0.6 * side * sin(self.time_of_day * HOUR_DEG * DEG_RAD)
-        self.light_z = 0.6 * side * cos(self.time_of_day * HOUR_DEG * DEG_RAD)
-
-        # Calculate sky colour according to time of day.
-        sin_t = sin(pi * self.time_of_day / 12.0)
-        global BACK_RED
-        global BACK_GREEN
-        global BACK_BLUE
-        BACK_RED = 0.3 * (1.0 - sin_t)
-        BACK_GREEN = 0.9 * sin_t
-        BACK_BLUE = min(sin_t + 0.4, 1.0)
-
         self.count += 1
         if fmod(self.count, TIME_RATE) == 0:
             if self.clock == 18:
