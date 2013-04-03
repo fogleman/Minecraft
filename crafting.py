@@ -8,6 +8,7 @@ class Recipe(object):
 		# what blocks are needed to craft this block/item
 		self.ingre = ingre
 		self.output = output
+		self.shapeless = False
 
 class Recipes(object):
 	def __init__(self):
@@ -59,15 +60,31 @@ class Recipes(object):
 		self.recipes.append(Recipe(self.parse_recipe(shape, ingre), output))
 		self.nr_recipes += 1
 
+	def add_shapeless_recipe(self, ingre, output):
+		ingre_list = [x.id() for x in ingre if x.id() != 0]
+		ingre_list.sort()
+		r = Recipe(ingre_list, output)
+		r.shapeless = True
+		self.recipes.append(r)
+
 	def craft(self, input_blocks):
 		id_list = []
+		shapeless_id_list = []
 		for line in input_blocks:
 			id_list.append([b.id() for b in line])
+			shapeless_id_list.extend([b.id() for b in line if b.id() != 0])
+		shapeless_id_list.sort()
 
 		self.remove_empty_line_col(id_list)
 		for r in self.recipes:
-			if r.ingre == id_list:
-				return r.output
+			if r.shapeless:
+				if r.ingre == shapeless_id_list:
+					return r.output
+			else:
+				if r.ingre == id_list:
+					return r.output
+
+		return False
 
 class SmeltingRecipe(object):
 	def __init__(self, ingre, output):
@@ -89,6 +106,8 @@ class SmeltingRecipes(object):
 			if r.ingre == ingre:
 				return r.output
 
+		return False
+
 
 recipes = Recipes()
 smelting = SmeltingRecipes()
@@ -97,12 +116,17 @@ smelting = SmeltingRecipes()
 # grass | grass
 #--------------  ---->  dirt
 # grass | grass
-recipes.add_recipe(["##", "##"], {'#': grass_block}, dirt_block)
+recipes.add_recipe(["##", "##"], {'#': grass_block}, ItemStack(dirt_block.id(), amount=1))
+recipes.add_shapeless_recipe([grass_block, stone_block], ItemStack(stone_block.id(), amount=1))
 
-recipes.craft([ [grass_block, grass_block, air_block], \
+print(recipes.craft([ [grass_block, grass_block, air_block], \
 					  [grass_block, grass_block, air_block], \
-					  [air_block,   air_block,   air_block] ])
+					  [air_block,   air_block,   air_block] ]))
 
-recipes.craft([ [air_block, grass_block, grass_block], \
+print(recipes.craft([ [air_block, grass_block, grass_block], \
 				      [air_block, grass_block, grass_block], \
-				      [air_block,   air_block,   air_block] ])
+				      [air_block,   air_block,   air_block] ]))
+
+print(recipes.craft([ [air_block, stone_block, grass_block], \
+				      [air_block, air_block, air_block], \
+				      [air_block,   air_block,   air_block] ]))

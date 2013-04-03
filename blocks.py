@@ -9,7 +9,7 @@ BLOCKS_DIR = {}
 # Blocks
 class Block(object):
     transparent = False
-    def __init__(self, top, bottom, side, hardness, max_stack_size, amount_label_color):
+    def __init__(self, top, bottom, side, hardness, max_stack_size, amount_label_color=(255, 255, 255, 255)):
         self.top = top
         self.bottom = bottom
         self.side = side
@@ -62,7 +62,7 @@ class BrickBlock(Block):
 
 class GlassBlock(Block):
     def __init__(self):
-        super(GlassBlock, self).__init__(tex_coord(3,1), tex_coord(3,1), tex_coord(3,1), 0.2, 64, (255, 255, 255, 255))
+        super(GlassBlock, self).__init__(tex_coord(3,1), tex_coord(3,1), tex_coord(3,1), 0.2, 64, (0, 0, 0, 255))
     def id(self):
         return 20
 
@@ -75,7 +75,7 @@ class BedrockBlock(Block):
 
 class WaterBlock(Block):
     def __init__(self):
-        super(WaterBlock, self).__init__(tex_coord(0, 2), tex_coord(0, 2), tex_coord(0, 2), 0, 64, (255, 255, 255, 255))
+        super(WaterBlock, self).__init__(tex_coord(0, 2), tex_coord(0, 2), tex_coord(0, 2), 0, 64)
         self.transparent = True
     def id(self):
         return 8
