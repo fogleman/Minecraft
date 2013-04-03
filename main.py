@@ -479,7 +479,7 @@ class Model(object):
         index = 0
         count = 24
         vertex_data = cube_vertices(x, y, z, 0.5)
-        texture_data = block_texture(block)
+        texture_data = block.get_texture_data()
         for dx, dy, dz in []:#FACES:
             if (x + dx, y + dy, z + dz) in self.world:
                 count -= 8 #4
@@ -749,7 +749,7 @@ class Window(pyglet.window.Window):
                     hit_block = self.model.world[block]
                     if hit_block != bed_block:
                         self.model.remove_block(block)
-                        if self.player.add_item(hit_block.drop()):
+                        if self.player.add_item(hit_block.drop_id):
                             self.item_list.update_items()
                             self.inventory_list.update_items()
                             pass
