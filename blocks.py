@@ -9,27 +9,34 @@ BLOCKS_DIR = {}
 
 
 class Block(object):
-    top = None
-    bottom = None
-    side = None
-    hardness = None
+    top = ()
+    bottom = ()
+    side = ()
+    hardness = 0
     max_stack_size = 64
-    amount_label_color = (255, 255, 255, 255)
+    amount_label_color = 255, 255, 255, 255
     transparent = False
     id = None
 
     def __init__(self):
         BLOCKS_DIR[self.id] = self
 
-    def drop(self):
+    @property
+    def drop_id(self):
         return self.id
+
+    def get_texture_data(self):
+        result = []
+        result.extend(self.top)
+        result.extend(self.bottom)
+        result.extend(self.side * 4)
+        return result
 
 
 class AirBlock(Block):
     top = tex_coord(-1, -1)
     bottom = tex_coord(-1, -1)
     side = tex_coord(-1, -1)
-    hardness = 0
     max_stack_size = 0
     id = 0
 
@@ -49,7 +56,7 @@ class GrassBlock(Block):
     hardness = 0.6
     id = 2
 
-    def drop(self):
+    def drop_id(self):
         return DirtBlock.id
 
 
@@ -66,7 +73,7 @@ class SandBlock(Block):
     bottom = tex_coord(1, 1)
     side = tex_coord(1, 1)
     hardness = 0.5
-    amount_label_color = (0, 0, 0, 255)
+    amount_label_color = 0, 0, 0, 255
     id = 12
 
 
@@ -83,7 +90,7 @@ class GlassBlock(Block):
     bottom = tex_coord(3, 1)
     side = tex_coord(3, 1)
     hardness = 0.2
-    amount_label_color = (0, 0, 0, 255)
+    amount_label_color = 0, 0, 0, 255
     id = 20
 
 
@@ -99,7 +106,6 @@ class WaterBlock(Block):
     top = tex_coord(0, 2)
     bottom = tex_coord(0, 2)
     side = tex_coord(0, 2)
-    hardness = 0
     transparent = True
     id = 8
 
@@ -108,7 +114,6 @@ class ChestBlock(Block):
     top = tex_coord(1, 2)
     bottom = tex_coord(1, 2)
     side = tex_coord(1, 2)
-    hardness = 0
     id = 54
 
 
@@ -116,8 +121,7 @@ class SandstoneBlock(Block):
     top = tex_coord(2, 2)
     bottom = tex_coord(2, 2)
     side = tex_coord(2, 2)
-    hardness = 0
-    amount_label_color = (0, 0, 0, 255)
+    amount_label_color = 0, 0, 0, 255
     id = 24
 
 
@@ -125,7 +129,6 @@ class MarbleBlock(Block):
     top = tex_coord(3, 2)
     bottom = tex_coord(3, 2)
     side = tex_coord(3, 2)
-    hardness = 0
     id = 0  # Why the same id than AirBlock and StonebrickBlock?
 
 
@@ -133,7 +136,6 @@ class StonebrickBlock(Block):
     top = tex_coord(0, 3)
     bottom = tex_coord(0, 3)
     side = tex_coord(0, 3)
-    hardness = 0
     id = 0  # Why the same id than AirBlock and MarbleBlock?
 
 
@@ -141,7 +143,6 @@ class LWoodBlock(Block):
     top = tex_coord(3, 3)
     bottom = tex_coord(3, 3)
     side = tex_coord(3, 3)
-    hardness = 0
     id = 5.1
 
 
@@ -149,7 +150,6 @@ class MWoodBlock(Block):
     top = tex_coord(2, 3)
     bottom = tex_coord(2, 3)
     side = tex_coord(2, 3)
-    hardness = 0
     id = 5.2
 
 
@@ -157,7 +157,6 @@ class DWoodBlock(Block):
     top = tex_coord(1, 3)
     bottom = tex_coord(1, 3)
     side = tex_coord(1, 3)
-    hardness = 0
     id = 5.3
 
 
@@ -168,7 +167,7 @@ class SnowGrassBlock(Block):
     hardness = 0.6
     id = 2
 
-    def drop(self):
+    def drop_id(self):
         return DirtBlock.id
 
 
@@ -187,15 +186,8 @@ class LeafBlock(Block):
     hardness = 0.6
     id = 2
 
-    def drop(self):
+    def drop_id(self):
         return 0  # Why the same id than AirBlock, MarbleBlock and StonebrickBlock?
-
-def block_texture(block):
-    result = []
-    result.extend(block.top)
-    result.extend(block.bottom)
-    result.extend(block.side * 4)  # 4
-    return result
 
 
 air_block = AirBlock()
