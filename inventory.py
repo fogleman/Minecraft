@@ -22,44 +22,15 @@ class Inventory(object):
         else:
             max_size = BLOCKS_DIR[item_id].max_stack_size
 
-        if item_stack:
-            retval = False
-            while quantity > 0:
-                # can't find an unfilled slot
-                if not item_stack:
-                    # find an empty slot to store these items
-                    index = self.find_empty_slot()
 
-                    if index == -1 and len(self.slots) == self.slot_count:
-                        return retval
-
-                    # overflow ?
-                    if quantity > max_size:
-                        quantity -= max_size
-                        item_stack = ItemStack(type=item_id, amount=max_size)
-                    else:
-                        item_stack = ItemStack(type=item_id, amount=quantity)
-                        quantity = 0
-
-                    self.slots.insert(index, item_stack)
-                    retval = True
-                else:
-                    capacity = max_size - item_stack.amount
-                    if quantity < capacity:     # there is a slot with enough space
-                        item_stack.change_amount(quantity)
-                        self.sort()
-                        return True
-                    else:   # overflow
-                        quantity -= capacity
-                        item_stack.change_amount(capacity)
-                        # find next unfilled slot
-                        item_stack = self.get_unfilled_item(item_id)
-
-        else:
-            while quantity > 0:
+        retval = False
+        while quantity > 0:
+            # can't find an unfilled slot
+            if not item_stack:
+                # find an empty slot to store these items
                 index = self.find_empty_slot()
 
-                retval = False
+                #retval = False
                 if index == -1 and len(self.slots) == self.slot_count:
                     return retval
 
@@ -71,10 +42,24 @@ class Inventory(object):
                     item_stack = ItemStack(type=item_id, amount=quantity)
                     quantity = 0
 
-                self.slots.insert(index, item_stack)
+                #self.slots.insert(index, item_stack)
+                self.slots[index] = item_stack
                 retval = True
 
+            else:
+                capacity = max_size - item_stack.amount
+                if quantity < capacity:     # there is a slot with enough space
+                    item_stack.change_amount(quantity)
+                    return True
+                else:   # overflow
+                    quantity -= capacity
+                    item_stack.change_amount(capacity)
+                    # find next unfilled slot
+                    item_stack = self.get_unfilled_item(item_id)
+
         return True
+
+
 
     def remove_item(self, item_id, quantity = 1):
         if quantity < 1:

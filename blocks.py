@@ -119,6 +119,14 @@ class DWoodBlock(Block):
     def id(self):
         return 0
 
+class SnowGrassBlock(Block):
+    def __init__(self):
+        super(SnowGrassBlock, self).__init__(tex_coord(4, 1), tex_coord(0, 1), tex_coord(4, 0), 0.6, 64, (255, 255, 255, 255))
+    def id(self):
+        return 2
+    def drop(self):
+        return DirtBlock().id()
+
 def block_texture(block):
     result = []
     result.extend(block.top)
@@ -142,3 +150,4 @@ stonebrick_block = StonebrickBlock()
 lw_block = LWoodBlock()
 mw_block = MWoodBlock()
 dw_block = DWoodBlock()
+snowg_block = SnowGrassBlock()

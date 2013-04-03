@@ -68,7 +68,7 @@ class Player(Entity):
         self.inventory = Inventory(27)
         self.quick_slots = Inventory(9)
         self.flying = flying
-        initial_items = [chest_block, grass_block, sandstone_block, brick_block, stonebrick_block, marble_block, glass_block, lw_block, mw_block, dw_block]
+        initial_items = [chest_block, lw_block, mw_block, dw_block, marble_block, glass_block, brick_block]
         for item in initial_items:
             quantity = random.randint(1, 10)
             if FLATWORLD == 1:
@@ -193,6 +193,8 @@ class Model(object):
                 if WORLDTYPE == 5:
                     t = random.choice([grass_block, grass_block, dirt_block, stone_block])
                     self.init_block((x, y - 2, z), t)
+                if WORLDTYPE == 6:
+                    self.init_block((x, y - 2, z), snowg_block)
                     #self.init_block((x, y - 2, z), grass_block)
                     #self.init_block((x, y - 2, z), grass_block)
                 #self.init_block((x, y - 2, z), water_block)
@@ -228,6 +230,8 @@ class Model(object):
                 t = random.choice([grass_block, sand_block, dirt_block]) # removed brick_block
             if WORLDTYPE == 5:
                 t = random.choice([stone_block]) # removed brick_block
+            if WORLDTYPE == 6:
+                t = random.choice([snowg_block])
             for y in xrange(c, c + h):
                 for x in xrange(a - s, a + s + 1):
                     for z in xrange(b - s, b + s + 1):
@@ -716,6 +720,9 @@ def main(options):
     if options.terrain == "island":
         WORLDTYPE = 3
         HILLHEIGHT = 8
+    if options.terrain == "snow":
+        WORLDTYPE = 6
+        HILLHEIGHT = 4
 
 
 #    WORLDTYPE = options.terrain
@@ -732,7 +739,7 @@ def main(options):
         #config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
         #window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=config, save=save_object)
     #except pyglet.window.NoSuchConfigException:
-    window = Window( width=options.width, height=options.height, caption='pyCraftr_No-Conf', resizable=True, save=save_object)
+    window = Window( width=options.width, height=options.height, caption='pyCraftr', resizable=True, save=save_object)
 
     window.set_exclusive_mouse(True)
     setup()
