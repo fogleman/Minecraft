@@ -11,3 +11,7 @@
 * create inventory management screen implementing:
 - item stacks
 - Jimx's crafting system
+
+# Blocks
+
+- Ensure that all blocks use correct IDs as per http://www.minecraftwiki.net/wiki/Data_values
