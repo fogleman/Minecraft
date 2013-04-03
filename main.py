@@ -22,7 +22,7 @@ HILLHEIGHT = 6  #height of the hills, increase for mountains :D
 FLATWORLD=0  # dont make mountains,  make a flat world
 SAVE_FILENAME = 'save.dat'
 DISABLE_SAVE = True
-TIME_RATE = 60 * 10 # Rate of change (steps per hour).
+TIME_RATE = 30 * 10 # Rate of change (steps per hour).
 DEG_RAD = pi / 180.0
 HOUR_DEG = 15.0
 BACK_RED = 0.0 # 0.53
@@ -488,25 +488,27 @@ class Window(pyglet.window.Window):
         
     def update_time(self):
         '''The idle function advances the time of day.
-           The day has 12 hours, from sunrise to sunset.
+           The day has 24 hours, from sunrise to sunset and from sunrise to second sunset.
            The time of day is converted to degrees and then to radians.'''
         if not self.exclusive:
             return
         self.time_of_day += 1.0 / TIME_RATE
-        if self.time_of_day > 12.0:
+        if self.time_of_day > 24.0:
             self.time_of_day = 0.0
             
         side = len(self.model.sectors) * 2.0
             
-        self.light_y = 0.6 * side * sin(self.time_of_day * HOUR_DEG * DEG_RAD)
-        self.light_z = 0.6 * side * cos(self.time_of_day * HOUR_DEG * DEG_RAD)
+        time_of_day = (self.time_of_day) if (self.time_of_day < 12.0) else (24.0 - self.time_of_day)
+
+        self.light_y = 0.6 * side * sin(time_of_day * HOUR_DEG * DEG_RAD)
+        self.light_z = 0.6 * side * cos(time_of_day * HOUR_DEG * DEG_RAD)
 
         # Calculate sky colour according to time of day.
-        sin_t = sin(pi * self.time_of_day / 12.0)
+        sin_t = sin(pi * time_of_day / 12.0)
         global BACK_RED
         global BACK_GREEN
         global BACK_BLUE
-        BACK_RED = 0.3 * (1.0 - sin_t)
+        BACK_RED = 0.1 * (1.0 - sin_t)
         BACK_GREEN = 0.9 * sin_t
         BACK_BLUE = min(sin_t + 0.4, 1.0)
         
@@ -813,7 +815,7 @@ def main(options):
     global TIME_RATE
 
     if options.fast:
-        TIME_RATE = 30
+        TIME_RATE = 15
 
     #try:
         #config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
