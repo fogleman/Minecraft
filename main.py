@@ -387,9 +387,7 @@ class Model(object):
                                     self.init_block((x - 1, y + 8, z + 1), leaf_block)
                                     self.init_block((x , y + 7, z), leaf_block)
 
-                                    global RND_FOREST
                                     RND_FOREST = RND_FOREST -1
-                                    print RND_FOREST
 
 
                         if t == grass_block or snowg_block:
