@@ -1,6 +1,5 @@
 from pyglet.gl import *
 from pyglet.window import key
-from ctypes import c_float
 import math
 import random
 import time
@@ -347,6 +346,11 @@ class Window(pyglet.window.Window):
         self.sector = None
         self.reticle = None
         self.dy = 0
+        self.inventory = [BRICK, GRASS, SAND]
+        self.block = self.inventory[0]
+        self.num_keys = [
+            key._1, key._2, key._3, key._4, key._5,
+            key._6, key._7, key._8, key._9, key._0]
         self.model = Model()
         self.label = pyglet.text.Label('', font_name='Arial', font_size=18,
             x=10, y=self.height - 10, anchor_x='left', anchor_y='top',
@@ -462,7 +466,7 @@ class Window(pyglet.window.Window):
                         self.model.remove_block(block)
             else:
                 if previous:
-                    self.model.add_block(previous, BRICK)
+                    self.model.add_block(previous, self.block)
         else:
             self.set_exclusive_mouse(True)
 
@@ -490,6 +494,9 @@ class Window(pyglet.window.Window):
             self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
             self.flying = not self.flying
+        elif symbol in self.num_keys:
+            index = (symbol - self.num_keys[0]) % len(self.inventory)
+            self.block = self.inventory[index]
 
     def on_key_release(self, symbol, modifiers):
         if symbol == key.W:
@@ -573,7 +580,7 @@ class Window(pyglet.window.Window):
 
 def setup_fog():
     glEnable(GL_FOG)
-    glFogfv(GL_FOG_COLOR, (c_float * 4)(0.53, 0.81, 0.98, 1))
+    glFogfv(GL_FOG_COLOR, (GLfloat * 4)(0.5, 0.69, 1.0, 1))
     glHint(GL_FOG_HINT, GL_DONT_CARE)
     glFogi(GL_FOG_MODE, GL_LINEAR)
     glFogf(GL_FOG_DENSITY, 0.35)
@@ -582,7 +589,7 @@ def setup_fog():
 
 
 def setup():
-    glClearColor(0.53, 0.81, 0.98, 1)
+    glClearColor(0.5, 0.69, 1.0, 1)
     glEnable(GL_CULL_FACE)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
