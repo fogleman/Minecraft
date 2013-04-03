@@ -6,6 +6,7 @@ import time
 import argparse
 import os
 import cPickle as pickle
+import kytten
 from collections import deque
 from blocks import *
 from items import *
@@ -72,6 +73,10 @@ def sectorize(position):
     x, y, z = x / SECTOR_SIZE, y / SECTOR_SIZE, z / SECTOR_SIZE
     return (x, 0, z)
     
+# Define a simple function to create GLfloat arrays of floats:
+def vec(*args):
+    return (GLfloat * len(args))(*args)
+
 # Define a simple function to create GLfloat arrays of floats:
 def vec(*args):
     return (GLfloat * len(args))(*args)
@@ -224,10 +229,10 @@ class InventorySelector(object):
         self.active = pyglet.sprite.Sprite(image.get_region(0, 0, image.height / 4, image.height / 4), batch=self.batch, group=pyglet.graphics.OrderedGroup(2))
         self.active.opacity = 0
         self.set_position(width, height)
-        
+
     def change_index(self, change):
         self.set_index(self.current_index + change)
-            
+
     def set_index(self, index):
         index = int(index)
         if self.current_index == index:
@@ -238,7 +243,7 @@ class InventorySelector(object):
         elif self.current_index < 0:
             self.current_index = self.max_items - 1;
         self.update_current()
-            
+
     def update_items(self):
         self.icons = []
         for amount_label in self.amount_labels:
@@ -272,7 +277,7 @@ class InventorySelector(object):
         
     def set_position(self, width, height):
         self.frame.x = (width - self.frame.width) / 2
-        self.frame.y = self.icon_size + 20 # 20 is padding       
+        self.frame.y = self.icon_size + 20 # 20 is padding
         self.update_current()
         self.update_items()
 
@@ -314,6 +319,8 @@ class Model(object):
         n = 80
         s = 1
         y = 0
+        global RND_FOREST
+        initTrees = RND_FOREST / 2
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
                 if WORLDTYPE == 0:
@@ -335,12 +342,9 @@ class Model(object):
                 self.init_block((x, y - 3, z), dirt_block)
                 self.init_block((x, y - 4, z), bed_block) # was stone_block
 
-
                 if x in (-n, n) or z in (-n, n):
                     for dy in xrange(-3, 10): #was -2 ,6
                         self.init_block((x, y + dy, z), stone_block)
-
-
 
         o = n - 10 + HILLHEIGHT -6
         if FLATWORLD == 1:
@@ -380,36 +384,34 @@ class Model(object):
                         global RND_FOREST
 
                         if RND_FOREST > 0:
-                            if y > 1: # don't have trees sitting on the base 0 land.'
-                                showtree = random.randint(1, 100) # 5% chance out of 100 to have a tree
-                                if showtree < 5:
-                                    print showtree
-                                    self.init_block((x, y, z), dirt_block)
-                                    self.init_block((x, y, z), dirt_block)
-                                    self.init_block((x, y, z), dirt_block)
-                                    self.init_block((x, y +1 , z), log_block)
-                                    self.init_block((x, y +2, z), log_block)
-                                    self.init_block((x, y +3, z), log_block)
-                                    self.init_block((x, y +4, z), log_block)
-                                    self.init_block((x, y +5, z), log_block)
-                                    self.init_block((x, y +6, z), log_block)
-                                    self.init_block((x + 1, y + 7, z), leaf_block)
-                                    self.init_block((x - 1, y + 7, z), leaf_block)
-                                    self.init_block((x + 1, y + 7, z + 1), leaf_block)
-                                    self.init_block((x - 1, y + 7, z - 1), leaf_block)
-                                    self.init_block((x + 1, y + 8, z), leaf_block)
-                                    self.init_block((x - 1, y + 8, z), leaf_block)
-                                    self.init_block((x + 1, y + 8, z - 1), leaf_block)
-                                    self.init_block((x - 1, y + 8, z + 1), leaf_block)
-                                    self.init_block((x , y + 7, z), leaf_block)
+                            #if y > -1: # don't have trees sitting on the base 0 land.'
+                            showtree = random.randint(1,5) # 1 out of 5 % chance out of 100 to have a tree
+                            if showtree <= 2:
+                                #print showtree
+                                self.init_block((x, y, z), dirt_block)
+                                self.init_block((x, y, z), dirt_block)
+                                self.init_block((x, y, z), dirt_block)
+                                self.init_block((x, y +1 , z), log_block)
+                                self.init_block((x, y +2, z), log_block)
+                                self.init_block((x, y +3, z), log_block)
+                                self.init_block((x, y +4, z), log_block)
+                                self.init_block((x, y +5, z), log_block)
+                                self.init_block((x, y +6, z), log_block)
+                                self.init_block((x + 1, y + 7, z), leaf_block)
+                                self.init_block((x - 1, y + 7, z), leaf_block)
+                                self.init_block((x + 1, y + 7, z + 1), leaf_block)
+                                self.init_block((x - 1, y + 7, z - 1), leaf_block)
+                                self.init_block((x + 1, y + 8, z), leaf_block)
+                                self.init_block((x - 1, y + 8, z), leaf_block)
+                                self.init_block((x + 1, y + 8, z - 1), leaf_block)
+                                self.init_block((x - 1, y + 8, z + 1), leaf_block)
+                                self.init_block((x , y + 7, z), leaf_block)
 
-                                    RND_FOREST = RND_FOREST -1
-
+                                RND_FOREST = RND_FOREST -1
 
                         if t == grass_block or snowg_block:
                             self.init_block((x - 1, y - 1, z), dirt_block)
                             self.init_block((x - 2, y - 2, z), dirt_block)
-
 
                 s -= d
 
@@ -953,6 +955,7 @@ def setup():
     glEnable(GL_LIGHT1)
     glEnable(GL_LIGHT2)
     glEnable(GL_CULL_FACE)
+    glEnable(GL_BLEND)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
@@ -973,30 +976,32 @@ def main(options):
     global HILLHEIGHT
     global RND_FOREST
 
+    RND_FOREST = options.maxtrees
+
     if options.terrain == "plains":
         WORLDTYPE = 0
         HILLHEIGHT = 2
-        RND_FOREST = 20
+        RND_FOREST = 200
     if options.terrain == "mountains":
         WORLDTYPE = 5
-        HILLHEIGHT = 16
-        RND_FOREST = 100
+        HILLHEIGHT = 12
+        RND_FOREST = 400
     if options.terrain == "desert":
         WORLDTYPE = 2
         HILLHEIGHT = 5
-        RND_FOREST = 8
+        RND_FOREST = 50
     if options.terrain == "island":
         WORLDTYPE = 3
         HILLHEIGHT = 8
-        RND_FOREST = 25
+        RND_FOREST = 300
     if options.terrain == "snow":
         WORLDTYPE = 6
         HILLHEIGHT = 4
-        RND_FOREST = 40
+        RND_FOREST = 550
 
-    RND_FOREST = options.maxtrees
-    print options.maxtrees
-    print RND_FOREST
+
+#    print options.maxtrees
+#    print RND_FOREST
 
 #    WORLDTYPE = options.terrain
     if options.hillheight <> 6:
