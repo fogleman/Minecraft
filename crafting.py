@@ -47,9 +47,9 @@ class Recipes(object):
 
 			for c in line:
 				if c == ' ':
-					sub_ingre.append(air_block.id())
+					sub_ingre.append(air_block.id)
 				else:
-					sub_ingre.append(ingre[c].id())
+					sub_ingre.append(ingre[c].id)
 			ingre_list.append(sub_ingre)
 
 		self.remove_empty_line_col(ingre_list)
@@ -61,7 +61,7 @@ class Recipes(object):
 		self.nr_recipes += 1
 
 	def add_shapeless_recipe(self, ingre, output):
-		ingre_list = [x.id() for x in ingre if x.id() != 0]
+		ingre_list = [x.id for x in ingre if x.id != 0]
 		ingre_list.sort()
 		r = Recipe(ingre_list, output)
 		r.shapeless = True
@@ -71,8 +71,8 @@ class Recipes(object):
 		id_list = []
 		shapeless_id_list = []
 		for line in input_blocks:
-			id_list.append([b.id() for b in line])
-			shapeless_id_list.extend([b.id() for b in line if b.id() != 0])
+			id_list.append([b.id for b in line])
+			shapeless_id_list.extend([b.id for b in line if b.id != 0])
 		shapeless_id_list.sort()
 
 		self.remove_empty_line_col(id_list)
@@ -90,7 +90,7 @@ class SmeltingRecipe(object):
 	def __init__(self, ingre, output):
 		# what blocks are needed to craft this block/item
 		self.ingre = ingre
-		self.output = output.id()
+		self.output = output.id
 
 class SmeltingRecipes(object):
 	def __init__(self):
@@ -116,8 +116,8 @@ smelting = SmeltingRecipes()
 # grass | grass
 #--------------  ---->  dirt
 # grass | grass
-recipes.add_recipe(["##", "##"], {'#': grass_block}, ItemStack(dirt_block.id(), amount=1))
-recipes.add_shapeless_recipe([grass_block, stone_block], ItemStack(stone_block.id(), amount=1))
+recipes.add_recipe(["##", "##"], {'#': grass_block}, ItemStack(dirt_block.id, amount=1))
+recipes.add_shapeless_recipe([grass_block, stone_block], ItemStack(stone_block.id, amount=1))
 
 print(recipes.craft([ [grass_block, grass_block, air_block], \
 					  [grass_block, grass_block, air_block], \

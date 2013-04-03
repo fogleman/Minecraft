@@ -95,7 +95,7 @@ class Inventory(object):
 
     def sort(self, reverse=True):
         if self.sort_mode == 0:
-            self.sort_with_key(key=lambda x: x.id() if x != None else -sys.maxint - 1, reverse=True)
+            self.sort_with_key(key=lambda x: x.id if x != None else -sys.maxint - 1, reverse=True)
         if self.sort_mode == 1:
             self.sort_with_key(key=lambda x: x.amount if x != None else -sys.maxint - 1, reverse=True)
         elif self.sort_mode == 2:
