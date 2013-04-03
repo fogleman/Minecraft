@@ -1,14 +1,17 @@
 from items import *
+import sys
 
 class Inventory(object):
     def __init__(self, slot_count = 27):
         self.slot_count = slot_count
         self.slots = [None] * self.slot_count
+        self.sort_mode = 0
 
     def find_empty_slot(self):
         return next((index for index,value in enumerate(self.slots) if not value), -1)
 
     def add_item(self, item_id, quantity = 1):
+        self.sort()
         if quantity < 1:
             return False
 
@@ -25,7 +28,7 @@ class Inventory(object):
                 if not item_stack:
                     # find an empty slot to store these items
                     index = self.find_empty_slot()
-            
+
                     if index == -1 and len(self.slots) == self.slot_count:
                         return retval
 
@@ -43,6 +46,7 @@ class Inventory(object):
                     capacity = max_size - item_stack.amount
                     if quantity < capacity:     # there is a slot with enough space
                         item_stack.change_amount(quantity)
+                        self.sort()
                         return True
                     else:   # overflow
                         quantity -= capacity
@@ -53,7 +57,6 @@ class Inventory(object):
         else:            
             while quantity > 0:
                 index = self.find_empty_slot()
-            
                 retval = False
                 if index == -1 and len(self.slots) == self.slot_count:
                     return retval
@@ -66,12 +69,14 @@ class Inventory(object):
                     item_stack = ItemStack(type=item_id, amount=quantity)
                     quantity = 0
 
-                self.slots.insert(index, item_stack)
+                #self.slots.insert(index, item_stack)
+                self.slots[index] = item_stack
                 retval = True
-            
+        self.sort()   
         return True
           
     def remove_item(self, item_id, quantity = 1):
+        self.sort()
         if quantity < 1:
             return False
             
@@ -81,7 +86,6 @@ class Inventory(object):
     def remove_by_index(self, index, quantity = 1):
         if quantity < 1 or index < 0 or not self.slots[index]:
             return False
-            
         retval = False
         self.slots[index].change_amount(quantity*-1)
         if self.slots[index].amount == 0:
@@ -89,12 +93,31 @@ class Inventory(object):
             retval = True
         return retval
             
+    def sort(self, reverse=True):
+        if self.sort_mode == 0:
+            self.sort_with_key(key=lambda x: x.id() if x != None else -sys.maxint - 1, reverse=True) 
+        if self.sort_mode == 1:
+            self.sort_with_key(key=lambda x: x.amount if x != None else -sys.maxint - 1, reverse=True)
+        elif self.sort_mode == 2:
+            self.sort_with_key(key=lambda x: x.amount if x != None else sys.maxint - 1, reverse=False)
+
+    def sort_with_key(self, key, reverse=True):
+        self.slots = sorted(self.slots, key=key, reverse=reverse) 
+
+    def change_sort_mode(self, change=1):
+        self.sort_mode += change
+        if self.sort_mode > 2:
+            self.sort_mode = 0
+        elif self.sort_mode < 0:
+            self.sort_mode = 2
+        self.sort()
+
     def at(self, index):
         index = int(index)
         if index >= 0 and index < self.slot_count:
             return self.slots[index]
         return None
-        
+
     def get_index(self, item_id):
         return next((index for index, x in enumerate(self.slots) if x and x.type == item_id), -1)
 

@@ -1,6 +1,6 @@
 from pyglet.gl import *
 from pyglet.window import key
-from math import cos, sin, atan2, radians, degrees, pi, fmod
+from math import cos, sin, atan2, pi, fmod, radians
 import random
 import time
 import argparse
@@ -22,13 +22,14 @@ HILLHEIGHT = 6  #height of the hills, increase for mountains :D
 FLATWORLD=0  # dont make mountains,  make a flat world
 SAVE_FILENAME = 'save.dat'
 DISABLE_SAVE = True
-TIME_RATE = 60 # Rate of change (steps per hour).
+TIME_RATE = 30 * 10 # Rate of change (steps per hour).
 DEG_RAD = pi / 180.0
 HOUR_DEG = 15.0
 BACK_RED = 0.0 # 0.53
 BACK_GREEN = 0.0 # 0.81
 BACK_BLUE = 0.0 # 0.98
 SHOW_FOG = True
+HALF_PI = pi / 2.0 # 90 degrees
 
 def cube_vertices(x, y, z, n):
     return [
@@ -73,6 +74,15 @@ def sectorize(position):
 def vec(*args):
     return (GLfloat * len(args))(*args)
 
+# Define a simple function to create GLfloat arrays of floats:
+def vec(*args):
+    return (GLfloat * len(args))(*args)
+
+
+# Define a simple function to create GLfloat arrays of floats:
+def vec(*args):
+    return (GLfloat * len(args))(*args)
+
 class Player(Entity):
     def __init__(self, position, rotation, flying = False):
         super(Player, self).__init__(position, rotation, health = 20)
@@ -82,8 +92,11 @@ class Player(Entity):
         initial_items = [dirt_block, sand_block, brick_block, stone_block, glass_block, water_block, chest_block, sandstone_block, marble_block]
         for item in initial_items:
             quantity = random.randint(1, 10)
-            self.quick_slots.add_item(item.id(), quantity)
-        
+            if FLATWORLD == 1:
+                self.quick_slots.add_item(item.id(), 99)
+            if FLATWORLD == 0:
+                self.quick_slots.add_item(item.id(), quantity)
+
     def add_item(self, item_id):
         if self.quick_slots.add_item(item_id):
             return True
@@ -100,9 +113,9 @@ class ItemSelector(object):
         self.model = model
         self.player = player
         self.max_items = 9
-        self.current_index = 4
-        self.icon_size = self.model.group.texture.width / 4
-        
+        self.current_index = 1
+        self.icon_size = self.model.group.texture.width / 8 #4
+
         image = pyglet.image.load('slots.png')
         frame_size = image.height / 2
         self.frame = pyglet.sprite.Sprite(image.get_region(0, frame_size, image.width, frame_size), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
@@ -111,7 +124,7 @@ class ItemSelector(object):
         
     def change_index(self, change):
         self.set_index(self.current_index + change)
-                
+            
     def set_index(self, index):
         index = int(index)
         if self.current_index == index:
@@ -136,7 +149,7 @@ class ItemSelector(object):
                 x += (self.icon_size * 0.5) + 3
                 continue
             block = BLOCKS_DIR[item.type]
-            block_icon = self.model.group.texture.get_region(int(block.side[0] * 4) * self.icon_size, int(block.side[1] * 4) * self.icon_size, self.icon_size, self.icon_size)
+            block_icon = self.model.group.texture.get_region(int(block.side[0] * 8) * self.icon_size, int(block.side[1] * 8) * self.icon_size, self.icon_size, self.icon_size)
             icon = pyglet.sprite.Sprite(block_icon, batch=self.batch, group=self.group)
             icon.scale = 0.5
             icon.x = x
@@ -157,7 +170,7 @@ class ItemSelector(object):
         self.active.y = self.frame.y            
         self.update_current()
         self.update_items()
-        
+
     def get_current_block(self):
         item = self.player.quick_slots.at(self.current_index)
         if item:
@@ -195,15 +208,27 @@ class Model(object):
                     self.init_block((x, y - 2, z), sand_block)
                 if WORLDTYPE == 3:
                     self.init_block((x, y - 2, z), water_block)
+                if WORLDTYPE == 4:
+                    self.init_block((x, y - 2, z), grass_block)
+                if WORLDTYPE == 5:
+                    t = random.choice([grass_block, grass_block, dirt_block, stone_block])
+                    self.init_block((x, y - 2, z), t)
+                if WORLDTYPE == 6:
+                    self.init_block((x, y - 2, z), snowg_block)
+                    #self.init_block((x, y - 2, z), grass_block)
+                    #self.init_block((x, y - 2, z), grass_block)
                 #self.init_block((x, y - 2, z), water_block)
+                #if WORLDTYPE != 5:
+                    #self.init_block((x, y - 2, z), grass_block)
+
                 self.init_block((x, y - 3, z), dirt_block)
                 self.init_block((x, y - 4, z), bed_block) # was stone_block
                 if x in (-n, n) or z in (-n, n):
                     for dy in xrange(-3, 10): #was -2 ,6
                         self.init_block((x, y + dy, z), stone_block)
-        o = n - 10
-        if HILLHEIGHT > 6:
-            o = n - 10 + HILLHEIGHT - 6
+        #o = n - 10
+        #if HILLHEIGHT <> 6:
+        o = n - 10 + HILLHEIGHT -6
         if FLATWORLD == 1:
             return
         for _ in xrange(120):
@@ -213,7 +238,20 @@ class Model(object):
             h = random.randint(1, HILLHEIGHT)
             s = random.randint(4, HILLHEIGHT + 2)
             d = 1
-            t = random.choice([grass_block, sand_block, dirt_block]) # removed brick_block
+            if WORLDTYPE == 0:
+                t = random.choice([grass_block]) # removed brick_block
+            if WORLDTYPE == 1:
+                t = random.choice([dirt_block]) # removed brick_block
+            if WORLDTYPE == 2:
+                t = random.choice([sand_block]) # removed brick_block
+            if WORLDTYPE == 3:
+                t = random.choice([grass_block, sand_block]) # removed brick_block
+            if WORLDTYPE == 4:
+                t = random.choice([grass_block, sand_block, dirt_block]) # removed brick_block
+            if WORLDTYPE == 5:
+                t = random.choice([stone_block]) # removed brick_block
+            if WORLDTYPE == 6:
+                t = random.choice([snowg_block])
             for y in xrange(c, c + h):
                 for x in xrange(a - s, a + s + 1):
                     for z in xrange(b - s, b + s + 1):
@@ -222,7 +260,19 @@ class Model(object):
                         if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
                             continue
                         self.init_block((x, y, z), t)
+                        if t == grass_block or snowg_block:
+                            self.init_block((x - 1, y - 1, z), dirt_block)
+                            self.init_block((x - 2, y - 2, z), dirt_block)
+                        #if t == snow_block:
+                            #self.init_block((x - 1, y - 1, z), dirt_block)
+                            #self.init_block((x - 2, y - 2, z), dirt_block)
+
+                    #if WORLDTYPE == 5: # cover the mountains of stone with grass
+                        #self.init_block((x + 1, y + 1, z + 1), grass_block)
                 s -= d
+                # below makes floating 'extreme hills' blocks...
+            #if WORLDTYPE == 5: # cover the mountains of stone with grass
+                #self.init_block((x, y - 1, z), grass_block)
 
     def hit_test(self, position, vector, max_distance=8):
         m = 8
@@ -292,7 +342,7 @@ class Model(object):
         texture_data = block_texture(block)
         for dx, dy, dz in []:#FACES:
             if (x + dx, y + dy, z + dz) in self.world:
-                count -= 4
+                count -= 8 #4
                 i = index * 12
                 j = index * 8
                 del vertex_data[i:i + 12]
@@ -385,13 +435,14 @@ class Window(pyglet.window.Window):
             self.model.sectors = self.save[1]
             if save_len > 2 and isinstance(self.save[2], list) and len(self.save[2]) == 2: self.strafe = self.save[2]
             if save_len > 3 and isinstance(self.save[3], Player): self.player = self.save[3]
+            if save_len > 4 and isinstance(self.save[4], float): self.time_of_day = self.save[4]
         self.item_list = ItemSelector(self.width, self.height, self.player, self.model)
         self.num_keys = [
             key._1, key._2, key._3, key._4, key._5,
             key._6, key._7, key._8, key._9, key._0]
         if self.show_gui:
-            self.label = pyglet.text.Label('', font_name='Arial', font_size=18, 
-                x=10, y=self.height - 10, anchor_x='left', anchor_y='top', 
+            self.label = pyglet.text.Label('', font_name='Arial', font_size=8,
+                x=10, y=self.height - 10, anchor_x='left', anchor_y='top',
                 color=(0, 0, 0, 255))
         pyglet.clock.schedule_interval(self.update, 1.0 / 60)
     def set_exclusive_mouse(self, exclusive):
@@ -399,29 +450,36 @@ class Window(pyglet.window.Window):
         self.exclusive = exclusive
     def get_sight_vector(self):
         x, y = self.player.rotation
-        m = cos(radians(y))
-        dy = sin(radians(y))
-        dx = cos(radians(x - 90)) * m
-        dz = sin(radians(x - 90)) * m
+        y_r = radians(y)
+        x_r = radians(x)
+        m = cos(y_r)
+        dy = sin(y_r)
+        x_r -= HALF_PI
+        dx = cos(x_r) * m
+        dz = sin(x_r) * m
         return (dx, dy, dz)
     def get_motion_vector(self):
         if any(self.strafe):
             x, y = self.player.rotation
-            strafe = degrees(atan2(*self.strafe))
+            y_r = radians(y)
+            x_r = radians(x)
+            strafe = atan2(*self.strafe)
             if self.player.flying:
-                m = cos(radians(y))
-                dy = sin(radians(y))
+                m = cos(y_r)
+                dy = sin(y_r)
                 if self.strafe[1]:
                     dy = 0.0
                     m = 1
                 if self.strafe[0] > 0:
                     dy *= -1
-                dx = cos(radians(x + strafe)) * m
-                dz = sin(radians(x + strafe)) * m
+                x_r += strafe
+                dx = cos(x_r) * m
+                dz = sin(x_r) * m
             else:
                 dy = 0.0
-                dx = cos(radians(x + strafe))
-                dz = sin(radians(x + strafe))
+                x_r += strafe
+                dx = cos(x_r)
+                dz = sin(x_r)
         else:
             dy = 0.0
             dx = 0.0
@@ -430,23 +488,27 @@ class Window(pyglet.window.Window):
         
     def update_time(self):
         '''The idle function advances the time of day.
-           The day has 12 hours, from sunrise to sunset.
+           The day has 24 hours, from sunrise to sunset and from sunrise to second sunset.
            The time of day is converted to degrees and then to radians.'''
+        if not self.exclusive:
+            return
         self.time_of_day += 1.0 / TIME_RATE
-        if self.time_of_day > 12.0:
+        if self.time_of_day > 24.0:
             self.time_of_day = 0.0
             
         side = len(self.model.sectors) * 2.0
             
-        self.light_y = 0.6 * side * sin(self.time_of_day * HOUR_DEG * DEG_RAD)
-        self.light_z = 0.6 * side * cos(self.time_of_day * HOUR_DEG * DEG_RAD)
+        time_of_day = (self.time_of_day) if (self.time_of_day < 12.0) else (24.0 - self.time_of_day)
+
+        self.light_y = 0.6 * side * sin(time_of_day * HOUR_DEG * DEG_RAD)
+        self.light_z = 0.6 * side * cos(time_of_day * HOUR_DEG * DEG_RAD)
 
         # Calculate sky colour according to time of day.
-        sin_t = sin(pi * self.time_of_day / 12.0)
+        sin_t = sin(pi * time_of_day / 12.0)
         global BACK_RED
         global BACK_GREEN
         global BACK_BLUE
-        BACK_RED = 0.3 * (1.0 - sin_t)
+        BACK_RED = 0.1 * (1.0 - sin_t)
         BACK_GREEN = 0.9 * sin_t
         BACK_BLUE = min(sin_t + 0.4, 1.0)
         
@@ -470,7 +532,7 @@ class Window(pyglet.window.Window):
         for _ in xrange(m):
             self._update(dt / m)
         self.update_time()
-        
+
     def _update(self, dt):
         # walking
         speed = 15 if self.player.flying else 5
@@ -492,7 +554,7 @@ class Window(pyglet.window.Window):
 
     def save_to_file(self):
         if DISABLE_SAVE:
-            pickle.dump((self.model.world, self.model.sectors, self.strafe, self.player), open(SAVE_FILENAME, "wb"))
+            pickle.dump((self.model.world, self.model.sectors, self.strafe, self.player, self.time_of_day), open(SAVE_FILENAME, "wb"))
 
     def collide(self, position, height):
         pad = 0.25
@@ -521,7 +583,7 @@ class Window(pyglet.window.Window):
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
         if self.exclusive and scroll_y != 0:
             self.item_list.change_index(scroll_y*-1)
-            
+
     def on_mouse_press(self, x, y, button, modifiers):
         if self.exclusive:
             vector = self.get_sight_vector()
@@ -572,6 +634,7 @@ class Window(pyglet.window.Window):
         elif symbol == key.ESCAPE:
             self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
+            self.dy = 0
             self.player.flying = not self.player.flying
         elif symbol == key.B or symbol == key.F3:
             self.show_gui = not self.show_gui
@@ -580,6 +643,9 @@ class Window(pyglet.window.Window):
             self.item_list.set_index(index)
         elif symbol == key.V:
             self.save_to_file()
+        elif symbol == key.M:
+            self.player.quick_slots.change_sort_mode()
+            self.item_list.update_items()
 
     def on_key_release(self, symbol, modifiers):
         if symbol == key.W:
@@ -592,6 +658,9 @@ class Window(pyglet.window.Window):
             self.strafe[1] -= 1
         elif (symbol == key.SPACE or symbol == key.LSHIFT or symbol == key.RSHIFT) and self.player.flying:
             self.dy = 0
+        elif symbol == key.M:
+            self.player.quick_slots.change_sort_mode()
+            self.item_list.update_items()
     def on_resize(self, width, height):
         # label
         # reticle
@@ -605,14 +674,17 @@ class Window(pyglet.window.Window):
         if self.show_gui:
             self.label.y = height - 10
             self.item_list.set_position(width, height)
-            
+
     def set_2d(self):
         width, height = self.get_size()
         glDisable(GL_DEPTH_TEST)
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        glOrtho(0, width, 0, height, -1, 1)
+        if width != 0:
+            glOrtho(0, width, 0, height, -1, 1)
+        else:
+            glOrtho(0, 1, 0, 1, -1, 1)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
     def set_3d(self):
@@ -623,12 +695,16 @@ class Window(pyglet.window.Window):
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        gluPerspective(FOV, width / float(height), NEAR_CLIP_DISTANCE, FAR_CLIP_DISTANCE)
+        if width != float(height):
+            gluPerspective(FOV, width / float(height), NEAR_CLIP_DISTANCE, FAR_CLIP_DISTANCE)
+        else:
+            gluPerspective(FOV, 1, NEAR_CLIP_DISTANCE, FAR_CLIP_DISTANCE)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         x, y = self.player.rotation
         glRotatef(x, 0, 1, 0)
-        glRotatef(-y, cos(radians(x)), 0, sin(radians(x)))
+        x_r = radians(x)
+        glRotatef(-y, cos(x_r), 0, sin(x_r))
         x, y, z = self.player.position
         glTranslatef(-x, -y, -z)
         glEnable(GL_LIGHTING)
@@ -636,12 +712,12 @@ class Window(pyglet.window.Window):
         glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, self.earth)
         glMaterialfv(GL_FRONT, GL_SPECULAR, self.white)
         glMaterialfv(GL_FRONT, GL_SHININESS, self.polished)
-        
+
     def clear(self):
         glClearColor(BACK_RED, BACK_GREEN, BACK_BLUE, 1.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         super(Window, self).clear()
-        
+
     def on_draw(self):
         self.clear()
         self.set_3d()
@@ -706,21 +782,47 @@ def main(options):
     elif options.draw_distance == 'long':
         DRAW_DISTANCE = 60.0 * 2.0
     global WORLDTYPE
-    WORLDTYPE = options.terrain
     global HILLHEIGHT
-    HILLHEIGHT = options.hillheight
-    global FLATWORLD
-    FLATWORLD = options.flat
+
+    if options.terrain == "plains":
+        WORLDTYPE = 0
+        HILLHEIGHT = 2
+    if options.terrain == "mountains":
+        WORLDTYPE = 5
+        HILLHEIGHT = 16
+    if options.terrain == "desert":
+        WORLDTYPE = 2
+        HILLHEIGHT = 5
+    if options.terrain == "island":
+        WORLDTYPE = 3
+        HILLHEIGHT = 8
+    if options.terrain == "snow":
+        WORLDTYPE = 6
+        HILLHEIGHT = 4
+
+
+#    WORLDTYPE = options.terrain
+    if options.hillheight <> 6:
+        HILLHEIGHT = options.hillheight
+
+    if options.flat > 0:
+        global FLATWORLD
+        FLATWORLD = options.flat
+
     global SHOW_FOG
     SHOW_FOG = not options.hide_fog
-    '''
-    try:
-        config = Config(sample_buffers=1, samples=0, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
-        window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=config, save=save_object)
-    except pyglet.window.NoSuchConfigException:
-        window = Window( width=options.width, height=options.height, caption='pyCraftr_No-Conf', resizable=True, save=save_object)
-    '''
-    window = Window(width=options.width, height=options.height, caption='pyCraftr_No-Conf', resizable=True, save=save_object)
+
+    global TIME_RATE
+
+    if options.fast:
+        TIME_RATE = 15
+
+    #try:
+        #config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
+        #window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=config, save=save_object)
+    #except pyglet.window.NoSuchConfigException:
+    window = Window( width=options.width, height=options.height, caption='pyCraftr', resizable=True, save=save_object)
+
     window.set_exclusive_mouse(True)
     setup()
     if SHOW_FOG:
@@ -733,7 +835,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-width", type=int, default=850)
     parser.add_argument("-height", type=int, default=480)
-    parser.add_argument("-terrain", type=int, default=0)
+    parser.add_argument("-terrain", type=str, default="grass")
     parser.add_argument("-hillheight", type=int, default=6)
     parser.add_argument("-flat", type=int, default=0)
     parser.add_argument("--hide-fog", action="store_true", default=False)
@@ -742,5 +844,6 @@ if __name__ == '__main__':
     parser.add_argument("-draw-distance", choices=['short', 'medium', 'long'], default='short')
     parser.add_argument("-save", type=unicode, default=SAVE_FILENAME)
     parser.add_argument("--disable-save", action="store_false", default=True)
+    parser.add_argument("--fast", action="store_true", default=False)
     options = parser.parse_args()
     main(options)

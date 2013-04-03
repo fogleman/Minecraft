@@ -1,6 +1,9 @@
+# Terrain
+
+* Enable blending mode to get semi-transparent textures working. Render in the right order so they show up correctly.
+
 # Items
 
-* stack splitting and merging
 * return extra amount to inventory if quick access is full?
 
 # Inventory
