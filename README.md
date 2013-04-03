@@ -53,7 +53,7 @@ See the [https://github.com/fogleman/Minecraft/wiki](wiki) for this project to i
 - Space: jump / (in flying mode) fly
 - Shift: (in flying mode) fly down
 - Tab: toggle flying mode
-
+- M: Sort items in the toolbar (3 choices)
 ### Building
 
 - 1 - 9: Selecting item in inventory
@@ -79,7 +79,7 @@ See the [https://github.com/fogleman/Minecraft/wiki](wiki) for this project to i
       -h, --help            show this help message and exit
       -width WIDTH
       -height HEIGHT
-      -terrain TERRAIN
+      -terrain (choose from plains, mountains, desert or island)
       -hillheight HILLHEIGHT
       -flat FLAT
       --hide-fog
