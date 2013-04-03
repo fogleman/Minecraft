@@ -16,14 +16,14 @@ class Block(object):
     max_stack_size = 64
     amount_label_color = 255, 255, 255, 255
     transparent = False
-    id = None
+    id = None  # Original minecraft id (also called data value).
+               # Verify on http://www.minecraftwiki.net/wiki/Data_values
+               # when creating a new "official" block.
+    drop_id = None
 
     def __init__(self):
+        self.drop_id = self.id
         BLOCKS_DIR[self.id] = self
-
-    @property
-    def drop_id(self):
-        return self.id
 
     def get_texture_data(self):
         result = []
@@ -56,8 +56,9 @@ class GrassBlock(Block):
     hardness = 0.6
     id = 2
 
-    def drop_id(self):
-        return DirtBlock.id
+    def __init__(self):
+        self.drop_id = DirtBlock.id
+        super(GrassBlock, self).__init__()
 
 
 class DirtBlock(Block):
@@ -125,41 +126,43 @@ class SandstoneBlock(Block):
     id = 24
 
 
+# FIXME: This texture is not in the original Minecraft.  Or is it quartz?
 class MarbleBlock(Block):
     top = tex_coord(3, 2)
     bottom = tex_coord(3, 2)
     side = tex_coord(3, 2)
-    id = 0  # Why the same id than AirBlock and StonebrickBlock?
+    id = 0
 
 
 class StonebrickBlock(Block):
     top = tex_coord(0, 3)
     bottom = tex_coord(0, 3)
     side = tex_coord(0, 3)
-    id = 0  # Why the same id than AirBlock and MarbleBlock?
+    id = 98
 
 
-class LWoodBlock(Block):
+class OakWoodPlankBlock(Block):
     top = tex_coord(3, 3)
     bottom = tex_coord(3, 3)
     side = tex_coord(3, 3)
-    id = 5.1
+    id = 5.0
 
 
-class MWoodBlock(Block):
-    top = tex_coord(2, 3)
-    bottom = tex_coord(2, 3)
-    side = tex_coord(2, 3)
-    id = 5.2
-
-
-class DWoodBlock(Block):
+class SpruceWoodPlankBlock(Block):
     top = tex_coord(1, 3)
     bottom = tex_coord(1, 3)
     side = tex_coord(1, 3)
+    id = 5.1
+
+
+class JungleWoodPlankBlock(Block):
+    top = tex_coord(2, 3)
+    bottom = tex_coord(2, 3)
+    side = tex_coord(2, 3)
     id = 5.3
 
 
+# FIXME: Can't find its specific id on minecraftwiki.
 class SnowGrassBlock(Block):
     top = tex_coord(4, 1)
     bottom = tex_coord(0, 1)
@@ -167,16 +170,16 @@ class SnowGrassBlock(Block):
     hardness = 0.6
     id = 2
 
-    def drop_id(self):
-        return DirtBlock.id
+    def __init__(self):
+        self.drop_id = DirtBlock.id
 
 
-class TreeTrunkBlock(Block):
+class OakWoodBlock(Block):
     top = tex_coord(7, 1)
     bottom = tex_coord(7, 1)
     side = tex_coord(7, 0)
     hardness = 0.6
-    id = 17  # MC Log ID
+    id = 17.0
 
 
 class LeafBlock(Block):
@@ -184,10 +187,8 @@ class LeafBlock(Block):
     bottom = tex_coord(7, 2)
     side = tex_coord(7, 2)
     hardness = 0.6
-    id = 2
-
-    def drop_id(self):
-        return 0  # Why the same id than AirBlock, MarbleBlock and StonebrickBlock?
+    id = 18.0
+    drop_id = None
 
 
 air_block = AirBlock()
@@ -203,9 +204,9 @@ chest_block = ChestBlock()
 sandstone_block = SandstoneBlock()
 marble_block = MarbleBlock()
 stonebrick_block = StonebrickBlock()
-lw_block = LWoodBlock()
-mw_block = MWoodBlock()
-dw_block = DWoodBlock()
+oakwoodplank_block = OakWoodPlankBlock()
+junglewoodplank_block = JungleWoodPlankBlock()
+sprucewoodplank_block = SpruceWoodPlankBlock()
 snowg_block = SnowGrassBlock()
-log_block = TreeTrunkBlock()
+log_block = OakWoodBlock()
 leaf_block = LeafBlock()
