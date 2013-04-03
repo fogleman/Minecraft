@@ -142,9 +142,9 @@ class LeafBlock(Block):
     def __init__(self):
         super(LeafBlock, self).__init__(tex_coord(7, 2), tex_coord(7, 2), tex_coord(7, 2), 0.6, 64, (255, 255, 255, 255))
     def id(self):
-        return 2
+        return 18.1
     def drop(self):
-        return 0
+        return AirBlock.id()
 
 def block_texture(block):
     result = []
