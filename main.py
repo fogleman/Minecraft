@@ -1,12 +1,12 @@
 from pyglet.gl import *
 from pyglet.window import key
-from math import cos, sin, atan2, pi, fmod, radians
+#import math
+from math import cos, sin, atan2, radians, degrees, pi, fmod
 import random
 import time
 import argparse
 import os
 import cPickle as pickle
-from collections import deque
 from blocks import *
 from items import *
 from inventory import *
@@ -22,14 +22,13 @@ HILLHEIGHT = 6  #height of the hills, increase for mountains :D
 FLATWORLD=0  # dont make mountains,  make a flat world
 SAVE_FILENAME = 'save.dat'
 DISABLE_SAVE = True
-TIME_RATE = 60 * 10 # Rate of change (steps per hour).
+TIME_RATE = 60 # Rate of change (steps per hour).
 DEG_RAD = pi / 180.0
 HOUR_DEG = 15.0
 BACK_RED = 0.0 # 0.53
 BACK_GREEN = 0.0 # 0.81
 BACK_BLUE = 0.0 # 0.98
 SHOW_FOG = True
-HALF_PI = pi / 2.0 # 90 degrees
 
 def cube_vertices(x, y, z, n):
     return [
@@ -70,10 +69,6 @@ def sectorize(position):
     x, y, z = x / SECTOR_SIZE, y / SECTOR_SIZE, z / SECTOR_SIZE
     return (x, 0, z)
 
-# Define a simple function to create GLfloat arrays of floats:
-def vec(*args):
-    return (GLfloat * len(args))(*args)
-
 
 # Define a simple function to create GLfloat arrays of floats:
 def vec(*args):
@@ -85,7 +80,7 @@ class Player(Entity):
         self.inventory = Inventory(27)
         self.quick_slots = Inventory(9)
         self.flying = flying
-        initial_items = [dirt_block, sand_block, brick_block, stone_block, glass_block, water_block, chest_block, sandstone_block, marble_block]
+        initial_items = [chest_block, lw_block, mw_block, dw_block, marble_block, glass_block, brick_block]
         for item in initial_items:
             quantity = random.randint(1, 10)
             if FLATWORLD == 1:
@@ -139,7 +134,6 @@ class ItemSelector(object):
         self.amount_labels = []
         x = self.frame.x + 3
         items = self.player.quick_slots.get_items()
-        items = items[:self.max_items]
         for item in items:
             if not item:
                 x += (self.icon_size * 0.5) + 3
@@ -171,6 +165,7 @@ class ItemSelector(object):
         item = self.player.quick_slots.at(self.current_index)
         if item:
             item_id = item.type
+            #self.player.quick_slots.remove_item(item_id)
             self.player.quick_slots.remove_by_index(self.current_index)
             self.update_items()
             if item_id >= ITEM_ID_MIN:
@@ -187,7 +182,8 @@ class Model(object):
         self.shown = {}
         self._shown = {}
         self.sectors = {}
-        self.queue = deque()  #note: could add limit here
+        self.queue = []
+        #self.queue = deque()
         if initialize:
             self.initialize()
     def initialize(self):
@@ -256,7 +252,6 @@ class Model(object):
                         if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
                             continue
                         self.init_block((x, y, z), t)
-                        self.init_block((x - 1, y - 1, z), dirt_block)
 
                     #if WORLDTYPE == 5: # cover the mountains of stone with grass
                         #self.init_block((x + 1, y + 1, z + 1), grass_block)
@@ -384,7 +379,7 @@ class Model(object):
     def enqueue(self, func, *args):
         self.queue.append((func, args))
     def dequeue(self):
-        func, args = self.queue.popleft()
+        func, args = self.queue.pop(0)
         func(*args)
     def process_queue(self):
         start = time.clock()
@@ -426,7 +421,6 @@ class Window(pyglet.window.Window):
             self.model.sectors = self.save[1]
             if save_len > 2 and isinstance(self.save[2], list) and len(self.save[2]) == 2: self.strafe = self.save[2]
             if save_len > 3 and isinstance(self.save[3], Player): self.player = self.save[3]
-            if save_len > 4 and isinstance(self.save[4], float): self.time_of_day = self.save[4]
         self.item_list = ItemSelector(self.width, self.height, self.player, self.model)
         self.num_keys = [
             key._1, key._2, key._3, key._4, key._5,
@@ -441,36 +435,40 @@ class Window(pyglet.window.Window):
         self.exclusive = exclusive
     def get_sight_vector(self):
         x, y = self.player.rotation
-        y_r = radians(y)
-        x_r = radians(x)
-        m = cos(y_r)
-        dy = sin(y_r)
-        x_r -= HALF_PI
-        dx = cos(x_r) * m
-        dz = sin(x_r) * m
+        #m = math.cos(math.radians(y))
+        #dy = math.sin(math.radians(y))
+        #dx = math.cos(math.radians(x - 90)) * m
+        #dz = math.sin(math.radians(x - 90)) * m
+        m = cos(radians(y)) #new
+        dy = sin(radians(y))  #new
+        dx = cos(radians(x - 90)) * m  #new
+        dz = sin(radians(x - 90)) * m  #new
         return (dx, dy, dz)
     def get_motion_vector(self):
         if any(self.strafe):
             x, y = self.player.rotation
-            y_r = radians(y)
-            x_r = radians(x)
-            strafe = atan2(*self.strafe)
+            #strafe = math.degrees(math.atan2(*self.strafe))
+            strafe = degrees(atan2(*self.strafe))
             if self.player.flying:
-                m = cos(y_r)
-                dy = sin(y_r)
+                #m = math.cos(math.radians(y))
+                #dy = math.sin(math.radians(y))
+                m = cos(radians(y))
+                dy = sin(radians(y))
                 if self.strafe[1]:
                     dy = 0.0
                     m = 1
                 if self.strafe[0] > 0:
                     dy *= -1
-                x_r += strafe
-                dx = cos(x_r) * m
-                dz = sin(x_r) * m
+                #dx = math.cos(math.radians(x + strafe)) * m
+                #dz = math.sin(math.radians(x + strafe)) * m
+                dx = cos(radians(x + strafe)) * m
+                dz = sin(radians(x + strafe)) * m
             else:
                 dy = 0.0
-                x_r += strafe
-                dx = cos(x_r)
-                dz = sin(x_r)
+                #dx = math.cos(math.radians(x + strafe))
+                #dz = math.sin(math.radians(x + strafe))
+                dx = cos(radians(x + strafe))
+                dz = sin(radians(x + strafe))
         else:
             dy = 0.0
             dx = 0.0
@@ -481,8 +479,6 @@ class Window(pyglet.window.Window):
         '''The idle function advances the time of day.
            The day has 12 hours, from sunrise to sunset.
            The time of day is converted to degrees and then to radians.'''
-        if not self.exclusive:
-            return
         self.time_of_day += 1.0 / TIME_RATE
         if self.time_of_day > 12.0:
             self.time_of_day = 0.0
@@ -543,7 +539,7 @@ class Window(pyglet.window.Window):
 
     def save_to_file(self):
         if DISABLE_SAVE:
-            pickle.dump((self.model.world, self.model.sectors, self.strafe, self.player, self.time_of_day), open(SAVE_FILENAME, "wb"))
+            pickle.dump((self.model.world, self.model.sectors, self.strafe, self.player), open(SAVE_FILENAME, "wb"))
 
     def collide(self, position, height):
         pad = 0.25
@@ -623,7 +619,6 @@ class Window(pyglet.window.Window):
         elif symbol == key.ESCAPE:
             self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
-            self.dy = 0
             self.player.flying = not self.player.flying
         elif symbol == key.B or symbol == key.F3:
             self.show_gui = not self.show_gui
@@ -632,9 +627,6 @@ class Window(pyglet.window.Window):
             self.item_list.set_index(index)
         elif symbol == key.V:
             self.save_to_file()
-        elif symbol == key.M:
-            self.player.quick_slots.change_sort_mode()
-            self.item_list.update_items()
 
     def on_key_release(self, symbol, modifiers):
         if symbol == key.W:
@@ -670,6 +662,7 @@ class Window(pyglet.window.Window):
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
+        #glOrtho(0, width, 0, height, -1, 1)
         if width != 0:
             glOrtho(0, width, 0, height, -1, 1)
         else:
@@ -684,6 +677,7 @@ class Window(pyglet.window.Window):
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
+        #gluPerspective(FOV, width / float(height), NEAR_CLIP_DISTANCE, FAR_CLIP_DISTANCE)
         if width != float(height):
             gluPerspective(FOV, width / float(height), NEAR_CLIP_DISTANCE, FAR_CLIP_DISTANCE)
         else:
@@ -692,8 +686,8 @@ class Window(pyglet.window.Window):
         glLoadIdentity()
         x, y = self.player.rotation
         glRotatef(x, 0, 1, 0)
-        x_r = radians(x)
-        glRotatef(-y, cos(x_r), 0, sin(x_r))
+        #glRotatef(-y, math.cos(math.radians(x)), 0, math.sin(math.radians(x)))
+        glRotatef(-y, cos(radians(x)), 0, sin(radians(x)))
         x, y, z = self.player.position
         glTranslatef(-x, -y, -z)
         glEnable(GL_LIGHTING)
@@ -741,14 +735,26 @@ class Window(pyglet.window.Window):
 
 def setup_fog():
     glEnable(GL_FOG)
+    #glFogfv(GL_FOG_COLOR, (GLfloat * 4)(0.5, 0.69, 1.0, 1))
     glFogfv(GL_FOG_COLOR, vec(0.5, 0.69, 1.0, 1))
     glHint(GL_FOG_HINT, GL_DONT_CARE)
     glFogi(GL_FOG_MODE, GL_LINEAR)
     glFogf(GL_FOG_DENSITY, 0.35)
     glFogf(GL_FOG_START, 20.0)
-    glFogf(GL_FOG_END, 80)
+    glFogf(GL_FOG_END, 60.0)
+    #glEnable(GL_FOG)
+    #glFogfv(GL_FOG_COLOR, (GLfloat * 4)(0.5, 0.69, 1.0, 1))
+    ##glHint(GL_FOG_HINT, GL_DONT_CARE)
+    #glHint(GL_FOG_HINT, GL_NICEST)
+    #glFogi(GL_FOG_MODE, GL_LINEAR)
+    #glFogf(GL_FOG_DENSITY, 0.35)
+    ##glFogf(GL_FOG_START, 20.0)
+    ##glFogf(GL_FOG_END, 80)
+    #glFogf(GL_FOG_START, 60.0)
+    #glFogf(GL_FOG_END, 80)
 
 def setup():
+    #glClearColor(0.5, 0.69, 1.0, 1)
     glClearColor(BACK_RED, BACK_GREEN, BACK_BLUE, 1)
     glEnable(GL_LIGHTING)
     glEnable(GL_LIGHT0)
@@ -767,9 +773,9 @@ def main(options):
     if os.path.exists(SAVE_FILENAME) and options.disable_save:
         save_object = pickle.load(open(SAVE_FILENAME, "rb"))
     if options.draw_distance == 'medium':
-        DRAW_DISTANCE = 60.0 * 1.5
+        DRAW_DISTANCE *= 1.5
     elif options.draw_distance == 'long':
-        DRAW_DISTANCE = 60.0 * 2.0
+        DRAW_DISTANCE *= 2.0
     global WORLDTYPE
     global HILLHEIGHT
 
@@ -801,10 +807,6 @@ def main(options):
     global SHOW_FOG
     SHOW_FOG = not options.hide_fog
 
-    global TIME_RATE
-
-    if options.fast:
-        TIME_RATE = 30
 
     #try:
         #config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
@@ -814,6 +816,7 @@ def main(options):
 
     window.set_exclusive_mouse(True)
     setup()
+    #if not options.hide_fog:
     if SHOW_FOG:
         setup_fog()
     pyglet.app.run()
@@ -833,6 +836,5 @@ if __name__ == '__main__':
     parser.add_argument("-draw-distance", choices=['short', 'medium', 'long'], default='short')
     parser.add_argument("-save", type=unicode, default=SAVE_FILENAME)
     parser.add_argument("--disable-save", action="store_false", default=True)
-    parser.add_argument("--fast", action="store_true", default=False)
     options = parser.parse_args()
     main(options)
