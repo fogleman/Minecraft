@@ -12,6 +12,7 @@ from items import *
 from inventory import *
 from entity import *
 
+
 SECTOR_SIZE = 16
 DRAW_DISTANCE = 60.0
 FOV = 65.0 #TODO add menu option to change FOV
@@ -22,7 +23,7 @@ HILLHEIGHT = 6  #height of the hills, increase for mountains :D
 FLATWORLD=0  # dont make mountains,  make a flat world
 SAVE_FILENAME = 'save.dat'
 DISABLE_SAVE = True
-TIME_RATE = 60 * 10 # Rate of change (steps per hour).
+TIME_RATE = 240 * 10 # Rate of change (steps per hour).
 DEG_RAD = pi / 180.0
 HOUR_DEG = 15.0
 BACK_RED = 0.0 # 0.53
@@ -30,6 +31,7 @@ BACK_GREEN = 0.0 # 0.81
 BACK_BLUE = 0.0 # 0.98
 SHOW_FOG = True
 HALF_PI = pi / 2.0 # 90 degrees
+RND_FOREST = 10
 
 def cube_vertices(x, y, z, n):
     return [
@@ -211,19 +213,17 @@ class Model(object):
                     self.init_block((x, y - 2, z), t)
                 if WORLDTYPE == 6:
                     self.init_block((x, y - 2, z), snowg_block)
-                    #self.init_block((x, y - 2, z), grass_block)
-                    #self.init_block((x, y - 2, z), grass_block)
-                #self.init_block((x, y - 2, z), water_block)
-                #if WORLDTYPE != 5:
-                    #self.init_block((x, y - 2, z), grass_block)
 
                 self.init_block((x, y - 3, z), dirt_block)
                 self.init_block((x, y - 4, z), bed_block) # was stone_block
+
+
                 if x in (-n, n) or z in (-n, n):
                     for dy in xrange(-3, 10): #was -2 ,6
                         self.init_block((x, y + dy, z), stone_block)
-        #o = n - 10
-        #if HILLHEIGHT <> 6:
+
+
+
         o = n - 10 + HILLHEIGHT -6
         if FLATWORLD == 1:
             return
@@ -256,19 +256,47 @@ class Model(object):
                         if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
                             continue
                         self.init_block((x, y, z), t)
+
+
+                        #random tree  -- run forest, run!
+                        global RND_FOREST
+
+                        if RND_FOREST > 0:
+                            if y > 1: # don't have trees sitting on the base 0 land.'
+                                showtree = random.randint(1, 100) # 5% chance out of 100 to have a tree
+                                if showtree < 5:
+                                    print showtree
+                                    self.init_block((x, y, z), dirt_block)
+                                    self.init_block((x, y, z), dirt_block)
+                                    self.init_block((x, y, z), dirt_block)
+                                    self.init_block((x, y +1 , z), log_block)
+                                    self.init_block((x, y +2, z), log_block)
+                                    self.init_block((x, y +3, z), log_block)
+                                    self.init_block((x, y +4, z), log_block)
+                                    self.init_block((x, y +5, z), log_block)
+                                    self.init_block((x, y +6, z), log_block)
+                                    self.init_block((x + 1, y + 7, z), leaf_block)
+                                    self.init_block((x - 1, y + 7, z), leaf_block)
+                                    self.init_block((x + 1, y + 7, z + 1), leaf_block)
+                                    self.init_block((x - 1, y + 7, z - 1), leaf_block)
+                                    self.init_block((x + 1, y + 8, z), leaf_block)
+                                    self.init_block((x - 1, y + 8, z), leaf_block)
+                                    self.init_block((x + 1, y + 8, z - 1), leaf_block)
+                                    self.init_block((x - 1, y + 8, z + 1), leaf_block)
+                                    self.init_block((x , y + 7, z), leaf_block)
+
+                                    global RND_FOREST
+                                    RND_FOREST = RND_FOREST -1
+                                    print RND_FOREST
+
+
                         if t == grass_block or snowg_block:
                             self.init_block((x - 1, y - 1, z), dirt_block)
                             self.init_block((x - 2, y - 2, z), dirt_block)
-                        #if t == snow_block:
-                            #self.init_block((x - 1, y - 1, z), dirt_block)
-                            #self.init_block((x - 2, y - 2, z), dirt_block)
 
-                    #if WORLDTYPE == 5: # cover the mountains of stone with grass
-                        #self.init_block((x + 1, y + 1, z + 1), grass_block)
+
                 s -= d
-                # below makes floating 'extreme hills' blocks...
-            #if WORLDTYPE == 5: # cover the mountains of stone with grass
-                #self.init_block((x, y - 1, z), grass_block)
+
 
     def hit_test(self, position, vector, max_distance=8):
         m = 8
@@ -439,7 +467,7 @@ class Window(pyglet.window.Window):
         if self.show_gui:
             self.label = pyglet.text.Label('', font_name='Arial', font_size=8,
                 x=10, y=self.height - 10, anchor_x='left', anchor_y='top',
-                color=(0, 0, 0, 255))
+                color=(255, 255, 255, 255))
         pyglet.clock.schedule_interval(self.update, 1.0 / 60)
     def set_exclusive_mouse(self, exclusive):
         super(Window, self).set_exclusive_mouse(exclusive)
@@ -484,21 +512,38 @@ class Window(pyglet.window.Window):
 
     def update_time(self):
         '''The idle function advances the time of day.
-           The day has 12 hours, from sunrise to sunset.
+           The day has 24 hours, from sunrise to sunset and from sunrise to second sunset.
            The time of day is converted to degrees and then to radians.'''
         if not self.exclusive:
             return
-        self.time_of_day += 1.0 / TIME_RATE
-        if self.time_of_day > 12.0:
+        #self.time_of_day += 1.0 / TIME_RATE
+
+        time_of_day = (self.time_of_day) if (self.time_of_day < 12.0) else (24.0 - self.time_of_day)
+
+        if time_of_day <= 2.5:
+            self.time_of_day += 1.0 / TIME_RATE
+            time_of_day +=  1.0 / TIME_RATE
+            self.count += 1
+        else:
+            self.time_of_day += 20.0 / TIME_RATE
+            time_of_day +=  20.0 / TIME_RATE
+            self.count += 1.0 / 20.0
+
+        if self.time_of_day > 24.0:
             self.time_of_day = 0.0
+            time_of_day = 0.0
 
         side = len(self.model.sectors) * 2.0
 
-        self.light_y = 0.6 * side * sin(self.time_of_day * HOUR_DEG * DEG_RAD)
-        self.light_z = 0.6 * side * cos(self.time_of_day * HOUR_DEG * DEG_RAD)
+        #self.light_y = 0.6 * side * sin(self.time_of_day * HOUR_DEG * DEG_RAD)
+        #self.light_z = 0.6 * side * cos(self.time_of_day * HOUR_DEG * DEG_RAD)
+        time_of_day = (self.time_of_day) if (self.time_of_day < 12.0) else (24.0 - self.time_of_day)
+
+        self.light_y = 2.0 * side * sin(time_of_day * HOUR_DEG * DEG_RAD)
+        self.light_z = 2.0 * side * cos(time_of_day * HOUR_DEG * DEG_RAD)
 
         # Calculate sky colour according to time of day.
-        sin_t = sin(pi * self.time_of_day / 12.0)
+        sin_t = sin(pi * time_of_day / 12.0)
         global BACK_RED
         global BACK_GREEN
         global BACK_BLUE
@@ -506,8 +551,9 @@ class Window(pyglet.window.Window):
         BACK_GREEN = 0.9 * sin_t
         BACK_BLUE = min(sin_t + 0.4, 1.0)
 
-        self.count += 1
-        if fmod(self.count, TIME_RATE) == 0:
+        #self.count += 1
+        #if fmod(self.count, TIME_RATE) == 0:
+        if fmod(self.count / 2, TIME_RATE) == 0:
             if self.clock == 18:
                 self.clock = 6
             else:
@@ -736,7 +782,8 @@ class Window(pyglet.window.Window):
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
     def draw_label(self):
         x, y, z = self.player.position
-        self.label.text = '%02d (%.2f, %.2f, %.2f) %d / %d' % (
+        #self.label.text = '%02d (%.2f, %.2f, %.2f) %d / %d' % (
+        self.label.text = '%.1f %02d (%.2f, %.2f, %.2f) %d / %d' % ((self.time_of_day) if (self.time_of_day < 12.0) else (24.0 - self.time_of_day),
             pyglet.clock.get_fps(), x, y, z,
             len(self.model._shown), len(self.model.world))
         self.label.draw()
@@ -775,25 +822,35 @@ def main(options):
         DRAW_DISTANCE = 60.0 * 1.5
     elif options.draw_distance == 'long':
         DRAW_DISTANCE = 60.0 * 2.0
+
     global WORLDTYPE
     global HILLHEIGHT
+    global RND_FOREST
 
     if options.terrain == "plains":
         WORLDTYPE = 0
         HILLHEIGHT = 2
+        RND_FOREST = 20
     if options.terrain == "mountains":
         WORLDTYPE = 5
         HILLHEIGHT = 16
+        RND_FOREST = 100
     if options.terrain == "desert":
         WORLDTYPE = 2
         HILLHEIGHT = 5
+        RND_FOREST = 8
     if options.terrain == "island":
         WORLDTYPE = 3
         HILLHEIGHT = 8
+        RND_FOREST = 25
     if options.terrain == "snow":
         WORLDTYPE = 6
         HILLHEIGHT = 4
+        RND_FOREST = 40
 
+    RND_FOREST = options.maxtrees
+    print options.maxtrees
+    print RND_FOREST
 
 #    WORLDTYPE = options.terrain
     if options.hillheight <> 6:
@@ -809,7 +866,10 @@ def main(options):
     global TIME_RATE
 
     if options.fast:
-        TIME_RATE = 30
+        TIME_RATE /= 20
+
+
+
 
     #try:
         #config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
@@ -839,5 +899,6 @@ if __name__ == '__main__':
     parser.add_argument("-save", type=unicode, default=SAVE_FILENAME)
     parser.add_argument("--disable-save", action="store_false", default=True)
     parser.add_argument("--fast", action="store_true", default=False)
+    parser.add_argument("--maxtrees", type=int, default=10)
     options = parser.parse_args()
     main(options)
