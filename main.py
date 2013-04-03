@@ -6,6 +6,7 @@ import time
 import argparse
 import os
 import cPickle as pickle
+import kytten
 from collections import deque
 from blocks import *
 from items import *
