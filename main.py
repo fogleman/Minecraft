@@ -191,6 +191,9 @@ class ItemSelector(object):
                 return BLOCKS_DIR[item_id]
         return False
 
+    def toggle_active_frame_visibility(self):
+        self.active.opacity = 0 if self.active.opacity == 255 else 255
+
 ####
 
 class InventorySelector(object):
@@ -209,6 +212,7 @@ class InventorySelector(object):
         frame_size = image.height * 3 / 4
         self.frame = pyglet.sprite.Sprite(image.get_region(0, image.height - frame_size, image.width, frame_size), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
         self.active = pyglet.sprite.Sprite(image.get_region(0, 0, image.height / 4, image.height / 4), batch=self.batch, group=pyglet.graphics.OrderedGroup(2))
+        self.active.opacity = 0
         self.set_position(width, height)
         
     def change_index(self, change):
@@ -253,12 +257,12 @@ class InventorySelector(object):
             self.icons.append(icon)
         
     def update_current(self):
-        self.active.x = self.frame.x + ((self.current_index % 9) * self.icon_size * 0.5) + 3
+        self.active.x = self.frame.x + ((self.current_index % 9) * self.icon_size * 0.5) + (self.current_index % 9) * 3
+        self.active.y = self.frame.y + floor(self.current_index / 9) * self.icon_size * 0.5 + floor(self.current_index / 9) * 6
         
     def set_position(self, width, height):
         self.frame.x = (width - self.frame.width) / 2
-        self.frame.y = self.icon_size + 20 # 20 is padding
-        self.active.y = self.frame.y + floor(self.current_index / 9) * self.icon_size           
+        self.frame.y = self.icon_size + 20 # 20 is padding       
         self.update_current()
         self.update_items()
 
@@ -273,6 +277,9 @@ class InventorySelector(object):
             else:
                 return BLOCKS_DIR[item_id]
         return False
+
+    def toggle_active_frame_visibility(self):
+        self.active.opacity = 0 if self.active.opacity == 255 else 255
 
 class Model(object):
     def __init__(self, initialize=True):
@@ -686,8 +693,10 @@ class Window(pyglet.window.Window):
         
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
         if self.exclusive and scroll_y != 0:
-            self.item_list.change_index(scroll_y*-1)
-            pass
+            if not self.show_inventory:
+                self.item_list.change_index(scroll_y * -1)
+            else:
+                self.inventory_list.change_index(scroll_y * -1)
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.exclusive:
@@ -756,6 +765,8 @@ class Window(pyglet.window.Window):
             self.item_list.update_items()
             self.inventory_list.update_items()
         elif symbol == key.I:
+            self.inventory_list.toggle_active_frame_visibility()
+            self.item_list.toggle_active_frame_visibility()
             self.show_inventory = not self.show_inventory
 
     def on_key_release(self, symbol, modifiers):
