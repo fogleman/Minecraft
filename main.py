@@ -12,6 +12,7 @@ from items import *
 from inventory import *
 from entity import *
 
+
 SECTOR_SIZE = 16
 DRAW_DISTANCE = 60.0
 FOV = 65.0 #TODO add menu option to change FOV
@@ -30,6 +31,7 @@ BACK_GREEN = 0.0 # 0.81
 BACK_BLUE = 0.0 # 0.98
 SHOW_FOG = True
 HALF_PI = pi / 2.0 # 90 degrees
+RND_FOREST = 10
 
 def cube_vertices(x, y, z, n):
     return [
@@ -313,19 +315,17 @@ class Model(object):
                     self.init_block((x, y - 2, z), t)
                 if WORLDTYPE == 6:
                     self.init_block((x, y - 2, z), snowg_block)
-                    #self.init_block((x, y - 2, z), grass_block)
-                    #self.init_block((x, y - 2, z), grass_block)
-                #self.init_block((x, y - 2, z), water_block)
-                #if WORLDTYPE != 5:
-                    #self.init_block((x, y - 2, z), grass_block)
 
                 self.init_block((x, y - 3, z), dirt_block)
                 self.init_block((x, y - 4, z), bed_block) # was stone_block
+
+
                 if x in (-n, n) or z in (-n, n):
                     for dy in xrange(-3, 10): #was -2 ,6
                         self.init_block((x, y + dy, z), stone_block)
-        #o = n - 10
-        #if HILLHEIGHT <> 6:
+
+
+
         o = n - 10 + HILLHEIGHT -6
         if FLATWORLD == 1:
             return
@@ -358,19 +358,47 @@ class Model(object):
                         if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
                             continue
                         self.init_block((x, y, z), t)
+
+
+                        #random tree  -- run forest, run!
+                        global RND_FOREST
+
+                        if RND_FOREST > 0:
+                            if y > 1: # don't have trees sitting on the base 0 land.'
+                                showtree = random.randint(1, 100) # 5% chance out of 100 to have a tree
+                                if showtree < 5:
+                                    print showtree
+                                    self.init_block((x, y, z), dirt_block)
+                                    self.init_block((x, y, z), dirt_block)
+                                    self.init_block((x, y, z), dirt_block)
+                                    self.init_block((x, y +1 , z), log_block)
+                                    self.init_block((x, y +2, z), log_block)
+                                    self.init_block((x, y +3, z), log_block)
+                                    self.init_block((x, y +4, z), log_block)
+                                    self.init_block((x, y +5, z), log_block)
+                                    self.init_block((x, y +6, z), log_block)
+                                    self.init_block((x + 1, y + 7, z), leaf_block)
+                                    self.init_block((x - 1, y + 7, z), leaf_block)
+                                    self.init_block((x + 1, y + 7, z + 1), leaf_block)
+                                    self.init_block((x - 1, y + 7, z - 1), leaf_block)
+                                    self.init_block((x + 1, y + 8, z), leaf_block)
+                                    self.init_block((x - 1, y + 8, z), leaf_block)
+                                    self.init_block((x + 1, y + 8, z - 1), leaf_block)
+                                    self.init_block((x - 1, y + 8, z + 1), leaf_block)
+                                    self.init_block((x , y + 7, z), leaf_block)
+
+                                    global RND_FOREST
+                                    RND_FOREST = RND_FOREST -1
+                                    print RND_FOREST
+
+
                         if t == grass_block or snowg_block:
                             self.init_block((x - 1, y - 1, z), dirt_block)
                             self.init_block((x - 2, y - 2, z), dirt_block)
-                        #if t == snow_block:
-                            #self.init_block((x - 1, y - 1, z), dirt_block)
-                            #self.init_block((x - 2, y - 2, z), dirt_block)
 
-                    #if WORLDTYPE == 5: # cover the mountains of stone with grass
-                        #self.init_block((x + 1, y + 1, z + 1), grass_block)
+
                 s -= d
-                # below makes floating 'extreme hills' blocks...
-            #if WORLDTYPE == 5: # cover the mountains of stone with grass
-                #self.init_block((x, y - 1, z), grass_block)
+
 
     def hit_test(self, position, vector, max_distance=8):
         m = 8
@@ -623,7 +651,7 @@ class Window(pyglet.window.Window):
         BACK_RED = 0.1 * (1.0 - sin_t)
         BACK_GREEN = 0.9 * sin_t
         BACK_BLUE = min(sin_t + 0.4, 0.8)
-    
+
         if fmod(self.count / 2, TIME_RATE) == 0:
             if self.clock == 18:
                 self.clock = 6
@@ -912,25 +940,35 @@ def main(options):
         DRAW_DISTANCE = 60.0 * 1.5
     elif options.draw_distance == 'long':
         DRAW_DISTANCE = 60.0 * 2.0
+
     global WORLDTYPE
     global HILLHEIGHT
+    global RND_FOREST
 
     if options.terrain == "plains":
         WORLDTYPE = 0
         HILLHEIGHT = 2
+        RND_FOREST = 20
     if options.terrain == "mountains":
         WORLDTYPE = 5
         HILLHEIGHT = 16
+        RND_FOREST = 100
     if options.terrain == "desert":
         WORLDTYPE = 2
         HILLHEIGHT = 5
+        RND_FOREST = 8
     if options.terrain == "island":
         WORLDTYPE = 3
         HILLHEIGHT = 8
+        RND_FOREST = 25
     if options.terrain == "snow":
         WORLDTYPE = 6
         HILLHEIGHT = 4
+        RND_FOREST = 40
 
+    RND_FOREST = options.maxtrees
+    print options.maxtrees
+    print RND_FOREST
 
 #    WORLDTYPE = options.terrain
     if options.hillheight <> 6:
@@ -976,5 +1014,6 @@ if __name__ == '__main__':
     parser.add_argument("-save", type=unicode, default=SAVE_FILENAME)
     parser.add_argument("--disable-save", action="store_false", default=True)
     parser.add_argument("--fast", action="store_true", default=False)
+    parser.add_argument("--maxtrees", type=int, default=10)
     options = parser.parse_args()
     main(options)

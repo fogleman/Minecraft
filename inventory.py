@@ -36,7 +36,7 @@ class Inventory(object):
                     if quantity > max_size:
                         quantity -= max_size
                         item_stack = ItemStack(type=item_id, amount=max_size)
-                    else: 
+                    else:
                         item_stack = ItemStack(type=item_id, amount=quantity)
                         quantity = 0
 
@@ -54,7 +54,7 @@ class Inventory(object):
                         # find next unfilled slot
                         item_stack = self.get_unfilled_item(item_id)
 
-        else:            
+        else:
             while quantity > 0:
                 index = self.find_empty_slot()
                 retval = False
@@ -65,24 +65,24 @@ class Inventory(object):
                 if quantity > max_size:
                     quantity -= max_size
                     item_stack = ItemStack(type=item_id, amount=max_size)
-                else: 
+                else:
                     item_stack = ItemStack(type=item_id, amount=quantity)
                     quantity = 0
 
                 #self.slots.insert(index, item_stack)
                 self.slots[index] = item_stack
                 retval = True
-        self.sort()   
+        self.sort()
         return True
-          
+
     def remove_item(self, item_id, quantity = 1):
         self.sort()
         if quantity < 1:
             return False
-            
+
         index = self.get_index(item_id)
         return self.remove_by_index(index, quantity)
-        
+
     def remove_by_index(self, index, quantity = 1):
         if quantity < 1 or index < 0 or not self.slots[index]:
             return False
@@ -93,17 +93,17 @@ class Inventory(object):
             retval = True
         self.sort()
         return retval
-            
+
     def sort(self, reverse=True):
         if self.sort_mode == 0:
-            self.sort_with_key(key=lambda x: x.id() if x != None else -sys.maxint - 1, reverse=True) 
+            self.sort_with_key(key=lambda x: x.id() if x != None else -sys.maxint - 1, reverse=True)
         if self.sort_mode == 1:
             self.sort_with_key(key=lambda x: x.amount if x != None else -sys.maxint - 1, reverse=True)
         elif self.sort_mode == 2:
             self.sort_with_key(key=lambda x: x.amount if x != None else sys.maxint - 1, reverse=False)
 
     def sort_with_key(self, key, reverse=True):
-        self.slots = sorted(self.slots, key=key, reverse=reverse) 
+        self.slots = sorted(self.slots, key=key, reverse=reverse)
 
     def change_sort_mode(self, change=1):
         self.sort_mode += change

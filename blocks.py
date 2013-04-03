@@ -108,19 +108,19 @@ class LWoodBlock(Block):
     def __init__(self):
         super(LWoodBlock, self).__init__(tex_coord(3, 3), tex_coord(3, 3), tex_coord(3, 3), 0, 64, (255, 255, 255, 255))
     def id(self):
-        return 0
+        return 5.1
 
 class MWoodBlock(Block):
     def __init__(self):
         super(MWoodBlock, self).__init__(tex_coord(2, 3), tex_coord(2, 3), tex_coord(2, 3), 0, 64, (255, 255, 255, 255))
     def id(self):
-        return 0
+        return 5.2
 
 class DWoodBlock(Block):
     def __init__(self):
         super(DWoodBlock, self).__init__(tex_coord(1, 3), tex_coord(1, 3), tex_coord(1, 3), 0, 64, (255, 255, 255, 255))
     def id(self):
-        return 0
+        return 5.3
 
 class SnowGrassBlock(Block):
     def __init__(self):
@@ -129,6 +129,22 @@ class SnowGrassBlock(Block):
         return 2
     def drop(self):
         return DirtBlock().id()
+
+class TreeTrunkBlock(Block):
+    def __init__(self):
+        super(TreeTrunkBlock, self).__init__(tex_coord(7, 1), tex_coord(7, 1), tex_coord(7, 0), 0.6, 64, (255, 255, 255, 255))
+    def id(self):
+        return 17 # MC Log ID
+    def drop(self):
+        return TreeTrunkBlock().id()
+
+class LeafBlock(Block):
+    def __init__(self):
+        super(LeafBlock, self).__init__(tex_coord(7, 2), tex_coord(7, 2), tex_coord(7, 2), 0.6, 64, (255, 255, 255, 255))
+    def id(self):
+        return 2
+    def drop(self):
+        return 0
 
 def block_texture(block):
     result = []
@@ -154,3 +170,6 @@ lw_block = LWoodBlock()
 mw_block = MWoodBlock()
 dw_block = DWoodBlock()
 snowg_block = SnowGrassBlock()
+log_block = TreeTrunkBlock()
+leaf_block = LeafBlock()
+
