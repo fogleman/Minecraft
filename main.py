@@ -806,7 +806,7 @@ class Window(pyglet.window.Window):
             self.player.inventory.change_sort_mode()
             self.item_list.update_items()
             self.inventory_list.update_items()
-        elif symbol == key.I:
+        elif symbol == key.E:
             self.inventory_list.toggle_active_frame_visibility()
             self.item_list.toggle_active_frame_visibility()
             self.show_inventory = not self.show_inventory
