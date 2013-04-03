@@ -191,6 +191,14 @@ class ItemSelector(object):
                 return BLOCKS_DIR[item_id]
         return False
 
+    def get_current_block_item_and_amount(self):
+        item = self.player.quick_slots.at(self.current_index)
+        if item:
+            amount = item.amount
+            self.player.quick_slots.remove_by_index(self.current_index, quantity=item.amount)
+            return (item, amount)
+        return False
+
     def toggle_active_frame_visibility(self):
         self.active.opacity = 0 if self.active.opacity == 255 else 255
 
@@ -276,6 +284,14 @@ class InventorySelector(object):
                 return ITEMS_DIR[item_id]
             else:
                 return BLOCKS_DIR[item_id]
+        return False
+
+    def get_current_block_item_and_amount(self):
+        item = self.player.inventory.at(self.current_index)
+        if item:
+            amount = item.amount
+            self.player.inventory.remove_by_index(self.current_index, quantity=item.amount)
+            return (item, amount)
         return False
 
     def toggle_active_frame_visibility(self):
@@ -768,6 +784,22 @@ class Window(pyglet.window.Window):
             self.inventory_list.toggle_active_frame_visibility()
             self.item_list.toggle_active_frame_visibility()
             self.show_inventory = not self.show_inventory
+        elif symbol == key.ENTER:
+            if self.show_inventory:
+                current_block = self.inventory_list.get_current_block_item_and_amount()
+                if current_block:
+                    if not self.player.quick_slots.add_item(current_block[0].id(), quantity = current_block[1]) == True:
+                        print('Test')
+                        self.player.inventory.add_item(current_block[0].id(), quantity = current_block[1])
+            else:
+                current_block = self.item_list.get_current_block_item_and_amount()
+                if current_block:
+                    if not self.player.inventory.add_item(current_block[0].id(), quantity = current_block[1]) == True:
+                        print('Test')
+                        self.player.quick_slots.add_item(current_block[0].id(), quantity = current_block[1])
+            self.item_list.update_items()
+            self.inventory_list.update_items()
+
 
     def on_key_release(self, symbol, modifiers):
         if symbol == key.W:
