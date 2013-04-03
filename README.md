@@ -63,6 +63,7 @@ See the [wiki](https://github.com/fogleman/Minecraft/wiki) for this project to i
 ### GUI
 
 - B / F3: Toggle UI
+- I: Show inventory
 - V: Saving (save filename in command-line arguments)
 - M: Sort items in the toolbar (3 choices)
 =======
