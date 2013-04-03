@@ -1,17 +1,15 @@
 from pyglet.gl import *
 from pyglet.window import key
-from math import cos, sin, atan2, pi, fmod, radians, floor
-import random
-import time
-import argparse
-import os
+from math import cos, sin, atan2, pi, fmod, radians
+import random, time, argparse, os
 import cPickle as pickle
-import kytten
+import kytten #unused, future potential reference
 from collections import deque
 from blocks import *
 from items import *
 from inventory import *
 from entity import *
+from gui import *
 
 
 SECTOR_SIZE = 16
@@ -21,7 +19,7 @@ NEAR_CLIP_DISTANCE = 0.1 #TODO make min and max clip distance dynamic
 FAR_CLIP_DISTANCE = 200.0 # Maximum render distance, ignoring effects of sector_size and fog
 WORLDTYPE = 0 #1=grass,2=dirt,3=sand,4=islands
 HILLHEIGHT = 6  #height of the hills, increase for mountains :D
-FLATWORLD=0  # dont make mountains,  make a flat world
+FLATWORLD = 0  # dont make mountains,  make a flat world
 SAVE_FILENAME = 'save.dat'
 DISABLE_SAVE = True
 TIME_RATE = 240 * 10 # Rate of change (steps per hour).
@@ -33,6 +31,7 @@ BACK_BLUE = 0.0 # 0.98
 SHOW_FOG = True
 HALF_PI = pi / 2.0 # 90 degrees
 RND_FOREST = 10
+WORLDSIZE = 160
 
 def cube_vertices(x, y, z, n):
     return [
@@ -211,99 +210,6 @@ class ItemSelector(object):
 
 ####
 
-class InventorySelector(object):
-    def __init__(self, width, height, player, model):
-        self.batch = pyglet.graphics.Batch()
-        self.group = pyglet.graphics.OrderedGroup(1)
-        self.amount_labels_group = pyglet.graphics.OrderedGroup(2)
-        self.amount_labels = []
-        self.model = model
-        self.player = player
-        self.max_items = 27
-        self.current_index = 1
-        self.icon_size = self.model.group.texture.width / 8 #4
-
-        image = pyglet.image.load('inventory.png')
-        frame_size = image.height * 3 / 4
-        self.frame = pyglet.sprite.Sprite(image.get_region(0, image.height - frame_size, image.width, frame_size), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
-        self.active = pyglet.sprite.Sprite(image.get_region(0, 0, image.height / 4, image.height / 4), batch=self.batch, group=pyglet.graphics.OrderedGroup(2))
-        self.active.opacity = 0
-        self.set_position(width, height)
-
-    def change_index(self, change):
-        self.set_index(self.current_index + change)
-
-    def set_index(self, index):
-        index = int(index)
-        if self.current_index == index:
-            return
-        self.current_index = index
-        if self.current_index >= self.max_items:
-            self.current_index = 0
-        elif self.current_index < 0:
-            self.current_index = self.max_items - 1;
-        self.update_current()
-
-    def update_items(self):
-        self.icons = []
-        for amount_label in self.amount_labels:
-            amount_label.delete()
-        self.amount_labels = []
-        x = self.frame.x + 3
-        items = self.player.inventory.get_items()
-        items = items[:self.max_items]
-        for i, item in enumerate(items):
-            if not item:
-                x += (self.icon_size * 0.5) + 3
-                if x - self.frame.x - 3 > self.frame.width:
-                    x = self.frame.x + 3
-                continue
-            block = BLOCKS_DIR[item.type]
-            block_icon = self.model.group.texture.get_region(int(block.side[0] * 8) * self.icon_size, int(block.side[1] * 8) * self.icon_size, self.icon_size, self.icon_size)
-            icon = pyglet.sprite.Sprite(block_icon, batch=self.batch, group=self.group)
-            icon.scale = 0.5
-            icon.x = x
-            icon.y = self.frame.y + 3 + floor(i / 9) * self.icon_size * 0.5
-            x += (self.icon_size * 0.5) + 3
-            amount_label = pyglet.text.Label(str(item.amount), font_name='Arial', font_size=9, 
-                x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom', 
-                color=(block.amount_label_color), batch=self.batch, group=self.amount_labels_group)
-            self.amount_labels.append(amount_label)
-            self.icons.append(icon)
-        
-    def update_current(self):
-        self.active.x = self.frame.x + ((self.current_index % 9) * self.icon_size * 0.5) + (self.current_index % 9) * 3
-        self.active.y = self.frame.y + floor(self.current_index / 9) * self.icon_size * 0.5 + floor(self.current_index / 9) * 6
-        
-    def set_position(self, width, height):
-        self.frame.x = (width - self.frame.width) / 2
-        self.frame.y = self.icon_size + 20 # 20 is padding
-        self.update_current()
-        self.update_items()
-
-    def get_current_block(self):
-        item = self.player.inventory.at(self.current_index)
-        if item:
-            item_id = item.type
-            self.player.inventory.remove_by_index(self.current_index)
-            self.update_items()
-            if item_id >= ITEM_ID_MIN:
-                return ITEMS_DIR[item_id]
-            else:
-                return BLOCKS_DIR[item_id]
-        return False
-
-    def get_current_block_item_and_amount(self):
-        item = self.player.inventory.at(self.current_index)
-        if item:
-            amount = item.amount
-            self.player.inventory.remove_by_index(self.current_index, quantity=item.amount)
-            return (item, amount)
-        return False
-
-    def toggle_active_frame_visibility(self):
-        self.active.opacity = 0 if self.active.opacity == 255 else 255
-
 class Model(object):
     def __init__(self, initialize=True):
         self.batch = pyglet.graphics.Batch()
@@ -316,7 +222,8 @@ class Model(object):
         if initialize:
             self.initialize()
     def initialize(self):
-        n = 80
+        global WORLDSIZE
+        n = WORLDSIZE /2 #80
         s = 1
         y = 0
         global RND_FOREST
@@ -349,7 +256,8 @@ class Model(object):
         o = n - 10 + HILLHEIGHT -6
         if FLATWORLD == 1:
             return
-        for _ in xrange(120):
+
+        for _ in xrange(WORLDSIZE /2 + 40): #(120):
             a = random.randint(-o, o)
             b = random.randint(-o, o)
             c = -1
@@ -381,8 +289,6 @@ class Model(object):
 
 
                         #random tree  -- run forest, run!
-                        global RND_FOREST
-
                         if RND_FOREST > 0:
                             #if y > -1: # don't have trees sitting on the base 0 land.'
                             showtree = random.randint(1,5) # 1 out of 5 % chance out of 100 to have a tree
@@ -751,7 +657,8 @@ class Window(pyglet.window.Window):
                     hit_block = self.model.world[block]
                     if hit_block != bed_block:
                         self.model.remove_block(block)
-                        if self.player.add_item(hit_block.drop_id):
+                        item_id = hit_block.drop_id if type(hit_block.drop_id) is int else hit_block.drop_id()
+                        if self.player.add_item(item_id):
                             self.item_list.update_items()
                             self.inventory_list.update_items()
                             pass
@@ -787,7 +694,7 @@ class Window(pyglet.window.Window):
             if self.player.flying:
                 self.dy = 0.045 # jump speed
             elif self.dy == 0:
-                self.dy = 0.015 # jump speed
+                self.dy = 0.016 # jump speed
         elif symbol == key.LSHIFT or symbol == key.RSHIFT:
             if self.player.flying:
                 self.dy = -0.045 # inversed jump speed
@@ -975,6 +882,7 @@ def main(options):
     global WORLDTYPE
     global HILLHEIGHT
     global RND_FOREST
+    global WORLDSIZE
 
     RND_FOREST = options.maxtrees
 
@@ -1004,8 +912,9 @@ def main(options):
 #    print RND_FOREST
 
 #    WORLDTYPE = options.terrain
-    if options.hillheight <> 6:
-        HILLHEIGHT = options.hillheight
+#    if options.hillheight <> 6:
+    HILLHEIGHT = options.hillheight
+    WORLDSIZE = options.worldsize
 
     if options.flat > 0:
         global FLATWORLD
@@ -1047,6 +956,7 @@ if __name__ == '__main__':
     parser.add_argument("-save", type=unicode, default=SAVE_FILENAME)
     parser.add_argument("--disable-save", action="store_false", default=True)
     parser.add_argument("--fast", action="store_true", default=False)
-    parser.add_argument("--maxtrees", type=int, default=10)
+    parser.add_argument("--maxtrees", type=int, default=50)
+    parser.add_argument("--worldsize", type=int, default=160)
     options = parser.parse_args()
     main(options)
