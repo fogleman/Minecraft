@@ -754,7 +754,8 @@ class Window(pyglet.window.Window):
                     hit_block = self.model.world[block]
                     if hit_block != bed_block:
                         self.model.remove_block(block)
-                        if self.player.add_item(hit_block.drop_id()):
+                        item_id = hit_block.drop_id if type(hit_block.drop_id) is int else hit_block.drop_id()
+                        if self.player.add_item(item_id):
                             self.item_list.update_items()
                             self.inventory_list.update_items()
                             pass

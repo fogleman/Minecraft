@@ -2,10 +2,11 @@ from items import *
 import sys
 
 class Inventory(object):
+    sort_mode = 0
+
     def __init__(self, slot_count = 27):
         self.slot_count = slot_count
         self.slots = [None] * self.slot_count
-        self.sort_mode = 0
 
     def find_empty_slot(self):
         return next((index for index,value in enumerate(self.slots) if not value), -1)
