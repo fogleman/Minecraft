@@ -8,6 +8,7 @@ BLOCKS_DIR = {}
 
 # Blocks
 class Block(object):
+    transparent = False
     def __init__(self, top, bottom, side, hardness, max_stack_size, amount_label_color=(255, 255, 255, 255)):
         self.top = top
         self.bottom = bottom
@@ -15,6 +16,7 @@ class Block(object):
         self.hardness = hardness
         self.max_stack_size = max_stack_size
         self.amount_label_color = amount_label_color
+        self.transparent = False
         BLOCKS_DIR[self.id()] = self
     def drop(self):
         return self.id()
@@ -74,6 +76,7 @@ class BedrockBlock(Block):
 class WaterBlock(Block):
     def __init__(self):
         super(WaterBlock, self).__init__(tex_coord(0, 2), tex_coord(0, 2), tex_coord(0, 2), 0, 64)
+        self.transparent = True
     def id(self):
         return 8
 
