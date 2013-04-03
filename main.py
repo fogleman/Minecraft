@@ -101,14 +101,14 @@ class Player(Entity):
             quantity = random.randint(1, 10)
             if FLATWORLD == 1:
                 if random.randint(0, 1) == 0:
-                    self.inventory.add_item(item.id(), 99)
+                    self.inventory.add_item(item.id, 99)
                 else:
-                    self.quick_slots.add_item(item.id(), 99)
+                    self.quick_slots.add_item(item.id, 99)
             if FLATWORLD == 0:
                 if random.randint(0, 1) == 0:
-                    self.inventory.add_item(item.id(), quantity)
+                    self.inventory.add_item(item.id, quantity)
                 else:
-                    self.quick_slots.add_item(item.id(), quantity)
+                    self.quick_slots.add_item(item.id, quantity)
 
     def add_item(self, item_id):
         if self.quick_slots.add_item(item_id):
@@ -760,7 +760,7 @@ class Window(pyglet.window.Window):
                     current_block = self.item_list.get_current_block()
                     if current_block:
                         # if current block is an item, call its on_right_click() method to handle this event
-                        if current_block.id() >= ITEM_ID_MIN:
+                        if current_block.id >= ITEM_ID_MIN:
                             current_block.on_right_click()
                         else:
                             self.model.add_block(previous, current_block)
@@ -816,13 +816,13 @@ class Window(pyglet.window.Window):
             if self.show_inventory:
                 current_block = self.inventory_list.get_current_block_item_and_amount()
                 if current_block:
-                    if not self.player.quick_slots.add_item(current_block[0].id(), quantity = current_block[1]) == True:
-                        self.player.inventory.add_item(current_block[0].id(), quantity = current_block[1])
+                    if not self.player.quick_slots.add_item(current_block[0].id, quantity = current_block[1]) == True:
+                        self.player.inventory.add_item(current_block[0].id, quantity = current_block[1])
             else:
                 current_block = self.item_list.get_current_block_item_and_amount()
                 if current_block:
-                    if not self.player.inventory.add_item(current_block[0].id(), quantity = current_block[1]) == True:
-                        self.player.quick_slots.add_item(current_block[0].id(), quantity = current_block[1])
+                    if not self.player.inventory.add_item(current_block[0].id, quantity = current_block[1]) == True:
+                        self.player.quick_slots.add_item(current_block[0].id, quantity = current_block[1])
             self.item_list.update_items()
             self.inventory_list.update_items()
 
