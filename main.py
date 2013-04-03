@@ -1,6 +1,6 @@
 from pyglet.gl import *
 from pyglet.window import key
-from math import cos, sin, atan2, pi, fmod, radians
+from math import cos, sin, atan2, pi, fmod, radians, floor
 import random
 import time
 import argparse
@@ -93,9 +93,15 @@ class Player(Entity):
         for item in initial_items:
             quantity = random.randint(1, 10)
             if FLATWORLD == 1:
-                self.quick_slots.add_item(item.id(), 99)
+                if random.randint(0, 1) == 0:
+                    self.inventory.add_item(item.id(), 99)
+                else:
+                    self.quick_slots.add_item(item.id(), 99)
             if FLATWORLD == 0:
-                self.quick_slots.add_item(item.id(), quantity)
+                if random.randint(0, 1) == 0:
+                    self.inventory.add_item(item.id(), quantity)
+                else:
+                    self.quick_slots.add_item(item.id(), quantity)
 
     def add_item(self, item_id):
         if self.quick_slots.add_item(item_id):
@@ -103,6 +109,8 @@ class Player(Entity):
         elif self.inventory.add_item(item_id):
             return True
         return False
+
+####
 
 class ItemSelector(object):
     def __init__(self, width, height, player, model):
@@ -176,6 +184,89 @@ class ItemSelector(object):
         if item:
             item_id = item.type
             self.player.quick_slots.remove_by_index(self.current_index)
+            self.update_items()
+            if item_id >= ITEM_ID_MIN:
+                return ITEMS_DIR[item_id]
+            else:
+                return BLOCKS_DIR[item_id]
+        return False
+
+####
+
+class InventorySelector(object):
+    def __init__(self, width, height, player, model):
+        self.batch = pyglet.graphics.Batch()
+        self.group = pyglet.graphics.OrderedGroup(1)
+        self.amount_labels_group = pyglet.graphics.OrderedGroup(2)
+        self.amount_labels = []
+        self.model = model
+        self.player = player
+        self.max_items = 27
+        self.current_index = 1
+        self.icon_size = self.model.group.texture.width / 8 #4
+
+        image = pyglet.image.load('inventory.png')
+        frame_size = image.height * 3 / 4
+        self.frame = pyglet.sprite.Sprite(image.get_region(0, image.height - frame_size, image.width, frame_size), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
+        self.active = pyglet.sprite.Sprite(image.get_region(0, 0, image.height / 4, image.height / 4), batch=self.batch, group=pyglet.graphics.OrderedGroup(2))
+        self.set_position(width, height)
+        
+    def change_index(self, change):
+        self.set_index(self.current_index + change)
+            
+    def set_index(self, index):
+        index = int(index)
+        if self.current_index == index:
+            return
+        self.current_index = index
+        if self.current_index >= self.max_items:
+            self.current_index = 0
+        elif self.current_index < 0:
+            self.current_index = self.max_items - 1;
+        self.update_current()
+            
+    def update_items(self):
+        self.icons = []
+        for amount_label in self.amount_labels:
+            amount_label.delete()
+        self.amount_labels = []
+        x = self.frame.x + 3
+        items = self.player.inventory.get_items()
+        items = items[:self.max_items]
+        for i, item in enumerate(items):
+            if not item:
+                x += (self.icon_size * 0.5) + 3
+                if x - self.frame.x - 3 > self.frame.width:
+                    x = self.frame.x + 3
+                continue
+            block = BLOCKS_DIR[item.type]
+            block_icon = self.model.group.texture.get_region(int(block.side[0] * 8) * self.icon_size, int(block.side[1] * 8) * self.icon_size, self.icon_size, self.icon_size)
+            icon = pyglet.sprite.Sprite(block_icon, batch=self.batch, group=self.group)
+            icon.scale = 0.5
+            icon.x = x
+            icon.y = self.frame.y + 3 + floor(i / 9) * self.icon_size * 0.5
+            x += (self.icon_size * 0.5) + 3
+            amount_label = pyglet.text.Label(str(item.amount), font_name='Arial', font_size=9, 
+                x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom', 
+                color=(block.amount_label_color), batch=self.batch, group=self.amount_labels_group)
+            self.amount_labels.append(amount_label)
+            self.icons.append(icon)
+        
+    def update_current(self):
+        self.active.x = self.frame.x + ((self.current_index % 9) * self.icon_size * 0.5) + 3
+        
+    def set_position(self, width, height):
+        self.frame.x = (width - self.frame.width) / 2
+        self.frame.y = self.icon_size + 20 # 20 is padding
+        self.active.y = self.frame.y + floor(self.current_index / 9) * self.icon_size           
+        self.update_current()
+        self.update_items()
+
+    def get_current_block(self):
+        item = self.player.inventory.at(self.current_index)
+        if item:
+            item_id = item.type
+            self.player.inventory.remove_by_index(self.current_index)
             self.update_items()
             if item_id >= ITEM_ID_MIN:
                 return ITEMS_DIR[item_id]
@@ -437,9 +528,11 @@ class Window(pyglet.window.Window):
             if save_len > 3 and isinstance(self.save[3], Player): self.player = self.save[3]
             if save_len > 4 and isinstance(self.save[4], float): self.time_of_day = self.save[4]
         self.item_list = ItemSelector(self.width, self.height, self.player, self.model)
+        self.inventory_list = InventorySelector(self.width, self.height, self.player, self.model)
         self.num_keys = [
             key._1, key._2, key._3, key._4, key._5,
             key._6, key._7, key._8, key._9, key._0]
+        self.show_inventory = False
         if self.show_gui:
             self.label = pyglet.text.Label('', font_name='Arial', font_size=8,
                 x=10, y=self.height - 10, anchor_x='left', anchor_y='top',
@@ -591,6 +684,7 @@ class Window(pyglet.window.Window):
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
         if self.exclusive and scroll_y != 0:
             self.item_list.change_index(scroll_y*-1)
+            pass
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.exclusive:
@@ -603,6 +697,8 @@ class Window(pyglet.window.Window):
                         self.model.remove_block(block)
                         if self.player.add_item(hit_block.drop()):
                             self.item_list.update_items()
+                            self.inventory_list.update_items()
+                            pass
             else:
                 if previous:
                     current_block = self.item_list.get_current_block()
@@ -653,7 +749,11 @@ class Window(pyglet.window.Window):
             self.save_to_file()
         elif symbol == key.M:
             self.player.quick_slots.change_sort_mode()
+            self.player.inventory.change_sort_mode()
             self.item_list.update_items()
+            self.inventory_list.update_items()
+        elif symbol == key.I:
+            self.show_inventory = not self.show_inventory
 
     def on_key_release(self, symbol, modifiers):
         if symbol == key.W:
@@ -668,7 +768,9 @@ class Window(pyglet.window.Window):
             self.dy = 0
         elif symbol == key.M:
             self.player.quick_slots.change_sort_mode()
+            self.player.inventory.change_sort_mode()
             self.item_list.update_items()
+            self.inventory_list.update_items()
     def on_resize(self, width, height):
         # label
         # reticle
@@ -682,6 +784,7 @@ class Window(pyglet.window.Window):
         if self.show_gui:
             self.label.y = height - 10
             self.item_list.set_position(width, height)
+            self.inventory_list.set_position(width, height)
 
     def set_2d(self):
         width, height = self.get_size()
@@ -736,6 +839,8 @@ class Window(pyglet.window.Window):
         if self.show_gui:
             self.draw_label()
             self.item_list.batch.draw()
+            if self.show_inventory:
+                self.inventory_list.batch.draw()
         self.draw_reticle()
     def draw_focused_block(self):
         glDisable(GL_LIGHTING)
