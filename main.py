@@ -1,10 +1,7 @@
 from pyglet.gl import *
 from pyglet.window import key
 from math import cos, sin, atan2, pi, fmod, radians
-import random
-import time
-import argparse
-import os
+import random, time, argparse, os
 import cPickle as pickle
 import kytten #unused, future potential reference
 from collections import deque
@@ -22,7 +19,7 @@ NEAR_CLIP_DISTANCE = 0.1 #TODO make min and max clip distance dynamic
 FAR_CLIP_DISTANCE = 200.0 # Maximum render distance, ignoring effects of sector_size and fog
 WORLDTYPE = 0 #1=grass,2=dirt,3=sand,4=islands
 HILLHEIGHT = 6  #height of the hills, increase for mountains :D
-FLATWORLD=0  # dont make mountains,  make a flat world
+FLATWORLD = 0  # dont make mountains,  make a flat world
 SAVE_FILENAME = 'save.dat'
 DISABLE_SAVE = True
 TIME_RATE = 240 * 10 # Rate of change (steps per hour).
@@ -259,7 +256,7 @@ class Model(object):
         o = n - 10 + HILLHEIGHT -6
         if FLATWORLD == 1:
             return
-        global WORLDSIZE
+
         for _ in xrange(WORLDSIZE /2 + 40): #(120):
             a = random.randint(-o, o)
             b = random.randint(-o, o)
@@ -292,8 +289,6 @@ class Model(object):
 
 
                         #random tree  -- run forest, run!
-                        global RND_FOREST
-
                         if RND_FOREST > 0:
                             #if y > -1: # don't have trees sitting on the base 0 land.'
                             showtree = random.randint(1,5) # 1 out of 5 % chance out of 100 to have a tree
