@@ -1,6 +1,6 @@
 from pyglet.gl import *
 from pyglet.window import key
-from math import cos, sin, atan2, radians, degrees, pi, fmod
+from math import cos, sin, atan2, pi, fmod, radians
 import random
 import time
 import argparse
@@ -29,6 +29,7 @@ BACK_RED = 0.0 # 0.53
 BACK_GREEN = 0.0 # 0.81
 BACK_BLUE = 0.0 # 0.98
 SHOW_FOG = True
+HALF_PI = pi / 2.0 # 90 degrees
 
 def cube_vertices(x, y, z, n):
     return [
@@ -439,29 +440,36 @@ class Window(pyglet.window.Window):
         self.exclusive = exclusive
     def get_sight_vector(self):
         x, y = self.player.rotation
-        m = cos(radians(y))
-        dy = sin(radians(y))
-        dx = cos(radians(x - 90)) * m
-        dz = sin(radians(x - 90)) * m
+        y_r = radians(y)
+        x_r = radians(x)
+        m = cos(y_r)
+        dy = sin(y_r)
+        x_r -= HALF_PI
+        dx = cos(x_r) * m
+        dz = sin(x_r) * m
         return (dx, dy, dz)
     def get_motion_vector(self):
         if any(self.strafe):
             x, y = self.player.rotation
-            strafe = degrees(atan2(*self.strafe))
+            y_r = radians(y)
+            x_r = radians(x)
+            strafe = atan2(*self.strafe)
             if self.player.flying:
-                m = cos(radians(y))
-                dy = sin(radians(y))
+                m = cos(y_r)
+                dy = sin(y_r)
                 if self.strafe[1]:
                     dy = 0.0
                     m = 1
                 if self.strafe[0] > 0:
                     dy *= -1
-                dx = cos(radians(x + strafe)) * m
-                dz = sin(radians(x + strafe)) * m
+                x_r += strafe
+                dx = cos(x_r) * m
+                dz = sin(x_r) * m
             else:
                 dy = 0.0
-                dx = cos(radians(x + strafe))
-                dz = sin(radians(x + strafe))
+                x_r += strafe
+                dx = cos(x_r)
+                dz = sin(x_r)
         else:
             dy = 0.0
             dx = 0.0
@@ -472,6 +480,8 @@ class Window(pyglet.window.Window):
         '''The idle function advances the time of day.
            The day has 12 hours, from sunrise to sunset.
            The time of day is converted to degrees and then to radians.'''
+        if not self.exclusive:
+            return
         self.time_of_day += 1.0 / TIME_RATE
         if self.time_of_day > 12.0:
             self.time_of_day = 0.0
@@ -490,35 +500,6 @@ class Window(pyglet.window.Window):
         BACK_GREEN = 0.9 * sin_t
         BACK_BLUE = min(sin_t + 0.4, 1.0)
         
-        self.count += 1
-        if fmod(self.count, TIME_RATE) == 0:
-            if self.clock == 18:
-                self.clock = 6
-            else:
-                self.clock += 1
-
-    def update_time(self):
-        '''The idle function advances the time of day.
-           The day has 12 hours, from sunrise to sunset.
-           The time of day is converted to degrees and then to radians.'''
-        self.time_of_day += 1.0 / TIME_RATE
-        if self.time_of_day > 12.0:
-            self.time_of_day = 0.0
-
-        side = len(self.model.sectors) * 2.0
-
-        self.light_y = 0.6 * side * sin(self.time_of_day * HOUR_DEG * DEG_RAD)
-        self.light_z = 0.6 * side * cos(self.time_of_day * HOUR_DEG * DEG_RAD)
-
-        # Calculate sky colour according to time of day.
-        sin_t = sin(pi * self.time_of_day / 12.0)
-        global BACK_RED
-        global BACK_GREEN
-        global BACK_BLUE
-        BACK_RED = 0.3 * (1.0 - sin_t)
-        BACK_GREEN = 0.9 * sin_t
-        BACK_BLUE = min(sin_t + 0.4, 1.0)
-
         self.count += 1
         if fmod(self.count, TIME_RATE) == 0:
             if self.clock == 18:
@@ -710,7 +691,8 @@ class Window(pyglet.window.Window):
         glLoadIdentity()
         x, y = self.player.rotation
         glRotatef(x, 0, 1, 0)
-        glRotatef(-y, cos(radians(x)), 0, sin(radians(x)))
+        x_r = radians(x)
+        glRotatef(-y, cos(x_r), 0, sin(x_r))
         x, y, z = self.player.position
         glTranslatef(-x, -y, -z)
         glEnable(GL_LIGHTING)
