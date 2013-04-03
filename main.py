@@ -6,11 +6,13 @@ import random
 import time
 
 
-# Size of sectors used to each block loading.
+# Size of sectors used to ease block loading.
 SECTOR_SIZE = 16
 
 
 def cube_vertices(x, y, z, n):
+    """ Return the vertices of the cube at position x, y, z with size n.
+    """
     return [
         x-n,y+n,z-n, x-n,y+n,z+n, x+n,y+n,z+n, x+n,y+n,z-n,  # top
         x-n,y-n,z-n, x+n,y-n,z-n, x+n,y-n,z+n, x-n,y-n,z+n,  # bottom
@@ -22,6 +24,8 @@ def cube_vertices(x, y, z, n):
 
 
 def tex_coord(x, y, n=4):
+    """ Return the bounding vertices of the texture square.
+    """
     m = 1.0 / n
     dx = x * m
     dy = y * m
@@ -29,6 +33,8 @@ def tex_coord(x, y, n=4):
 
 
 def tex_coords(top, bottom, side):
+    """ Return a list of the texture squares for the top, bottom and side.
+    """
     top = tex_coord(*top)
     bottom = tex_coord(*bottom)
     side = tex_coord(*side)
@@ -38,6 +44,8 @@ def tex_coords(top, bottom, side):
     result.extend(side * 4)
     return result
 
+
+TEXTURE_PATH = 'texture.png'
 
 GRASS = tex_coords((1, 0), (0, 1), (0, 0))
 SAND = tex_coords((1, 1), (1, 1), (1, 1))
@@ -69,12 +77,35 @@ class TextureGroup(pyglet.graphics.Group):
 
 
 def normalize(position):
+    """ Accepts `position` of arbitrary precision and returns the block
+    containing that position.
+
+    Parameters
+    ----------
+    position : tuple of len 3
+
+    Returns
+    -------
+    block_position : tuple of ints of len 3
+
+    """
     x, y, z = position
     x, y, z = (int(round(x)), int(round(y)), int(round(z)))
     return (x, y, z)
 
 
 def sectorize(position):
+    """ Returns a tuple representing the sector for the given `position`.
+
+    Parameters
+    ----------
+    position : tuple of len 3
+
+    Returns
+    -------
+    sector : tuple of len 3
+
+    """
     x, y, z = normalize(position)
     x, y, z = x / SECTOR_SIZE, y / SECTOR_SIZE, z / SECTOR_SIZE
     return (x, 0, z)
@@ -83,26 +114,46 @@ def sectorize(position):
 class Model(object):
 
     def __init__(self):
-        self.batch = pyglet.graphics.Batch()
-        self.group = TextureGroup('texture.png')
-        self.world = {}
-        self.shown = {}
-        self._shown = {}
-        self.sectors = {}
-        self.queue = []
-        self.initialize()
+        texture = pyglet.image.load(TEXTURE_PATH).get_texture()
 
-    def initialize(self):
-        n = 80
-        s = 1
-        y = 0
+        # A Batch is a collection of vertex lists for batched rendering.
+        self.batch = pyglet.graphics.Batch()
+
+        # A TextureGroup manages an OpenGL texture.
+        self.group = TextureGroup('texture.png')
+
+        # A mapping from position to the texture of the block at that position.
+        self.world = {}
+
+        # Same mapping as `world` but only contains blocks that are shown.
+        self.shown = {}
+
+        # Mapping from position to a pyglet `VertextList` for all shown blocks.
+        self._shown = {}
+
+        # Mapping from sector to a list of positions inside that sector.
+        self.sectors = {}
+
+        # Simple function queue implemementation.
+        self.queue = []
+
+        self._initialize()
+
+    def _initialize(self):
+        n = 80  # 1/2 width and height of world
+        s = 1  # step size
+        y = 0  # initial y height
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
+                # create a layer stone an grass everywhere.
                 self.init_block((x, y - 2, z), GRASS)
                 self.init_block((x, y - 3, z), STONE)
                 if x in (-n, n) or z in (-n, n):
+                    # create outer walls.
                     for dy in xrange(-2, 3):
                         self.init_block((x, y + dy, z), STONE)
+
+        # generate the hills randomly
         o = n - 10
         for _ in xrange(120):
             a = random.randint(-o, o)
@@ -123,6 +174,11 @@ class Model(object):
                 s -= d
 
     def hit_test(self, position, vector, max_distance=8):
+        """ Line of sight search from current position. If a block is
+        intersected it is returned, along with the block previously in the line
+        of sight.
+
+        """
         m = 8
         x, y, z = position
         dx, dy, dz = vector
@@ -146,6 +202,16 @@ class Model(object):
         self.add_block(position, texture, False)
 
     def add_block(self, position, texture, sync=True):
+        """
+        Parameters
+        ----------
+        position : tuple of len 3
+            The (x, y, z) position of the block to add
+        texture : list or len 3
+            The coordinates of the texture squares. Use `tex_coords()` to
+            generate
+
+        """
         if position in self.world:
             self.remove_block(position, sync)
         self.world[position] = texture
@@ -187,7 +253,7 @@ class Model(object):
         if immediate:
             self._show_block(position, texture)
         else:
-            self.enqueue(self._show_block, position, texture)
+            self._enqueue(self._show_block, position, texture)
 
     def _show_block(self, position, texture):
         x, y, z = position
@@ -215,7 +281,7 @@ class Model(object):
         if immediate:
             self._hide_block(position)
         else:
-            self.enqueue(self._hide_block, position)
+            self._enqueue(self._hide_block, position)
 
     def _hide_block(self, position):
         self._shown.pop(position).delete()
@@ -252,21 +318,21 @@ class Model(object):
         for sector in hide:
             self.hide_sector(sector)
 
-    def enqueue(self, func, *args):
+    def _enqueue(self, func, *args):
         self.queue.append((func, args))
 
-    def dequeue(self):
+    def _dequeue(self):
         func, args = self.queue.pop(0)
         func(*args)
 
     def process_queue(self):
         start = time.clock()
         while self.queue and time.clock() - start < 1 / 60.0:
-            self.dequeue()
+            self._dequeue()
 
     def process_entire_queue(self):
         while self.queue:
-            self.dequeue()
+            self._dequeue()
 
 
 class Window(pyglet.window.Window):
@@ -324,6 +390,8 @@ class Window(pyglet.window.Window):
         return (dx, dy, dz)
 
     def update(self, dt):
+        """ This method is scheduled to be called repeadetly.
+        """
         self.model.process_queue()
         sector = sectorize(self.position)
         if sector != self.sector:
