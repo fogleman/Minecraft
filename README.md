@@ -90,3 +90,4 @@ See the [wiki](https://github.com/fogleman/Minecraft/wiki) for this project to i
       -draw-distance {short,medium,long}
       -save SAVE
       --disable-save
+      --fast

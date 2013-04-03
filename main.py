@@ -22,7 +22,7 @@ HILLHEIGHT = 6  #height of the hills, increase for mountains :D
 FLATWORLD=0  # dont make mountains,  make a flat world
 SAVE_FILENAME = 'save.dat'
 DISABLE_SAVE = True
-TIME_RATE = 60 # Rate of change (steps per hour).
+TIME_RATE = 60 * 10 # Rate of change (steps per hour).
 DEG_RAD = pi / 180.0
 HOUR_DEG = 15.0
 BACK_RED = 0.0 # 0.53
@@ -817,6 +817,10 @@ def main(options):
     global SHOW_FOG
     SHOW_FOG = not options.hide_fog
 
+    global TIME_RATE
+
+    if options.fast:
+        TIME_RATE = 30
 
     #try:
         #config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
@@ -845,5 +849,6 @@ if __name__ == '__main__':
     parser.add_argument("-draw-distance", choices=['short', 'medium', 'long'], default='short')
     parser.add_argument("-save", type=unicode, default=SAVE_FILENAME)
     parser.add_argument("--disable-save", action="store_false", default=True)
+    parser.add_argument("--fast", action="store_true", default=False)
     options = parser.parse_args()
     main(options)
