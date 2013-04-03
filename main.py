@@ -22,7 +22,7 @@ HILLHEIGHT = 6  #height of the hills, increase for mountains :D
 FLATWORLD=0  # dont make mountains,  make a flat world
 SAVE_FILENAME = 'save.dat'
 DISABLE_SAVE = True
-TIME_RATE = 30 * 10 # Rate of change (steps per hour).
+TIME_RATE = 240 * 10 # Rate of change (steps per hour).
 DEG_RAD = pi / 180.0
 HOUR_DEG = 15.0
 BACK_RED = 0.0 # 0.53
@@ -443,7 +443,7 @@ class Window(pyglet.window.Window):
         if self.show_gui:
             self.label = pyglet.text.Label('', font_name='Arial', font_size=8,
                 x=10, y=self.height - 10, anchor_x='left', anchor_y='top',
-                color=(0, 0, 0, 255))
+                color=(255, 255, 255, 255))
         pyglet.clock.schedule_interval(self.update, 1.0 / 60)
     def set_exclusive_mouse(self, exclusive):
         super(Window, self).set_exclusive_mouse(exclusive)
@@ -492,16 +492,25 @@ class Window(pyglet.window.Window):
            The time of day is converted to degrees and then to radians.'''
         if not self.exclusive:
             return
-        self.time_of_day += 1.0 / TIME_RATE
+
+        time_of_day = (self.time_of_day) if (self.time_of_day < 12.0) else (24.0 - self.time_of_day)
+        
+        if time_of_day <= 2.5:
+            self.time_of_day += 1.0 / TIME_RATE
+            time_of_day +=  1.0 / TIME_RATE
+            self.count += 1
+        else:
+            self.time_of_day += 20.0 / TIME_RATE
+            time_of_day +=  20.0 / TIME_RATE
+            self.count += 1.0 / 20.0
         if self.time_of_day > 24.0:
             self.time_of_day = 0.0
+            time_of_day = 0.0
             
         side = len(self.model.sectors) * 2.0
-            
-        time_of_day = (self.time_of_day) if (self.time_of_day < 12.0) else (24.0 - self.time_of_day)
 
-        self.light_y = 0.6 * side * sin(time_of_day * HOUR_DEG * DEG_RAD)
-        self.light_z = 0.6 * side * cos(time_of_day * HOUR_DEG * DEG_RAD)
+        self.light_y = 2.0 * side * sin(time_of_day * HOUR_DEG * DEG_RAD)
+        self.light_z = 2.0 * side * cos(time_of_day * HOUR_DEG * DEG_RAD)
 
         # Calculate sky colour according to time of day.
         sin_t = sin(pi * time_of_day / 12.0)
@@ -511,9 +520,8 @@ class Window(pyglet.window.Window):
         BACK_RED = 0.1 * (1.0 - sin_t)
         BACK_GREEN = 0.9 * sin_t
         BACK_BLUE = min(sin_t + 0.4, 1.0)
-        
-        self.count += 1
-        if fmod(self.count, TIME_RATE) == 0:
+    
+        if fmod(self.count / 2, TIME_RATE) == 0:
             if self.clock == 18:
                 self.clock = 6
             else:
@@ -742,7 +750,7 @@ class Window(pyglet.window.Window):
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
     def draw_label(self):
         x, y, z = self.player.position
-        self.label.text = '%02d (%.2f, %.2f, %.2f) %d / %d' % (
+        self.label.text = '%.1f %02d (%.2f, %.2f, %.2f) %d / %d' % ((self.time_of_day) if (self.time_of_day < 12.0) else (24.0 - self.time_of_day),
             pyglet.clock.get_fps(), x, y, z,
             len(self.model._shown), len(self.model.world))
         self.label.draw()
@@ -815,7 +823,7 @@ def main(options):
     global TIME_RATE
 
     if options.fast:
-        TIME_RATE = 15
+        TIME_RATE /= 20
 
     #try:
         #config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
