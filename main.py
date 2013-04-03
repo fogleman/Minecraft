@@ -256,9 +256,12 @@ class Model(object):
                         if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
                             continue
                         self.init_block((x, y, z), t)
-                        if t == grass_block:
+                        if t == grass_block or snowg_block:
                             self.init_block((x - 1, y - 1, z), dirt_block)
                             self.init_block((x - 2, y - 2, z), dirt_block)
+                        #if t == snow_block:
+                            #self.init_block((x - 1, y - 1, z), dirt_block)
+                            #self.init_block((x - 2, y - 2, z), dirt_block)
 
                     #if WORLDTYPE == 5: # cover the mountains of stone with grass
                         #self.init_block((x + 1, y + 1, z + 1), grass_block)
