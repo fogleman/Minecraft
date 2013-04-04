@@ -173,8 +173,8 @@ class ItemSelector(object):
                 continue
             block = BLOCKS_DIR[item.type]
             block_icon = self.model.group.texture.get_region(
-                int(block.side[0] * 8) * self.icon_size,
-                int(block.side[1] * 8) * self.icon_size, self.icon_size,
+                int(block.side_texture[0] * 8) * self.icon_size,
+                int(block.side_texture[1] * 8) * self.icon_size, self.icon_size,
                 self.icon_size)
             icon = pyglet.sprite.Sprite(block_icon, batch=self.batch,
                                         group=self.group)
