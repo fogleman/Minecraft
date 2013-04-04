@@ -4,6 +4,7 @@
 * Show cracks (and particles) as block_damage increases
 * Prevent user from placing blocks directly below him/her#
 * Implement sinking in blocks, based on their density
+* Add option to change world (for example from save) during program execution without closing Window
 
 # Items
 
@@ -14,6 +15,10 @@
 * create inventory management screen implementing:
 - item stacks
 - Jimx's crafting system
+
+# Graphics
+
+* improve lighting system
 
 # Misc
 - need place for brainstorming/ideas etc. related to project, so we can cooperate (IRC/forums/Reddit/mailing list?)
