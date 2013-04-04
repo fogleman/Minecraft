@@ -54,7 +54,7 @@ SAVE_FILENAME = os.path.join(game_dir, 'save.dat')
 config = ConfigParser()
 config_file = os.path.join(game_dir, 'game.cfg')
 if not os.path.lexists(config_file):
-    type, hill_height, max_trees = terrain_options[0]
+    type, hill_height, max_trees = terrain_options['plains']
     config.add_section('World')
     config.set('World', 'type', str(type))  # 0=plains,1=dirt,2=desert,3=islands,4=sand,5=stone,6=snow
     config.set('World', 'hill_height', str(hill_height))  # height of the hills, increase for mountains :D
