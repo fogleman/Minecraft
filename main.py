@@ -63,6 +63,14 @@ if not os.path.lexists(config_file):
     config.set('World', 'show_fog', '1')
     config.set('World', 'max_trees', str(max_trees))
 
+    config.add_section('Controls')
+    config.set('Controls', 'move_forward', str(key.W))
+    config.set('Controls', 'move_backward', str(key.S))
+    config.set('Controls', 'move_left', str(key.A))
+    config.set('Controls', 'move_right', str(key.D))
+    config.set('Controls', 'jump', str(key.SPACE))
+    config.set('Controls', 'inventory', str(key.E))
+
     try:
         with open(config_file, 'wb') as handle:
             config.write(handle)
@@ -621,6 +629,13 @@ class Window(pyglet.window.Window):
         self.show_fog = False
         self.last_key = None
         self.sorted = False
+        global config
+        self.key_move_forward = config.getint('Controls', 'move_forward')
+        self.key_move_backward = config.getint('Controls', 'move_backward')
+        self.key_move_left = config.getint('Controls', 'move_left')
+        self.key_move_right = config.getint('Controls', 'move_right')
+        self.key_jump = config.getint('Controls', 'jump')
+        self.key_inventory = config.getint('Controls', 'inventory')
         save_len = -1 if self.save is None else len(self.save)
         if self.save is None or save_len < 2:  # Model.world and model.sectors
             self.model = Model()
@@ -894,15 +909,15 @@ class Window(pyglet.window.Window):
                 self.on_mouse_motion(x, y, dx, dy)
 
     def on_key_press(self, symbol, modifiers):
-        if symbol == key.W:
+        if symbol == self.key_move_forward:
             self.strafe[0] -= 1
-        elif symbol == key.S:
+        elif symbol == self.key_move_backward:
             self.strafe[0] += 1
-        elif symbol == key.A:
+        elif symbol ==self. key_move_left:
             self.strafe[1] -= 1
-        elif symbol == key.D:
+        elif symbol == self.key_move_right:
             self.strafe[1] += 1
-        elif symbol == key.SPACE:
+        elif symbol == self.key_jump:
             if self.player.flying:
                 self.dy = 0.045  # jump speed
             elif self.dy == 0:
@@ -938,7 +953,7 @@ class Window(pyglet.window.Window):
                 self.player.inventory.change_sort_mode()
                 self.item_list.update_items()
                 self.inventory_list.update_items()
-        elif symbol == key.E:
+        elif symbol == self.key_inventory:
             self.inventory_list.toggle_active_frame_visibility()
             self.item_list.toggle_active_frame_visibility()
             self.show_inventory = not self.show_inventory
@@ -967,21 +982,19 @@ class Window(pyglet.window.Window):
         self.last_key = symbol
 
     def on_key_release(self, symbol, modifiers):
-        if symbol == key.W:
+        if symbol == self.key_move_forward:
             self.strafe[0] += 1
-        elif symbol == key.S:
+        elif symbol == self.key_move_backward:
             self.strafe[0] -= 1
-        elif symbol == key.A:
+        elif symbol == self.key_move_left:
             self.strafe[1] += 1
-        elif symbol == key.D:
+        elif symbol == self.key_move_right:
             self.strafe[1] -= 1
-        elif (symbol == key.SPACE or symbol == key.LSHIFT
+        elif (symbol == self.key_jump or symbol == key.LSHIFT
               or symbol == key.RSHIFT) and self.player.flying:
             self.dy = 0
 
     def on_resize(self, width, height):
-        # label
-        # reticle
         if self.reticle:
             self.reticle.delete()
         x, y = self.width / 2, self.height / 2
