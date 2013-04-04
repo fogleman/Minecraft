@@ -30,7 +30,7 @@ class Inventory(object):
                     # find an empty slot to store these items
                     index = self.find_empty_slot()
 
-                    if index == -1 and len(self.slots) >= self.slot_count:  # There is somewhere a strange bug, which causes len(self.slots) > self.slot_count to be true
+                    if index == -1 and len(self.slots) == self.slot_count:
                         return retval
 
                     # overflow ?
@@ -41,7 +41,7 @@ class Inventory(object):
                         item_stack = ItemStack(type=item_id, amount=quantity)
                         quantity = 0
 
-                    self.slots.insert(index, item_stack)
+                    self.slots[index] = item_stack
                     retval = True
                 else:
                     capacity = max_size - item_stack.amount
@@ -59,7 +59,7 @@ class Inventory(object):
             while quantity > 0:
                 index = self.find_empty_slot()
                 retval = False
-                if (index == -1 or index >= self.slot_count) and len(self.slots) >= self.slot_count: # There is somewhere a strange bug, which causes len(self.slots) > self.slot_count to be true
+                if (index == -1 or index >= self.slot_count) and len(self.slots) == self.slot_count:
                     return retval
 
                 # overflow ?
