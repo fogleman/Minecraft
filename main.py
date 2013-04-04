@@ -34,6 +34,14 @@ BACK_GREEN = 0.0  # 0.81
 BACK_BLUE = 0.0  # 0.98
 HALF_PI = pi / 2.0  # 90 degrees
 
+terrain_options = {
+    'plains': ('0', '2', '200'),  # type, hill_height, max_trees
+    'mountains': ('5', '12', '400'),
+    'desert': ('2', 5, '50'),
+    'island': ('3', '8', '300'),
+    'snow': ('6', '4', '550')
+}
+
 config = ConfigParser()
 config_file = "game.cfg"
 if not os.path.lexists(config_file):
@@ -969,27 +977,11 @@ def main(options):
         DRAW_DISTANCE = 60.0 * 1.5
     elif options.draw_distance == 'long':
         DRAW_DISTANCE = 60.0 * 2.0
-
-    if options.terrain == "plains":
-        config.set('World', 'type', '0')
-        config.set('World', 'hill_height', '2')
-        config.set('World', 'max_trees', '200')
-    if options.terrain == "mountains":
-        config.set('World', 'type', '5')
-        config.set('World', 'hill_height', '12')
-        config.set('World', 'max_trees', '400')
-    if options.terrain == "desert":
-        config.set('World', 'type', '2')
-        config.set('World', 'hill_height', '5')
-        config.set('World', 'max_trees', '50')
-    if options.terrain == "island":
-        config.set('World', 'type', '3')
-        config.set('World', 'hill_height', '8')
-        config.set('World', 'max_trees', '300')
-    if options.terrain == "snow":
-        config.set('World', 'type', '6')
-        config.set('World', 'hill_height', '4')
-        config.set('World', 'max_trees', '550')
+        
+    if options.terrain:
+        config.set('World', 'type', terrain_options[options.terrain][0])
+        config.set('World', 'hill_height', terrain_options[options.terrain][1])
+        config.set('World', 'max_trees', terrain_options[options.terrain][2])
 
     if options.hillheight:
         config.set('World', 'hill_height', str(options.hillheight))
@@ -1032,7 +1024,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-width", type=int, default=850)
     parser.add_argument("-height", type=int, default=480)
-    parser.add_argument("-terrain", type=str, default="grass")
+    parser.add_argument("-terrain", choices=terrain_options.keys())
     parser.add_argument("-hillheight", type=int)
     parser.add_argument("-worldsize", type=int)
     parser.add_argument("-maxtrees", type=int)
