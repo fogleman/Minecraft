@@ -754,6 +754,9 @@ class Window(pyglet.window.Window):
                                 and self.player.add_item(hit_block.drop_id):
                             self.item_list.update_items()
                             self.inventory_list.update_items()
+                else:
+                    self.highlighted_block = None
+                    self.block_damage = 0
         self.update_time()
 
     def _update(self, dt):
@@ -822,13 +825,9 @@ class Window(pyglet.window.Window):
             block, previous = self.model.hit_test(self.player.position, vector)
             if button == pyglet.window.mouse.LEFT:
                 if block:
-                    hit_block = self.model.world[block]
-                    if hit_block.hardness >= 0:
-                        self.model.remove_block(block)
-                        if hit_block.drop_id is not None \
-                                and self.player.add_item(hit_block.drop_id):
-                            self.item_list.update_items()
-                            self.inventory_list.update_items()
+                    self.mouse_pressed = True
+                    self.highlighted_block = None
+                    self.block_damage = 0
             else:
                 if previous:
                     current_block = self.item_list.get_current_block()
