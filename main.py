@@ -141,7 +141,7 @@ def vec(*args):
 
 class Player(Entity):
     def __init__(self, position, rotation, flying=False):
-        super(Player, self).__init__(position, rotation, health=20)
+        super(Player, self).__init__(position, rotation, health=20, attack_power=0.05)
         self.inventory = Inventory()
         self.quick_slots = Inventory(9)
         self.flying = flying
@@ -765,7 +765,7 @@ class Window(pyglet.window.Window):
             if self.highlighted_block:
                 hit_block = self.model.world[self.highlighted_block]
                 if hit_block.hardness >= 0:
-                    self.block_damage += 0.05
+                    self.block_damage += self.player.attack_power
                     if self.block_damage >= hit_block.hardness:
                         self.model.remove_block(self.highlighted_block)
                         self.highlighted_block = None
