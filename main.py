@@ -405,7 +405,7 @@ class Model(object):
                                               (OakWoodBlock, LeafBlock)):
                         continue
                     dz = abs(zl - z)
-                    # The further we are (horizontally) from the trunk,
+                    # The farther we are (horizontally) from the trunk,
                     # the least leaves we can find.
                     if random.uniform(0, dx + dz) > .5:
                         continue
