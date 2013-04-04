@@ -21,6 +21,7 @@ class Block(object):
 
     # Physical attributes
     hardness = 0
+    density = 1
     transparent = False
 
     # Inventory attributes
@@ -50,6 +51,7 @@ class AirBlock(Block):
     bottom_texture = -1, -1
     side_texture = -1, -1
     max_stack_size = 0
+    density = 0
     id = 0
     name = "Air"
 
@@ -128,6 +130,7 @@ class WaterBlock(Block):
     side_texture = 0, 2
     transparent = True
     hardness = -1  # Unobtainable
+    density = 0.5
     id = 8
     name = "Water"
 
