@@ -818,7 +818,11 @@ class Window(pyglet.window.Window):
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.show_inventory:
-            self.inventory_list.on_mouse_press(x, y, button)
+            if not self.inventory_list.on_mouse_press(x, y, button):
+                self.inventory_list.toggle_active_frame_visibility()
+                self.item_list.toggle_active_frame_visibility()
+                self.show_inventory = not self.show_inventory
+                self.set_exclusive_mouse(not self.show_inventory)
             self.inventory_list.update_items()
             self.item_list.update_items()
             return
@@ -882,7 +886,13 @@ class Window(pyglet.window.Window):
             if self.player.flying:
                 self.dy = -0.045  # inversed jump speed
         elif symbol == key.ESCAPE:
-            self.set_exclusive_mouse(False)
+            if self.show_inventory:
+                self.inventory_list.toggle_active_frame_visibility()
+                self.item_list.toggle_active_frame_visibility()
+                self.show_inventory = not self.show_inventory
+                self.set_exclusive_mouse(not self.show_inventory)
+            else:
+                self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
             self.dy = 0
             self.player.flying = not self.player.flying

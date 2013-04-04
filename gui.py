@@ -112,7 +112,7 @@ class InventorySelector(object):
         # previous implentation of this function was doing something strange
         # and caused item loss
         if index == -1:
-            pass
+            return False
         elif index == self.current_index:
             current_block = self.get_current_block_item_and_amount()
             if current_block:
@@ -125,6 +125,7 @@ class InventorySelector(object):
         else:
             self.current_index = index
             self.update_current()
+        return True
 
     def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
         pass # TODO: Allow dragging & dropping items
