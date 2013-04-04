@@ -12,3 +12,6 @@
 * create inventory management screen implementing:
 - item stacks
 - Jimx's crafting system
+
+# Misc
+- need place for brainstorming/ideas etc. related to project, so we can cooperate (IRC/forums/Reddit?)
