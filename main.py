@@ -6,6 +6,9 @@ import os
 import cPickle as pickle
 from ConfigParser import ConfigParser, RawConfigParser
 
+import pyglet
+# Disable error checking for increased performance
+pyglet.options['debug_gl'] = False
 from pyglet.gl import *
 from pyglet.window import key
 
@@ -18,13 +21,14 @@ from entity import *
 from gui import *
 
 
+APP_NAME = 'pyCraftr'  # should I stay or should I go?
+
 SECTOR_SIZE = 16
 DRAW_DISTANCE = 60.0
 FOV = 65.0  # TODO: add menu option to change FOV
 NEAR_CLIP_DISTANCE = 0.1  # TODO: make min and max clip distance dynamic
 FAR_CLIP_DISTANCE = 200.0  # Maximum render distance,
                            # ignoring effects of sector_size and fog
-SAVE_FILENAME = 'save.dat'
 DISABLE_SAVE = True
 TIME_RATE = 240 * 10  # Rate of change (steps per hour).
 DEG_RAD = pi / 180.0
@@ -42,8 +46,14 @@ terrain_options = {
     'snow': ('6', '4', '550')
 }
 
+game_dir = pyglet.resource.get_settings_path(APP_NAME)
+if not os.path.exists(game_dir):
+    os.makedirs(game_dir)
+    
+SAVE_FILENAME = os.path.join(game_dir, 'save.dat')
+
 config = ConfigParser()
-config_file = "game.cfg"
+config_file = os.path.join(game_dir, 'game.cfg')
 if not os.path.lexists(config_file):
     config.add_section('World')
     config.set('World', 'type', '0')  # 0=grass,1=dirt,2=desert,3=islands,4=sand,5=stone,6=snow
@@ -1008,7 +1018,7 @@ def main(options):
         # window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=window_config, save=save_object)
     # except pyglet.window.NoSuchConfigException:
     window = Window(
-        width=options.width, height=options.height, caption='pyCraftr',
+        width=options.width, height=options.height, caption=APP_NAME,
         resizable=True, save=save_object, vsync=False)
 
     window.set_exclusive_mouse(True)
