@@ -21,12 +21,13 @@ class Block(object):
 
     # Physical attributes
     hardness = 0
+    density = 1
     transparent = False
 
     # Inventory attributes
     max_stack_size = 64
     amount_label_color = 255, 255, 255, 255
-    name = "Block"
+    name = "Block"  # Blocks that drop another item don't need a name
 
     def __init__(self):
         self.drop_id = self.id
@@ -50,6 +51,7 @@ class AirBlock(Block):
     bottom_texture = -1, -1
     side_texture = -1, -1
     max_stack_size = 0
+    density = 0
     id = 0
     name = "Air"
 
@@ -128,6 +130,7 @@ class WaterBlock(Block):
     side_texture = 0, 2
     transparent = True
     hardness = -1  # Unobtainable
+    density = 0.5
     id = 8
     name = "Water"
 
@@ -150,11 +153,13 @@ class SandstoneBlock(Block):
 
 
 # FIXME: This texture is not in the original Minecraft.  Or is it quartz?
+# from ronmurphy .. this is taken, as all images are, from the sphax purebd craft. it is marble, from the tekkit pack.
 class MarbleBlock(Block):
     top_texture = 3, 2
     bottom_texture = 3, 2
     side_texture = 3, 2
     id = 0
+    name = "Marble"
     amount_label_color = 0, 0, 0, 255
 
 
@@ -191,6 +196,7 @@ class JungleWoodPlankBlock(Block):
 
 
 # FIXME: Can't find its specific id on minecraftwiki.
+# from ronmurphy: This is just the snowy side grass from the above texture pack.  MC has one like this also.
 class SnowGrassBlock(Block):
     top_texture = 4, 1
     bottom_texture = 0, 1
@@ -216,8 +222,9 @@ class LeafBlock(Block):
     top_texture = 7, 2
     bottom_texture = 7, 2
     side_texture = 7, 2
-    hardness = 0.1
+    hardness = 0.2
     id = 18.0
+    name = "Leaves"
 
     def __init__(self):
         super(LeafBlock, self).__init__()
