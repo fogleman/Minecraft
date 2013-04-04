@@ -1137,7 +1137,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-width", type=int, default=850)
     parser.add_argument("-height", type=int, default=480)
-    parser.add_argument("-terrain", type=str, default="grass")
+    parser.add_argument("-terrain", type=str, default=terrain_options.keys()[0])
     parser.add_argument("-hillheight", type=int)
     parser.add_argument("-worldsize", type=int)
     parser.add_argument("-maxtrees", type=int)
