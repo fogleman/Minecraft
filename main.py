@@ -169,7 +169,7 @@ class ItemSelector(object):
     def __init__(self, width, height, player, model):
         self.batch = pyglet.graphics.Batch()
         self.group = pyglet.graphics.OrderedGroup(1)
-        self.amount_labels_group = pyglet.graphics.OrderedGroup(2)
+        self.labels_group = pyglet.graphics.OrderedGroup(2)
         self.amount_labels = []
         self.model = model
         self.player = player
@@ -185,6 +185,7 @@ class ItemSelector(object):
         self.active = pyglet.sprite.Sprite(
             image.get_region(0, 0, frame_size, frame_size), batch=self.batch,
             group=pyglet.graphics.OrderedGroup(2))
+        self.current_block_label = None
         self.set_position(width, height)
 
     def change_index(self, change):
@@ -223,16 +224,28 @@ class ItemSelector(object):
             icon.scale = 0.5
             icon.x = x
             icon.y = self.frame.y + 3
+            item.quickslots_x = icon.x
+            item.quickslots_y = icon.y
             x += (self.icon_size * 0.5) + 3
             amount_label = pyglet.text.Label(
                 str(item.amount), font_name='Arial', font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
                 color=block.amount_label_color, batch=self.batch,
-                group=self.amount_labels_group)
+                group=self.labels_group)
             self.amount_labels.append(amount_label)
             self.icons.append(icon)
+        self.update_current()
 
     def update_current(self):
+        if self.current_block_label:
+            self.current_block_label.delete()
+        if hasattr(self.get_current_block_item(False), 'quickslots_x') and hasattr(self.get_current_block_item(False), 'quickslots_y'):
+            self.current_block_label = pyglet.text.Label(
+                self.get_current_block_item(False).name, font_name='Arial', font_size=9,
+                x=self.get_current_block_item(False).quickslots_x + 0.25 * self.icon_size, y=self.get_current_block_item(False).quickslots_y - 20, 
+                anchor_x='center', anchor_y='bottom',
+                color=(255, 255, 255, 255), batch=self.batch,
+                group=self.labels_group)
         self.active.x = self.frame.x + (self.current_index * 35)
 
     def set_position(self, width, height):
@@ -242,11 +255,12 @@ class ItemSelector(object):
         self.update_current()
         self.update_items()
 
-    def get_current_block(self):
+    def get_current_block(self, remove=True):
         item = self.player.quick_slots.at(self.current_index)
         if item:
             item_id = item.type
-            self.player.quick_slots.remove_by_index(self.current_index)
+            if remove:
+                self.player.quick_slots.remove_by_index(self.current_index)
             self.update_items()
             if item_id >= ITEM_ID_MIN:
                 return ITEMS_DIR[item_id]
@@ -254,12 +268,18 @@ class ItemSelector(object):
                 return BLOCKS_DIR[item_id]
         return False
 
-    def get_current_block_item_and_amount(self):
+
+    def get_current_block_item(self, remove=True):
+        item = self.player.quick_slots.at(self.current_index)
+        return item
+
+    def get_current_block_item_and_amount(self, remove=True):
         item = self.player.quick_slots.at(self.current_index)
         if item:
             amount = item.amount
-            self.player.quick_slots.remove_by_index(self.current_index,
-                                                    quantity=item.amount)
+            if remove:
+                self.player.quick_slots.remove_by_index(self.current_index,
+                                                        quantity=item.amount)
             return item, amount
         return False
 
