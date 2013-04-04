@@ -873,6 +873,10 @@ class Window(pyglet.window.Window):
         self.mouse_pressed = False
 
     def on_mouse_motion(self, x, y, dx, dy):
+        if self.show_inventory and self.inventory_list.selected_item_icon:
+            self.inventory_list.selected_item_icon.x = x + dx
+            self.inventory_list.selected_item_icon.y = y + dy
+            return
         if self.exclusive:
             m = 0.15
             x, y = self.player.rotation
@@ -1051,6 +1055,8 @@ class Window(pyglet.window.Window):
             self.item_list.batch.draw()
             if self.show_inventory:
                 self.inventory_list.batch.draw()
+                if self.inventory_list.selected_item_icon:
+                    self.inventory_list.selected_item_icon.draw()
         self.draw_reticle()
 
     def draw_focused_block(self):
