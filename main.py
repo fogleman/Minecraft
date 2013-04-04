@@ -40,12 +40,11 @@ config = ConfigParser()
 config_file = "game.cfg"
 if not os.path.lexists(config_file):
     config.add_section('World')
-    config.set('World', 'type', '0')  # 1=grass,2=dirt,3=sand,4=islands
+    config.set('World', 'type', '0')  # 0=grass,1=dirt,2=desert,3=islands,4=sand,5=stone,6=snow
     config.set('World', 'hill_height', '6')  # height of the hills, increase for mountains :D
     config.set('World', 'flat', '0')  # dont make mountains,  make a flat world
     config.set('World', 'size', '160')
 
-    # Writing our configuration file to 'example.cfg'
     try:
         with open(config_file, 'wb') as handle:
             config.write(handle)
@@ -54,6 +53,7 @@ if not os.path.lexists(config_file):
         sys.exit(1)
 else:
     config.read(config_file)
+
 
 def cube_vertices(x, y, z, n):
     return [
@@ -250,6 +250,7 @@ class Model(object):
             self.initialize()
 
     def initialize(self):
+        global RND_FOREST
         world_size = config.getint('World', 'size')
         world_type = config.getint('World', 'type')
         hill_height = config.getint('World', 'hill_height')
@@ -257,28 +258,25 @@ class Model(object):
         n = world_size / 2  # 80
         s = 1
         y = 0
-        global RND_FOREST
+
+        worldtypes_grounds = (
+            grass_block,
+            dirt_block,
+            sand_block,
+            water_block,
+            grass_block,
+            (grass_block,) * 15 + (dirt_block,) * 3 + (stone_block,),
+            snowgrass_block,
+        )
+
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
-                if world_type == 0:
-                    self.init_block((x, y - 2, z), grass_block)
-                elif world_type == 1:
-                    self.init_block((x, y - 2, z), dirt_block)
-                elif world_type == 2:
-                    self.init_block((x, y - 2, z), sand_block)
-                elif world_type == 3:
-                    self.init_block((x, y - 2, z), water_block)
-                elif world_type == 4:
-                    self.init_block((x, y - 2, z), grass_block)
-                elif world_type == 5:
-                    t = random.choice((grass_block, grass_block,
-                                       dirt_block, stone_block))
-                    self.init_block((x, y - 2, z), t)
-                elif world_type == 6:
-                    self.init_block((x, y - 2, z), snowgrass_block)
-
+                block = worldtypes_grounds[world_type]
+                if isinstance(block, (tuple, list)):
+                    block = random.choice(block)
+                self.init_block((x, y - 2, z), block)
                 self.init_block((x, y - 3, z), dirt_block)
-                self.init_block((x, y - 4, z), bed_block)  # was stone_block
+                self.init_block((x, y - 4, z), bed_block)
 
                 if x in (-n, n) or z in (-n, n):
                     for dy in xrange(-3, 10):  # was -2 ,6
