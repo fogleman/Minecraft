@@ -34,7 +34,7 @@ Or try **Pyglet 1.2 alpha**, which **supports 64-bit mode**:
 For pip:
 
 - **Mac or Linux**: install with `sudo easy_install pip` (Mac or Linux) or (Linux) find a package called something like 'python-pip' in your package manager.
-  **Ubuntu**: install with `sudo apt-get install python-pip`
+- **Ubuntu**: install with `sudo apt-get install python-pip`
 - **Windows**: [install Distribute then Pip](http://stackoverflow.com/a/12476379/992887) using the linked .MSI installers.
 
 For git:
