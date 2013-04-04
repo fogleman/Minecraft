@@ -115,9 +115,9 @@ class Player(Entity):
         initial_items = [dirt_block, sand_block, brick_block, stone_block,
                          glass_block, water_block, chest_block,
                          sandstone_block, marble_block]
-        flat_world = int(config.get('World', 'flat', 0))
+        flat_world = config.getboolean('World', 'flat')
         for item in initial_items:
-            quantity = random.randint(1, 10) if flat_world == 0 else 99
+            quantity = random.randint(1, 10) if flat_world else 99
             if random.randint(0, 1) == 0:
                 self.inventory.add_item(item.id, quantity)
             else:
@@ -250,10 +250,10 @@ class Model(object):
             self.initialize()
 
     def initialize(self):
-        world_size = int(config.get('World', 'size', 0))
-        world_type = int(config.get('World', 'type', 0))
-        hill_height = int(config.get('World', 'hill_height', 0))
-        flat_world = int(config.get('World', 'flat', 0))
+        world_size = config.getint('World', 'size')
+        world_type = config.getint('World', 'type')
+        hill_height = config.getint('World', 'hill_height')
+        flat_world = config.getboolean('World', 'flat')
         n = world_size / 2  # 80
         s = 1
         y = 0
@@ -262,19 +262,19 @@ class Model(object):
             for z in xrange(-n, n + 1, s):
                 if world_type == 0:
                     self.init_block((x, y - 2, z), grass_block)
-                if world_type == 1:
+                elif world_type == 1:
                     self.init_block((x, y - 2, z), dirt_block)
-                if world_type == 2:
+                elif world_type == 2:
                     self.init_block((x, y - 2, z), sand_block)
-                if world_type == 3:
+                elif world_type == 3:
                     self.init_block((x, y - 2, z), water_block)
-                if world_type == 4:
+                elif world_type == 4:
                     self.init_block((x, y - 2, z), grass_block)
-                if world_type == 5:
+                elif world_type == 5:
                     t = random.choice((grass_block, grass_block,
                                        dirt_block, stone_block))
                     self.init_block((x, y - 2, z), t)
-                if world_type == 6:
+                elif world_type == 6:
                     self.init_block((x, y - 2, z), snowgrass_block)
 
                 self.init_block((x, y - 3, z), dirt_block)
@@ -285,7 +285,7 @@ class Model(object):
                         self.init_block((x, y + dy, z), stone_block)
 
         o = n - 10 + hill_height - 6
-        if flat_world == 1:
+        if flat_world:
             return
 
         for _ in xrange(world_size / 2 + 40):  # (120):
@@ -297,17 +297,17 @@ class Model(object):
             d = 1
             if world_type == 0:
                 t = random.choice((grass_block,))
-            if world_type == 1:
+            elif world_type == 1:
                 t = random.choice((dirt_block,))
-            if world_type == 2:
+            elif world_type == 2:
                 t = random.choice((sand_block,))
-            if world_type == 3:
+            elif world_type == 3:
                 t = random.choice((grass_block, sand_block))
-            if world_type == 4:
+            elif world_type == 4:
                 t = random.choice((grass_block, sand_block, dirt_block))
-            if world_type == 5:
+            elif world_type == 5:
                 t = random.choice((stone_block,))
-            if world_type == 6:
+            elif world_type == 6:
                 t = random.choice((snowgrass_block,))
             for y in xrange(c, c + h):
                 for x in xrange(a - s, a + s + 1):
