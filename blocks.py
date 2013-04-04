@@ -1,157 +1,213 @@
-def tex_coord(x, y, n=8):
-    m = 1.0 / n
+def get_texture_coordinates(x, y, tileset_size=8):
+    m = 1.0 / tileset_size
     dx = x * m
     dy = y * m
     return dx, dy, dx + m, dy, dx + m, dy + m, dx, dy + m
 
+
 BLOCKS_DIR = {}
 
-# Blocks
+
 class Block(object):
+    id = None  # Original minecraft id (also called data value).
+               # Verify on http://www.minecraftwiki.net/wiki/Data_values
+               # when creating a new "official" block.
+    drop_id = None
+
+    # Texture coordinates from the tileset.
+    top_texture = ()
+    bottom_texture = ()
+    side_texture = ()
+
+    # Physical attributes
+    hardness = 0
     transparent = False
-    def __init__(self, top, bottom, side, hardness, max_stack_size, amount_label_color=(255, 255, 255, 255)):
-        self.top = top
-        self.bottom = bottom
-        self.side = side
-        self.hardness = hardness
-        self.max_stack_size = max_stack_size
-        self.amount_label_color = amount_label_color
-        self.transparent = False
-        BLOCKS_DIR[self.id()] = self
-    def drop(self):
-        return self.id()
+
+    # Inventory attributes
+    max_stack_size = 64
+    amount_label_color = 255, 255, 255, 255
+
+    def __init__(self):
+        self.drop_id = self.id
+        # Applies get_texture_coordinates to each of the faces to be textured.
+        for k in ('top_texture', 'bottom_texture', 'side_texture'):
+            v = getattr(self, k)
+            setattr(self, k, get_texture_coordinates(*v))
+
+        BLOCKS_DIR[self.id] = self
+
+    def get_texture_data(self):
+        result = []
+        result.extend(self.top_texture)
+        result.extend(self.bottom_texture)
+        result.extend(self.side_texture * 4)
+        return result
+
 
 class AirBlock(Block):
-    def __init__(self):
-        # Air block has no texture
-        super(AirBlock, self).__init__(tex_coord(-1,-1), tex_coord(-1,-1), tex_coord(-1,-1), 0, 0, (255, 255, 255, 255))
-    def id(self):
-        return 0
+    top_texture = -1, -1
+    bottom_texture = -1, -1
+    side_texture = -1, -1
+    max_stack_size = 0
+    id = 0
+
 
 class StoneBlock(Block):
-    def __init__(self):
-        super(StoneBlock, self).__init__(tex_coord(2,1), tex_coord(2,1), tex_coord(2,1), 1.5, 64, (255, 255, 255, 255))
-    def id(self):
-        return 1
+    top_texture = 2, 1
+    bottom_texture = 2, 1
+    side_texture = 2, 1
+    hardness = 1.5
+    id = 1
+
 
 class GrassBlock(Block):
+    top_texture = 1, 0
+    bottom_texture = 0, 1
+    side_texture = 0, 0
+    hardness = 0.6
+    id = 2
+
     def __init__(self):
-        super(GrassBlock, self).__init__(tex_coord(1,0), tex_coord(0,1), tex_coord(0,0), 0.6, 64, (255, 255, 255, 255))
-    def id(self):
-        return 2
-    def drop(self):
-        return DirtBlock().id()
+        super(GrassBlock, self).__init__()
+        self.drop_id = DirtBlock.id
+
 
 class DirtBlock(Block):
-    def __init__(self):
-        super(DirtBlock, self).__init__(tex_coord(0,1), tex_coord(0,1), tex_coord(0,1), 0.5, 64, (255, 255, 255, 255))
-    def id(self):
-        return 3
+    top_texture = 0, 1
+    bottom_texture = 0, 1
+    side_texture = 0, 1
+    hardness = 0.5
+    id = 3
+
 
 class SandBlock(Block):
-    def __init__(self):
-        super(SandBlock, self).__init__(tex_coord(1,1), tex_coord(1,1), tex_coord(1,1), 0.5, 64, (0, 0, 0, 255))
-    def id(self):
-        return 12
+    top_texture = 1, 1
+    bottom_texture = 1, 1
+    side_texture = 1, 1
+    hardness = 0.5
+    amount_label_color = 0, 0, 0, 255
+    id = 12
+
 
 class BrickBlock(Block):
-    def __init__(self):
-        super(BrickBlock, self).__init__(tex_coord(2,0), tex_coord(2,0), tex_coord(2,0), 1.5, 64, (255, 255, 255, 255))
-    def id(self):
-        return 45
+    top_texture = 2, 0
+    bottom_texture = 2, 0
+    side_texture = 2, 0
+    hardness = 1.5
+    id = 45
+
 
 class GlassBlock(Block):
-    def __init__(self):
-        super(GlassBlock, self).__init__(tex_coord(3,1), tex_coord(3,1), tex_coord(3,1), 0.2, 64, (0, 0, 0, 255))
-    def id(self):
-        return 20
+    top_texture = 3, 1
+    bottom_texture = 3, 1
+    side_texture = 3, 1
+    hardness = 0.2
+    amount_label_color = 0, 0, 0, 255
+    id = 20
+
 
 class BedrockBlock(Block):
-    def __init__(self):
-        # !! hardness = -1
-        super(BedrockBlock, self).__init__(tex_coord(3,0), tex_coord(3,0), tex_coord(3,0), -1, 64, (255, 255, 255, 255))
-    def id(self):
-        return 7
+    top_texture = 3, 0
+    bottom_texture = 3, 0
+    side_texture = 3, 0
+    hardness = -1  # Unbreakable
+    id = 7
+
 
 class WaterBlock(Block):
-    def __init__(self):
-        super(WaterBlock, self).__init__(tex_coord(0, 2), tex_coord(0, 2), tex_coord(0, 2), 0, 64)
-        self.transparent = True
-    def id(self):
-        return 8
+    top_texture = 0, 2
+    bottom_texture = 0, 2
+    side_texture = 0, 2
+    transparent = True
+    id = 8
+
 
 class ChestBlock(Block):
-    def __init__(self):
-        super(ChestBlock, self).__init__(tex_coord(1, 2), tex_coord(1, 2), tex_coord(1, 2), 0, 64, (255, 255, 255, 255))
-    def id(self):
-        return 54
+    top_texture = 1, 2
+    bottom_texture = 1, 2
+    side_texture = 1, 2
+    id = 54
+
 
 class SandstoneBlock(Block):
-    def __init__(self):
-        super(SandstoneBlock, self).__init__(tex_coord(2, 2), tex_coord(2, 2), tex_coord(2, 2), 0, 64, (0, 0, 0, 255))
-    def id(self):
-        return 24
+    top_texture = 2, 2
+    bottom_texture = 2, 2
+    side_texture = 2, 2
+    amount_label_color = 0, 0, 0, 255
+    id = 24
 
+
+# FIXME: This texture is not in the original Minecraft.  Or is it quartz?
+# from ronmurphy .. this is taken, as all images are, from the sphax purebd craft. it is marble, from the tekkit pack.
 class MarbleBlock(Block):
-    def __init__(self):
-        super(MarbleBlock, self).__init__(tex_coord(3, 2), tex_coord(3, 2), tex_coord(3, 2), 0, 64, (255, 255, 255, 255))
-    def id(self):
-        return 0
+    top_texture = 3, 2
+    bottom_texture = 3, 2
+    side_texture = 3, 2
+    id = 0
+    amount_label_color = 0, 0, 0, 255
+
 
 class StonebrickBlock(Block):
-    def __init__(self):
-        super(StonebrickBlock, self).__init__(tex_coord(0, 3), tex_coord(0, 3), tex_coord(0, 3), 0, 64, (255, 255, 255, 255))
-    def id(self):
-        return 0
+    top_texture = 0, 3
+    bottom_texture = 0, 3
+    side_texture = 0, 3
+    id = 98
 
-class LWoodBlock(Block):
-    def __init__(self):
-        super(LWoodBlock, self).__init__(tex_coord(3, 3), tex_coord(3, 3), tex_coord(3, 3), 0, 64, (255, 255, 255, 255))
-    def id(self):
-        return 5.1
 
-class MWoodBlock(Block):
-    def __init__(self):
-        super(MWoodBlock, self).__init__(tex_coord(2, 3), tex_coord(2, 3), tex_coord(2, 3), 0, 64, (255, 255, 255, 255))
-    def id(self):
-        return 5.2
+class OakWoodPlankBlock(Block):
+    top_texture = 3, 3
+    bottom_texture = 3, 3
+    side_texture = 3, 3
+    id = 5.0
 
-class DWoodBlock(Block):
-    def __init__(self):
-        super(DWoodBlock, self).__init__(tex_coord(1, 3), tex_coord(1, 3), tex_coord(1, 3), 0, 64, (255, 255, 255, 255))
-    def id(self):
-        return 5.3
 
+class SpruceWoodPlankBlock(Block):
+    top_texture = 1, 3
+    bottom_texture = 1, 3
+    side_texture = 1, 3
+    id = 5.1
+
+
+class JungleWoodPlankBlock(Block):
+    top_texture = 2, 3
+    bottom_texture = 2, 3
+    side_texture = 2, 3
+    id = 5.3
+
+
+# FIXME: Can't find its specific id on minecraftwiki.
+# from ronmurphy: This is just the snowy side grass from the above texture pack.  MC has one like this also.
 class SnowGrassBlock(Block):
-    def __init__(self):
-        super(SnowGrassBlock, self).__init__(tex_coord(4, 1), tex_coord(0, 1), tex_coord(4, 0), 0.6, 64, (255, 255, 255, 255))
-    def id(self):
-        return 2
-    def drop(self):
-        return DirtBlock().id()
+    top_texture = 4, 1
+    bottom_texture = 0, 1
+    side_texture = 4, 0
+    hardness = 0.6
+    id = 2
 
-class TreeTrunkBlock(Block):
     def __init__(self):
-        super(TreeTrunkBlock, self).__init__(tex_coord(7, 1), tex_coord(7, 1), tex_coord(7, 0), 0.6, 64, (255, 255, 255, 255))
-    def id(self):
-        return 17 # MC Log ID
-    def drop(self):
-        return TreeTrunkBlock().id()
+        super(SnowGrassBlock, self).__init__()
+        self.drop_id = DirtBlock.id
+
+
+class OakWoodBlock(Block):
+    top_texture = 7, 1
+    bottom_texture = 7, 1
+    side_texture = 7, 0
+    hardness = 0.6
+    id = 17.0
+
 
 class LeafBlock(Block):
-    def __init__(self):
-        super(LeafBlock, self).__init__(tex_coord(7, 2), tex_coord(7, 2), tex_coord(7, 2), 0.6, 64, (255, 255, 255, 255))
-    def id(self):
-        return 18.1
-    def drop(self):
-        return AirBlock.id()
+    top_texture = 7, 2
+    bottom_texture = 7, 2
+    side_texture = 7, 2
+    hardness = 0.6
+    id = 18.0
 
-def block_texture(block):
-    result = []
-    result.extend(block.top)
-    result.extend(block.bottom)
-    result.extend(block.side * 4) #4
-    return result
+    def __init__(self):
+        super(LeafBlock, self).__init__()
+        self.drop_id = None
+
 
 air_block = AirBlock()
 grass_block = GrassBlock()
@@ -166,10 +222,9 @@ chest_block = ChestBlock()
 sandstone_block = SandstoneBlock()
 marble_block = MarbleBlock()
 stonebrick_block = StonebrickBlock()
-lw_block = LWoodBlock()
-mw_block = MWoodBlock()
-dw_block = DWoodBlock()
-snowg_block = SnowGrassBlock()
-log_block = TreeTrunkBlock()
+oakwoodplank_block = OakWoodPlankBlock()
+junglewoodplank_block = JungleWoodPlankBlock()
+sprucewoodplank_block = SpruceWoodPlankBlock()
+snowgrass_block = SnowGrassBlock()
+oakwood_block = OakWoodBlock()
 leaf_block = LeafBlock()
-

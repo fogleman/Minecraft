@@ -3,12 +3,12 @@ from blocks import *
 # ids of items should be >= ITEM_ID_MIN
 ITEM_ID_MIN = 256
 
-ITEMS_DIR = []
+ITEMS_DIR = {}
 
 class Item(object):
     def __init__(self, max_stack_size):
         self.max_stack_size = max_stack_size
-        ITEMS_DIR[self.id()] = self
+        ITEMS_DIR[self.id] = self
 
     def on_right_click(self):
         pass
@@ -38,6 +38,7 @@ class ItemStack(object):
             self.amount = 0
 
     # compatible with blocks
+    @property
     def id(self):
         return self.type
 

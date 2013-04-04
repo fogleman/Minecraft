@@ -7,7 +7,7 @@ http://www.youtube.com/watch?v=kC3lwK631X8
 ## How to Run
 
     pip install pyglet
-    git clone https://github.com/ronmurphy/Minecraft.git
+    git clone https://github.com/avelanarius/Minecraft.git
     cd Minecraft
     python main.py
 
@@ -39,7 +39,7 @@ For git:
 - Mac: install [Homebrew](http://mxcl.github.com/homebrew/) first, then `brew install git`.
 - Windows or Linux: see [Installing Git](http://git-scm.com/book/en/Getting-Started-Installing-Git) from the _Pro Git_ book.
 
-See the [https://github.com/fogleman/Minecraft/wiki](wiki) for this project to install Python, and other tips.
+See the [wiki](https://github.com/fogleman/Minecraft/wiki) for this project to install Python, and other tips.
 
 ## How to Play
 
@@ -53,7 +53,7 @@ See the [https://github.com/fogleman/Minecraft/wiki](wiki) for this project to i
 - Space: jump / (in flying mode) fly
 - Shift: (in flying mode) fly down
 - Tab: toggle flying mode
-- M: Sort items in the toolbar (3 choices)
+
 ### Building
 
 - 1 - 9: Selecting item in inventory
@@ -63,7 +63,11 @@ See the [https://github.com/fogleman/Minecraft/wiki](wiki) for this project to i
 ### GUI
 
 - B / F3: Toggle UI
+- I: Show inventory
 - V: Saving (save filename in command-line arguments)
+- M: Sort items in the toolbar (3 choices)
+- ENTER: Move selected item to inventory / toolbar
+=======
 
 ### Quitting
 
@@ -88,3 +92,4 @@ See the [https://github.com/fogleman/Minecraft/wiki](wiki) for this project to i
       -draw-distance {short,medium,long}
       -save SAVE
       --disable-save
+      --fast

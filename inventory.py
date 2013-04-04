@@ -2,10 +2,11 @@ from items import *
 import sys
 
 class Inventory(object):
+    sort_mode = 0
+
     def __init__(self, slot_count = 27):
         self.slot_count = slot_count
         self.slots = [None] * self.slot_count
-        self.sort_mode = 0
 
     def find_empty_slot(self):
         return next((index for index,value in enumerate(self.slots) if not value), -1)
@@ -29,7 +30,7 @@ class Inventory(object):
                     # find an empty slot to store these items
                     index = self.find_empty_slot()
 
-                    if index == -1 and len(self.slots) == self.slot_count:
+                    if index == -1 and len(self.slots) >= self.slot_count:  # There is somewhere a strange bug, which causes len(self.slots) > self.slot_count to be true
                         return retval
 
                     # overflow ?
@@ -58,20 +59,19 @@ class Inventory(object):
             while quantity > 0:
                 index = self.find_empty_slot()
                 retval = False
-                if index == -1 and len(self.slots) == self.slot_count:
+                if (index == -1 or index >= self.slot_count) and len(self.slots) >= self.slot_count: # There is somewhere a strange bug, which causes len(self.slots) > self.slot_count to be true
                     return retval
 
                 # overflow ?
-                if quantity > max_size:
+                if quantity > max_size or index >= self.slot_count:
                     quantity -= max_size
                     item_stack = ItemStack(type=item_id, amount=max_size)
                 else:
                     item_stack = ItemStack(type=item_id, amount=quantity)
                     quantity = 0
+                    self.slots[index] = item_stack
+                    retval = True
 
-                #self.slots.insert(index, item_stack)
-                self.slots[index] = item_stack
-                retval = True
         self.sort()
         return True
 
@@ -96,7 +96,7 @@ class Inventory(object):
 
     def sort(self, reverse=True):
         if self.sort_mode == 0:
-            self.sort_with_key(key=lambda x: x.id() if x != None else -sys.maxint - 1, reverse=True)
+            self.sort_with_key(key=lambda x: x.id if x != None else -sys.maxint - 1, reverse=True)
         if self.sort_mode == 1:
             self.sort_with_key(key=lambda x: x.amount if x != None else -sys.maxint - 1, reverse=True)
         elif self.sort_mode == 2:
