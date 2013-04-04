@@ -22,14 +22,14 @@ class InventorySelector(object):
         self.active.opacity = 0
         self.frame.x = (width - self.frame.width) / 2
         self.frame.y = self.icon_size + 20 # 20 is padding
-        self.item_locations = []
-        x = self.frame.x + 3
-        for i in range(0, 27):
-            self.item_locations.append((x, self.frame.y + floor(i / 9) * 6 + floor(i / 9) * self.icon_size * 0.5 + 3))
-            x += (self.icon_size * 0.5) + 3
-            if x - self.frame.x >= self.frame.width:
-                x = self.frame.x + 3
-        self.item_locations.append((x, self.frame.y + floor(26 / 9) * 6 + floor(26 / 9) * self.icon_size * 0.5 + 3))
+        #self.item_locations = []
+        #x = self.frame.x + 3
+        #for i in range(0, 27):
+            #self.item_locations.append((x, self.frame.y + floor(i / 9) * 6 + floor(i / 9) * self.icon_size * 0.5 + 3))
+            #x += (self.icon_size * 0.5) + 3
+            #if x - self.frame.x >= self.frame.width:
+                #x = self.frame.x + 3
+        #self.item_locations.append((x, self.frame.y + floor(26 / 9) * 6 + floor(26 / 9) * self.icon_size * 0.5 + 3))
 
     def change_index(self, change):
         self.set_index(self.current_index + change)
@@ -68,17 +68,17 @@ class InventorySelector(object):
             x += (self.icon_size * 0.5) + 3
             if x - self.frame.x >= self.frame.width:
                 x = self.frame.x + 3
-            amount_label = pyglet.text.Label(str(item.amount), font_name='Arial', font_size=9, 
-                x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom', 
+            amount_label = pyglet.text.Label(str(item.amount), font_name='Arial', font_size=9,
+                x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
                 color=(block.amount_label_color), batch=self.batch, group=self.amount_labels_group)
             self.amount_labels.append(amount_label)
             self.icons.append(icon)
 
-        
+
     def update_current(self):
         self.active.x = self.frame.x + ((self.current_index % 9) * self.icon_size * 0.5) + (self.current_index % 9) * 3
         self.active.y = self.frame.y + floor(self.current_index / 9) * self.icon_size * 0.5 + floor(self.current_index / 9) * 6
-        
+
     def set_position(self, width, height):
         self.frame.x = (width - self.frame.width) / 2
         self.frame.y = self.icon_size + 20 # 20 is padding
@@ -129,8 +129,11 @@ class InventorySelector(object):
         self.selected_item = item
 
         block = BLOCKS_DIR[item.type]
-        item_icon = self.model.group.texture.get_region(int(block.side_texture[0] * 8) * self.icon_size, int(block.side_texture[1] * 8) * self.icon_size, int(self.icon_size * 0.4), int(self.icon_size * 0.4))
+        #item_icon = self.model.group.texture.get_region(int(block.side_texture[0] * 8) * self.icon_size, int(block.side_texture[1] * 8) * self.icon_size, int(self.icon_size * 0.4), int(self.icon_size * 0.4))
+        #self.selected_item_icon = pyglet.sprite.Sprite(item_icon, batch=self.batch, group=self.group)
+        item_icon = self.model.group.texture.get_region(int(block.side_texture[0] * 8) * self.icon_size, int(block.side_texture[1] * 8) * self.icon_size, self.icon_size, self.icon_size)
         self.selected_item_icon = pyglet.sprite.Sprite(item_icon, batch=self.batch, group=self.group)
+        self.selected_item_icon.scale = 0.4
 
     def remove_selected_item(self):
         self.selected_item = None

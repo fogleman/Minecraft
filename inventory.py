@@ -12,7 +12,7 @@ class Inventory(object):
         return next((index for index,value in enumerate(self.slots) if not value), -1)
 
     def add_item(self, item_id, quantity = 1):
-        self.sort()
+        #self.sort()
         if quantity < 1:
             return False
 
@@ -22,7 +22,7 @@ class Inventory(object):
         else:
             max_size = BLOCKS_DIR[item_id].max_stack_size
 
-        
+
         retval = False
         while quantity > 0:
             # can't find an unfilled slot
@@ -47,7 +47,7 @@ class Inventory(object):
                 capacity = max_size - item_stack.amount
                 if quantity < capacity:     # there is a slot with enough space
                     item_stack.change_amount(quantity)
-                    self.sort()
+#                    self.sort()
                     return True
                 else:   # overflow
                     quantity -= capacity
@@ -55,7 +55,7 @@ class Inventory(object):
                     # find next unfilled slot
                     item_stack = self.get_unfilled_item(item_id)
 
-        self.sort()   
+        #self.sort()
         return True
 
     def remove_item(self, item_id, quantity = 1):
@@ -74,7 +74,7 @@ class Inventory(object):
         if self.slots[index].amount == 0:
             self.slots[index] = None
             retval = True
-        self.sort()
+        #self.sort()
         return retval
 
     def remove_all_by_index(self, index):

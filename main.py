@@ -344,7 +344,7 @@ class Model(object):
                     showtree = random.random()
                     if showtree <= tree_chance:
                         if world_type is not 2 or 3:
-                            rt = random.randrange(0,2)
+                            rt = random.randrange(0,4)
                             if rt < 1:
                                 self.generate_oak_tree((x, y - 2, z))
                             if rt == 1:
@@ -405,7 +405,7 @@ class Model(object):
                             showtree = random.random()
                             if showtree <= tree_chance:
                                 if world_type is not 2 or 3:
-                                    rt = random.randrange(0,2)
+                                    rt = random.randrange(0,3)
                                     if rt < 1:
                                         self.generate_oak_tree((x, y - 2, z))
                                     if rt == 1:
@@ -452,14 +452,14 @@ class Model(object):
             return
 
         # A tree can't grow on anything.
-        if self.world[position] not in (grass_block, dirt_block, snowgrass_block):
+        allowedBlocks = (grass_block, dirt_block,snowgrass_block)
+        if self.world[position] not in allowedBlocks:
             return
 
         # Trunk generation
         length = random.randint(4, 8)
         for dy in range(length):
-            self.init_block((x, y + dy, z),
-                            oakwood_block)
+            self.init_block((x, y + dy, z), oakwood_block)
 
         treetop = y + dy + 1
         # Leaves generation
@@ -472,16 +472,22 @@ class Model(object):
                     if (xl, yl, zl) in self.world:
                         continue
                         # Avoids orphaned leaves
-                    if not self.has_neighbors((xl, yl, zl),
-                                              (OakWoodBlock, OakLeafBlock)):
+                    if not self.has_neighbors((xl, yl, zl), (OakWoodBlock, OakBranchBlock, OakLeafBlock)):
                         continue
                     dz = abs(zl - z)
                     # The farther we are (horizontally) from the trunk,
                     # the least leaves we can find.
                     if random.uniform(0, dx + dz) > 0.7:
                         continue
-                    self.init_block((xl, yl, zl),
-                                    oakleaf_block)
+                    rb = random.randrange(0,2)
+                    if rb < 1:
+                        self.init_block((xl, yl, zl),oakleaf_block)  # leaf
+                    if rb >= 1:
+                            self.init_block((xl, yl, zl),oakbranch_block)  # branch
+                            self.init_block((xl+1, yl, zl+1),oakleaf_block)
+                            self.init_block((xl-1, yl, zl-1),oakleaf_block)
+                            self.init_block((xl+1, yl, zl),oakleaf_block)
+                            self.init_block((xl, yl, zl+1),oakleaf_block)
 
         self.max_trees -= 1
 
@@ -497,8 +503,8 @@ class Model(object):
             return
 
         # A tree can't grow on anything.
-        if self.world[position] not in (grass_block, dirt_block,
-                                        snowgrass_block):
+        allowedBlocks = (grass_block, dirt_block, snowgrass_block)
+        if self.world[position] not in allowedBlocks:
             return
 
         # Trunk generation
@@ -1088,10 +1094,19 @@ class Window(pyglet.window.Window):
         elif symbol == key.V:
             self.save_to_file()
         elif symbol == key.M:
-            self.player.quick_slots.change_sort_mode()
-            self.player.inventory.change_sort_mode()
-            self.item_list.update_items()
-            self.inventory_list.update_items()
+            #self.player.quick_slots.change_sort_mode()
+            #self.player.inventory.change_sort_mode()
+            #self.item_list.update_items()
+            #self.inventory_list.update_items()
+            if self.last_key == symbol and not self.sorted:
+                self.player.quick_slots.sort()
+                self.player.inventory.sort()
+                self.sorted = True
+            else:
+                self.player.quick_slots.change_sort_mode()
+                self.player.inventory.change_sort_mode()
+                self.item_list.update_items()
+                self.inventory_list.update_items()
         elif symbol == key.E:
             self.inventory_list.toggle_active_frame_visibility()
             self.item_list.toggle_active_frame_visibility()
@@ -1118,6 +1133,7 @@ class Window(pyglet.window.Window):
                             current_block[0].id, quantity=current_block[1])
             self.item_list.update_items()
             self.inventory_list.update_items()
+        self.last_key = symbol
 
     def on_key_release(self, symbol, modifiers):
         if symbol == key.W:
@@ -1131,11 +1147,11 @@ class Window(pyglet.window.Window):
         elif (symbol == key.SPACE or symbol == key.LSHIFT
               or symbol == key.RSHIFT) and self.player.flying:
             self.dy = 0
-        elif symbol == key.M:
-            self.player.quick_slots.change_sort_mode()
-            self.player.inventory.change_sort_mode()
-            self.item_list.update_items()
-            self.inventory_list.update_items()
+        #elif symbol == key.M:
+            #self.player.quick_slots.change_sort_mode()
+            #self.player.inventory.change_sort_mode()
+            #self.item_list.update_items()
+            #self.inventory_list.update_items()
 
     def on_resize(self, width, height):
         # label

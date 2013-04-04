@@ -21,12 +21,13 @@ class Block(object):
 
     # Physical attributes
     hardness = 0
+    density = 1
     transparent = False
 
     # Inventory attributes
     max_stack_size = 64
     amount_label_color = 255, 255, 255, 255
-    name = "Block"
+    name = "Block" # Blocks that drop another item don't need a name
 
     def __init__(self):
         self.drop_id = self.id
@@ -50,6 +51,7 @@ class AirBlock(Block):
     bottom_texture = -1, -1
     side_texture = -1, -1
     max_stack_size = 0
+    density = 0
     id = 0
     name = "Air"
 
@@ -110,6 +112,7 @@ class GlassBlock(Block):
     side_texture = 3, 1
     hardness = 0.2
     amount_label_color = 0, 0, 0, 255
+    hardness = 0.3
     id = 20
     name = "Glass"
 
@@ -129,6 +132,7 @@ class WaterBlock(Block):
     side_texture = 0, 2
     transparent = True
     hardness = -1  # Unobtainable
+    density = 0.5
     id = 8
     name = "Water"
 
@@ -137,6 +141,7 @@ class ChestBlock(Block):
     top_texture = 1, 2
     bottom_texture = 1, 2
     side_texture = 1, 2
+    hardness = 1
     id = 54
     name = "Chest"
 
@@ -146,6 +151,7 @@ class SandstoneBlock(Block):
     bottom_texture = 2, 2
     side_texture = 2, 2
     amount_label_color = 0, 0, 0, 255
+    hardness = 1
     id = 24
     name = "Sandstone"
 
@@ -156,6 +162,7 @@ class MarbleBlock(Block):
     top_texture = 3, 2
     bottom_texture = 3, 2
     side_texture = 3, 2
+    hardness = 1.5
     id = 0
     name = "Marble"
     amount_label_color = 0, 0, 0, 255
@@ -173,6 +180,7 @@ class OakWoodPlankBlock(Block):
     top_texture = 3, 3
     bottom_texture = 3, 3
     side_texture = 3, 3
+    hardness = 1
     id = 5.0
     name = "Oak Wood Planks"
 
@@ -181,6 +189,7 @@ class SpruceWoodPlankBlock(Block):
     top_texture = 1, 3
     bottom_texture = 1, 3
     side_texture = 1, 3
+    hardness = 1
     id = 5.1
     name = "Spruce Wood Planks"
 
@@ -189,6 +198,7 @@ class JungleWoodPlankBlock(Block):
     top_texture = 2, 3
     bottom_texture = 2, 3
     side_texture = 2, 3
+    hardness = 1
     id = 5.3
     name = "Jungle Wood Planks"
 
@@ -212,7 +222,7 @@ class OakWoodBlock(Block):
     top_texture = 7, 1
     bottom_texture = 7, 1
     side_texture = 7, 0
-    hardness = 0.6
+    hardness = 1
     id = 17.0
     name = "Oak wood"
 
@@ -220,7 +230,7 @@ class JungleWoodBlock(Block):
     top_texture = 6, 1
     bottom_texture = 6, 1
     side_texture = 6, 0
-    hardness = 0.6
+    hardness = 1
     id = 17.1
     name = "Jungle wood"
 
@@ -228,23 +238,63 @@ class BirchWoodBlock(Block):
     top_texture = 5, 1
     bottom_texture = 5, 1
     side_texture = 5, 0
-    hardness = 0.6
+    hardness = 1
     id = 17.2
     name = "Birch wood"
+
+
+class OakBranchBlock(Block):
+    top_texture = 7, 0
+    bottom_texture = 7, 0
+    side_texture = 7, 0
+    hardness = 1
+    id = 17.1
+    name = "Oak wood"
+
+    def __init__(self):
+        super(OakBranchBlock, self).__init__()
+        self.drop_id = OakWoodBlock.id
+
+## These two branches currently not used, so that OAK is a 'bigger tree'
+
+#class JungleBranchBlock(Block):
+    #top_texture = 6, 0
+    #bottom_texture = 6, 0
+    #side_texture = 6, 0
+    #hardness = 1
+    #id = 17.1
+    #name = "Jungle wood"
+
+    #def __init__(self):
+        #super(JungleBranchBlock, self).__init__()
+        #self.drop_id = JungleWoodBlock.id
+
+#class BirchBranchBlock(Block):
+    #top_texture = 5, 0
+    #bottom_texture = 5, 0
+    #side_texture = 5, 0
+    #hardness = 1
+    #id = 17.2
+    #name = "Birch wood"
+
+    #def __init__(self):
+        #super(BirchBranchBlock, self).__init__()
+        #self.drop_id = BirchWoodBlock.id
+
 
 class CactusBlock(Block):
     top_texture = 7, 5
     bottom_texture = 7, 3
     side_texture = 7, 4
     hardness = 0.6
-    id = 17.0
+    id = 81
     name = "Cactus"
 
 class OakLeafBlock(Block):
     top_texture = 7, 2
     bottom_texture = 7, 2
     side_texture = 7, 2
-    hardness = 0.6
+    hardness = 0.1
     id = 18.0
     name = "Oak Leaves"
 
@@ -257,7 +307,7 @@ class JungleLeafBlock(Block):
     top_texture = 6, 2
     bottom_texture = 6, 2
     side_texture = 6, 2
-    hardness = 0.6
+    hardness = 0.1
     id = 18.1
     name = "Jungle Leaves"
 
@@ -269,7 +319,7 @@ class BirchLeafBlock(Block):
     top_texture = 5, 2
     bottom_texture = 5, 2
     side_texture = 5, 2
-    hardness = 0.6
+    hardness = 0.1
     id = 18.2
     name = "Birch Leaves"
 
@@ -302,3 +352,6 @@ jungleleaf_block = JungleLeafBlock()
 birchwood_block = BirchWoodBlock()
 birchleaf_block = BirchLeafBlock()
 cactus_block = CactusBlock()
+oakbranch_block = OakBranchBlock()
+junglebranch_block = JungleBranchBlock()
+birchbranch_block = BirchBranchBlock()
