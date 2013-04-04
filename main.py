@@ -819,6 +819,8 @@ class Window(pyglet.window.Window):
     def on_mouse_press(self, x, y, button, modifiers):
         if self.show_inventory:
             self.inventory_list.on_mouse_press(x, y, button)
+            self.inventory_list.update_items()
+            self.item_list.update_items()
             return
         if self.exclusive:
             vector = self.get_sight_vector()

@@ -65,8 +65,10 @@ See the [wiki](https://github.com/fogleman/Minecraft/wiki) for this project to i
 - B / F3: Toggle UI
 - I: Show inventory
 - V: Saving (save filename in command-line arguments)
-- M: Sort items in the toolbar (3 choices)
-- ENTER: Move selected item to inventory / toolbar
+- M: Sort items in the quick slots (3 choices)
+- ENTER: Move selected item to inventory / quick slots
+- Mouse left-click (in inventory): On fist click: Select item
+- Mouse left-click (in inventory): On second click: Move selected item to quick slots
 
 ### Quitting
 
