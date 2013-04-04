@@ -37,7 +37,7 @@ HALF_PI = pi / 2.0  # 90 degrees
 terrain_options = {
     'plains': ('0', '2', '200'),  # type, hill_height, max_trees
     'mountains': ('5', '12', '400'),
-    'desert': ('2', 5, '50'),
+    'desert': ('2', '5', '50'),
     'island': ('3', '8', '300'),
     'snow': ('6', '4', '550')
 }
@@ -979,9 +979,10 @@ def main(options):
         DRAW_DISTANCE = 60.0 * 2.0
         
     if options.terrain:
-        config.set('World', 'type', terrain_options[options.terrain][0])
-        config.set('World', 'hill_height', terrain_options[options.terrain][1])
-        config.set('World', 'max_trees', terrain_options[options.terrain][2])
+        type, hill_height, max_trees = terrain_options[options.terrain]
+        config.set('World', 'type', type)
+        config.set('World', 'hill_height', hill_height)
+        config.set('World', 'max_trees', max_trees)
 
     if options.hillheight:
         config.set('World', 'hill_height', str(options.hillheight))
