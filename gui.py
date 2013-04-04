@@ -47,7 +47,7 @@ class InventorySelector(object):
         for i, item in enumerate(items):
             if not item:
                 x += (self.icon_size * 0.5) + 3
-                if x - self.frame.x >= self.frame.width:
+                if x - self.frame.x - 3 >= self.frame.width:
                     x = self.frame.x + 3
                 continue
             block = BLOCKS_DIR[item.type]
@@ -138,4 +138,3 @@ class InventorySelector(object):
 
     def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
         pass # TODO: Allow dragging & dropping items
-

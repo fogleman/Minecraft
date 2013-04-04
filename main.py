@@ -20,7 +20,6 @@ from inventory import *
 from entity import *
 from gui import *
 
-
 APP_NAME = 'pyCraftr'  # should I stay or should I go?
 
 SECTOR_SIZE = 16
@@ -299,10 +298,10 @@ class Model(object):
                 if x in (-n, n) or z in (-n, n):
                     for dy in xrange(-3, 10):  # was -2 ,6
                         self.init_block((x, y + dy, z), stone_block)
+                if flat_world:
+                    return
 
         o = n - 10 + hill_height - 6
-        if flat_world:
-            return
 
         for _ in xrange(world_size / 2 + 40):  # (120):
             a = random.randint(-o, o)
@@ -336,32 +335,40 @@ class Model(object):
 
                         #random tree  -- run forest, run!
                         if max_trees > 0:
-                            # if y > -1: # don't have trees sitting on the
-                            # base 0 land.'
-                            showtree = random.randint(1, 5)  # 1 out of 5 %
-                                            # chance out of 100 to have a tree.
-                            if showtree <= 2:
-                                #print showtree
-                                self.init_block((x, y, z), dirt_block)
-                                self.init_block((x, y, z), dirt_block)
-                                self.init_block((x, y, z), dirt_block)
-                                self.init_block((x, y + 1, z), oakwood_block)
-                                self.init_block((x, y + 2, z), oakwood_block)
-                                self.init_block((x, y + 3, z), oakwood_block)
-                                self.init_block((x, y + 4, z), oakwood_block)
-                                self.init_block((x, y + 5, z), oakwood_block)
-                                self.init_block((x, y + 6, z), oakwood_block)
-                                self.init_block((x + 1, y + 7, z), leaf_block)
-                                self.init_block((x - 1, y + 7, z), leaf_block)
-                                self.init_block((x + 1, y + 7, z + 1), leaf_block)
-                                self.init_block((x - 1, y + 7, z - 1), leaf_block)
-                                self.init_block((x + 1, y + 8, z), leaf_block)
-                                self.init_block((x - 1, y + 8, z), leaf_block)
-                                self.init_block((x + 1, y + 8, z - 1), leaf_block)
-                                self.init_block((x - 1, y + 8, z + 1), leaf_block)
-                                self.init_block((x, y + 7, z), leaf_block)
+                             if y > 0: # don't have trees sitting on the
+                                # base 0 land.'
+                                showtree = random.randint(1, 100)  # 1 out of 5 %
+                                                # chance out of 100 to have a tree.
+                                if showtree <= 5:
+                                    #print showtree
+                                    self.init_block((x, y -2, z), dirt_block)
+                                    self.init_block((x, y -1, z), dirt_block)
+                                    self.init_block((x, y, z), dirt_block)
+                                    theight = random.randint(4, 24)  #4,15
+                                    for ty in xrange(1,theight):
+                                        self.init_block((x, ty, z), oakwood_block)
 
-                                max_trees -= 1
+
+                                    self.init_block((x - 1, theight -4, z), oakwood_block)
+                                    self.init_block((x + 1, theight -4, z), oakwood_block)
+                                    self.init_block((x - 1, theight -4, z -1), oakwood_block)
+                                    self.init_block((x - 1, theight -4, z +1), oakwood_block)
+                                    self.init_block((x - 1, theight -3, z), oakwood_block)
+                                    self.init_block((x + 1, theight -3, z), leaf_block)
+                                    self.init_block((x - 1, theight -3, z), leaf_block)
+                                    self.init_block((x + 1, theight -3, z + 1), leaf_block)
+                                    self.init_block((x - 1, theight -3, z - 1), leaf_block)
+                                    self.init_block((x + 1, theight -2, z), leaf_block)
+                                    self.init_block((x - 1, theight -2, z), leaf_block)
+                                    self.init_block((x + 1, theight -2, z + 1), leaf_block)
+                                    self.init_block((x - 1, theight -2, z - 1), leaf_block)
+                                    self.init_block((x + 1, theight -1, z), leaf_block)
+                                    self.init_block((x - 1, theight -1, z), leaf_block)
+                                    self.init_block((x + 1, theight -1, z - 1), leaf_block)
+                                    self.init_block((x - 1, theight -1, z + 1), leaf_block)
+                                    self.init_block((x, theight, z), leaf_block)
+
+                                    max_trees -= 1
 
                         if t in (grass_block, snowgrass_block):
                             self.init_block((x - 1, y - 1, z), dirt_block)
@@ -766,7 +773,13 @@ class Window(pyglet.window.Window):
             block, previous = self.model.hit_test(self.player.position, vector)
             if button == pyglet.window.mouse.LEFT:
                 if block:
-                    self.mouse_pressed = True
+                    hit_block = self.model.world[block]
+                    if hit_block.hardness >= 0:
+                        self.model.remove_block(block)
+                        if hit_block.drop_id is not None \
+                                and self.player.add_item(hit_block.drop_id):
+                            self.item_list.update_items()
+                            self.inventory_list.update_items()
             else:
                 if previous:
                     current_block = self.item_list.get_current_block()
@@ -1021,21 +1034,37 @@ def main(options):
         DRAW_DISTANCE = 60.0 * 1.5
     elif options.draw_distance == 'long':
         DRAW_DISTANCE = 60.0 * 2.0
-        
-    if options.terrain:
-        config.set('World', 'type', terrain_options[options.terrain][0])
-        config.set('World', 'hill_height', terrain_options[options.terrain][1])
-        config.set('World', 'max_trees', terrain_options[options.terrain][2])
+
+    if options.terrain == "plains":
+        config.set('World', 'type', '0')
+        config.set('World', 'hill_height', '2')
+        config.set('World', 'max_trees', '200')
+    if options.terrain == "mountains":
+        config.set('World', 'type', '5')
+        config.set('World', 'hill_height', '12')
+        config.set('World', 'max_trees', '400')
+    if options.terrain == "desert":
+        config.set('World', 'type', '2')
+        config.set('World', 'hill_height', '5')
+        config.set('World', 'max_trees', '50')
+    if options.terrain == "island":
+        config.set('World', 'type', '3')
+        config.set('World', 'hill_height', '8')
+        config.set('World', 'max_trees', '300')
+    if options.terrain == "snow":
+        config.set('World', 'type', '6')
+        config.set('World', 'hill_height', '4')
+        config.set('World', 'max_trees', '550')
 
     if options.hillheight:
         config.set('World', 'hill_height', str(options.hillheight))
-        
+
     if options.worldsize:
         config.set('World', 'size', str(options.worldsize))
 
     if options.flat:
         config.set('World', 'flat', '1')
-        
+
     if options.maxtrees:
         config.set('World', 'max_trees', str(options.maxtrees))
 
@@ -1070,11 +1099,12 @@ def main(options):
             print "Problem: Write error."
 
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-width", type=int, default=850)
     parser.add_argument("-height", type=int, default=480)
-    parser.add_argument("-terrain", choices=terrain_options.keys())
+    parser.add_argument("-terrain", type=str, default="grass")
     parser.add_argument("-hillheight", type=int)
     parser.add_argument("-worldsize", type=int)
     parser.add_argument("-maxtrees", type=int)
