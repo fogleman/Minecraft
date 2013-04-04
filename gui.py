@@ -147,8 +147,8 @@ class InventorySelector(object):
             self.player.inventory.slots[index] = self.selected_item
             self.set_selected_item(item)
             if self.selected_item_icon:
-                self.selected_item_icon.x = x
-                self.selected_item_icon.y = y
+                self.selected_item_icon.x = x - (self.selected_item_icon.width / 2)
+                self.selected_item_icon.y = y - (self.selected_item_icon.height / 2)
         else:
             if index == -1:
                 return False
@@ -158,8 +158,8 @@ class InventorySelector(object):
 
             self.set_selected_item(item)
             if self.selected_item_icon:
-                self.selected_item_icon.x = x
-                self.selected_item_icon.y = y
+                self.selected_item_icon.x = x - (self.selected_item_icon.width / 2)
+                self.selected_item_icon.y = y - (self.selected_item_icon.height / 2)
 
             self.player.inventory.remove_all_by_index(index)
 
@@ -167,7 +167,12 @@ class InventorySelector(object):
         self.update_current()
         return True
 
+    def on_mouse_motion(self, x, y, dx, dy):
+        if self.selected_item_icon:
+            self.selected_item_icon.x = x - (self.selected_item_icon.width / 2)
+            self.selected_item_icon.y = y - (self.selected_item_icon.height / 2)
+            return
+
     def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
-        pass # TODO: Allow dragging & dropping items
-
-
+        if self.selected_item_icon:
+            self.on_mouse_motion(x, y, dx, dy)

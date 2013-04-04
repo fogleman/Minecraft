@@ -873,9 +873,8 @@ class Window(pyglet.window.Window):
         self.mouse_pressed = False
 
     def on_mouse_motion(self, x, y, dx, dy):
-        if self.show_inventory and self.inventory_list.selected_item_icon:
-            self.inventory_list.selected_item_icon.x = x + dx
-            self.inventory_list.selected_item_icon.y = y + dy
+        if self.show_inventory:
+            self.inventory_list.on_mouse_motion(x, y, dx, dy)
             return
         if self.exclusive:
             m = 0.15
