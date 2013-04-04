@@ -35,11 +35,11 @@ BACK_BLUE = 0.0  # 0.98
 HALF_PI = pi / 2.0  # 90 degrees
 
 terrain_options = {
-    'plains': ('0', '2', '200'),  # type, hill_height, max_trees
-    'mountains': ('5', '12', '400'),
+    'plains': ('0', '2', '700'),  # type, hill_height, max_trees
+    'mountains': ('5', '12', '4000'),
     'desert': ('2', '5', '50'),
-    'island': ('3', '8', '300'),
-    'snow': ('6', '4', '550')
+    'island': ('3', '8', '700'),
+    'snow': ('6', '4', '1500')
 }
 
 config = ConfigParser()
@@ -51,7 +51,7 @@ if not os.path.lexists(config_file):
     config.set('World', 'flat', '0')  # dont make mountains,  make a flat world
     config.set('World', 'size', '160')
     config.set('World', 'show_fog', '1')
-    config.set('World', 'max_trees', '10')  # Was RND_FOREST
+    config.set('World', 'max_trees', '500')  # Was RND_FOREST
 
     try:
         with open(config_file, 'wb') as handle:
@@ -74,14 +74,29 @@ def cube_vertices(x, y, z, n):
     ]
 
 
-FACES = [
+FACES = (
     ( 0,  1,  0),
     ( 0, -1,  0),
     (-1,  0,  0),
     ( 1,  0,  0),
     ( 0,  0,  1),
     ( 0,  0, -1),
-]
+)
+
+FACES_WITH_DIAGONALS = FACES + (
+    (-1, -1,  0),
+    (-1,  0, -1),
+    ( 0, -1, -1),
+    ( 1,  1,  0),
+    ( 1,  0,  1),
+    ( 0,  1,  1),
+    ( 1, -1,  0),
+    ( 1,  0, -1),
+    ( 0,  1, -1),
+    (-1,  1,  0),
+    (-1,  0,  1),
+    ( 0, -1,  1),
+)
 
 
 class TextureGroup(pyglet.graphics.Group):
@@ -262,7 +277,8 @@ class Model(object):
         world_type = config.getint('World', 'type')
         hill_height = config.getint('World', 'hill_height')
         flat_world = config.getboolean('World', 'flat')
-        max_trees = config.getint('World', 'max_trees')
+        self.max_trees = config.getint('World', 'max_trees')
+        tree_chance = self.max_trees / float(world_size * (SECTOR_SIZE ** 2))
         n = world_size / 2  # 80
         s = 1
         y = 0
@@ -279,6 +295,14 @@ class Model(object):
 
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
+
+                # Generation of the outside wall
+                if x in (-n, n) or z in (-n, n):
+                    for dy in xrange(-3, 10):  # was -2 ,6
+                        self.init_block((x, y + dy, z), stone_block)
+                    continue
+
+                # Generation of the ground
                 block = worldtypes_grounds[world_type]
                 if isinstance(block, (tuple, list)):
                     block = random.choice(block)
@@ -286,9 +310,12 @@ class Model(object):
                 self.init_block((x, y - 3, z), dirt_block)
                 self.init_block((x, y - 4, z), bed_block)
 
-                if x in (-n, n) or z in (-n, n):
-                    for dy in xrange(-3, 10):  # was -2 ,6
-                        self.init_block((x, y + dy, z), stone_block)
+                # Perhaps a tree
+                if self.max_trees > 0:
+                    showtree = random.random()
+                    if showtree <= tree_chance:
+                        self.generate_tree((x, y - 2, z))
+
 
         o = n - 10 + hill_height - 6
         if flat_world:
@@ -304,6 +331,7 @@ class Model(object):
             snowgrass_block,
         )
 
+        # Hills generation
         for _ in xrange(world_size / 2 + 40):  # (120):
             a = random.randint(-o, o)
             b = random.randint(-o, o)
@@ -321,42 +349,60 @@ class Model(object):
                             continue
                         if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
                             continue
+                        if (x, y, z) in self.world:
+                            continue
                         self.init_block((x, y, z), block)
 
-                        #random tree  -- run forest, run!
-                        if max_trees > 0:
-                            # if y > -1: # don't have trees sitting on the
-                            # base 0 land.'
-                            showtree = random.randint(1, 5)  # 1 out of 5 %
-                                            # chance out of 100 to have a tree.
-                            if showtree <= 2:
-                                #print showtree
-                                self.init_block((x, y, z), dirt_block)
-                                self.init_block((x, y, z), dirt_block)
-                                self.init_block((x, y, z), dirt_block)
-                                self.init_block((x, y + 1, z), oakwood_block)
-                                self.init_block((x, y + 2, z), oakwood_block)
-                                self.init_block((x, y + 3, z), oakwood_block)
-                                self.init_block((x, y + 4, z), oakwood_block)
-                                self.init_block((x, y + 5, z), oakwood_block)
-                                self.init_block((x, y + 6, z), oakwood_block)
-                                self.init_block((x + 1, y + 7, z), leaf_block)
-                                self.init_block((x - 1, y + 7, z), leaf_block)
-                                self.init_block((x + 1, y + 7, z + 1), leaf_block)
-                                self.init_block((x - 1, y + 7, z - 1), leaf_block)
-                                self.init_block((x + 1, y + 8, z), leaf_block)
-                                self.init_block((x - 1, y + 8, z), leaf_block)
-                                self.init_block((x + 1, y + 8, z - 1), leaf_block)
-                                self.init_block((x - 1, y + 8, z + 1), leaf_block)
-                                self.init_block((x, y + 7, z), leaf_block)
-
-                                max_trees -= 1
+                        # Perhaps a tree
+                        if self.max_trees > 0:
+                            showtree = random.random()
+                            if showtree <= tree_chance:
+                                self.generate_tree((x, y, z))
 
                         if block in (grass_block, snowgrass_block):
                             self.init_block((x - 1, y - 1, z), dirt_block)
                             self.init_block((x - 2, y - 2, z), dirt_block)
 
                 s -= d
+
+    def generate_tree(self, position):
+        x, y, z = position
+        # Avoids a tree from touching another.
+        if self.has_neighbors((x, y + 1, z), OakWoodBlock, diagonals=True):
+            return
+
+        # A tree can't grow on anything.
+        if self.world[position] not in (grass_block, dirt_block,
+                                        snowgrass_block):
+            return
+
+        # Trunk generation
+        for dy in range(random.randint(3, 7)):
+            self.init_block((x, y + dy, z),
+                            oakwood_block)
+
+        treetop = y + dy + 1
+        # Leaves generation
+        for xl in range(x - 2, x + 2):
+            dx = abs(xl - x)
+            for yl in range(treetop - 2, treetop + 2):
+                for zl in range(z - 2, z + 2):
+                    # Don't replace existing blocks
+                    if (xl, yl, zl) in self.world:
+                        continue
+                        # Avoids orphaned leaves
+                    if not self.has_neighbors((xl, yl, zl),
+                                              (OakWoodBlock, LeafBlock)):
+                        continue
+                    dz = abs(zl - z)
+                    # The further we are (horizontally) from the trunk,
+                    # the least leaves we can find.
+                    if random.uniform(0, dx + dz) > .5:
+                        continue
+                    self.init_block((xl, yl, zl),
+                                    leaf_block)
+
+        self.max_trees -= 1
 
     def hit_test(self, position, vector, max_distance=8):
         m = 8
@@ -398,6 +444,18 @@ class Model(object):
             if position in self.shown:
                 self.hide_block(position)
             self.check_neighbors(position)
+
+    def has_neighbors(self, position, type=None, diagonals=False):
+        x, y, z = position
+        faces = FACES_WITH_DIAGONALS if diagonals else FACES
+        for dx, dy, dz in faces:
+            k = (x + dx, y + dy, z + dz)
+            if k in self.world:
+                if type is None:
+                    return True
+                if isinstance(self.world[k], type):
+                    return True
+        return False
 
     def check_neighbors(self, position):
         x, y, z = position
