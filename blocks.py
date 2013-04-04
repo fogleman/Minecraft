@@ -143,6 +143,7 @@ class MarbleBlock(Block):
     bottom_texture = 3, 2
     side_texture = 3, 2
     id = 0
+    amount_label_color = 0, 0, 0, 255
 
 
 class StonebrickBlock(Block):
