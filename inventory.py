@@ -22,55 +22,38 @@ class Inventory(object):
         else:
             max_size = BLOCKS_DIR[item_id].max_stack_size
 
-        if item_stack:
-            retval = False
-            while quantity > 0:
-                # can't find an unfilled slot
-                if not item_stack:
-                    # find an empty slot to store these items
-                    index = self.find_empty_slot()
+        
+		retval = False
+		while quantity > 0:
+			# can't find an unfilled slot
+			if not item_stack:
+				# find an empty slot to store these items
+				index = self.find_empty_slot()
 
-                    if index == -1 and len(self.slots) == self.slot_count:
-                        return retval
+				if index == -1 and len(self.slots) == self.slot_count:
+					return retval
 
-                    # overflow ?
-                    if quantity > max_size:
-                        quantity -= max_size
-                        item_stack = ItemStack(type=item_id, amount=max_size)
-                    else:
-                        item_stack = ItemStack(type=item_id, amount=quantity)
-                        quantity = 0
+				# overflow ?
+				if quantity > max_size:
+					quantity -= max_size
+					item_stack = ItemStack(type=item_id, amount=max_size)
+				else:
+					item_stack = ItemStack(type=item_id, amount=quantity)
+					quantity = 0
 
-                    self.slots[index] = item_stack
-                    retval = True
-                else:
-                    capacity = max_size - item_stack.amount
-                    if quantity < capacity:     # there is a slot with enough space
-                        item_stack.change_amount(quantity)
-                        self.sort()
-                        return True
-                    else:   # overflow
-                        quantity -= capacity
-                        item_stack.change_amount(capacity)
-                        # find next unfilled slot
-                        item_stack = self.get_unfilled_item(item_id)
-
-        else:
-            while quantity > 0:
-                index = self.find_empty_slot()
-                retval = False
-                if (index == -1 or index >= self.slot_count) and len(self.slots) == self.slot_count:
-                    return retval
-
-                # overflow ?
-                if quantity > max_size or index >= self.slot_count:
-                    quantity -= max_size
-                    item_stack = ItemStack(type=item_id, amount=max_size)
-                else:
-                    item_stack = ItemStack(type=item_id, amount=quantity)
-                    quantity = 0
-                    self.slots[index] = item_stack
-                    retval = True
+				self.slots[index] = item_stack
+				retval = True
+			else:
+				capacity = max_size - item_stack.amount
+				if quantity < capacity:     # there is a slot with enough space
+					item_stack.change_amount(quantity)
+					self.sort()
+					return True
+				else:   # overflow
+					quantity -= capacity
+					item_stack.change_amount(capacity)
+					# find next unfilled slot
+					item_stack = self.get_unfilled_item(item_id)
 
         self.sort()   
         return True
