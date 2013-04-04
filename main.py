@@ -57,7 +57,7 @@ if not os.path.lexists(config_file):
     type, hill_height, max_trees = terrain_options['plains']
     config.add_section('World')
     config.set('World', 'type', str(type))  # 0=plains,1=dirt,2=desert,3=islands,4=sand,5=stone,6=snow
-    config.set('World', 'hill_height', str(hill_height))  # height of the hills, increase for mountains :D
+    config.set('World', 'hill_height', str(hill_height))  # height of the hills
     config.set('World', 'flat', '0')  # dont make mountains,  make a flat world
     config.set('World', 'size', '160')
     config.set('World', 'show_fog', '1')
@@ -141,7 +141,7 @@ def vec(*args):
 
 class Player(Entity):
     def __init__(self, position, rotation, flying=False):
-        super(Player, self).__init__(position, rotation, health=20)
+        super(Player, self).__init__(position, rotation, health=20, attack_power=0.05)
         self.inventory = Inventory()
         self.quick_slots = Inventory(9)
         self.flying = flying
@@ -304,7 +304,6 @@ class Model(object):
     def initialize(self):
         world_size = config.getint('World', 'size')
         world_type = config.getint('World', 'type')
-        print world_type
         hill_height = config.getint('World', 'hill_height')
         flat_world = config.getboolean('World', 'flat')
         self.max_trees = config.getint('World', 'max_trees')
@@ -371,8 +370,8 @@ class Model(object):
 
         world_type_blocks = (
             grass_block,
-            dirt_block,
-            (sand_block, sandstone_block),
+            (dirt_block, sandstone_block),
+            sand_block,
             (grass_block, sand_block),
             (grass_block, sand_block, dirt_block),
             stone_block,
@@ -439,7 +438,6 @@ class Model(object):
                                 self.init_block((x - 2, y - 2, z), dirt_block)
                             if block == sand_block:
                                 self.init_block((x - 2, y - 2, z),sandstone_block)
-
                 s -= d
 
     def generate_oak_tree(self, position):
@@ -593,30 +591,8 @@ class Model(object):
         for dy in range(length):
             self.init_block((x, y + dy, z),
                             cactus_block)
-
-        #treetop = y + dy + 1
-        ## Leaves generation
-        #d = length / 3 + 1
-        #for xl in range(x - d, x + d):
-            #dx = abs(xl - x)
-            #for yl in range(treetop - d, treetop + d):
-                #for zl in range(z - d, z + d):
-                    ## Don't replace existing blocks
-                    #if (xl, yl, zl) in self.world:
-                        #continue
-                        ## Avoids orphaned leaves
-                    #if not self.has_neighbors((xl, yl, zl),
-                                              #(BirchWoodBlock, BirchLeafBlock)):
-                        #continue
-                    #dz = abs(zl - z)
-                    ## The farther we are (horizontally) from the trunk,
-                    ## the least leaves we can find.
-                    #if random.uniform(0, dx + dz) > 0.7:
-                        #continue
-                    #self.init_block((xl, yl, zl),
-                                    #birchleaf_block)
-
         self.max_trees -= 1
+
 
     def hit_test(self, position, vector, max_distance=8):
         m = 8
@@ -950,7 +926,7 @@ class Window(pyglet.window.Window):
             if self.highlighted_block:
                 hit_block = self.model.world[self.highlighted_block]
                 if hit_block.hardness >= 0:
-                    self.block_damage += 0.05
+                    self.block_damage += self.player.attack_power
                     if self.block_damage >= hit_block.hardness:
                         self.model.remove_block(self.highlighted_block)
                         self.highlighted_block = None
@@ -1058,6 +1034,9 @@ class Window(pyglet.window.Window):
         self.mouse_pressed = False
 
     def on_mouse_motion(self, x, y, dx, dy):
+        if self.show_inventory:
+            self.inventory_list.on_mouse_motion(x, y, dx, dy)
+            return
         if self.exclusive:
             m = 0.15
             x, y = self.player.rotation
@@ -1236,6 +1215,8 @@ class Window(pyglet.window.Window):
             self.item_list.batch.draw()
             if self.show_inventory:
                 self.inventory_list.batch.draw()
+                if self.inventory_list.selected_item_icon:
+                    self.inventory_list.selected_item_icon.draw()
         self.draw_reticle()
 
     def draw_focused_block(self):

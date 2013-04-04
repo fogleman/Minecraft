@@ -14,12 +14,22 @@ class InventorySelector(object):
         self.current_index = 1
         self.icon_size = self.model.group.texture.width / 8 #4
         self.selected_item = None
+        self.selected_item_icon = None
         image = pyglet.image.load('inventory.png')
         frame_size = image.height * 3 / 4
         self.frame = pyglet.sprite.Sprite(image.get_region(0, image.height - frame_size, image.width, frame_size), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
         self.active = pyglet.sprite.Sprite(image.get_region(0, 0, image.height / 4, image.height / 4), batch=self.batch, group=pyglet.graphics.OrderedGroup(2))
         self.active.opacity = 0
-        self.set_position(width, height)
+        self.frame.x = (width - self.frame.width) / 2
+        self.frame.y = self.icon_size + 20 # 20 is padding
+        self.item_locations = []
+        x = self.frame.x + 3
+        for i in range(0, 27):
+            self.item_locations.append((x, self.frame.y + floor(i / 9) * 6 + floor(i / 9) * self.icon_size * 0.5 + 3))
+            x += (self.icon_size * 0.5) + 3
+            if x - self.frame.x >= self.frame.width:
+                x = self.frame.x + 3
+        self.item_locations.append((x, self.frame.y + floor(26 / 9) * 6 + floor(26 / 9) * self.icon_size * 0.5 + 3))
 
     def change_index(self, change):
         self.set_index(self.current_index + change)
@@ -46,7 +56,7 @@ class InventorySelector(object):
         for i, item in enumerate(items):
             if not item:
                 x += (self.icon_size * 0.5) + 3
-                if x - self.frame.x - 3 >= self.frame.width:
+                if x - self.frame.x >= self.frame.width:
                     x = self.frame.x + 3
                 continue
             block = BLOCKS_DIR[item.type]
@@ -55,8 +65,6 @@ class InventorySelector(object):
             icon.scale = 0.5
             icon.x = x
             icon.y = self.frame.y + floor(i / 9) * 6 + floor(i / 9) * self.icon_size * 0.5 + 3
-            item.inventory_x = icon.x
-            item.inventory_y = icon.y
             x += (self.icon_size * 0.5) + 3
             if x - self.frame.x >= self.frame.width:
                 x = self.frame.x + 3
@@ -65,6 +73,7 @@ class InventorySelector(object):
                 color=(block.amount_label_color), batch=self.batch, group=self.amount_labels_group)
             self.amount_labels.append(amount_label)
             self.icons.append(icon)
+
         
     def update_current(self):
         self.active.x = self.frame.x + ((self.current_index % 9) * self.icon_size * 0.5) + (self.current_index % 9) * 3
@@ -100,12 +109,32 @@ class InventorySelector(object):
         self.active.opacity = 0 if self.active.opacity == 255 else 255
 
     def mouse_coords_to_index(self, x, y):
-        for i, item in enumerate(self.player.inventory.get_items()):
-            if item and item.inventory_x and item.inventory_y:
-                if x >= item.inventory_x and y >= item.inventory_y and \
-                x <= item.inventory_x + self.icon_size * 0.5 and y <= item.inventory_y + self.icon_size * 0.5:
-                    return i
-        return -1
+        width = 9 * (self.icon_size * 0.5 + 3)
+        height = 3 * self.icon_size * 0.5
+        # out of bound
+        if not ((self.frame.x <= x <= self.frame.x + width) and (self.frame.y <= y <= self.frame.y + height)):
+            return -1
+
+        x_offset = x - self.frame.x
+        y_offset = y - self.frame.y
+
+        row = y_offset // (self.icon_size * 0.5)
+        col = x_offset // (self.icon_size * 0.5 + 3)
+        return int(row * 9 + col)
+
+    def set_selected_item(self, item):
+        if not item:
+            self.remove_selected_item()
+            return
+        self.selected_item = item
+
+        block = BLOCKS_DIR[item.type]
+        item_icon = self.model.group.texture.get_region(int(block.side_texture[0] * 8) * self.icon_size, int(block.side_texture[1] * 8) * self.icon_size, int(self.icon_size * 0.4), int(self.icon_size * 0.4))
+        self.selected_item_icon = pyglet.sprite.Sprite(item_icon, batch=self.batch, group=self.group)
+
+    def remove_selected_item(self):
+        self.selected_item = None
+        self.selected_item_icon = None
 
     def on_mouse_press(self, x, y, button):
         index = self.mouse_coords_to_index(x, y)
@@ -113,22 +142,37 @@ class InventorySelector(object):
             if index == -1:
                 # throw it
                 self.update_items()
-                return
+                return False
             item = self.player.inventory.at(index)
             self.player.inventory.slots[index] = self.selected_item
-            self.selected_item = item
+            self.set_selected_item(item)
+            if self.selected_item_icon:
+                self.selected_item_icon.x = x - (self.selected_item_icon.width / 2)
+                self.selected_item_icon.y = y - (self.selected_item_icon.height / 2)
         else:
             if index == -1:
-                return
+                return False
             item = self.player.inventory.at(index)
             if not item:
-                return
-            self.selected_item = item
+                return True
+
+            self.set_selected_item(item)
+            if self.selected_item_icon:
+                self.selected_item_icon.x = x - (self.selected_item_icon.width / 2)
+                self.selected_item_icon.y = y - (self.selected_item_icon.height / 2)
+
             self.player.inventory.remove_all_by_index(index)
 
         self.update_items()
         self.update_current()
         return True
 
+    def on_mouse_motion(self, x, y, dx, dy):
+        if self.selected_item_icon:
+            self.selected_item_icon.x = x - (self.selected_item_icon.width / 2)
+            self.selected_item_icon.y = y - (self.selected_item_icon.height / 2)
+            return
+
     def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
-        pass # TODO: Allow dragging & dropping items
+        if self.selected_item_icon:
+            self.on_mouse_motion(x, y, dx, dy)
