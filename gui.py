@@ -47,7 +47,7 @@ class InventorySelector(object):
         for i, item in enumerate(items):
             if not item:
                 x += (self.icon_size * 0.5) + 3
-                if x - self.frame.x - 3 > self.frame.width:
+                if x - self.frame.x >= self.frame.width:
                     x = self.frame.x + 3
                 continue
             block = BLOCKS_DIR[item.type]
@@ -55,8 +55,10 @@ class InventorySelector(object):
             icon = pyglet.sprite.Sprite(block_icon, batch=self.batch, group=self.group)
             icon.scale = 0.5
             icon.x = x
-            icon.y = self.frame.y + 3 + floor(i / 9) * self.icon_size * 0.5
+            icon.y = self.frame.y + floor(i / 9) * 6 + floor(i / 9) * self.icon_size * 0.5 + 3
             x += (self.icon_size * 0.5) + 3
+            if x - self.frame.x >= self.frame.width:
+                x = self.frame.x + 3
             amount_label = pyglet.text.Label(str(item.amount), font_name='Arial', font_size=9, 
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom', 
                 color=(block.amount_label_color), batch=self.batch, group=self.amount_labels_group)
