@@ -148,9 +148,8 @@ class Player(Entity):
         initial_items = [dirt_block, sand_block, brick_block, stone_block,
                          glass_block, stonebrick_block, chest_block,
                          sandstone_block, marble_block]
-        flat_world = config.getboolean('World', 'flat')
         for item in initial_items:
-            quantity = random.randint(1, 10) if flat_world else 99
+            quantity = random.randint(1, 10)
             if random.randint(0, 1) == 0:
                 self.inventory.add_item(item.id, quantity)
             else:
