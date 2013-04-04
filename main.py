@@ -263,13 +263,10 @@ class ItemSelector(object):
         self.update_current()
         self.update_items()
 
-    def get_current_block(self, remove=True):
+    def get_current_block(self):
         item = self.player.quick_slots.at(self.current_index)
         if item:
             item_id = item.type
-            if remove:
-                self.player.quick_slots.remove_by_index(self.current_index)
-            self.update_items()
             if item_id >= ITEM_ID_MIN:
                 return ITEMS_DIR[item_id]
             else:
@@ -290,6 +287,10 @@ class ItemSelector(object):
                                                         quantity=item.amount)
             return item, amount
         return False
+
+    def remove_current_block(self, quantity=1):
+        self.player.quick_slots.remove_by_index(self.current_index, quantity=quantity)
+        self.update_items()
 
     def toggle_active_frame_visibility(self):
         self.active.opacity = 0 if self.active.opacity == 255 else 255
@@ -881,6 +882,7 @@ class Window(pyglet.window.Window):
                             current_block.on_right_click()
                         else:
                             self.model.add_block(previous, current_block)
+                            self.item_list.remove_current_block()
         else:
             self.set_exclusive_mouse(True)
 
