@@ -6,6 +6,9 @@ import os
 import cPickle as pickle
 from ConfigParser import ConfigParser, RawConfigParser
 
+import pyglet
+# Disable error checking for increased performance
+pyglet.options['debug_gl'] = False
 from pyglet.gl import *
 from pyglet.window import key
 
@@ -18,13 +21,14 @@ from entity import *
 from gui import *
 
 
+APP_NAME = 'pyCraftr'  # should I stay or should I go?
+
 SECTOR_SIZE = 16
 DRAW_DISTANCE = 60.0
 FOV = 65.0  # TODO: add menu option to change FOV
 NEAR_CLIP_DISTANCE = 0.1  # TODO: make min and max clip distance dynamic
 FAR_CLIP_DISTANCE = 200.0  # Maximum render distance,
                            # ignoring effects of sector_size and fog
-SAVE_FILENAME = 'save.dat'
 DISABLE_SAVE = True
 TIME_RATE = 240 * 10  # Rate of change (steps per hour).
 DEG_RAD = pi / 180.0
@@ -42,8 +46,14 @@ terrain_options = {
     'snow': ('6', '4', '1500')
 }
 
+game_dir = pyglet.resource.get_settings_path(APP_NAME)
+if not os.path.exists(game_dir):
+    os.makedirs(game_dir)
+    
+SAVE_FILENAME = os.path.join(game_dir, 'save.dat')
+
 config = ConfigParser()
-config_file = "game.cfg"
+config_file = os.path.join(game_dir, 'game.cfg')
 if not os.path.lexists(config_file):
     config.add_section('World')
     config.set('World', 'type', '0')  # 0=grass,1=dirt,2=desert,3=islands,4=sand,5=stone,6=snow
@@ -136,7 +146,7 @@ class Player(Entity):
         self.quick_slots = Inventory(9)
         self.flying = flying
         initial_items = [dirt_block, sand_block, brick_block, stone_block,
-                         glass_block, water_block, chest_block,
+                         glass_block, stonebrick_block, chest_block,
                          sandstone_block, marble_block]
         flat_world = config.getboolean('World', 'flat')
         for item in initial_items:
@@ -585,6 +595,9 @@ class Window(pyglet.window.Window):
         self.white = vec(1.0, 1.0, 1.0, 1.0)
         self.ambient = vec(1.0, 1.0, 1.0, 1.0)
         self.polished = GLfloat(100.0)
+        self.highlighted_block = None
+        self.block_damage = 0
+        self.mouse_pressed = False
         self.dy = 0
         self.show_fog = False
         save_len = -1 if self.save is None else len(self.save)
@@ -722,6 +735,26 @@ class Window(pyglet.window.Window):
         dt = min(dt, 0.2)
         for _ in xrange(m):
             self._update(dt / m)
+        if self.mouse_pressed:
+            vector = self.get_sight_vector()
+            block, previous = self.model.hit_test(self.player.position, vector)
+            if block:
+                if self.highlighted_block != block:
+                    self.highlighted_block = block
+                    self.block_damage = 0
+            
+            if self.highlighted_block:
+                hit_block = self.model.world[self.highlighted_block]
+                if hit_block.hardness >= 0:
+                    self.block_damage += 0.05
+                    if self.block_damage >= hit_block.hardness:
+                        self.model.remove_block(self.highlighted_block)
+                        self.highlighted_block = None
+                        self.block_damage = 0
+                        if hit_block.drop_id is not None \
+                                and self.player.add_item(hit_block.drop_id):
+                            self.item_list.update_items()
+                            self.inventory_list.update_items()
         self.update_time()
 
     def _update(self, dt):
@@ -782,18 +815,15 @@ class Window(pyglet.window.Window):
                 self.inventory_list.change_index(scroll_y * -1)
 
     def on_mouse_press(self, x, y, button, modifiers):
+        if self.show_inventory:
+            self.inventory_list.on_mouse_press(x, y, button)
+            return
         if self.exclusive:
             vector = self.get_sight_vector()
             block, previous = self.model.hit_test(self.player.position, vector)
             if button == pyglet.window.mouse.LEFT:
                 if block:
-                    hit_block = self.model.world[block]
-                    if hit_block.hardness >= 0:
-                        self.model.remove_block(block)
-                        if hit_block.drop_id is not None \
-                                and self.player.add_item(hit_block.drop_id):
-                            self.item_list.update_items()
-                            self.inventory_list.update_items()
+                    self.mouse_pressed = True
             else:
                 if previous:
                     current_block = self.item_list.get_current_block()
@@ -807,6 +837,11 @@ class Window(pyglet.window.Window):
         else:
             self.set_exclusive_mouse(True)
 
+    def on_mouse_release(self, x, y, button, modifiers):
+        self.highlighted_block = None
+        self.block_damage = 0
+        self.mouse_pressed = False
+
     def on_mouse_motion(self, x, y, dx, dy):
         if self.exclusive:
             m = 0.15
@@ -814,6 +849,14 @@ class Window(pyglet.window.Window):
             x, y = x + dx * m, y + dy * m
             y = max(-90, min(90, y))
             self.player.rotation = (x, y)
+
+    def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
+        if button == pyglet.window.mouse.LEFT:
+            if self.show_inventory:
+                self.inventory_list.on_mouse_drag(x, y, dx, dy, button, modifiers)
+                return
+            if self.exclusive:
+                self.on_mouse_motion(x, y, dx, dy)
 
     def on_key_press(self, symbol, modifiers):
         if symbol == key.W:
@@ -853,6 +896,7 @@ class Window(pyglet.window.Window):
             self.inventory_list.toggle_active_frame_visibility()
             self.item_list.toggle_active_frame_visibility()
             self.show_inventory = not self.show_inventory
+            self.set_exclusive_mouse(not self.show_inventory)
         elif symbol == key.ENTER:
             if self.show_inventory:
                 current_block = self.inventory_list\
@@ -1066,7 +1110,7 @@ def main(options):
         # window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=window_config, save=save_object)
     # except pyglet.window.NoSuchConfigException:
     window = Window(
-        width=options.width, height=options.height, caption='pyCraftr',
+        width=options.width, height=options.height, caption=APP_NAME,
         resizable=True, save=save_object, vsync=False)
 
     window.set_exclusive_mouse(True)
@@ -1076,6 +1120,12 @@ def main(options):
     pyglet.app.run()
     if options.disable_auto_save and options.disable_save:
         window.save_to_file()
+    if options.save_config:
+        try:
+            with open(config_file, 'wb') as handle:
+                config.write(handle)
+        except:
+            print "Problem: Write error."
 
 
 if __name__ == '__main__':
@@ -1094,5 +1144,6 @@ if __name__ == '__main__':
     parser.add_argument("-save", type=unicode, default=SAVE_FILENAME)
     parser.add_argument("--disable-save", action="store_false", default=True)
     parser.add_argument("--fast", action="store_true", default=False)
+    parser.add_argument("--save-config", action="store_true", default=False)
     options = parser.parse_args()
     main(options)
