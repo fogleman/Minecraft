@@ -262,7 +262,7 @@ class Model(object):
                                        dirt_block, stone_block))
                     self.init_block((x, y - 2, z), t)
                 if WORLDTYPE == 6:
-                    self.init_block((x, y - 2, z), snowg_block)
+                    self.init_block((x, y - 2, z), snowgrass_block)
 
                 self.init_block((x, y - 3, z), dirt_block)
                 self.init_block((x, y - 4, z), bed_block)  # was stone_block
@@ -295,7 +295,7 @@ class Model(object):
             if WORLDTYPE == 5:
                 t = random.choice((stone_block,))
             if WORLDTYPE == 6:
-                t = random.choice((snowg_block,))
+                t = random.choice((snowgrass_block,))
             for y in xrange(c, c + h):
                 for x in xrange(a - s, a + s + 1):
                     for z in xrange(b - s, b + s + 1):
@@ -316,12 +316,12 @@ class Model(object):
                                 self.init_block((x, y, z), dirt_block)
                                 self.init_block((x, y, z), dirt_block)
                                 self.init_block((x, y, z), dirt_block)
-                                self.init_block((x, y + 1, z), log_block)
-                                self.init_block((x, y + 2, z), log_block)
-                                self.init_block((x, y + 3, z), log_block)
-                                self.init_block((x, y + 4, z), log_block)
-                                self.init_block((x, y + 5, z), log_block)
-                                self.init_block((x, y + 6, z), log_block)
+                                self.init_block((x, y + 1, z), oakwood_block)
+                                self.init_block((x, y + 2, z), oakwood_block)
+                                self.init_block((x, y + 3, z), oakwood_block)
+                                self.init_block((x, y + 4, z), oakwood_block)
+                                self.init_block((x, y + 5, z), oakwood_block)
+                                self.init_block((x, y + 6, z), oakwood_block)
                                 self.init_block((x + 1, y + 7, z), leaf_block)
                                 self.init_block((x - 1, y + 7, z), leaf_block)
                                 self.init_block((x + 1, y + 7, z + 1), leaf_block)
@@ -334,7 +334,7 @@ class Model(object):
 
                                 RND_FOREST -= 1
 
-                        if t in (grass_block, snowg_block):
+                        if t in (grass_block, snowgrass_block):
                             self.init_block((x - 1, y - 1, z), dirt_block)
                             self.init_block((x - 2, y - 2, z), dirt_block)
 
