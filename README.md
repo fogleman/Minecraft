@@ -1,6 +1,6 @@
 # pyCraftr
 
-![pyCraftr](https://raw.github.com/avelanarius/Minecraft/master/screenshot.jpg)
+![pyCraftr](https://raw.github.com/ronmurphy/Minecraft/master/screenshot.jpg)
 
 **Simple Minecraft-inspired demo written in Python and Pyglet.**
 
@@ -9,7 +9,7 @@
 ## How to Run
 
     pip install pyglet
-    git clone https://github.com/avelanarius/Minecraft.git
+    git clone https://github.com/ronmurphy/Minecraft.git
     cd Minecraft
     python main.py
 

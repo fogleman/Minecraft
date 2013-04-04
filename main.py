@@ -48,7 +48,7 @@ terrain_options = {
 game_dir = pyglet.resource.get_settings_path(APP_NAME)
 if not os.path.exists(game_dir):
     os.makedirs(game_dir)
-    
+
 SAVE_FILENAME = os.path.join(game_dir, 'save.dat')
 
 config = ConfigParser()
@@ -323,7 +323,7 @@ class Model(object):
         worldtypes_grounds = (
             grass_block,
             dirt_block,
-            sand_block,
+            (sand_block, ) * 15 + (sandstone_block,) * 4,
             water_block,
             grass_block,
             (grass_block,) * 15 + (dirt_block,) * 3 + (stone_block,),
@@ -351,14 +351,33 @@ class Model(object):
                 if self.max_trees > 0:
                     showtree = random.random()
                     if showtree <= tree_chance:
-                        self.generate_tree((x, y - 2, z))
+                        if world_type is not 2 or 3:
+                            rt = random.randrange(0,2)
+                            if rt < 1:
+                                self.generate_oak_tree((x, y - 2, z))
+                            if rt == 1:
+                                self.generate_jungle_tree((x, y - 2, z))
+                            if rt == 2:
+                                self.generate_birch_tree((x, y - 2, z))
+                        if world_type == 2: # desert
+                            self.generate_cactus((x, y - 2, z))
+                        if world_type == 3: #island
+                            rt = random.randrange(0,4)
+                            if rt < 1:
+                                self.generate_oak_tree((x, y - 2, z))
+                            if rt == 1:
+                                self.generate_jungle_tree((x, y - 2, z))
+                            if rt == 2:
+                                self.generate_birch_tree((x, y - 2, z))
+                            if rt > 2:
+                                self.generate_cactus((x, y - 2, z))
 
 
         o = n - 10 + hill_height - 6
 
         world_type_blocks = (
             grass_block,
-            dirt_block,
+            (dirt_block, sandstone_block),
             sand_block,
             (grass_block, sand_block),
             (grass_block, sand_block, dirt_block),
@@ -392,23 +411,55 @@ class Model(object):
                         if self.max_trees > 0:
                             showtree = random.random()
                             if showtree <= tree_chance:
-                                self.generate_tree((x, y, z))
+                                if world_type is not 2 or 3:
+                                    rt = random.randrange(0,2)
+                                    if rt < 1:
+                                        self.generate_oak_tree((x, y - 2, z))
+                                    if rt == 1:
+                                        self.generate_jungle_tree((x, y - 2, z))
+                                    if rt > 1:
+                                        self.generate_birch_tree((x, y - 2, z))
+                                if world_type == 2: # desert
+                                    self.generate_cactus((x, y - 2, z))
+                                if world_type == 3: # island
+                                    rt = random.randrange(0,4)
+                                    if rt < 1:
+                                        self.generate_oak_tree((x, y - 2, z))
+                                    if rt == 1:
+                                        self.generate_jungle_tree((x, y - 2, z))
+                                    if rt == 2:
+                                        self.generate_birch_tree((x, y - 2, z))
+                                    if rt > 2:
+                                        self.generate_cactus((x, y - 2, z))
 
-                        if block in (grass_block, snowgrass_block):
-                            self.init_block((x - 1, y - 1, z), dirt_block)
-                            self.init_block((x - 2, y - 2, z), dirt_block)
-
+                        if world_type is not 2 or 3: # is not desert or island
+                            if block in (grass_block, snowgrass_block):
+                                self.init_block((x - 1, y - 1, z), dirt_block)
+                                self.init_block((x - 2, y - 2, z), dirt_block)
+                        if world_type == 2: # desert
+                            if block == sand_block:
+                                self.init_block((x - 2, y - 2, z),sandstone_block)
+                        if world_type == 3: # island
+                            if block in (grass_block, snowgrass_block):
+                                self.init_block((x - 1, y - 1, z), dirt_block)
+                                self.init_block((x - 2, y - 2, z), dirt_block)
+                            if block == sand_block:
+                                self.init_block((x - 2, y - 2, z),sandstone_block)
                 s -= d
 
-    def generate_tree(self, position):
+    def generate_oak_tree(self, position):
         x, y, z = position
         # Avoids a tree from touching another.
+
         if self.has_neighbors((x, y + 1, z), OakWoodBlock, diagonals=True):
+            return
+        if self.has_neighbors((x, y + 1, z), JungleWoodBlock, diagonals=True):
+            return
+        if self.has_neighbors((x, y + 1, z), BirchWoodBlock, diagonals=True):
             return
 
         # A tree can't grow on anything.
-        if self.world[position] not in (grass_block, dirt_block,
-                                        snowgrass_block):
+        if self.world[position] not in (grass_block, dirt_block, snowgrass_block):
             return
 
         # Trunk generation
@@ -429,7 +480,7 @@ class Model(object):
                         continue
                         # Avoids orphaned leaves
                     if not self.has_neighbors((xl, yl, zl),
-                                              (OakWoodBlock, LeafBlock)):
+                                              (OakWoodBlock, OakLeafBlock)):
                         continue
                     dz = abs(zl - z)
                     # The farther we are (horizontally) from the trunk,
@@ -437,9 +488,118 @@ class Model(object):
                     if random.uniform(0, dx + dz) > 0.7:
                         continue
                     self.init_block((xl, yl, zl),
-                                    leaf_block)
+                                    oakleaf_block)
 
         self.max_trees -= 1
+
+    def generate_jungle_tree(self, position):
+        x, y, z = position
+        # Avoids a tree from touching another.
+
+        if self.has_neighbors((x, y + 1, z), OakWoodBlock, diagonals=True):
+            return
+        if self.has_neighbors((x, y + 1, z), JungleWoodBlock, diagonals=True):
+            return
+        if self.has_neighbors((x, y + 1, z), BirchWoodBlock, diagonals=True):
+            return
+
+        # A tree can't grow on anything.
+        if self.world[position] not in (grass_block, dirt_block,
+                                        snowgrass_block):
+            return
+
+        # Trunk generation
+        length = random.randint(8, 12)
+        for dy in range(length):
+            self.init_block((x, y + dy, z),
+                            junglewood_block)
+
+        treetop = y + dy + 1
+        # Leaves generation
+        d = length / 3
+        for xl in range(x - d, x + d):
+            dx = abs(xl - x)
+            for yl in range(treetop - d, treetop + d):
+                for zl in range(z - d, z + d):
+                    # Don't replace existing blocks
+                    if (xl, yl, zl) in self.world:
+                        continue
+                        # Avoids orphaned leaves
+                    if not self.has_neighbors((xl, yl, zl),
+                                              (JungleWoodBlock, JungleLeafBlock)):
+                        continue
+                    dz = abs(zl - z)
+                    # The farther we are (horizontally) from the trunk,
+                    # the least leaves we can find.
+                    if random.uniform(0, dx + dz) > 0.7:
+                        continue
+                    self.init_block((xl, yl, zl),
+                                    jungleleaf_block)
+
+        self.max_trees -= 1
+
+    def generate_birch_tree(self, position):
+        x, y, z = position
+        # Avoids a tree from touching another.
+        if self.has_neighbors((x, y + 1, z), OakWoodBlock, diagonals=True):
+            return
+        if self.has_neighbors((x, y + 1, z), JungleWoodBlock, diagonals=True):
+            return
+        if self.has_neighbors((x, y + 1, z), BirchWoodBlock, diagonals=True):
+            return
+
+        # A tree can't grow on anything.
+        if self.world[position] not in (grass_block, dirt_block,
+                                        snowgrass_block):
+            return
+
+        # Trunk generation
+        length = random.randint(5, 7)
+        for dy in range(length):
+            self.init_block((x, y + dy, z),
+                            birchwood_block)
+
+        treetop = y + dy + 1
+        # Leaves generation
+        d = length / 3 + 1
+        for xl in range(x - d, x + d):
+            dx = abs(xl - x)
+            for yl in range(treetop - d, treetop + d):
+                for zl in range(z - d, z + d):
+                    # Don't replace existing blocks
+                    if (xl, yl, zl) in self.world:
+                        continue
+                        # Avoids orphaned leaves
+                    if not self.has_neighbors((xl, yl, zl),
+                                              (BirchWoodBlock, BirchLeafBlock)):
+                        continue
+                    dz = abs(zl - z)
+                    # The farther we are (horizontally) from the trunk,
+                    # the least leaves we can find.
+                    if random.uniform(0, dx + dz) > 0.7:
+                        continue
+                    self.init_block((xl, yl, zl),
+                                    birchleaf_block)
+
+        self.max_trees -= 1
+
+    def generate_cactus(self, position):
+        x, y, z = position
+        # Avoids a tree from touching another.
+        if self.has_neighbors((x, y + 1, z), CactusBlock, diagonals=True):
+            return
+
+        # A tree can't grow on anything.
+        if self.world[position] not in (sand_block, sandstone_block):
+            return
+
+        # Trunk generation
+        length = random.randint(1, 4)
+        for dy in range(length):
+            self.init_block((x, y + dy, z),
+                            cactus_block)
+        self.max_trees -= 1
+
 
     def hit_test(self, position, vector, max_distance=8):
         m = 8
@@ -778,7 +938,7 @@ class Window(pyglet.window.Window):
                 if self.highlighted_block != block:
                     self.highlighted_block = block
                     self.block_damage = 0
-            
+
             if self.highlighted_block:
                 hit_block = self.model.world[self.highlighted_block]
                 if hit_block.hardness >= 0:
@@ -1135,7 +1295,7 @@ def main(options):
         DRAW_DISTANCE = 60.0 * 1.5
     elif options.draw_distance == 'long':
         DRAW_DISTANCE = 60.0 * 2.0
-        
+
     if options.terrain:
         type, hill_height, max_trees = terrain_options[options.terrain]
         config.set('World', 'type', type)
