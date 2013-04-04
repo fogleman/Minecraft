@@ -33,7 +33,8 @@ Or try **Pyglet 1.2 alpha**, which **supports 64-bit mode**:
 
 For pip:
 
-- **Mac or Linux**: install with `sudo easy_install pip` (Mac or Linux) - or (Linux) find a package called something like 'python-pip' in your package manager.
+- **Mac or Linux**: install with `sudo easy_install pip` (Mac or Linux) or (Linux) find a package called something like 'python-pip' in your package manager.
+- **Ubuntu**: install with `sudo apt-get install python-pip`
 - **Windows**: [install Distribute then Pip](http://stackoverflow.com/a/12476379/992887) using the linked .MSI installers.
 
 For git:
@@ -65,7 +66,7 @@ For git:
 ### GUI
 
 - **B / F3**: Toggle UI
-- **I**: Show inventory
+- **E**: Show inventory
 - **V**: Saving (save filename in command-line arguments)
 - **M**: Sort items in the quick slots (3 choices)
 - **ENTER**: Move selected item to inventory / quick slots
