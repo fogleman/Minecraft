@@ -627,6 +627,9 @@ class Window(pyglet.window.Window):
         self.mouse_pressed = False
         self.dy = 0
         self.show_fog = False
+        self.last_key = None
+        self.sorted = False
+        global config
         self.key_move_forward = config.getint('Controls', 'move_forward')
         self.key_move_backward = config.getint('Controls', 'move_backward')
         self.key_move_left = config.getint('Controls', 'move_left')
@@ -941,10 +944,15 @@ class Window(pyglet.window.Window):
         elif symbol == key.V:
             self.save_to_file()
         elif symbol == key.M:
-            self.player.quick_slots.change_sort_mode()
-            self.player.inventory.change_sort_mode()
-            self.item_list.update_items()
-            self.inventory_list.update_items()
+            if self.last_key == symbol and not self.sorted:
+                self.player.quick_slots.sort()
+                self.player.inventory.sort()
+                self.sorted = True
+            else:
+                self.player.quick_slots.change_sort_mode()
+                self.player.inventory.change_sort_mode()
+                self.item_list.update_items()
+                self.inventory_list.update_items()
         elif symbol == self.key_inventory:
             self.inventory_list.toggle_active_frame_visibility()
             self.item_list.toggle_active_frame_visibility()
@@ -971,6 +979,7 @@ class Window(pyglet.window.Window):
                             current_block[0].id, quantity=current_block[1])
             self.item_list.update_items()
             self.inventory_list.update_items()
+        self.last_key = symbol
 
     def on_key_release(self, symbol, modifiers):
         if symbol == self.key_move_forward:
@@ -984,11 +993,6 @@ class Window(pyglet.window.Window):
         elif (symbol == self.key_jump or symbol == key.LSHIFT
               or symbol == key.RSHIFT) and self.player.flying:
             self.dy = 0
-        elif symbol == key.M:
-            self.player.quick_slots.change_sort_mode()
-            self.player.inventory.change_sort_mode()
-            self.item_list.update_items()
-            self.inventory_list.update_items()
 
     def on_resize(self, width, height):
         if self.reticle:

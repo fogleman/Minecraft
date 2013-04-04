@@ -22,14 +22,6 @@ class InventorySelector(object):
         self.active.opacity = 0
         self.frame.x = (width - self.frame.width) / 2
         self.frame.y = self.icon_size + 20 # 20 is padding
-        self.item_locations = []
-        x = self.frame.x + 3
-        for i in range(0, 27):
-            self.item_locations.append((x, self.frame.y + floor(i / 9) * 6 + floor(i / 9) * self.icon_size * 0.5 + 3))
-            x += (self.icon_size * 0.5) + 3
-            if x - self.frame.x >= self.frame.width:
-                x = self.frame.x + 3
-        self.item_locations.append((x, self.frame.y + floor(26 / 9) * 6 + floor(26 / 9) * self.icon_size * 0.5 + 3))
 
     def change_index(self, change):
         self.set_index(self.current_index + change)
@@ -129,8 +121,9 @@ class InventorySelector(object):
         self.selected_item = item
 
         block = BLOCKS_DIR[item.type]
-        item_icon = self.model.group.texture.get_region(int(block.side_texture[0] * 8) * self.icon_size, int(block.side_texture[1] * 8) * self.icon_size, int(self.icon_size * 0.4), int(self.icon_size * 0.4))
+        item_icon = self.model.group.texture.get_region(int(block.side_texture[0] * 8) * self.icon_size, int(block.side_texture[1] * 8) * self.icon_size, self.icon_size, self.icon_size)
         self.selected_item_icon = pyglet.sprite.Sprite(item_icon, batch=self.batch, group=self.group)
+        self.selected_item_icon.scale = 0.4
 
     def remove_selected_item(self):
         self.selected_item = None
