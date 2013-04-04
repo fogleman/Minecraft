@@ -4,6 +4,7 @@ import time
 import argparse
 import os
 import cPickle as pickle
+from ConfigParser import ConfigParser, RawConfigParser
 
 from pyglet.gl import *
 from pyglet.window import key
@@ -23,9 +24,6 @@ FOV = 65.0  # TODO: add menu option to change FOV
 NEAR_CLIP_DISTANCE = 0.1  # TODO: make min and max clip distance dynamic
 FAR_CLIP_DISTANCE = 200.0  # Maximum render distance,
                            # ignoring effects of sector_size and fog
-WORLDTYPE = 0  # 1=grass,2=dirt,3=sand,4=islands
-HILLHEIGHT = 6  # height of the hills, increase for mountains :D
-FLATWORLD = 0  # dont make mountains,  make a flat world
 SAVE_FILENAME = 'save.dat'
 DISABLE_SAVE = True
 TIME_RATE = 240 * 10  # Rate of change (steps per hour).
@@ -37,8 +35,25 @@ BACK_BLUE = 0.0  # 0.98
 SHOW_FOG = True
 HALF_PI = pi / 2.0  # 90 degrees
 RND_FOREST = 10
-WORLDSIZE = 160
 
+config = ConfigParser()
+config_file = "game.cfg"
+if not os.path.lexists(config_file):
+    config.add_section('World')
+    config.set('World', 'type', '0')  # 1=grass,2=dirt,3=sand,4=islands
+    config.set('World', 'hill_height', '6')  # height of the hills, increase for mountains :D
+    config.set('World', 'flat', '0')  # dont make mountains,  make a flat world
+    config.set('World', 'size', '160')
+
+    # Writing our configuration file to 'example.cfg'
+    try:
+        with open(config_file, 'wb') as handle:
+            config.write(handle)
+    except:
+        print "Problem: Configuration file (%s) doesn't exist." % config_file
+        sys.exit(1)
+else:
+    config.read(config_file)
 
 def cube_vertices(x, y, z, n):
     return [
@@ -100,18 +115,13 @@ class Player(Entity):
         initial_items = [dirt_block, sand_block, brick_block, stone_block,
                          glass_block, water_block, chest_block,
                          sandstone_block, marble_block]
+        flat_world = int(config.get('World', 'flat', 0))
         for item in initial_items:
-            quantity = random.randint(1, 10)
-            if FLATWORLD == 1:
-                if random.randint(0, 1) == 0:
-                    self.inventory.add_item(item.id, 99)
-                else:
-                    self.quick_slots.add_item(item.id, 99)
-            if FLATWORLD == 0:
-                if random.randint(0, 1) == 0:
-                    self.inventory.add_item(item.id, quantity)
-                else:
-                    self.quick_slots.add_item(item.id, quantity)
+            quantity = random.randint(1, 10) if flat_world == 0 else 99
+            if random.randint(0, 1) == 0:
+                self.inventory.add_item(item.id, quantity)
+            else:
+                self.quick_slots.add_item(item.id, quantity)
 
     def add_item(self, item_id):
         if self.quick_slots.add_item(item_id):
@@ -240,28 +250,31 @@ class Model(object):
             self.initialize()
 
     def initialize(self):
-        global WORLDSIZE
-        n = WORLDSIZE / 2  # 80
+        world_size = int(config.get('World', 'size', 0))
+        world_type = int(config.get('World', 'type', 0))
+        hill_height = int(config.get('World', 'hill_height', 0))
+        flat_world = int(config.get('World', 'flat', 0))
+        n = world_size / 2  # 80
         s = 1
         y = 0
         global RND_FOREST
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
-                if WORLDTYPE == 0:
+                if world_type == 0:
                     self.init_block((x, y - 2, z), grass_block)
-                if WORLDTYPE == 1:
+                if world_type == 1:
                     self.init_block((x, y - 2, z), dirt_block)
-                if WORLDTYPE == 2:
+                if world_type == 2:
                     self.init_block((x, y - 2, z), sand_block)
-                if WORLDTYPE == 3:
+                if world_type == 3:
                     self.init_block((x, y - 2, z), water_block)
-                if WORLDTYPE == 4:
+                if world_type == 4:
                     self.init_block((x, y - 2, z), grass_block)
-                if WORLDTYPE == 5:
+                if world_type == 5:
                     t = random.choice((grass_block, grass_block,
                                        dirt_block, stone_block))
                     self.init_block((x, y - 2, z), t)
-                if WORLDTYPE == 6:
+                if world_type == 6:
                     self.init_block((x, y - 2, z), snowgrass_block)
 
                 self.init_block((x, y - 3, z), dirt_block)
@@ -271,30 +284,30 @@ class Model(object):
                     for dy in xrange(-3, 10):  # was -2 ,6
                         self.init_block((x, y + dy, z), stone_block)
 
-        o = n - 10 + HILLHEIGHT - 6
-        if FLATWORLD == 1:
+        o = n - 10 + hill_height - 6
+        if flat_world == 1:
             return
 
-        for _ in xrange(WORLDSIZE / 2 + 40):  # (120):
+        for _ in xrange(world_size / 2 + 40):  # (120):
             a = random.randint(-o, o)
             b = random.randint(-o, o)
             c = -1
-            h = random.randint(1, HILLHEIGHT)
-            s = random.randint(4, HILLHEIGHT + 2)
+            h = random.randint(1, hill_height)
+            s = random.randint(4, hill_height + 2)
             d = 1
-            if WORLDTYPE == 0:
+            if world_type == 0:
                 t = random.choice((grass_block,))
-            if WORLDTYPE == 1:
+            if world_type == 1:
                 t = random.choice((dirt_block,))
-            if WORLDTYPE == 2:
+            if world_type == 2:
                 t = random.choice((sand_block,))
-            if WORLDTYPE == 3:
+            if world_type == 3:
                 t = random.choice((grass_block, sand_block))
-            if WORLDTYPE == 4:
+            if world_type == 4:
                 t = random.choice((grass_block, sand_block, dirt_block))
-            if WORLDTYPE == 5:
+            if world_type == 5:
                 t = random.choice((stone_block,))
-            if WORLDTYPE == 6:
+            if world_type == 6:
                 t = random.choice((snowgrass_block,))
             for y in xrange(c, c + h):
                 for x in xrange(a - s, a + s + 1):
@@ -957,46 +970,39 @@ def main(options):
     elif options.draw_distance == 'long':
         DRAW_DISTANCE = 60.0 * 2.0
 
-    global WORLDTYPE
-    global HILLHEIGHT
     global RND_FOREST
-    global WORLDSIZE
 
     RND_FOREST = options.maxtrees
 
     if options.terrain == "plains":
-        WORLDTYPE = 0
-        HILLHEIGHT = 2
+        config.set('World', 'type', '0')
+        config.set('World', 'hill_height', '2')
         RND_FOREST = 200
     if options.terrain == "mountains":
-        WORLDTYPE = 5
-        HILLHEIGHT = 12
+        config.set('World', 'type', '5')
+        config.set('World', 'hill_height', '12')
         RND_FOREST = 400
     if options.terrain == "desert":
-        WORLDTYPE = 2
-        HILLHEIGHT = 5
+        config.set('World', 'type', '2')
+        config.set('World', 'hill_height', '5')
         RND_FOREST = 50
     if options.terrain == "island":
-        WORLDTYPE = 3
-        HILLHEIGHT = 8
+        config.set('World', 'type', '3')
+        config.set('World', 'hill_height', '8')
         RND_FOREST = 300
     if options.terrain == "snow":
-        WORLDTYPE = 6
-        HILLHEIGHT = 4
+        config.set('World', 'type', '6')
+        config.set('World', 'hill_height', '4')
         RND_FOREST = 550
 
+    if options.hillheight:
+        config.set('World', 'hill_height', str(options.hillheight))
+        
+    if options.worldsize:
+        config.set('World', 'size', str(options.worldsize))
 
-    # print options.maxtrees
-    # print RND_FOREST
-
-    # WORLDTYPE = options.terrain
-    # if options.hillheight <> 6:
-    HILLHEIGHT = options.hillheight
-    WORLDSIZE = options.worldsize
-
-    if options.flat > 0:
-        global FLATWORLD
-        FLATWORLD = options.flat
+    if options.flat:
+        config.set('World', 'flat', '1')
 
     global SHOW_FOG
     SHOW_FOG = not options.hide_fog
@@ -1007,8 +1013,8 @@ def main(options):
         TIME_RATE /= 20
 
     # try:
-        # config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
-        # window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=config, save=save_object)
+        # window_config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
+        # window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=window_config, save=save_object)
     # except pyglet.window.NoSuchConfigException:
     window = Window(
         width=options.width, height=options.height, caption='pyCraftr',
@@ -1028,8 +1034,9 @@ if __name__ == '__main__':
     parser.add_argument("-width", type=int, default=850)
     parser.add_argument("-height", type=int, default=480)
     parser.add_argument("-terrain", type=str, default="grass")
-    parser.add_argument("-hillheight", type=int, default=6)
-    parser.add_argument("-flat", type=int, default=0)
+    parser.add_argument("-hillheight", type=int)
+    parser.add_argument("-worldsize", type=int)
+    parser.add_argument("--flat", action="store_true", default=False)
     parser.add_argument("--hide-fog", action="store_true", default=False)
     parser.add_argument("--show-gui", action="store_true", default=True)
     parser.add_argument("--disable-auto-save", action="store_false", default=True)
@@ -1038,6 +1045,5 @@ if __name__ == '__main__':
     parser.add_argument("--disable-save", action="store_false", default=True)
     parser.add_argument("--fast", action="store_true", default=False)
     parser.add_argument("--maxtrees", type=int, default=50)
-    parser.add_argument("--worldsize", type=int, default=160)
     options = parser.parse_args()
     main(options)
