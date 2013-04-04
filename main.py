@@ -294,6 +294,16 @@ class Model(object):
         if flat_world:
             return
 
+        world_type_blocks = (
+            grass_block,
+            dirt_block,
+            sand_block,
+            (grass_block, sand_block),
+            (grass_block, sand_block, dirt_block),
+            stone_block,
+            snowgrass_block,
+        )
+
         for _ in xrange(world_size / 2 + 40):  # (120):
             a = random.randint(-o, o)
             b = random.randint(-o, o)
@@ -301,20 +311,9 @@ class Model(object):
             h = random.randint(1, hill_height)
             s = random.randint(4, hill_height + 2)
             d = 1
-            if world_type == 0:
-                t = random.choice((grass_block,))
-            elif world_type == 1:
-                t = random.choice((dirt_block,))
-            elif world_type == 2:
-                t = random.choice((sand_block,))
-            elif world_type == 3:
-                t = random.choice((grass_block, sand_block))
-            elif world_type == 4:
-                t = random.choice((grass_block, sand_block, dirt_block))
-            elif world_type == 5:
-                t = random.choice((stone_block,))
-            elif world_type == 6:
-                t = random.choice((snowgrass_block,))
+            block = world_type_blocks[world_type]
+            if isinstance(block, (tuple, list)):
+                block = random.choice(block)
             for y in xrange(c, c + h):
                 for x in xrange(a - s, a + s + 1):
                     for z in xrange(b - s, b + s + 1):
@@ -322,7 +321,7 @@ class Model(object):
                             continue
                         if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
                             continue
-                        self.init_block((x, y, z), t)
+                        self.init_block((x, y, z), block)
 
                         #random tree  -- run forest, run!
                         if max_trees > 0:
@@ -353,7 +352,7 @@ class Model(object):
 
                                 max_trees -= 1
 
-                        if t in (grass_block, snowgrass_block):
+                        if block in (grass_block, snowgrass_block):
                             self.init_block((x - 1, y - 1, z), dirt_block)
                             self.init_block((x - 2, y - 2, z), dirt_block)
 
