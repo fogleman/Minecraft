@@ -810,7 +810,7 @@ class Window(pyglet.window.Window):
         return tuple(p)
 
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
-        if self.exclusive and scroll_y != 0:
+        if (self.exclusive or self.show_inventory) and scroll_y != 0:
             if not self.show_inventory:
                 self.item_list.change_index(scroll_y * -1)
             else:
