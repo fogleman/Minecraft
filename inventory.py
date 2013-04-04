@@ -94,6 +94,9 @@ class Inventory(object):
         self.sort()
         return retval
 
+    def remove_all_by_index(self, index):
+        self.slots[index] = None
+
     def sort(self, reverse=True):
         if self.sort_mode == 0:
             self.sort_with_key(key=lambda x: x.id if x != None else -sys.maxint - 1, reverse=True)

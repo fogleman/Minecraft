@@ -13,6 +13,7 @@ class InventorySelector(object):
         self.max_items = 27
         self.current_index = 1
         self.icon_size = self.model.group.texture.width / 8 #4
+        self.selected_item = None
 
         image = pyglet.image.load('inventory.png')
         frame_size = image.height * 3 / 4
@@ -94,3 +95,42 @@ class InventorySelector(object):
 
     def toggle_active_frame_visibility(self):
         self.active.opacity = 0 if self.active.opacity == 255 else 255
+        # throw the item
+        if self.selected_item:
+            pass
+
+    def mouse_coords_to_index(self, x, y):
+        width = 9 * (self.icon_size * 0.5 + 3)
+        height = 3 * self.icon_size * 0.5
+        # out of bound
+        if not ((self.frame.x <= x <= self.frame.x + width) and (self.frame.y <= y <= self.frame.y + height)):
+            return -1
+
+        x_offset = x - self.frame.x
+        y_offset = y - self.frame.y
+
+        row = y_offset // (self.icon_size * 0.5)
+        col = x_offset // (self.icon_size * 0.5 + 3)
+        return int(row * 9 + col)
+
+    def on_mouse_press(self, x, y, button):
+        index = self.mouse_coords_to_index(x, y)
+        if self.selected_item:
+            if index == -1:
+                # throw it
+                self.update_items()
+                return
+            item = self.player.inventory.at(index)
+            self.player.inventory.slots[index] = self.selected_item
+            self.selected_item = item
+        else:
+            if index == -1:
+                return
+            item = self.player.inventory.at(index)
+            if not item:
+                return
+            self.selected_item = item
+            self.player.inventory.remove_all_by_index(index)
+
+        self.update_items()
+
