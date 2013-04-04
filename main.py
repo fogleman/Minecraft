@@ -387,16 +387,18 @@ class Model(object):
             return
 
         # Trunk generation
-        for dy in range(random.randint(3, 7)):
+        length = random.randint(4, 8)
+        for dy in range(length):
             self.init_block((x, y + dy, z),
                             oakwood_block)
 
         treetop = y + dy + 1
         # Leaves generation
-        for xl in range(x - 2, x + 2):
+        d = length / 3
+        for xl in range(x - d, x + d):
             dx = abs(xl - x)
-            for yl in range(treetop - 2, treetop + 2):
-                for zl in range(z - 2, z + 2):
+            for yl in range(treetop - d, treetop + d):
+                for zl in range(z - d, z + d):
                     # Don't replace existing blocks
                     if (xl, yl, zl) in self.world:
                         continue
@@ -407,7 +409,7 @@ class Model(object):
                     dz = abs(zl - z)
                     # The farther we are (horizontally) from the trunk,
                     # the least leaves we can find.
-                    if random.uniform(0, dx + dz) > .5:
+                    if random.uniform(0, dx + dz) > 0.7:
                         continue
                     self.init_block((xl, yl, zl),
                                     leaf_block)
