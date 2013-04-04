@@ -3,7 +3,7 @@ from pyglet.window import key
 from math import cos, sin, atan2, pi, fmod, radians
 import random, time, argparse, os
 import cPickle as pickle
-import kytten #unused, future potential reference
+# import kytten #unused, future potential reference
 from collections import deque
 from blocks import *
 from items import *
@@ -65,26 +65,13 @@ class TextureGroup(pyglet.graphics.Group):
 def normalize(position):
     x, y, z = position
     x, y, z = (int(round(x)), int(round(y)), int(round(z)))
-    return (x, y, z)
+    return x, y, z
 
 def sectorize(position):
     x, y, z = normalize(position)
     x, y, z = x / SECTOR_SIZE, y / SECTOR_SIZE, z / SECTOR_SIZE
-    return (x, 0, z)
+    return x, 0, z
     
-# Define a simple function to create GLfloat arrays of floats:
-def vec(*args):
-    return (GLfloat * len(args))(*args)
-
-# Define a simple function to create GLfloat arrays of floats:
-def vec(*args):
-    return (GLfloat * len(args))(*args)
-
-# Define a simple function to create GLfloat arrays of floats:
-def vec(*args):
-    return (GLfloat * len(args))(*args)
-
-
 # Define a simple function to create GLfloat arrays of floats:
 def vec(*args):
     return (GLfloat * len(args))(*args)
@@ -147,7 +134,7 @@ class ItemSelector(object):
         if self.current_index >= self.max_items:
             self.current_index = 0
         elif self.current_index < 0:
-            self.current_index = self.max_items - 1;
+            self.current_index = self.max_items - 1
         self.update_current()
             
     def update_items(self):
@@ -171,12 +158,12 @@ class ItemSelector(object):
             x += (self.icon_size * 0.5) + 3
             amount_label = pyglet.text.Label(str(item.amount), font_name='Arial', font_size=9, 
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom', 
-                color=(block.amount_label_color), batch=self.batch, group=self.amount_labels_group)
+                color=block.amount_label_color, batch=self.batch, group=self.amount_labels_group)
             self.amount_labels.append(amount_label)
             self.icons.append(icon)
         
     def update_current(self):
-        self.active.x = self.frame.x + (self.current_index * 35);
+        self.active.x = self.frame.x + (self.current_index * 35)
         
     def set_position(self, width, height):
         self.frame.x = (width - self.frame.width) / 2
@@ -202,7 +189,7 @@ class ItemSelector(object):
         if item:
             amount = item.amount
             self.player.quick_slots.remove_by_index(self.current_index, quantity=item.amount)
-            return (item, amount)
+            return item, amount
         return False
 
     def toggle_active_frame_visibility(self):
@@ -227,7 +214,6 @@ class Model(object):
         s = 1
         y = 0
         global RND_FOREST
-        initTrees = RND_FOREST / 2
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
                 if WORLDTYPE == 0:
@@ -313,7 +299,7 @@ class Model(object):
                                 self.init_block((x - 1, y + 8, z + 1), leaf_block)
                                 self.init_block((x , y + 7, z), leaf_block)
 
-                                RND_FOREST = RND_FOREST -1
+                                RND_FOREST -= 1
 
                         if t == grass_block or snowg_block:
                             self.init_block((x - 1, y - 1, z), dirt_block)
@@ -454,7 +440,7 @@ class Model(object):
 class Window(pyglet.window.Window):
     def __init__(self, *args, **kwargs):
         self.show_gui = kwargs.pop('show_gui', True)
-        if 'save' in kwargs and kwargs['save'] != None:
+        if 'save' in kwargs and kwargs['save'] is not None:
             self.save = kwargs['save']
         else:
             self.save = None
@@ -474,8 +460,8 @@ class Window(pyglet.window.Window):
         self.ambient = vec(1.0, 1.0, 1.0, 1.0)
         self.polished = GLfloat(100.0)
         self.dy = 0
-        save_len = -1 if self.save == None else len(self.save)
-        if self.save == None or save_len < 2: # Model.world and model.sectors
+        save_len = -1 if self.save is None else len(self.save)
+        if self.save is None or save_len < 2: # Model.world and model.sectors
             self.model = Model()
             self.player = Player((0, 0, 0), (-20, 0))
         else:
@@ -508,7 +494,7 @@ class Window(pyglet.window.Window):
         x_r -= HALF_PI
         dx = cos(x_r) * m
         dz = sin(x_r) * m
-        return (dx, dy, dz)
+        return dx, dy, dz
     def get_motion_vector(self):
         if any(self.strafe):
             x, y = self.player.rotation
@@ -535,7 +521,7 @@ class Window(pyglet.window.Window):
             dy = 0.0
             dx = 0.0
             dz = 0.0
-        return (dx, dy, dz)
+        return dx, dy, dz
         
     def update_time(self):
         '''The idle function advances the time of day.
@@ -544,7 +530,7 @@ class Window(pyglet.window.Window):
         if not self.exclusive:
             return
 
-        time_of_day = (self.time_of_day) if (self.time_of_day < 12.0) else (24.0 - self.time_of_day)
+        time_of_day = self.time_of_day if (self.time_of_day < 12.0) else (24.0 - self.time_of_day)
         
         if time_of_day <= 2.5:
             self.time_of_day += 1.0 / TIME_RATE
@@ -837,7 +823,8 @@ class Window(pyglet.window.Window):
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
     def draw_label(self):
         x, y, z = self.player.position
-        self.label.text = '%.1f %02d (%.2f, %.2f, %.2f) %d / %d' % ((self.time_of_day) if (self.time_of_day < 12.0) else (24.0 - self.time_of_day),
+        self.label.text = '%.1f %02d (%.2f, %.2f, %.2f) %d / %d' % (
+        self.time_of_day if (self.time_of_day < 12.0) else (24.0 - self.time_of_day),
             pyglet.clock.get_fps(), x, y, z,
             len(self.model._shown), len(self.model.world))
         self.label.draw()
