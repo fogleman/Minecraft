@@ -2,6 +2,7 @@
 
 * Enable blending mode to get semi-transparent textures working. Render in the right order so they show up correctly.
 * Show cracks (and particles) as block_damage increases
+* Prevent user from placing blocks directly below him/her
 
 # Items
 
