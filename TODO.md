@@ -16,5 +16,9 @@
 - item stacks
 - Jimx's crafting system
 
+# Graphics
+
+* improve lighting system
+
 # Misc
 - need place for brainstorming/ideas etc. related to project, so we can cooperate (IRC/forums/Reddit/mailing list?)
