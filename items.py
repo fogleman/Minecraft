@@ -3,12 +3,12 @@ from blocks import *
 # ids of items should be >= ITEM_ID_MIN
 ITEM_ID_MIN = 256
 
-ITEMS_DIR = {} #it was a empty list before, not a dict
+ITEMS_DIR = {}
 
 class Item(object):
     def __init__(self, max_stack_size):
         self.max_stack_size = max_stack_size
-        ITEMS_DIR[self.id()] = self
+        ITEMS_DIR[self.id] = self
 
     def on_right_click(self):
         pass
@@ -25,10 +25,10 @@ class ItemStack(object):
             self.max_stack_size = ITEMS_DIR[type].max_stack_size
         else:
             self.max_stack_size = BLOCKS_DIR[type].max_stack_size
-            
+
     # for debugging
     def __repr__(self):
-        return '{ Item stack with type = ' + str(self.type) + ' }' 
+        return '{ Item stack with type = ' + str(self.type) + ' }'
 
     def change_amount(self, change=0):
         if change == 0:
@@ -38,6 +38,7 @@ class ItemStack(object):
             self.amount = 0
 
     # compatible with blocks
+    @property
     def id(self):
         return self.type
 
