@@ -1,4 +1,6 @@
-# Minecraft
+# pyCraftr
+
+![pyCraftr](https://raw.github.com/avelanarius/Minecraft/master/screenshot.jpg)
 
 Simple Minecraft-inspired demo written in Python and Pyglet.
 
