@@ -2,9 +2,9 @@
 
 ![pyCraftr](https://raw.github.com/avelanarius/Minecraft/master/screenshot.jpg)
 
-Simple Minecraft-inspired demo written in Python and Pyglet.
+**Simple Minecraft-inspired demo written in Python and Pyglet.**
 
-http://www.youtube.com/watch?v=kC3lwK631X8
+*http://www.youtube.com/watch?v=kC3lwK631X8*
 
 ## How to Run
 
@@ -23,7 +23,7 @@ If that doesn't work, set Python to run in 32-bit mode by default:
 
     defaults write com.apple.versioner.python Prefer-32-Bit -bool yes 
 
-This assumes you are using the OS X default Python.  Works on Lion 10.7 with the default Python 2.7, and may work on other versions too.  Please raise an issue if not.
+This assumes you are using the OS X default Python. Works on Lion 10.7 with the default Python 2.7, and may work on other versions too.  Please raise an issue if not.
     
 Or try Pyglet 1.2 alpha, which supports 64-bit mode:  
 
@@ -47,33 +47,33 @@ See the [wiki](https://github.com/fogleman/Minecraft/wiki) for this project to i
 
 ### Moving
 
-- W: forward
-- S: back
-- A: strafe left
-- D: strafe right
-- Mouse: look around
-- Space: jump / (in flying mode) fly
-- Shift: (in flying mode) fly down
-- Tab: toggle flying mode
+- **W**: forward
+- **S**: back
+- **A**: strafe left
+- **D**: strafe right
+- **Mouse**: look around
+- **Space**: jump / (in flying mode) fly
+- **Shift**: (in flying mode) fly down
+- **Tab**: toggle flying mode
 
 ### Building
 
-- 1 - 9: Selecting item in inventory
-- Mouse left-click: remove block
-- Mouse right-click: create block
+- **1 - 9**: Selecting item in inventory
+- **Mouse left-click**: remove block
+- **Mouse right-click**: create block
 
 ### GUI
 
-- B / F3: Toggle UI
-- I: Show inventory
-- V: Saving (save filename in command-line arguments)
-- M: Sort items in the quick slots (3 choices)
-- ENTER: Move selected item to inventory / quick slots
-- Mouse left-click (in inventory): Pick up item and after second click put off last item
+- **B / F3**: Toggle UI
+- **I**: Show inventory
+- **V**: Saving (save filename in command-line arguments)
+- **M**: Sort items in the quick slots (3 choices)
+- **ENTER**: Move selected item to inventory / quick slots
+- **Mouse left-click (in inventory)**: Pick up item and after second click put off last item
 
 ### Quitting
 
-- ESC: release mouse, then close window
+- **ESC**: release mouse, then close window
 
 ### Command-line arguments
     usage: main.py [-h] [-width WIDTH] [-height HEIGHT] [-terrain plains/mountains/desert/islands]
