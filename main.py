@@ -794,8 +794,12 @@ class Window(pyglet.window.Window):
             self.player.rotation = (x, y)
 
     def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
-        if self.exclusive and button == pyglet.window.mouse.LEFT:
-            self.on_mouse_motion(x, y, dx, dy)
+        if button == pyglet.window.mouse.LEFT:
+            if self.show_inventory:
+                self.inventory_list.on_mouse_drag(x, y, dx, dy, button, modifiers)
+                return
+            if self.exclusive:
+                self.on_mouse_motion(x, y, dx, dy)
 
     def on_key_press(self, symbol, modifiers):
         if symbol == key.W:

@@ -134,3 +134,6 @@ class InventorySelector(object):
 
         self.update_items()
 
+    def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
+        pass # TODO: Allow dragging & dropping items
+
