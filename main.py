@@ -1032,6 +1032,12 @@ def main(options):
     pyglet.app.run()
     if options.disable_auto_save and options.disable_save:
         window.save_to_file()
+    if options.save_config:
+        try:
+            with open(config_file, 'wb') as handle:
+                config.write(handle)
+        except:
+            print "Problem: Write error."
 
 
 if __name__ == '__main__':
@@ -1050,5 +1056,6 @@ if __name__ == '__main__':
     parser.add_argument("-save", type=unicode, default=SAVE_FILENAME)
     parser.add_argument("--disable-save", action="store_false", default=True)
     parser.add_argument("--fast", action="store_true", default=False)
+    parser.add_argument("--save-config", action="store_true", default=False)
     options = parser.parse_args()
     main(options)
