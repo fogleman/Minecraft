@@ -57,7 +57,7 @@ if not os.path.lexists(config_file):
     type, hill_height, max_trees = terrain_options['plains']
     config.add_section('World')
     config.set('World', 'type', str(type))  # 0=plains,1=dirt,2=desert,3=islands,4=sand,5=stone,6=snow
-    config.set('World', 'hill_height', str(hill_height))  # height of the hills, increase for mountains :D
+    config.set('World', 'hill_height', str(hill_height))  # height of the hills
     config.set('World', 'flat', '0')  # dont make mountains,  make a flat world
     config.set('World', 'size', '160')
     config.set('World', 'show_fog', '1')
