@@ -13,7 +13,7 @@ class InventorySelector(object):
         self.max_items = 27
         self.current_index = 1
         self.icon_size = self.model.group.texture.width / 8 #4
-
+        self.selected_item = None
         image = pyglet.image.load('inventory.png')
         frame_size = image.height * 3 / 4
         self.frame = pyglet.sprite.Sprite(image.get_region(0, image.height - frame_size, image.width, frame_size), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
@@ -109,22 +109,25 @@ class InventorySelector(object):
 
     def on_mouse_press(self, x, y, button):
         index = self.mouse_coords_to_index(x, y)
-        # previous implentation of this function was doing something strange
-        # and caused item loss
-        if index == -1:
-            return False
-        elif index == self.current_index:
-            current_block = self.get_current_block_item_and_amount()
-            if current_block:
-                if not self.player.quick_slots.add_item(
-                        current_block[0].id,
-                        quantity=current_block[1]):
-                    self.player.inventory.add_item(current_block[0].id,
-                                                   quantity=current_block[
-                                                       1])
+        if self.selected_item:
+            if index == -1:
+                # throw it
+                self.update_items()
+                return
+            item = self.player.inventory.at(index)
+            self.player.inventory.slots[index] = self.selected_item
+            self.selected_item = item
         else:
-            self.current_index = index
-            self.update_current()
+            if index == -1:
+                return
+            item = self.player.inventory.at(index)
+            if not item:
+                return
+            self.selected_item = item
+            self.player.inventory.remove_all_by_index(index)
+
+        self.update_items()
+        self.update_current()
         return True
 
     def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
