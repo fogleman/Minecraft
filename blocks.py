@@ -221,7 +221,7 @@ class LeafBlock(Block):
     top_texture = 7, 2
     bottom_texture = 7, 2
     side_texture = 7, 2
-    hardness = 0.6
+    hardness = 0.1
     id = 18.0
     name = "Leaves"
 
