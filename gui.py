@@ -20,7 +20,16 @@ class InventorySelector(object):
         self.frame = pyglet.sprite.Sprite(image.get_region(0, image.height - frame_size, image.width, frame_size), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
         self.active = pyglet.sprite.Sprite(image.get_region(0, 0, image.height / 4, image.height / 4), batch=self.batch, group=pyglet.graphics.OrderedGroup(2))
         self.active.opacity = 0
-        self.set_position(width, height)
+        self.frame.x = (width - self.frame.width) / 2
+        self.frame.y = self.icon_size + 20 # 20 is padding
+        self.item_locations = []
+        x = self.frame.x + 3
+        for i in range(0, 27):
+            self.item_locations.append((x, self.frame.y + floor(i / 9) * 6 + floor(i / 9) * self.icon_size * 0.5 + 3))
+            x += (self.icon_size * 0.5) + 3
+            if x - self.frame.x >= self.frame.width:
+                x = self.frame.x + 3
+        self.item_locations.append((x, self.frame.y + floor(26 / 9) * 6 + floor(26 / 9) * self.icon_size * 0.5 + 3))
 
     def change_index(self, change):
         self.set_index(self.current_index + change)
@@ -47,7 +56,7 @@ class InventorySelector(object):
         for i, item in enumerate(items):
             if not item:
                 x += (self.icon_size * 0.5) + 3
-                if x - self.frame.x - 3 >= self.frame.width:
+                if x - self.frame.x >= self.frame.width:
                     x = self.frame.x + 3
                 continue
             block = BLOCKS_DIR[item.type]
@@ -56,8 +65,6 @@ class InventorySelector(object):
             icon.scale = 0.5
             icon.x = x
             icon.y = self.frame.y + floor(i / 9) * 6 + floor(i / 9) * self.icon_size * 0.5 + 3
-            item.inventory_x = icon.x
-            item.inventory_y = icon.y
             x += (self.icon_size * 0.5) + 3
             if x - self.frame.x >= self.frame.width:
                 x = self.frame.x + 3
@@ -66,6 +73,7 @@ class InventorySelector(object):
                 color=(block.amount_label_color), batch=self.batch, group=self.amount_labels_group)
             self.amount_labels.append(amount_label)
             self.icons.append(icon)
+
         
     def update_current(self):
         self.active.x = self.frame.x + ((self.current_index % 9) * self.icon_size * 0.5) + (self.current_index % 9) * 3
@@ -134,7 +142,7 @@ class InventorySelector(object):
             if index == -1:
                 # throw it
                 self.update_items()
-                return
+                return False
             item = self.player.inventory.at(index)
             self.player.inventory.slots[index] = self.selected_item
             self.set_selected_item(item)
@@ -143,14 +151,16 @@ class InventorySelector(object):
                 self.selected_item_icon.y = y
         else:
             if index == -1:
-                return
+                return False
             item = self.player.inventory.at(index)
             if not item:
                 return True
+
             self.set_selected_item(item)
             if self.selected_item_icon:
                 self.selected_item_icon.x = x
                 self.selected_item_icon.y = y
+
             self.player.inventory.remove_all_by_index(index)
 
         self.update_items()

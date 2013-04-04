@@ -54,13 +54,14 @@ SAVE_FILENAME = os.path.join(game_dir, 'save.dat')
 config = ConfigParser()
 config_file = os.path.join(game_dir, 'game.cfg')
 if not os.path.lexists(config_file):
+    type, hill_height, max_trees = terrain_options['plains']
     config.add_section('World')
-    config.set('World', 'type', '0')  # 0=grass,1=dirt,2=desert,3=islands,4=sand,5=stone,6=snow
-    config.set('World', 'hill_height', '6')  # height of the hills, increase for mountains :D
+    config.set('World', 'type', str(type))  # 0=plains,1=dirt,2=desert,3=islands,4=sand,5=stone,6=snow
+    config.set('World', 'hill_height', str(hill_height))  # height of the hills, increase for mountains :D
     config.set('World', 'flat', '0')  # dont make mountains,  make a flat world
     config.set('World', 'size', '160')
     config.set('World', 'show_fog', '1')
-    config.set('World', 'max_trees', '500')  # Was RND_FOREST
+    config.set('World', 'max_trees', str(max_trees))
 
     try:
         with open(config_file, 'wb') as handle:
@@ -147,9 +148,8 @@ class Player(Entity):
         initial_items = [dirt_block, sand_block, brick_block, stone_block,
                          glass_block, stonebrick_block, chest_block,
                          sandstone_block, marble_block]
-        flat_world = config.getboolean('World', 'flat')
         for item in initial_items:
-            quantity = random.randint(1, 10) if flat_world else 99
+            quantity = random.randint(1, 10)
             if random.randint(0, 1) == 0:
                 self.inventory.add_item(item.id, quantity)
             else:
@@ -1175,7 +1175,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-width", type=int, default=850)
     parser.add_argument("-height", type=int, default=480)
-    parser.add_argument("-terrain", type=str, default=terrain_options.keys()[0])
+    parser.add_argument("-terrain", choices=terrain_options.keys())
     parser.add_argument("-hillheight", type=int)
     parser.add_argument("-worldsize", type=int)
     parser.add_argument("-maxtrees", type=int)
