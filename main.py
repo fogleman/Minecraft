@@ -705,6 +705,9 @@ class Window(pyglet.window.Window):
                 self.inventory_list.change_index(scroll_y * -1)
 
     def on_mouse_press(self, x, y, button, modifiers):
+        if self.show_inventory:
+            self.inventory_list.on_mouse_press(x, y, button)
+            return
         if self.exclusive:
             vector = self.get_sight_vector()
             block, previous = self.model.hit_test(self.player.position, vector)
@@ -776,6 +779,7 @@ class Window(pyglet.window.Window):
             self.inventory_list.toggle_active_frame_visibility()
             self.item_list.toggle_active_frame_visibility()
             self.show_inventory = not self.show_inventory
+            self.set_exclusive_mouse(not self.show_inventory)
         elif symbol == key.ENTER:
             if self.show_inventory:
                 current_block = self.inventory_list\
