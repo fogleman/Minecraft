@@ -1010,8 +1010,9 @@ def main(options):
         # config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
         # window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=config, save=save_object)
     # except pyglet.window.NoSuchConfigException:
-    window = Window(width=options.width, height=options.height,
-                    caption='pyCraftr', resizable=True, save=save_object)
+    window = Window(
+        width=options.width, height=options.height, caption='pyCraftr',
+        resizable=True, save=save_object, vsync=False)
 
     window.set_exclusive_mouse(True)
     setup()
