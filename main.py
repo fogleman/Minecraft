@@ -32,7 +32,6 @@ HOUR_DEG = 15.0
 BACK_RED = 0.0  # 0.53
 BACK_GREEN = 0.0  # 0.81
 BACK_BLUE = 0.0  # 0.98
-SHOW_FOG = True
 HALF_PI = pi / 2.0  # 90 degrees
 RND_FOREST = 10
 
@@ -44,6 +43,7 @@ if not os.path.lexists(config_file):
     config.set('World', 'hill_height', '6')  # height of the hills, increase for mountains :D
     config.set('World', 'flat', '0')  # dont make mountains,  make a flat world
     config.set('World', 'size', '160')
+    config.set('World', 'show_fog', '1')
 
     try:
         with open(config_file, 'wb') as handle:
@@ -521,6 +521,7 @@ class Window(pyglet.window.Window):
         self.ambient = vec(1.0, 1.0, 1.0, 1.0)
         self.polished = GLfloat(100.0)
         self.dy = 0
+        self.show_fog = False
         save_len = -1 if self.save is None else len(self.save)
         if self.save is None or save_len < 2:  # Model.world and model.sectors
             self.model = Model()
@@ -858,7 +859,7 @@ class Window(pyglet.window.Window):
 
     def set_3d(self):
         width, height = self.get_size()
-        if SHOW_FOG:
+        if self.show_fog:
             glFogfv(GL_FOG_COLOR, vec(BACK_RED, BACK_GREEN, BACK_BLUE, 1.0))
         glEnable(GL_DEPTH_TEST)
         glViewport(0, 0, width, height)
@@ -933,14 +934,15 @@ class Window(pyglet.window.Window):
         self.reticle.draw(GL_LINES)
 
 
-def setup_fog():
+def setup_fog(window):
     glEnable(GL_FOG)
-    glFogfv(GL_FOG_COLOR, vec(0.5, 0.69, 1.0, 1))
+    glFogfv(GL_FOG_COLOR, vec(BACK_RED, BACK_GREEN, BACK_BLUE, 1))
     glHint(GL_FOG_HINT, GL_DONT_CARE)
     glFogi(GL_FOG_MODE, GL_LINEAR)
     glFogf(GL_FOG_DENSITY, 0.35)
     glFogf(GL_FOG_START, 20.0)
     glFogf(GL_FOG_END, 80)
+    window.show_fog = True
 
 
 def setup():
@@ -1002,8 +1004,8 @@ def main(options):
     if options.flat:
         config.set('World', 'flat', '1')
 
-    global SHOW_FOG
-    SHOW_FOG = not options.hide_fog
+    if options.hide_fog:
+        config.set('World', 'show_fog', '0')
 
     global TIME_RATE
 
@@ -1020,8 +1022,8 @@ def main(options):
 
     window.set_exclusive_mouse(True)
     setup()
-    if SHOW_FOG:
-        setup_fog()
+    if config.getboolean('World', 'show_fog'):
+        setup_fog(window)
     pyglet.app.run()
     if options.disable_auto_save and options.disable_save:
         window.save_to_file()
