@@ -128,6 +128,7 @@ class WaterBlock(Block):
     bottom_texture = 0, 2
     side_texture = 0, 2
     transparent = True
+    hardness = -1  # Unobtainable
     id = 8
     name = "Water"
 
@@ -213,19 +214,67 @@ class OakWoodBlock(Block):
     side_texture = 7, 0
     hardness = 0.6
     id = 17.0
-    name = "Oak Log"
+    name = "Oak wood"
 
+class JungleWoodBlock(Block):
+    top_texture = 6, 1
+    bottom_texture = 6, 1
+    side_texture = 6, 0
+    hardness = 0.6
+    id = 17.1
+    name = "Jungle wood"
 
-class LeafBlock(Block):
+class BirchWoodBlock(Block):
+    top_texture = 5, 1
+    bottom_texture = 5, 1
+    side_texture = 5, 0
+    hardness = 0.6
+    id = 17.2
+    name = "Birch wood"
+
+class CactusBlock(Block):
+    top_texture = 7, 5
+    bottom_texture = 7, 3
+    side_texture = 7, 4
+    hardness = 0.6
+    id = 17.0
+    name = "Cactus"
+
+class OakLeafBlock(Block):
     top_texture = 7, 2
     bottom_texture = 7, 2
     side_texture = 7, 2
     hardness = 0.6
     id = 18.0
-    name = "Leaves"
+    name = "Oak Leaves"
+
 
     def __init__(self):
-        super(LeafBlock, self).__init__()
+        super(OakLeafBlock, self).__init__()
+        self.drop_id = None
+
+class JungleLeafBlock(Block):
+    top_texture = 6, 2
+    bottom_texture = 6, 2
+    side_texture = 6, 2
+    hardness = 0.6
+    id = 18.1
+    name = "Jungle Leaves"
+
+    def __init__(self):
+        super(JungleLeafBlock, self).__init__()
+        self.drop_id = None
+
+class BirchLeafBlock(Block):
+    top_texture = 5, 2
+    bottom_texture = 5, 2
+    side_texture = 5, 2
+    hardness = 0.6
+    id = 18.2
+    name = "Birch Leaves"
+
+    def __init__(self):
+        super(BirchLeafBlock, self).__init__()
         self.drop_id = None
 
 
@@ -247,4 +296,9 @@ junglewoodplank_block = JungleWoodPlankBlock()
 sprucewoodplank_block = SpruceWoodPlankBlock()
 snowgrass_block = SnowGrassBlock()
 oakwood_block = OakWoodBlock()
-leaf_block = LeafBlock()
+oakleaf_block = OakLeafBlock()
+junglewood_block = JungleWoodBlock()
+jungleleaf_block = JungleLeafBlock()
+birchwood_block = BirchWoodBlock()
+birchleaf_block = BirchLeafBlock()
+cactus_block = CactusBlock()

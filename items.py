@@ -42,3 +42,8 @@ class ItemStack(object):
     def id(self):
         return self.type
 
+    # compatible with blocks
+    @property
+    def name(self):
+        return BLOCKS_DIR[self.id].name
+

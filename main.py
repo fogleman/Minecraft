@@ -6,6 +6,9 @@ import os
 import cPickle as pickle
 from ConfigParser import ConfigParser, RawConfigParser
 
+import pyglet
+# Disable error checking for increased performance
+pyglet.options['debug_gl'] = False
 from pyglet.gl import *
 from pyglet.window import key
 
@@ -17,6 +20,7 @@ from inventory import *
 from entity import *
 from gui import *
 
+APP_NAME = 'pyCraftr'  # should I stay or should I go?
 
 SECTOR_SIZE = 16
 DRAW_DISTANCE = 60.0
@@ -24,7 +28,6 @@ FOV = 65.0  # TODO: add menu option to change FOV
 NEAR_CLIP_DISTANCE = 0.1  # TODO: make min and max clip distance dynamic
 FAR_CLIP_DISTANCE = 200.0  # Maximum render distance,
                            # ignoring effects of sector_size and fog
-SAVE_FILENAME = 'save.dat'
 DISABLE_SAVE = True
 TIME_RATE = 240 * 10  # Rate of change (steps per hour).
 DEG_RAD = pi / 180.0
@@ -34,16 +37,31 @@ BACK_GREEN = 0.0  # 0.81
 BACK_BLUE = 0.0  # 0.98
 HALF_PI = pi / 2.0  # 90 degrees
 
+terrain_options = {
+    'plains': ('0', '2', '700'),  # type, hill_height, max_trees
+    'mountains': ('5', '12', '4000'),
+    'desert': ('2', '5', '50'),
+    'island': ('3', '8', '700'),
+    'snow': ('6', '4', '1500')
+}
+
+game_dir = pyglet.resource.get_settings_path(APP_NAME)
+if not os.path.exists(game_dir):
+    os.makedirs(game_dir)
+
+SAVE_FILENAME = os.path.join(game_dir, 'save.dat')
+
 config = ConfigParser()
-config_file = "game.cfg"
+config_file = os.path.join(game_dir, 'game.cfg')
 if not os.path.lexists(config_file):
+    type, hill_height, max_trees = terrain_options['plains']
     config.add_section('World')
-    config.set('World', 'type', '0')  # 0=grass,1=dirt,2=desert,3=islands,4=sand,5=stone,6=snow
-    config.set('World', 'hill_height', '6')  # height of the hills, increase for mountains :D
+    config.set('World', 'type', str(type))  # 0=plains,1=dirt,2=desert,3=islands,4=sand,5=stone,6=snow
+    config.set('World', 'hill_height', str(hill_height))  # height of the hills, increase for mountains :D
     config.set('World', 'flat', '0')  # dont make mountains,  make a flat world
     config.set('World', 'size', '160')
     config.set('World', 'show_fog', '1')
-    config.set('World', 'max_trees', '10')  # Was RND_FOREST
+    config.set('World', 'max_trees', str(max_trees))
 
     try:
         with open(config_file, 'wb') as handle:
@@ -66,14 +84,29 @@ def cube_vertices(x, y, z, n):
     ]
 
 
-FACES = [
+FACES = (
     ( 0,  1,  0),
     ( 0, -1,  0),
     (-1,  0,  0),
     ( 1,  0,  0),
     ( 0,  0,  1),
     ( 0,  0, -1),
-]
+)
+
+FACES_WITH_DIAGONALS = FACES + (
+    (-1, -1,  0),
+    (-1,  0, -1),
+    ( 0, -1, -1),
+    ( 1,  1,  0),
+    ( 1,  0,  1),
+    ( 0,  1,  1),
+    ( 1, -1,  0),
+    ( 1,  0, -1),
+    ( 0,  1, -1),
+    (-1,  1,  0),
+    (-1,  0,  1),
+    ( 0, -1,  1),
+)
 
 
 class TextureGroup(pyglet.graphics.Group):
@@ -113,11 +146,10 @@ class Player(Entity):
         self.quick_slots = Inventory(9)
         self.flying = flying
         initial_items = [dirt_block, sand_block, brick_block, stone_block,
-                         glass_block, water_block, chest_block,
+                         glass_block, stonebrick_block, chest_block,
                          sandstone_block, marble_block]
-        flat_world = config.getboolean('World', 'flat')
         for item in initial_items:
-            quantity = random.randint(1, 10) if flat_world else 99
+            quantity = random.randint(1, 10)
             if random.randint(0, 1) == 0:
                 self.inventory.add_item(item.id, quantity)
             else:
@@ -137,7 +169,7 @@ class ItemSelector(object):
     def __init__(self, width, height, player, model):
         self.batch = pyglet.graphics.Batch()
         self.group = pyglet.graphics.OrderedGroup(1)
-        self.amount_labels_group = pyglet.graphics.OrderedGroup(2)
+        self.labels_group = pyglet.graphics.OrderedGroup(2)
         self.amount_labels = []
         self.model = model
         self.player = player
@@ -153,6 +185,7 @@ class ItemSelector(object):
         self.active = pyglet.sprite.Sprite(
             image.get_region(0, 0, frame_size, frame_size), batch=self.batch,
             group=pyglet.graphics.OrderedGroup(2))
+        self.current_block_label = None
         self.set_position(width, height)
 
     def change_index(self, change):
@@ -191,16 +224,28 @@ class ItemSelector(object):
             icon.scale = 0.5
             icon.x = x
             icon.y = self.frame.y + 3
+            item.quickslots_x = icon.x
+            item.quickslots_y = icon.y
             x += (self.icon_size * 0.5) + 3
             amount_label = pyglet.text.Label(
                 str(item.amount), font_name='Arial', font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
                 color=block.amount_label_color, batch=self.batch,
-                group=self.amount_labels_group)
+                group=self.labels_group)
             self.amount_labels.append(amount_label)
             self.icons.append(icon)
+        self.update_current()
 
     def update_current(self):
+        if self.current_block_label:
+            self.current_block_label.delete()
+        if hasattr(self.get_current_block_item(False), 'quickslots_x') and hasattr(self.get_current_block_item(False), 'quickslots_y'):
+            self.current_block_label = pyglet.text.Label(
+                self.get_current_block_item(False).name, font_name='Arial', font_size=9,
+                x=self.get_current_block_item(False).quickslots_x + 0.25 * self.icon_size, y=self.get_current_block_item(False).quickslots_y - 20,
+                anchor_x='center', anchor_y='bottom',
+                color=(255, 255, 255, 255), batch=self.batch,
+                group=self.labels_group)
         self.active.x = self.frame.x + (self.current_index * 35)
 
     def set_position(self, width, height):
@@ -210,11 +255,12 @@ class ItemSelector(object):
         self.update_current()
         self.update_items()
 
-    def get_current_block(self):
+    def get_current_block(self, remove=True):
         item = self.player.quick_slots.at(self.current_index)
         if item:
             item_id = item.type
-            self.player.quick_slots.remove_by_index(self.current_index)
+            if remove:
+                self.player.quick_slots.remove_by_index(self.current_index)
             self.update_items()
             if item_id >= ITEM_ID_MIN:
                 return ITEMS_DIR[item_id]
@@ -222,12 +268,18 @@ class ItemSelector(object):
                 return BLOCKS_DIR[item_id]
         return False
 
-    def get_current_block_item_and_amount(self):
+
+    def get_current_block_item(self, remove=True):
+        item = self.player.quick_slots.at(self.current_index)
+        return item
+
+    def get_current_block_item_and_amount(self, remove=True):
         item = self.player.quick_slots.at(self.current_index)
         if item:
             amount = item.amount
-            self.player.quick_slots.remove_by_index(self.current_index,
-                                                    quantity=item.amount)
+            if remove:
+                self.player.quick_slots.remove_by_index(self.current_index,
+                                                        quantity=item.amount)
             return item, amount
         return False
 
@@ -252,9 +304,11 @@ class Model(object):
     def initialize(self):
         world_size = config.getint('World', 'size')
         world_type = config.getint('World', 'type')
+        print world_type
         hill_height = config.getint('World', 'hill_height')
         flat_world = config.getboolean('World', 'flat')
-        max_trees = config.getint('World', 'max_trees')
+        self.max_trees = config.getint('World', 'max_trees')
+        tree_chance = self.max_trees / float(world_size * (SECTOR_SIZE ** 2))
         n = world_size / 2  # 80
         s = 1
         y = 0
@@ -262,7 +316,7 @@ class Model(object):
         worldtypes_grounds = (
             grass_block,
             dirt_block,
-            sand_block,
+            (sand_block, ) * 15 + (sandstone_block,) * 4,
             water_block,
             grass_block,
             (grass_block,) * 15 + (dirt_block,) * 3 + (stone_block,),
@@ -271,6 +325,14 @@ class Model(object):
 
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
+
+                # Generation of the outside wall
+                if x in (-n, n) or z in (-n, n):
+                    for dy in xrange(-3, 10):  # was -2 ,6
+                        self.init_block((x, y + dy, z), stone_block)
+                    continue
+
+                # Generation of the ground
                 block = worldtypes_grounds[world_type]
                 if isinstance(block, (tuple, list)):
                     block = random.choice(block)
@@ -278,15 +340,46 @@ class Model(object):
                 self.init_block((x, y - 3, z), dirt_block)
                 self.init_block((x, y - 4, z), bed_block)
 
-                if x in (-n, n) or z in (-n, n):
-                    for dy in xrange(-3, 10):  # was -2 ,6
-                        self.init_block((x, y + dy, z), stone_block)
+                # Perhaps a tree
+                if self.max_trees > 0:
+                    showtree = random.random()
+                    if showtree <= tree_chance:
+                        if world_type is not 2 or 3:
+                            rt = random.randrange(0,2)
+                            if rt < 1:
+                                self.generate_oak_tree((x, y - 2, z))
+                            if rt == 1:
+                                self.generate_jungle_tree((x, y - 2, z))
+                            if rt == 2:
+                                self.generate_birch_tree((x, y - 2, z))
+                        if world_type == 2: # desert
+                            self.generate_cactus((x, y - 2, z))
+                        if world_type == 3: #island
+                            rt = random.randrange(0,4)
+                            if rt < 1:
+                                self.generate_oak_tree((x, y - 2, z))
+                            if rt == 1:
+                                self.generate_jungle_tree((x, y - 2, z))
+                            if rt == 2:
+                                self.generate_birch_tree((x, y - 2, z))
+                            if rt > 2:
+                                self.generate_cactus((x, y - 2, z))
 
-                if flat_world:
-                    return
+
 
         o = n - 10 + hill_height - 6
 
+        world_type_blocks = (
+            grass_block,
+            dirt_block,
+            (sand_block, sandstone_block),
+            (grass_block, sand_block),
+            (grass_block, sand_block, dirt_block),
+            stone_block,
+            snowgrass_block,
+        )
+
+        # Hills generation
         for _ in xrange(world_size / 2 + 40):  # (120):
             a = random.randint(-o, o)
             b = random.randint(-o, o)
@@ -294,20 +387,9 @@ class Model(object):
             h = random.randint(1, hill_height)
             s = random.randint(4, hill_height + 2)
             d = 1
-            if world_type == 0:
-                t = random.choice((grass_block,))
-            elif world_type == 1:
-                t = random.choice((dirt_block,))
-            elif world_type == 2:
-                t = random.choice((sand_block,))
-            elif world_type == 3:
-                t = random.choice((grass_block, sand_block))
-            elif world_type == 4:
-                t = random.choice((grass_block, sand_block, dirt_block))
-            elif world_type == 5:
-                t = random.choice((stone_block,))
-            elif world_type == 6:
-                t = random.choice((snowgrass_block,))
+            block = world_type_blocks[world_type]
+            if isinstance(block, (tuple, list)):
+                block = random.choice(block)
             for y in xrange(c, c + h):
                 for x in xrange(a - s, a + s + 1):
                     for z in xrange(b - s, b + s + 1):
@@ -315,50 +397,226 @@ class Model(object):
                             continue
                         if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
                             continue
-                        self.init_block((x, y, z), t)
+                        if (x, y, z) in self.world:
+                            continue
+                        self.init_block((x, y, z), block)
 
-                        #random tree  -- run forest, run!
-                        if max_trees > 0:
-                             if y > 0: # don't have trees sitting on the
-                                # base 0 land.'
-                                showtree = random.randint(1, 100)  # 1 out of 5 %
-                                                # chance out of 100 to have a tree.
-                                if showtree <= 5:
-                                    #print showtree
-                                    self.init_block((x, y -2, z), dirt_block)
-                                    self.init_block((x, y -1, z), dirt_block)
-                                    self.init_block((x, y, z), dirt_block)
-                                    theight = random.randint(4, 24)  #4,15
-                                    for ty in xrange(1,theight):
-                                        self.init_block((x, ty, z), oakwood_block)
+                        # Perhaps a tree
+                        if self.max_trees > 0:
+                            showtree = random.random()
+                            if showtree <= tree_chance:
+                                if world_type is not 2 or 3:
+                                    rt = random.randrange(0,2)
+                                    if rt < 1:
+                                        self.generate_oak_tree((x, y - 2, z))
+                                    if rt == 1:
+                                        self.generate_jungle_tree((x, y - 2, z))
+                                    if rt > 1:
+                                        self.generate_birch_tree((x, y - 2, z))
+                                if world_type == 2: # desert
+                                    self.generate_cactus((x, y - 2, z))
+                                if world_type == 3: # island
+                                    rt = random.randrange(0,4)
+                                    if rt < 1:
+                                        self.generate_oak_tree((x, y - 2, z))
+                                    if rt == 1:
+                                        self.generate_jungle_tree((x, y - 2, z))
+                                    if rt == 2:
+                                        self.generate_birch_tree((x, y - 2, z))
+                                    if rt > 2:
+                                        self.generate_cactus((x, y - 2, z))
 
-
-                                    self.init_block((x - 1, theight -4, z), oakwood_block)
-                                    self.init_block((x + 1, theight -4, z), oakwood_block)
-                                    self.init_block((x - 1, theight -4, z -1), oakwood_block)
-                                    self.init_block((x - 1, theight -4, z +1), oakwood_block)
-                                    self.init_block((x - 1, theight -3, z), oakwood_block)
-                                    self.init_block((x + 1, theight -3, z), leaf_block)
-                                    self.init_block((x - 1, theight -3, z), leaf_block)
-                                    self.init_block((x + 1, theight -3, z + 1), leaf_block)
-                                    self.init_block((x - 1, theight -3, z - 1), leaf_block)
-                                    self.init_block((x + 1, theight -2, z), leaf_block)
-                                    self.init_block((x - 1, theight -2, z), leaf_block)
-                                    self.init_block((x + 1, theight -2, z + 1), leaf_block)
-                                    self.init_block((x - 1, theight -2, z - 1), leaf_block)
-                                    self.init_block((x + 1, theight -1, z), leaf_block)
-                                    self.init_block((x - 1, theight -1, z), leaf_block)
-                                    self.init_block((x + 1, theight -1, z - 1), leaf_block)
-                                    self.init_block((x - 1, theight -1, z + 1), leaf_block)
-                                    self.init_block((x, theight, z), leaf_block)
-
-                                    max_trees -= 1
-
-                        if t in (grass_block, snowgrass_block):
-                            self.init_block((x - 1, y - 1, z), dirt_block)
-                            self.init_block((x - 2, y - 2, z), dirt_block)
+                        if world_type is not 2 or 3: # is not desert or island
+                            if block in (grass_block, snowgrass_block):
+                                self.init_block((x - 1, y - 1, z), dirt_block)
+                                self.init_block((x - 2, y - 2, z), dirt_block)
+                        if world_type == 2: # desert
+                            if block == sand_block:
+                                self.init_block((x - 2, y - 2, z),sandstone_block)
+                        if world_type == 3: # island
+                            if block in (grass_block, snowgrass_block):
+                                self.init_block((x - 1, y - 1, z), dirt_block)
+                                self.init_block((x - 2, y - 2, z), dirt_block)
+                            if block == sand_block:
+                                self.init_block((x - 2, y - 2, z),sandstone_block)
 
                 s -= d
+
+    def generate_oak_tree(self, position):
+        x, y, z = position
+        # Avoids a tree from touching another.
+
+        if self.has_neighbors((x, y + 1, z), OakWoodBlock, diagonals=True):
+            return
+        if self.has_neighbors((x, y + 1, z), JungleWoodBlock, diagonals=True):
+            return
+        if self.has_neighbors((x, y + 1, z), BirchWoodBlock, diagonals=True):
+            return
+
+        # A tree can't grow on anything.
+        if self.world[position] not in (grass_block, dirt_block, snowgrass_block):
+            return
+
+        # Trunk generation
+        length = random.randint(4, 8)
+        for dy in range(length):
+            self.init_block((x, y + dy, z),
+                            oakwood_block)
+
+        treetop = y + dy + 1
+        # Leaves generation
+        d = length / 3
+        for xl in range(x - d, x + d):
+            dx = abs(xl - x)
+            for yl in range(treetop - d, treetop + d):
+                for zl in range(z - d, z + d):
+                    # Don't replace existing blocks
+                    if (xl, yl, zl) in self.world:
+                        continue
+                        # Avoids orphaned leaves
+                    if not self.has_neighbors((xl, yl, zl),
+                                              (OakWoodBlock, OakLeafBlock)):
+                        continue
+                    dz = abs(zl - z)
+                    # The farther we are (horizontally) from the trunk,
+                    # the least leaves we can find.
+                    if random.uniform(0, dx + dz) > 0.7:
+                        continue
+                    self.init_block((xl, yl, zl),
+                                    oakleaf_block)
+
+        self.max_trees -= 1
+
+    def generate_jungle_tree(self, position):
+        x, y, z = position
+        # Avoids a tree from touching another.
+
+        if self.has_neighbors((x, y + 1, z), OakWoodBlock, diagonals=True):
+            return
+        if self.has_neighbors((x, y + 1, z), JungleWoodBlock, diagonals=True):
+            return
+        if self.has_neighbors((x, y + 1, z), BirchWoodBlock, diagonals=True):
+            return
+
+        # A tree can't grow on anything.
+        if self.world[position] not in (grass_block, dirt_block,
+                                        snowgrass_block):
+            return
+
+        # Trunk generation
+        length = random.randint(8, 12)
+        for dy in range(length):
+            self.init_block((x, y + dy, z),
+                            junglewood_block)
+
+        treetop = y + dy + 1
+        # Leaves generation
+        d = length / 3
+        for xl in range(x - d, x + d):
+            dx = abs(xl - x)
+            for yl in range(treetop - d, treetop + d):
+                for zl in range(z - d, z + d):
+                    # Don't replace existing blocks
+                    if (xl, yl, zl) in self.world:
+                        continue
+                        # Avoids orphaned leaves
+                    if not self.has_neighbors((xl, yl, zl),
+                                              (JungleWoodBlock, JungleLeafBlock)):
+                        continue
+                    dz = abs(zl - z)
+                    # The farther we are (horizontally) from the trunk,
+                    # the least leaves we can find.
+                    if random.uniform(0, dx + dz) > 0.7:
+                        continue
+                    self.init_block((xl, yl, zl),
+                                    jungleleaf_block)
+
+        self.max_trees -= 1
+
+    def generate_birch_tree(self, position):
+        x, y, z = position
+        # Avoids a tree from touching another.
+        if self.has_neighbors((x, y + 1, z), OakWoodBlock, diagonals=True):
+            return
+        if self.has_neighbors((x, y + 1, z), JungleWoodBlock, diagonals=True):
+            return
+        if self.has_neighbors((x, y + 1, z), BirchWoodBlock, diagonals=True):
+            return
+
+        # A tree can't grow on anything.
+        if self.world[position] not in (grass_block, dirt_block,
+                                        snowgrass_block):
+            return
+
+        # Trunk generation
+        length = random.randint(5, 7)
+        for dy in range(length):
+            self.init_block((x, y + dy, z),
+                            birchwood_block)
+
+        treetop = y + dy + 1
+        # Leaves generation
+        d = length / 3 + 1
+        for xl in range(x - d, x + d):
+            dx = abs(xl - x)
+            for yl in range(treetop - d, treetop + d):
+                for zl in range(z - d, z + d):
+                    # Don't replace existing blocks
+                    if (xl, yl, zl) in self.world:
+                        continue
+                        # Avoids orphaned leaves
+                    if not self.has_neighbors((xl, yl, zl),
+                                              (BirchWoodBlock, BirchLeafBlock)):
+                        continue
+                    dz = abs(zl - z)
+                    # The farther we are (horizontally) from the trunk,
+                    # the least leaves we can find.
+                    if random.uniform(0, dx + dz) > 0.7:
+                        continue
+                    self.init_block((xl, yl, zl),
+                                    birchleaf_block)
+
+        self.max_trees -= 1
+
+    def generate_cactus(self, position):
+        x, y, z = position
+        # Avoids a tree from touching another.
+        if self.has_neighbors((x, y + 1, z), CactusBlock, diagonals=True):
+            return
+
+        # A tree can't grow on anything.
+        if self.world[position] not in (sand_block, sandstone_block):
+            return
+
+        # Trunk generation
+        length = random.randint(1, 4)
+        for dy in range(length):
+            self.init_block((x, y + dy, z),
+                            cactus_block)
+
+        #treetop = y + dy + 1
+        ## Leaves generation
+        #d = length / 3 + 1
+        #for xl in range(x - d, x + d):
+            #dx = abs(xl - x)
+            #for yl in range(treetop - d, treetop + d):
+                #for zl in range(z - d, z + d):
+                    ## Don't replace existing blocks
+                    #if (xl, yl, zl) in self.world:
+                        #continue
+                        ## Avoids orphaned leaves
+                    #if not self.has_neighbors((xl, yl, zl),
+                                              #(BirchWoodBlock, BirchLeafBlock)):
+                        #continue
+                    #dz = abs(zl - z)
+                    ## The farther we are (horizontally) from the trunk,
+                    ## the least leaves we can find.
+                    #if random.uniform(0, dx + dz) > 0.7:
+                        #continue
+                    #self.init_block((xl, yl, zl),
+                                    #birchleaf_block)
+
+        self.max_trees -= 1
 
     def hit_test(self, position, vector, max_distance=8):
         m = 8
@@ -400,6 +658,18 @@ class Model(object):
             if position in self.shown:
                 self.hide_block(position)
             self.check_neighbors(position)
+
+    def has_neighbors(self, position, type=None, diagonals=False):
+        x, y, z = position
+        faces = FACES_WITH_DIAGONALS if diagonals else FACES
+        for dx, dy, dz in faces:
+            k = (x + dx, y + dy, z + dz)
+            if k in self.world:
+                if type is None:
+                    return True
+                if isinstance(self.world[k], type):
+                    return True
+        return False
 
     def check_neighbors(self, position):
         x, y, z = position
@@ -529,6 +799,9 @@ class Window(pyglet.window.Window):
         self.white = vec(1.0, 1.0, 1.0, 1.0)
         self.ambient = vec(1.0, 1.0, 1.0, 1.0)
         self.polished = GLfloat(100.0)
+        self.highlighted_block = None
+        self.block_damage = 0
+        self.mouse_pressed = False
         self.dy = 0
         self.show_fog = False
         save_len = -1 if self.save is None else len(self.save)
@@ -666,6 +939,29 @@ class Window(pyglet.window.Window):
         dt = min(dt, 0.2)
         for _ in xrange(m):
             self._update(dt / m)
+        if self.mouse_pressed:
+            vector = self.get_sight_vector()
+            block, previous = self.model.hit_test(self.player.position, vector)
+            if block:
+                if self.highlighted_block != block:
+                    self.highlighted_block = block
+                    self.block_damage = 0
+
+            if self.highlighted_block:
+                hit_block = self.model.world[self.highlighted_block]
+                if hit_block.hardness >= 0:
+                    self.block_damage += 0.05
+                    if self.block_damage >= hit_block.hardness:
+                        self.model.remove_block(self.highlighted_block)
+                        self.highlighted_block = None
+                        self.block_damage = 0
+                        if hit_block.drop_id is not None \
+                                and self.player.add_item(hit_block.drop_id):
+                            self.item_list.update_items()
+                            self.inventory_list.update_items()
+                else:
+                    self.highlighted_block = None
+                    self.block_damage = 0
         self.update_time()
 
     def _update(self, dt):
@@ -719,25 +1015,30 @@ class Window(pyglet.window.Window):
         return tuple(p)
 
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
-        if self.exclusive and scroll_y != 0:
+        if (self.exclusive or self.show_inventory) and scroll_y != 0:
             if not self.show_inventory:
                 self.item_list.change_index(scroll_y * -1)
             else:
                 self.inventory_list.change_index(scroll_y * -1)
 
     def on_mouse_press(self, x, y, button, modifiers):
+        if self.show_inventory:
+            if not self.inventory_list.on_mouse_press(x, y, button):
+                self.inventory_list.toggle_active_frame_visibility()
+                self.item_list.toggle_active_frame_visibility()
+                self.show_inventory = not self.show_inventory
+                self.set_exclusive_mouse(not self.show_inventory)
+            self.inventory_list.update_items()
+            self.item_list.update_items()
+            return
         if self.exclusive:
             vector = self.get_sight_vector()
             block, previous = self.model.hit_test(self.player.position, vector)
             if button == pyglet.window.mouse.LEFT:
                 if block:
-                    hit_block = self.model.world[block]
-                    if hit_block.hardness >= 0:
-                        self.model.remove_block(block)
-                        if hit_block.drop_id is not None \
-                                and self.player.add_item(hit_block.drop_id):
-                            self.item_list.update_items()
-                            self.inventory_list.update_items()
+                    self.mouse_pressed = True
+                    self.highlighted_block = None
+                    self.block_damage = 0
             else:
                 if previous:
                     current_block = self.item_list.get_current_block()
@@ -751,6 +1052,11 @@ class Window(pyglet.window.Window):
         else:
             self.set_exclusive_mouse(True)
 
+    def on_mouse_release(self, x, y, button, modifiers):
+        self.highlighted_block = None
+        self.block_damage = 0
+        self.mouse_pressed = False
+
     def on_mouse_motion(self, x, y, dx, dy):
         if self.exclusive:
             m = 0.15
@@ -758,6 +1064,14 @@ class Window(pyglet.window.Window):
             x, y = x + dx * m, y + dy * m
             y = max(-90, min(90, y))
             self.player.rotation = (x, y)
+
+    def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
+        if button == pyglet.window.mouse.LEFT:
+            if self.show_inventory:
+                self.inventory_list.on_mouse_drag(x, y, dx, dy, button, modifiers)
+                return
+            if self.exclusive:
+                self.on_mouse_motion(x, y, dx, dy)
 
     def on_key_press(self, symbol, modifiers):
         if symbol == key.W:
@@ -777,7 +1091,13 @@ class Window(pyglet.window.Window):
             if self.player.flying:
                 self.dy = -0.045  # inversed jump speed
         elif symbol == key.ESCAPE:
-            self.set_exclusive_mouse(False)
+            if self.show_inventory:
+                self.inventory_list.toggle_active_frame_visibility()
+                self.item_list.toggle_active_frame_visibility()
+                self.show_inventory = not self.show_inventory
+                self.set_exclusive_mouse(not self.show_inventory)
+            else:
+                self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
             self.dy = 0
             self.player.flying = not self.player.flying
@@ -797,6 +1117,7 @@ class Window(pyglet.window.Window):
             self.inventory_list.toggle_active_frame_visibility()
             self.item_list.toggle_active_frame_visibility()
             self.show_inventory = not self.show_inventory
+            self.set_exclusive_mouse(not self.show_inventory)
         elif symbol == key.ENTER:
             if self.show_inventory:
                 current_block = self.inventory_list\
@@ -979,26 +1300,11 @@ def main(options):
     elif options.draw_distance == 'long':
         DRAW_DISTANCE = 60.0 * 2.0
 
-    if options.terrain == "plains":
-        config.set('World', 'type', '0')
-        config.set('World', 'hill_height', '2')
-        config.set('World', 'max_trees', '200')
-    if options.terrain == "mountains":
-        config.set('World', 'type', '5')
-        config.set('World', 'hill_height', '12')
-        config.set('World', 'max_trees', '400')
-    if options.terrain == "desert":
-        config.set('World', 'type', '2')
-        config.set('World', 'hill_height', '5')
-        config.set('World', 'max_trees', '50')
-    if options.terrain == "island":
-        config.set('World', 'type', '3')
-        config.set('World', 'hill_height', '8')
-        config.set('World', 'max_trees', '300')
-    if options.terrain == "snow":
-        config.set('World', 'type', '6')
-        config.set('World', 'hill_height', '4')
-        config.set('World', 'max_trees', '550')
+    if options.terrain:
+        type, hill_height, max_trees = terrain_options[options.terrain]
+        config.set('World', 'type', type)
+        config.set('World', 'hill_height', hill_height)
+        config.set('World', 'max_trees', max_trees)
 
     if options.hillheight:
         config.set('World', 'hill_height', str(options.hillheight))
@@ -1025,7 +1331,7 @@ def main(options):
         # window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=window_config, save=save_object)
     # except pyglet.window.NoSuchConfigException:
     window = Window(
-        width=options.width, height=options.height, caption='pyCraftr',
+        width=options.width, height=options.height, caption=APP_NAME,
         resizable=True, save=save_object, vsync=False)
 
     window.set_exclusive_mouse(True)
@@ -1035,13 +1341,20 @@ def main(options):
     pyglet.app.run()
     if options.disable_auto_save and options.disable_save:
         window.save_to_file()
+    if options.save_config:
+        try:
+            with open(config_file, 'wb') as handle:
+                config.write(handle)
+        except:
+            print "Problem: Write error."
+
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-width", type=int, default=850)
     parser.add_argument("-height", type=int, default=480)
-    parser.add_argument("-terrain", type=str, default="grass")
+    parser.add_argument("-terrain", choices=terrain_options.keys())
     parser.add_argument("-hillheight", type=int)
     parser.add_argument("-worldsize", type=int)
     parser.add_argument("-maxtrees", type=int)
@@ -1053,5 +1366,6 @@ if __name__ == '__main__':
     parser.add_argument("-save", type=unicode, default=SAVE_FILENAME)
     parser.add_argument("--disable-save", action="store_false", default=True)
     parser.add_argument("--fast", action="store_true", default=False)
+    parser.add_argument("--save-config", action="store_true", default=False)
     options = parser.parse_args()
     main(options)
