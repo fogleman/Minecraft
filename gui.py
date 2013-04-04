@@ -14,6 +14,7 @@ class InventorySelector(object):
         self.current_index = 1
         self.icon_size = self.model.group.texture.width / 8 #4
         self.selected_item = None
+        self.selected_item_icon = None
         image = pyglet.image.load('inventory.png')
         frame_size = image.height * 3 / 4
         self.frame = pyglet.sprite.Sprite(image.get_region(0, image.height - frame_size, image.width, frame_size), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
@@ -100,12 +101,32 @@ class InventorySelector(object):
         self.active.opacity = 0 if self.active.opacity == 255 else 255
 
     def mouse_coords_to_index(self, x, y):
-        for i, item in enumerate(self.player.inventory.get_items()):
-            if item and item.inventory_x and item.inventory_y:
-                if x >= item.inventory_x and y >= item.inventory_y and \
-                x <= item.inventory_x + self.icon_size * 0.5 and y <= item.inventory_y + self.icon_size * 0.5:
-                    return i
-        return -1
+        width = 9 * (self.icon_size * 0.5 + 3)
+        height = 3 * self.icon_size * 0.5
+        # out of bound
+        if not ((self.frame.x <= x <= self.frame.x + width) and (self.frame.y <= y <= self.frame.y + height)):
+            return -1
+
+        x_offset = x - self.frame.x
+        y_offset = y - self.frame.y
+
+        row = y_offset // (self.icon_size * 0.5)
+        col = x_offset // (self.icon_size * 0.5 + 3)
+        return int(row * 9 + col)
+
+    def set_selected_item(self, item):
+        if not item:
+            self.remove_selected_item()
+            return
+        self.selected_item = item
+
+        block = BLOCKS_DIR[item.type]
+        item_icon = self.model.group.texture.get_region(int(block.side_texture[0] * 8) * self.icon_size, int(block.side_texture[1] * 8) * self.icon_size, int(self.icon_size * 0.4), int(self.icon_size * 0.4))
+        self.selected_item_icon = pyglet.sprite.Sprite(item_icon, batch=self.batch, group=self.group)
+
+    def remove_selected_item(self):
+        self.selected_item = None
+        self.selected_item_icon = None
 
     def on_mouse_press(self, x, y, button):
         index = self.mouse_coords_to_index(x, y)
@@ -116,14 +137,20 @@ class InventorySelector(object):
                 return
             item = self.player.inventory.at(index)
             self.player.inventory.slots[index] = self.selected_item
-            self.selected_item = item
+            self.set_selected_item(item)
+            if self.selected_item_icon:
+                self.selected_item_icon.x = x
+                self.selected_item_icon.y = y
         else:
             if index == -1:
                 return
             item = self.player.inventory.at(index)
             if not item:
-                return
-            self.selected_item = item
+                return True
+            self.set_selected_item(item)
+            if self.selected_item_icon:
+                self.selected_item_icon.x = x
+                self.selected_item_icon.y = y
             self.player.inventory.remove_all_by_index(index)
 
         self.update_items()
@@ -132,3 +159,5 @@ class InventorySelector(object):
 
     def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
         pass # TODO: Allow dragging & dropping items
+
+
