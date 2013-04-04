@@ -131,7 +131,7 @@ class Player(Entity):
         self.quick_slots = Inventory(9)
         self.flying = flying
         initial_items = [dirt_block, sand_block, brick_block, stone_block,
-                         glass_block, water_block, chest_block,
+                         glass_block, stonebrick_block, chest_block,
                          sandstone_block, marble_block]
         flat_world = config.getboolean('World', 'flat')
         for item in initial_items:
@@ -692,12 +692,12 @@ class Window(pyglet.window.Window):
                     self.block_damage += 0.05
                     if self.block_damage >= hit_block.hardness:
                         self.model.remove_block(self.highlighted_block)
+                        self.highlighted_block = None
+                        self.block_damage = 0
                         if hit_block.drop_id is not None \
                                 and self.player.add_item(hit_block.drop_id):
                             self.item_list.update_items()
                             self.inventory_list.update_items()
-                        self.highlighted_block = None
-                        self.block_damage = 0
         self.update_time()
 
     def _update(self, dt):

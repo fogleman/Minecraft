@@ -1,7 +1,7 @@
 # Terrain
 
 * Enable blending mode to get semi-transparent textures working. Render in the right order so they show up correctly.
-* Show cracks as block_damage increases
+* Show cracks (and particles) as block_damage increases
 
 # Items
 
