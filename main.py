@@ -1,8 +1,13 @@
+from math import cos, sin, atan2, pi, fmod, radians
+import random
+import time
+import argparse
+import os
+import cPickle as pickle
+
 from pyglet.gl import *
 from pyglet.window import key
-from math import cos, sin, atan2, pi, fmod, radians
-import random, time, argparse, os
-import cPickle as pickle
+
 # import kytten #unused, future potential reference
 from collections import deque
 from blocks import *
@@ -14,24 +19,26 @@ from gui import *
 
 SECTOR_SIZE = 16
 DRAW_DISTANCE = 60.0
-FOV = 65.0 #TODO add menu option to change FOV
-NEAR_CLIP_DISTANCE = 0.1 #TODO make min and max clip distance dynamic
-FAR_CLIP_DISTANCE = 200.0 # Maximum render distance, ignoring effects of sector_size and fog
-WORLDTYPE = 0 #1=grass,2=dirt,3=sand,4=islands
-HILLHEIGHT = 6  #height of the hills, increase for mountains :D
+FOV = 65.0  # TODO: add menu option to change FOV
+NEAR_CLIP_DISTANCE = 0.1  # TODO: make min and max clip distance dynamic
+FAR_CLIP_DISTANCE = 200.0  # Maximum render distance,
+                           # ignoring effects of sector_size and fog
+WORLDTYPE = 0  # 1=grass,2=dirt,3=sand,4=islands
+HILLHEIGHT = 6  # height of the hills, increase for mountains :D
 FLATWORLD = 0  # dont make mountains,  make a flat world
 SAVE_FILENAME = 'save.dat'
 DISABLE_SAVE = True
-TIME_RATE = 240 * 10 # Rate of change (steps per hour).
+TIME_RATE = 240 * 10  # Rate of change (steps per hour).
 DEG_RAD = pi / 180.0
 HOUR_DEG = 15.0
-BACK_RED = 0.0 # 0.53
-BACK_GREEN = 0.0 # 0.81
-BACK_BLUE = 0.0 # 0.98
+BACK_RED = 0.0  # 0.53
+BACK_GREEN = 0.0  # 0.81
+BACK_BLUE = 0.0  # 0.98
 SHOW_FOG = True
-HALF_PI = pi / 2.0 # 90 degrees
+HALF_PI = pi / 2.0  # 90 degrees
 RND_FOREST = 10
 WORLDSIZE = 160
+
 
 def cube_vertices(x, y, z, n):
     return [
@@ -43,46 +50,56 @@ def cube_vertices(x, y, z, n):
         x+n,y-n,z-n, x-n,y-n,z-n, x-n,y+n,z-n, x+n,y+n,z-n, # back
     ]
 
+
 FACES = [
-    ( 0, 1, 0),
-    ( 0,-1, 0),
-    (-1, 0, 0),
-    ( 1, 0, 0),
-    ( 0, 0, 1),
-    ( 0, 0,-1),
+    ( 0,  1,  0),
+    ( 0, -1,  0),
+    (-1,  0,  0),
+    ( 1,  0,  0),
+    ( 0,  0,  1),
+    ( 0,  0, -1),
 ]
+
 
 class TextureGroup(pyglet.graphics.Group):
     def __init__(self, path):
         super(TextureGroup, self).__init__()
         self.texture = pyglet.image.load(path).get_texture()
+
     def set_state(self):
         glEnable(self.texture.target)
         glBindTexture(self.texture.target, self.texture.id)
+
     def unset_state(self):
         glDisable(self.texture.target)
 
+
 def normalize(position):
     x, y, z = position
-    x, y, z = (int(round(x)), int(round(y)), int(round(z)))
+    x, y, z = int(round(x)), int(round(y)), int(round(z))
     return x, y, z
+
 
 def sectorize(position):
     x, y, z = normalize(position)
     x, y, z = x / SECTOR_SIZE, y / SECTOR_SIZE, z / SECTOR_SIZE
     return x, 0, z
-    
+
+
 # Define a simple function to create GLfloat arrays of floats:
 def vec(*args):
     return (GLfloat * len(args))(*args)
 
+
 class Player(Entity):
-    def __init__(self, position, rotation, flying = False):
-        super(Player, self).__init__(position, rotation, health = 20)
-        self.inventory = Inventory(27)
+    def __init__(self, position, rotation, flying=False):
+        super(Player, self).__init__(position, rotation, health=20)
+        self.inventory = Inventory()
         self.quick_slots = Inventory(9)
         self.flying = flying
-        initial_items = [dirt_block, sand_block, brick_block, stone_block, glass_block, water_block, chest_block, sandstone_block, marble_block]
+        initial_items = [dirt_block, sand_block, brick_block, stone_block,
+                         glass_block, water_block, chest_block,
+                         sandstone_block, marble_block]
         for item in initial_items:
             quantity = random.randint(1, 10)
             if FLATWORLD == 1:
@@ -103,6 +120,7 @@ class Player(Entity):
             return True
         return False
 
+
 ####
 
 class ItemSelector(object):
@@ -115,17 +133,21 @@ class ItemSelector(object):
         self.player = player
         self.max_items = 9
         self.current_index = 1
-        self.icon_size = self.model.group.texture.width / 8 #4
+        self.icon_size = self.model.group.texture.width / 8  # 4
 
         image = pyglet.image.load('slots.png')
         frame_size = image.height / 2
-        self.frame = pyglet.sprite.Sprite(image.get_region(0, frame_size, image.width, frame_size), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
-        self.active = pyglet.sprite.Sprite(image.get_region(0, 0, frame_size, frame_size), batch=self.batch, group=pyglet.graphics.OrderedGroup(2))
+        self.frame = pyglet.sprite.Sprite(
+            image.get_region(0, frame_size, image.width, frame_size),
+            batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
+        self.active = pyglet.sprite.Sprite(
+            image.get_region(0, 0, frame_size, frame_size), batch=self.batch,
+            group=pyglet.graphics.OrderedGroup(2))
         self.set_position(width, height)
-        
+
     def change_index(self, change):
         self.set_index(self.current_index + change)
-            
+
     def set_index(self, index):
         index = int(index)
         if self.current_index == index:
@@ -136,7 +158,7 @@ class ItemSelector(object):
         elif self.current_index < 0:
             self.current_index = self.max_items - 1
         self.update_current()
-            
+
     def update_items(self):
         self.icons = []
         for amount_label in self.amount_labels:
@@ -150,25 +172,31 @@ class ItemSelector(object):
                 x += (self.icon_size * 0.5) + 3
                 continue
             block = BLOCKS_DIR[item.type]
-            block_icon = self.model.group.texture.get_region(int(block.side[0] * 8) * self.icon_size, int(block.side[1] * 8) * self.icon_size, self.icon_size, self.icon_size)
-            icon = pyglet.sprite.Sprite(block_icon, batch=self.batch, group=self.group)
+            block_icon = self.model.group.texture.get_region(
+                int(block.side[0] * 8) * self.icon_size,
+                int(block.side[1] * 8) * self.icon_size, self.icon_size,
+                self.icon_size)
+            icon = pyglet.sprite.Sprite(block_icon, batch=self.batch,
+                                        group=self.group)
             icon.scale = 0.5
             icon.x = x
             icon.y = self.frame.y + 3
             x += (self.icon_size * 0.5) + 3
-            amount_label = pyglet.text.Label(str(item.amount), font_name='Arial', font_size=9, 
-                x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom', 
-                color=block.amount_label_color, batch=self.batch, group=self.amount_labels_group)
+            amount_label = pyglet.text.Label(
+                str(item.amount), font_name='Arial', font_size=9,
+                x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
+                color=block.amount_label_color, batch=self.batch,
+                group=self.amount_labels_group)
             self.amount_labels.append(amount_label)
             self.icons.append(icon)
-        
+
     def update_current(self):
         self.active.x = self.frame.x + (self.current_index * 35)
-        
+
     def set_position(self, width, height):
         self.frame.x = (width - self.frame.width) / 2
         self.frame.y = self.icon_size * 0.5
-        self.active.y = self.frame.y            
+        self.active.y = self.frame.y
         self.update_current()
         self.update_items()
 
@@ -188,12 +216,14 @@ class ItemSelector(object):
         item = self.player.quick_slots.at(self.current_index)
         if item:
             amount = item.amount
-            self.player.quick_slots.remove_by_index(self.current_index, quantity=item.amount)
+            self.player.quick_slots.remove_by_index(self.current_index,
+                                                    quantity=item.amount)
             return item, amount
         return False
 
     def toggle_active_frame_visibility(self):
         self.active.opacity = 0 if self.active.opacity == 255 else 255
+
 
 ####
 
@@ -205,12 +235,13 @@ class Model(object):
         self.shown = {}
         self._shown = {}
         self.sectors = {}
-        self.queue = deque()  #note: could add limit here
+        self.queue = deque()  # note: could add limit here
         if initialize:
             self.initialize()
+
     def initialize(self):
         global WORLDSIZE
-        n = WORLDSIZE /2 #80
+        n = WORLDSIZE / 2  # 80
         s = 1
         y = 0
         global RND_FOREST
@@ -227,23 +258,24 @@ class Model(object):
                 if WORLDTYPE == 4:
                     self.init_block((x, y - 2, z), grass_block)
                 if WORLDTYPE == 5:
-                    t = random.choice([grass_block, grass_block, dirt_block, stone_block])
+                    t = random.choice((grass_block, grass_block,
+                                       dirt_block, stone_block))
                     self.init_block((x, y - 2, z), t)
                 if WORLDTYPE == 6:
                     self.init_block((x, y - 2, z), snowg_block)
 
                 self.init_block((x, y - 3, z), dirt_block)
-                self.init_block((x, y - 4, z), bed_block) # was stone_block
+                self.init_block((x, y - 4, z), bed_block)  # was stone_block
 
                 if x in (-n, n) or z in (-n, n):
-                    for dy in xrange(-3, 10): #was -2 ,6
+                    for dy in xrange(-3, 10):  # was -2 ,6
                         self.init_block((x, y + dy, z), stone_block)
 
-        o = n - 10 + HILLHEIGHT -6
+        o = n - 10 + HILLHEIGHT - 6
         if FLATWORLD == 1:
             return
 
-        for _ in xrange(WORLDSIZE /2 + 40): #(120):
+        for _ in xrange(WORLDSIZE / 2 + 40):  # (120):
             a = random.randint(-o, o)
             b = random.randint(-o, o)
             c = -1
@@ -251,19 +283,19 @@ class Model(object):
             s = random.randint(4, HILLHEIGHT + 2)
             d = 1
             if WORLDTYPE == 0:
-                t = random.choice([grass_block]) # removed brick_block
+                t = random.choice((grass_block,))
             if WORLDTYPE == 1:
-                t = random.choice([dirt_block]) # removed brick_block
+                t = random.choice((dirt_block,))
             if WORLDTYPE == 2:
-                t = random.choice([sand_block]) # removed brick_block
+                t = random.choice((sand_block,))
             if WORLDTYPE == 3:
-                t = random.choice([grass_block, sand_block]) # removed brick_block
+                t = random.choice((grass_block, sand_block))
             if WORLDTYPE == 4:
-                t = random.choice([grass_block, sand_block, dirt_block]) # removed brick_block
+                t = random.choice((grass_block, sand_block, dirt_block))
             if WORLDTYPE == 5:
-                t = random.choice([stone_block]) # removed brick_block
+                t = random.choice((stone_block,))
             if WORLDTYPE == 6:
-                t = random.choice([snowg_block])
+                t = random.choice((snowg_block,))
             for y in xrange(c, c + h):
                 for x in xrange(a - s, a + s + 1):
                     for z in xrange(b - s, b + s + 1):
@@ -273,22 +305,23 @@ class Model(object):
                             continue
                         self.init_block((x, y, z), t)
 
-
                         #random tree  -- run forest, run!
                         if RND_FOREST > 0:
-                            #if y > -1: # don't have trees sitting on the base 0 land.'
-                            showtree = random.randint(1,5) # 1 out of 5 % chance out of 100 to have a tree
+                            # if y > -1: # don't have trees sitting on the
+                            # base 0 land.'
+                            showtree = random.randint(1, 5)  # 1 out of 5 %
+                                            # chance out of 100 to have a tree.
                             if showtree <= 2:
                                 #print showtree
                                 self.init_block((x, y, z), dirt_block)
                                 self.init_block((x, y, z), dirt_block)
                                 self.init_block((x, y, z), dirt_block)
-                                self.init_block((x, y +1 , z), log_block)
-                                self.init_block((x, y +2, z), log_block)
-                                self.init_block((x, y +3, z), log_block)
-                                self.init_block((x, y +4, z), log_block)
-                                self.init_block((x, y +5, z), log_block)
-                                self.init_block((x, y +6, z), log_block)
+                                self.init_block((x, y + 1, z), log_block)
+                                self.init_block((x, y + 2, z), log_block)
+                                self.init_block((x, y + 3, z), log_block)
+                                self.init_block((x, y + 4, z), log_block)
+                                self.init_block((x, y + 5, z), log_block)
+                                self.init_block((x, y + 6, z), log_block)
                                 self.init_block((x + 1, y + 7, z), leaf_block)
                                 self.init_block((x - 1, y + 7, z), leaf_block)
                                 self.init_block((x + 1, y + 7, z + 1), leaf_block)
@@ -297,16 +330,15 @@ class Model(object):
                                 self.init_block((x - 1, y + 8, z), leaf_block)
                                 self.init_block((x + 1, y + 8, z - 1), leaf_block)
                                 self.init_block((x - 1, y + 8, z + 1), leaf_block)
-                                self.init_block((x , y + 7, z), leaf_block)
+                                self.init_block((x, y + 7, z), leaf_block)
 
                                 RND_FOREST -= 1
 
-                        if t == grass_block or snowg_block:
+                        if t in (grass_block, snowg_block):
                             self.init_block((x - 1, y - 1, z), dirt_block)
                             self.init_block((x - 2, y - 2, z), dirt_block)
 
                 s -= d
-
 
     def hit_test(self, position, vector, max_distance=8):
         m = 8
@@ -320,14 +352,17 @@ class Model(object):
             previous = key
             x, y, z = x + dx / m, y + dy / m, z + dz / m
         return None, None
+
     def exposed(self, position):
         x, y, z = position
         for dx, dy, dz in FACES:
             if (x + dx, y + dy, z + dz) not in self.world:
                 return True
         return False
+
     def init_block(self, position, block):
         self.add_block(position, block, False)
+
     def add_block(self, position, block, sync=True):
         if position in self.world:
             self.remove_block(position, sync)
@@ -337,6 +372,7 @@ class Model(object):
             if self.exposed(position):
                 self.show_block(position)
             self.check_neighbors(position)
+
     def remove_block(self, position, sync=True):
         del self.world[position]
         self.sectors[sectorize(position)].remove(position)
@@ -344,6 +380,7 @@ class Model(object):
             if position in self.shown:
                 self.hide_block(position)
             self.check_neighbors(position)
+
     def check_neighbors(self, position):
         x, y, z = position
         for dx, dy, dz in FACES:
@@ -356,10 +393,12 @@ class Model(object):
             else:
                 if key in self.shown:
                     self.hide_block(key)
+
     def show_blocks(self):
         for position in self.world:
             if position not in self.shown and self.exposed(position):
                 self.show_block(position)
+
     def show_block(self, position, immediate=True):
         block = self.world[position]
         self.shown[position] = block
@@ -367,6 +406,7 @@ class Model(object):
             self._show_block(position, block)
         else:
             self.enqueue(self._show_block, position, block)
+
     def _show_block(self, position, block):
         x, y, z = position
         # only show exposed faces
@@ -374,35 +414,40 @@ class Model(object):
         count = 24
         vertex_data = cube_vertices(x, y, z, 0.5)
         texture_data = block.get_texture_data()
-        for dx, dy, dz in []:#FACES:
+        for dx, dy, dz in []:  # FACES:
             if (x + dx, y + dy, z + dz) in self.world:
-                count -= 8 #4
+                count -= 8  # 4
                 i = index * 12
                 j = index * 8
                 del vertex_data[i:i + 12]
                 del texture_data[j:j + 8]
             else:
                 index += 1
-        # create vertex list
+            # create vertex list
         self._shown[position] = self.batch.add(count, GL_QUADS, self.group,
-            ('v3f/static', vertex_data),
-            ('t2f/static', texture_data))
+                                               ('v3f/static', vertex_data),
+                                               ('t2f/static', texture_data))
+
     def hide_block(self, position, immediate=True):
         self.shown.pop(position)
         if immediate:
             self._hide_block(position)
         else:
             self.enqueue(self._hide_block, position)
+
     def _hide_block(self, position):
         self._shown.pop(position).delete()
+
     def show_sector(self, sector):
         for position in self.sectors.get(sector, []):
             if position not in self.shown and self.exposed(position):
                 self.show_block(position, False)
+
     def hide_sector(self, sector):
         for position in self.sectors.get(sector, []):
             if position in self.shown:
                 self.hide_block(position, False)
+
     def change_sectors(self, before, after):
         before_set = set()
         after_set = set()
@@ -424,18 +469,23 @@ class Model(object):
             self.show_sector(sector)
         for sector in hide:
             self.hide_sector(sector)
+
     def enqueue(self, func, *args):
         self.queue.append((func, args))
+
     def dequeue(self):
         func, args = self.queue.popleft()
         func(*args)
+
     def process_queue(self):
         start = time.clock()
         while self.queue and time.clock() - start < 1 / 60.0:
             self.dequeue()
+
     def process_entire_queue(self):
         while self.queue:
             self.dequeue()
+
 
 class Window(pyglet.window.Window):
     def __init__(self, *args, **kwargs):
@@ -461,30 +511,38 @@ class Window(pyglet.window.Window):
         self.polished = GLfloat(100.0)
         self.dy = 0
         save_len = -1 if self.save is None else len(self.save)
-        if self.save is None or save_len < 2: # Model.world and model.sectors
+        if self.save is None or save_len < 2:  # Model.world and model.sectors
             self.model = Model()
             self.player = Player((0, 0, 0), (-20, 0))
         else:
             self.model = Model(initialize=False)
             self.model.world = self.save[0]
             self.model.sectors = self.save[1]
-            if save_len > 2 and isinstance(self.save[2], list) and len(self.save[2]) == 2: self.strafe = self.save[2]
-            if save_len > 3 and isinstance(self.save[3], Player): self.player = self.save[3]
-            if save_len > 4 and isinstance(self.save[4], float): self.time_of_day = self.save[4]
-        self.item_list = ItemSelector(self.width, self.height, self.player, self.model)
-        self.inventory_list = InventorySelector(self.width, self.height, self.player, self.model)
+            if save_len > 2 and isinstance(self.save[2], list) \
+                    and len(self.save[2]) == 2:
+                self.strafe = self.save[2]
+            if save_len > 3 and isinstance(self.save[3], Player):
+                self.player = self.save[3]
+            if save_len > 4 and isinstance(self.save[4], float):
+                self.time_of_day = self.save[4]
+        self.item_list = ItemSelector(self.width, self.height, self.player,
+                                      self.model)
+        self.inventory_list = InventorySelector(self.width, self.height,
+                                                self.player, self.model)
         self.num_keys = [
             key._1, key._2, key._3, key._4, key._5,
             key._6, key._7, key._8, key._9, key._0]
         self.show_inventory = False
         if self.show_gui:
-            self.label = pyglet.text.Label('', font_name='Arial', font_size=8,
-                x=10, y=self.height - 10, anchor_x='left', anchor_y='top',
-                color=(255, 255, 255, 255))
+            self.label = pyglet.text.Label(
+                '', font_name='Arial', font_size=8, x=10, y=self.height - 10,
+                anchor_x='left', anchor_y='top', color=(255, 255, 255, 255))
         pyglet.clock.schedule_interval(self.update, 1.0 / 60)
+
     def set_exclusive_mouse(self, exclusive):
         super(Window, self).set_exclusive_mouse(exclusive)
         self.exclusive = exclusive
+
     def get_sight_vector(self):
         x, y = self.player.rotation
         y_r = radians(y)
@@ -495,6 +553,7 @@ class Window(pyglet.window.Window):
         dx = cos(x_r) * m
         dz = sin(x_r) * m
         return dx, dy, dz
+
     def get_motion_vector(self):
         if any(self.strafe):
             x, y = self.player.rotation
@@ -522,33 +581,41 @@ class Window(pyglet.window.Window):
             dx = 0.0
             dz = 0.0
         return dx, dy, dz
-        
+
     def update_time(self):
-        '''The idle function advances the time of day.
-           The day has 24 hours, from sunrise to sunset and from sunrise to second sunset.
-           The time of day is converted to degrees and then to radians.'''
+        """
+        The idle function advances the time of day.
+        The day has 24 hours, from sunrise to sunset and from sunrise to
+        second sunset.
+        The time of day is converted to degrees and then to radians.
+        """
+
         if not self.exclusive:
             return
 
-        time_of_day = self.time_of_day if (self.time_of_day < 12.0) else (24.0 - self.time_of_day)
-        
+        time_of_day = self.time_of_day if self.time_of_day < 12.0 \
+            else 24.0 - self.time_of_day
+
         if time_of_day <= 2.5:
             self.time_of_day += 1.0 / TIME_RATE
-            time_of_day +=  1.0 / TIME_RATE
+            time_of_day += 1.0 / TIME_RATE
             self.count += 1
         else:
             self.time_of_day += 20.0 / TIME_RATE
-            time_of_day +=  20.0 / TIME_RATE
+            time_of_day += 20.0 / TIME_RATE
             self.count += 1.0 / 20.0
         if self.time_of_day > 24.0:
             self.time_of_day = 0.0
             time_of_day = 0.0
-            
+
         side = len(self.model.sectors) * 2.0
 
         self.light_y = 2.0 * side * sin(time_of_day * HOUR_DEG * DEG_RAD)
         self.light_z = 2.0 * side * cos(time_of_day * HOUR_DEG * DEG_RAD)
-        ambient_value = 1.0 if time_of_day <= 2.5 else 1 - (time_of_day - 2.25) / 9.5
+        if time_of_day <= 2.5:
+            ambient_value = 1.0
+        else:
+            ambient_value = 1 - (time_of_day - 2.25) / 9.5
         self.ambient = vec(ambient_value, ambient_value, ambient_value, 1.0)
 
         # Calculate sky colour according to time of day.
@@ -588,33 +655,36 @@ class Window(pyglet.window.Window):
         dx, dy, dz = dx * d, dy * d, dz * d
         # gravity
         if not self.player.flying:
-            self.dy -= dt * 0.022 # g force, should be = jump_speed * 0.5 / max_jump_height
-            self.dy = max(self.dy, -0.5) # terminal velocity
+            self.dy -= dt * 0.022  # g force, should be = jump_speed * 0.5 /
+            # max_jump_height
+            self.dy = max(self.dy, -0.5)  # terminal velocity
             dy += self.dy
         else:
-            self.dy = max(self.dy, -0.5) # terminal velocity
+            self.dy = max(self.dy, -0.5)  # terminal velocity
             dy += self.dy
-        # collisions
+            # collisions
         x, y, z = self.player.position
         x, y, z = self.collide((x + dx, y + dy, z + dz), 2)
         self.player.position = (x, y, z)
 
     def save_to_file(self):
         if DISABLE_SAVE:
-            pickle.dump((self.model.world, self.model.sectors, self.strafe, self.player, self.time_of_day), open(SAVE_FILENAME, "wb"))
+            pickle.dump((self.model.world, self.model.sectors, self.strafe,
+                         self.player, self.time_of_day),
+                        open(SAVE_FILENAME, "wb"))
 
     def collide(self, position, height):
         pad = 0.25
         p = list(position)
         np = normalize(position)
-        for face in FACES: # check all surrounding blocks
-            for i in xrange(3): # check each dimension independently
+        for face in FACES:  # check all surrounding blocks
+            for i in xrange(3):  # check each dimension independently
                 if not face[i]:
                     continue
                 d = (p[i] - np[i]) * face[i]
                 if d < pad:
                     continue
-                for dy in xrange(height): # check each height
+                for dy in xrange(height):  # check each height
                     op = list(np)
                     op[1] -= dy
                     op[i] += face[i]
@@ -626,7 +696,7 @@ class Window(pyglet.window.Window):
                         self.dy = 0
                     break
         return tuple(p)
-        
+
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
         if self.exclusive and scroll_y != 0:
             if not self.show_inventory:
@@ -651,14 +721,15 @@ class Window(pyglet.window.Window):
                 if previous:
                     current_block = self.item_list.get_current_block()
                     if current_block:
-                        # if current block is an item, call its on_right_click() method to handle this event
+                        # if current block is an item,
+                        # call its on_right_click() method to handle this event
                         if current_block.id >= ITEM_ID_MIN:
                             current_block.on_right_click()
                         else:
                             self.model.add_block(previous, current_block)
         else:
             self.set_exclusive_mouse(True)
-            
+
     def on_mouse_motion(self, x, y, dx, dy):
         if self.exclusive:
             m = 0.15
@@ -666,6 +737,7 @@ class Window(pyglet.window.Window):
             x, y = x + dx * m, y + dy * m
             y = max(-90, min(90, y))
             self.player.rotation = (x, y)
+
     def on_key_press(self, symbol, modifiers):
         if symbol == key.W:
             self.strafe[0] -= 1
@@ -677,12 +749,12 @@ class Window(pyglet.window.Window):
             self.strafe[1] += 1
         elif symbol == key.SPACE:
             if self.player.flying:
-                self.dy = 0.045 # jump speed
+                self.dy = 0.045  # jump speed
             elif self.dy == 0:
-                self.dy = 0.016 # jump speed
+                self.dy = 0.016  # jump speed
         elif symbol == key.LSHIFT or symbol == key.RSHIFT:
             if self.player.flying:
-                self.dy = -0.045 # inversed jump speed
+                self.dy = -0.045  # inversed jump speed
         elif symbol == key.ESCAPE:
             self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
@@ -706,18 +778,25 @@ class Window(pyglet.window.Window):
             self.show_inventory = not self.show_inventory
         elif symbol == key.ENTER:
             if self.show_inventory:
-                current_block = self.inventory_list.get_current_block_item_and_amount()
+                current_block = self.inventory_list\
+                    .get_current_block_item_and_amount()
                 if current_block:
-                    if not self.player.quick_slots.add_item(current_block[0].id, quantity = current_block[1]) == True:
-                        self.player.inventory.add_item(current_block[0].id, quantity = current_block[1])
+                    if not self.player.quick_slots.add_item(
+                            current_block[0].id,
+                            quantity=current_block[1]):
+                        self.player.inventory.add_item(current_block[0].id,
+                                                       quantity=current_block[
+                                                           1])
             else:
-                current_block = self.item_list.get_current_block_item_and_amount()
+                current_block = self.item_list\
+                    .get_current_block_item_and_amount()
                 if current_block:
-                    if not self.player.inventory.add_item(current_block[0].id, quantity = current_block[1]) == True:
-                        self.player.quick_slots.add_item(current_block[0].id, quantity = current_block[1])
+                    if not self.player.inventory.add_item(
+                            current_block[0].id, quantity=current_block[1]):
+                        self.player.quick_slots.add_item(
+                            current_block[0].id, quantity=current_block[1])
             self.item_list.update_items()
             self.inventory_list.update_items()
-
 
     def on_key_release(self, symbol, modifiers):
         if symbol == key.W:
@@ -728,13 +807,15 @@ class Window(pyglet.window.Window):
             self.strafe[1] += 1
         elif symbol == key.D:
             self.strafe[1] -= 1
-        elif (symbol == key.SPACE or symbol == key.LSHIFT or symbol == key.RSHIFT) and self.player.flying:
+        elif (symbol == key.SPACE or symbol == key.LSHIFT
+              or symbol == key.RSHIFT) and self.player.flying:
             self.dy = 0
         elif symbol == key.M:
             self.player.quick_slots.change_sort_mode()
             self.player.inventory.change_sort_mode()
             self.item_list.update_items()
             self.inventory_list.update_items()
+
     def on_resize(self, width, height):
         # label
         # reticle
@@ -742,7 +823,8 @@ class Window(pyglet.window.Window):
             self.reticle.delete()
         x, y = self.width / 2, self.height / 2
         n = 10
-        self.reticle = pyglet.graphics.vertex_list(4,
+        self.reticle = pyglet.graphics.vertex_list(
+            4,
             ('v2i', (x - n, y, x + n, y, x, y - n, x, y + n))
         )
         if self.show_gui:
@@ -762,6 +844,7 @@ class Window(pyglet.window.Window):
             glOrtho(0, 1, 0, 1, -1, 1)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
+
     def set_3d(self):
         width, height = self.get_size()
         if SHOW_FOG:
@@ -771,7 +854,8 @@ class Window(pyglet.window.Window):
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         if width != float(height):
-            gluPerspective(FOV, width / float(height), NEAR_CLIP_DISTANCE, FAR_CLIP_DISTANCE)
+            gluPerspective(FOV, width / float(height), NEAR_CLIP_DISTANCE,
+                           FAR_CLIP_DISTANCE)
         else:
             gluPerspective(FOV, 1, NEAR_CLIP_DISTANCE, FAR_CLIP_DISTANCE)
         glMatrixMode(GL_MODELVIEW)
@@ -785,7 +869,8 @@ class Window(pyglet.window.Window):
         glEnable(GL_LIGHTING)
         glLightfv(GL_LIGHT0, GL_DIFFUSE, vec(0.9, 0.9, 0.9, 1.0))
         glLightfv(GL_LIGHT0, GL_SPECULAR, vec(0.9, 0.9, 0.9, 1.0))
-        glLightfv(GL_LIGHT0, GL_POSITION, vec(1.0, self.light_y, self.light_z, 1.0))
+        glLightfv(GL_LIGHT0, GL_POSITION,
+                  vec(1.0, self.light_y, self.light_z, 1.0))
         glLightfv(GL_LIGHT1, GL_AMBIENT, self.ambient)
         glLightfv(GL_LIGHT2, GL_AMBIENT, self.ambient)
         glMaterialfv(GL_FRONT, GL_AMBIENT, self.earth)
@@ -810,6 +895,7 @@ class Window(pyglet.window.Window):
             if self.show_inventory:
                 self.inventory_list.batch.draw()
         self.draw_reticle()
+
     def draw_focused_block(self):
         glDisable(GL_LIGHTING)
         vector = self.get_sight_vector()
@@ -821,16 +907,20 @@ class Window(pyglet.window.Window):
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
             pyglet.graphics.draw(24, GL_QUADS, ('v3f/static', vertex_data))
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+
     def draw_label(self):
         x, y, z = self.player.position
-        self.label.text = '%.1f %02d (%.2f, %.2f, %.2f) %d / %d' % (
-        self.time_of_day if (self.time_of_day < 12.0) else (24.0 - self.time_of_day),
-            pyglet.clock.get_fps(), x, y, z,
-            len(self.model._shown), len(self.model.world))
+        self.label.text = '%.1f %02d (%.2f, %.2f, %.2f) %d / %d' \
+            % (self.time_of_day if (self.time_of_day < 12.0)
+               else (24.0 - self.time_of_day),
+               pyglet.clock.get_fps(), x, y, z,
+               len(self.model._shown), len(self.model.world))
         self.label.draw()
+
     def draw_reticle(self):
         glColor3d(0, 0, 0)
         self.reticle.draw(GL_LINES)
+
 
 def setup_fog():
     glEnable(GL_FOG)
@@ -840,6 +930,7 @@ def setup_fog():
     glFogf(GL_FOG_DENSITY, 0.35)
     glFogf(GL_FOG_START, 20.0)
     glFogf(GL_FOG_END, 80)
+
 
 def setup():
     glClearColor(BACK_RED, BACK_GREEN, BACK_BLUE, 1)
@@ -852,10 +943,11 @@ def setup():
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
+
 def main(options):
     save_object = None
     global SAVE_FILENAME
-    global DISABLE_SAVE    
+    global DISABLE_SAVE
     SAVE_FILENAME = options.save
     DISABLE_SAVE = options.disable_save
     if os.path.exists(SAVE_FILENAME) and options.disable_save:
@@ -894,11 +986,11 @@ def main(options):
         RND_FOREST = 550
 
 
-#    print options.maxtrees
-#    print RND_FOREST
+    # print options.maxtrees
+    # print RND_FOREST
 
-#    WORLDTYPE = options.terrain
-#    if options.hillheight <> 6:
+    # WORLDTYPE = options.terrain
+    # if options.hillheight <> 6:
     HILLHEIGHT = options.hillheight
     WORLDSIZE = options.worldsize
 
@@ -914,11 +1006,12 @@ def main(options):
     if options.fast:
         TIME_RATE /= 20
 
-    #try:
-        #config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
-        #window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=config, save=save_object)
-    #except pyglet.window.NoSuchConfigException:
-    window = Window( width=options.width, height=options.height, caption='pyCraftr', resizable=True, save=save_object)
+    # try:
+        # config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
+        # window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=config, save=save_object)
+    # except pyglet.window.NoSuchConfigException:
+    window = Window(width=options.width, height=options.height,
+                    caption='pyCraftr', resizable=True, save=save_object)
 
     window.set_exclusive_mouse(True)
     setup()
@@ -927,6 +1020,7 @@ def main(options):
     pyglet.app.run()
     if options.disable_auto_save and options.disable_save:
         window.save_to_file()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
