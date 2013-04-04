@@ -619,6 +619,8 @@ class Window(pyglet.window.Window):
         self.mouse_pressed = False
         self.dy = 0
         self.show_fog = False
+        self.last_key = None
+        self.sorted = False
         save_len = -1 if self.save is None else len(self.save)
         if self.save is None or save_len < 2:  # Model.world and model.sectors
             self.model = Model()
@@ -927,10 +929,15 @@ class Window(pyglet.window.Window):
         elif symbol == key.V:
             self.save_to_file()
         elif symbol == key.M:
-            self.player.quick_slots.change_sort_mode()
-            self.player.inventory.change_sort_mode()
-            self.item_list.update_items()
-            self.inventory_list.update_items()
+            if self.last_key == symbol and not self.sorted:
+                self.player.quick_slots.sort()
+                self.player.inventory.sort()
+                self.sorted = True
+            else:
+                self.player.quick_slots.change_sort_mode()
+                self.player.inventory.change_sort_mode()
+                self.item_list.update_items()
+                self.inventory_list.update_items()
         elif symbol == key.E:
             self.inventory_list.toggle_active_frame_visibility()
             self.item_list.toggle_active_frame_visibility()
@@ -957,6 +964,7 @@ class Window(pyglet.window.Window):
                             current_block[0].id, quantity=current_block[1])
             self.item_list.update_items()
             self.inventory_list.update_items()
+        self.last_key = symbol
 
     def on_key_release(self, symbol, modifiers):
         if symbol == key.W:
@@ -970,11 +978,6 @@ class Window(pyglet.window.Window):
         elif (symbol == key.SPACE or symbol == key.LSHIFT
               or symbol == key.RSHIFT) and self.player.flying:
             self.dy = 0
-        elif symbol == key.M:
-            self.player.quick_slots.change_sort_mode()
-            self.player.inventory.change_sort_mode()
-            self.item_list.update_items()
-            self.inventory_list.update_items()
 
     def on_resize(self, width, height):
         # label
