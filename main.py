@@ -3,6 +3,7 @@ import random
 import time
 import argparse
 import os
+import operator
 import cPickle as pickle
 from ConfigParser import ConfigParser, RawConfigParser
 
@@ -881,8 +882,10 @@ class Window(pyglet.window.Window):
                         if current_block.id >= ITEM_ID_MIN:
                             current_block.on_right_click()
                         else:
-                            self.model.add_block(previous, current_block)
-                            self.item_list.remove_current_block()
+                            localx, localy, localz = map(operator.sub,previous,normalize(self.player.position))
+                            if localx != 0 or localz != 0 or (localy != 0 and localy != -1):
+                                self.model.add_block(previous, current_block)
+                                self.item_list.remove_current_block()
         else:
             self.set_exclusive_mouse(True)
 
