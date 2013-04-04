@@ -634,7 +634,10 @@ class Model(object):
                 self.show_block(position)
             self.check_neighbors(position)
 
-    def remove_block(self, position, sync=True):
+    def remove_block(self, position, sync=True, sound=True):
+        if sound:
+            self.world[position].play_break_sound()
+            # BLOCKS_DIR[block].play_break_sound()
         del self.world[position]
         self.sectors[sectorize(position)].remove(position)
         if sync:

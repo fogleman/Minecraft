@@ -1,3 +1,5 @@
+import sounds
+
 def get_texture_coordinates(x, y, tileset_size=8):
     m = 1.0 / tileset_size
     dx = x * m
@@ -45,6 +47,8 @@ class Block(object):
         result.extend(self.side_texture * 4)
         return result
 
+    def play_break_sound(self):
+        pass
 
 class AirBlock(Block):
     top_texture = -1, -1
@@ -178,6 +182,9 @@ class OakWoodPlankBlock(Block):
     id = 5.0
     name = "Oak Wood Planks"
 
+    def play_break_sound(self):
+        sounds.wood_break.play()
+
 
 class SpruceWoodPlankBlock(Block):
     top_texture = 1, 3
@@ -186,6 +193,9 @@ class SpruceWoodPlankBlock(Block):
     id = 5.1
     name = "Spruce Wood Planks"
 
+    def play_break_sound(self):
+        sounds.wood_break.play()
+
 
 class JungleWoodPlankBlock(Block):
     top_texture = 2, 3
@@ -193,6 +203,9 @@ class JungleWoodPlankBlock(Block):
     side_texture = 2, 3
     id = 5.3
     name = "Jungle Wood Planks"
+
+    def play_break_sound(self):
+        sounds.wood_break.play()
 
 
 # FIXME: Can't find its specific id on minecraftwiki.
@@ -217,6 +230,9 @@ class OakWoodBlock(Block):
     id = 17.0
     name = "Oak wood"
 
+    def play_break_sound(self):
+        sounds.wood_break.play()
+
 class JungleWoodBlock(Block):
     top_texture = 6, 1
     bottom_texture = 6, 1
@@ -225,6 +241,9 @@ class JungleWoodBlock(Block):
     id = 17.1
     name = "Jungle wood"
 
+    def play_break_sound(self):
+        sounds.wood_break.play()
+
 class BirchWoodBlock(Block):
     top_texture = 5, 1
     bottom_texture = 5, 1
@@ -232,6 +251,9 @@ class BirchWoodBlock(Block):
     hardness = 0.6
     id = 17.2
     name = "Birch wood"
+
+    def play_break_sound(self):
+        sounds.wood_break.play()
 
 class CactusBlock(Block):
     top_texture = 7, 5
