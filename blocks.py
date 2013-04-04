@@ -26,6 +26,7 @@ class Block(object):
     # Inventory attributes
     max_stack_size = 64
     amount_label_color = 255, 255, 255, 255
+    name = "Block"
 
     def __init__(self):
         self.drop_id = self.id
@@ -50,6 +51,7 @@ class AirBlock(Block):
     side_texture = -1, -1
     max_stack_size = 0
     id = 0
+    name = "Air"
 
 
 class StoneBlock(Block):
@@ -58,6 +60,7 @@ class StoneBlock(Block):
     side_texture = 2, 1
     hardness = 1.5
     id = 1
+    name = "Stone"
 
 
 class GrassBlock(Block):
@@ -78,6 +81,7 @@ class DirtBlock(Block):
     side_texture = 0, 1
     hardness = 0.5
     id = 3
+    name = "Dirt"
 
 
 class SandBlock(Block):
@@ -87,6 +91,7 @@ class SandBlock(Block):
     hardness = 0.5
     amount_label_color = 0, 0, 0, 255
     id = 12
+    name = "Sand"
 
 
 class BrickBlock(Block):
@@ -95,6 +100,7 @@ class BrickBlock(Block):
     side_texture = 2, 0
     hardness = 1.5
     id = 45
+    name = "Bricks"
 
 
 class GlassBlock(Block):
@@ -104,6 +110,7 @@ class GlassBlock(Block):
     hardness = 0.2
     amount_label_color = 0, 0, 0, 255
     id = 20
+    name = "Glass"
 
 
 class BedrockBlock(Block):
@@ -112,6 +119,7 @@ class BedrockBlock(Block):
     side_texture = 3, 0
     hardness = -1  # Unbreakable
     id = 7
+    name = "Bedrock"
 
 
 class WaterBlock(Block):
@@ -120,6 +128,7 @@ class WaterBlock(Block):
     side_texture = 0, 2
     transparent = True
     id = 8
+    name = "Water"
 
 
 class ChestBlock(Block):
@@ -127,6 +136,7 @@ class ChestBlock(Block):
     bottom_texture = 1, 2
     side_texture = 1, 2
     id = 54
+    name = "Chest"
 
 
 class SandstoneBlock(Block):
@@ -135,6 +145,7 @@ class SandstoneBlock(Block):
     side_texture = 2, 2
     amount_label_color = 0, 0, 0, 255
     id = 24
+    name = "Sandstone"
 
 
 # FIXME: This texture is not in the original Minecraft.  Or is it quartz?
@@ -151,6 +162,7 @@ class StonebrickBlock(Block):
     bottom_texture = 0, 3
     side_texture = 0, 3
     id = 98
+    name = "Stone Bricks"
 
 
 class OakWoodPlankBlock(Block):
@@ -158,6 +170,7 @@ class OakWoodPlankBlock(Block):
     bottom_texture = 3, 3
     side_texture = 3, 3
     id = 5.0
+    name = "Oak Wood Planks"
 
 
 class SpruceWoodPlankBlock(Block):
@@ -165,6 +178,7 @@ class SpruceWoodPlankBlock(Block):
     bottom_texture = 1, 3
     side_texture = 1, 3
     id = 5.1
+    name = "Spruce Wood Planks"
 
 
 class JungleWoodPlankBlock(Block):
@@ -172,6 +186,7 @@ class JungleWoodPlankBlock(Block):
     bottom_texture = 2, 3
     side_texture = 2, 3
     id = 5.3
+    name = "Jungle Wood Planks"
 
 
 # FIXME: Can't find its specific id on minecraftwiki.
@@ -193,6 +208,7 @@ class OakWoodBlock(Block):
     side_texture = 7, 0
     hardness = 0.6
     id = 17.0
+    name = "Oak wood"
 
 
 class LeafBlock(Block):
