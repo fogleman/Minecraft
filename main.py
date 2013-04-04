@@ -33,7 +33,6 @@ BACK_RED = 0.0  # 0.53
 BACK_GREEN = 0.0  # 0.81
 BACK_BLUE = 0.0  # 0.98
 HALF_PI = pi / 2.0  # 90 degrees
-RND_FOREST = 10
 
 config = ConfigParser()
 config_file = "game.cfg"
@@ -44,6 +43,7 @@ if not os.path.lexists(config_file):
     config.set('World', 'flat', '0')  # dont make mountains,  make a flat world
     config.set('World', 'size', '160')
     config.set('World', 'show_fog', '1')
+    config.set('World', 'max_trees', '10')  # Was RND_FOREST
 
     try:
         with open(config_file, 'wb') as handle:
@@ -250,11 +250,11 @@ class Model(object):
             self.initialize()
 
     def initialize(self):
-        global RND_FOREST
         world_size = config.getint('World', 'size')
         world_type = config.getint('World', 'type')
         hill_height = config.getint('World', 'hill_height')
         flat_world = config.getboolean('World', 'flat')
+        max_trees = config.getint('World', 'max_trees')
         n = world_size / 2  # 80
         s = 1
         y = 0
@@ -317,7 +317,7 @@ class Model(object):
                         self.init_block((x, y, z), t)
 
                         #random tree  -- run forest, run!
-                        if RND_FOREST > 0:
+                        if max_trees > 0:
                             # if y > -1: # don't have trees sitting on the
                             # base 0 land.'
                             showtree = random.randint(1, 5)  # 1 out of 5 %
@@ -343,7 +343,7 @@ class Model(object):
                                 self.init_block((x - 1, y + 8, z + 1), leaf_block)
                                 self.init_block((x, y + 7, z), leaf_block)
 
-                                RND_FOREST -= 1
+                                max_trees -= 1
 
                         if t in (grass_block, snowgrass_block):
                             self.init_block((x - 1, y - 1, z), dirt_block)
@@ -970,30 +970,26 @@ def main(options):
     elif options.draw_distance == 'long':
         DRAW_DISTANCE = 60.0 * 2.0
 
-    global RND_FOREST
-
-    RND_FOREST = options.maxtrees
-
     if options.terrain == "plains":
         config.set('World', 'type', '0')
         config.set('World', 'hill_height', '2')
-        RND_FOREST = 200
+        config.set('World', 'max_trees', '200')
     if options.terrain == "mountains":
         config.set('World', 'type', '5')
         config.set('World', 'hill_height', '12')
-        RND_FOREST = 400
+        config.set('World', 'max_trees', '400')
     if options.terrain == "desert":
         config.set('World', 'type', '2')
         config.set('World', 'hill_height', '5')
-        RND_FOREST = 50
+        config.set('World', 'max_trees', '50')
     if options.terrain == "island":
         config.set('World', 'type', '3')
         config.set('World', 'hill_height', '8')
-        RND_FOREST = 300
+        config.set('World', 'max_trees', '300')
     if options.terrain == "snow":
         config.set('World', 'type', '6')
         config.set('World', 'hill_height', '4')
-        RND_FOREST = 550
+        config.set('World', 'max_trees', '550')
 
     if options.hillheight:
         config.set('World', 'hill_height', str(options.hillheight))
@@ -1003,6 +999,9 @@ def main(options):
 
     if options.flat:
         config.set('World', 'flat', '1')
+        
+    if options.maxtrees:
+        config.set('World', 'max_trees', str(options.maxtrees))
 
     if options.hide_fog:
         config.set('World', 'show_fog', '0')
@@ -1036,6 +1035,7 @@ if __name__ == '__main__':
     parser.add_argument("-terrain", type=str, default="grass")
     parser.add_argument("-hillheight", type=int)
     parser.add_argument("-worldsize", type=int)
+    parser.add_argument("-maxtrees", type=int)
     parser.add_argument("--flat", action="store_true", default=False)
     parser.add_argument("--hide-fog", action="store_true", default=False)
     parser.add_argument("--show-gui", action="store_true", default=True)
@@ -1044,6 +1044,5 @@ if __name__ == '__main__':
     parser.add_argument("-save", type=unicode, default=SAVE_FILENAME)
     parser.add_argument("--disable-save", action="store_false", default=True)
     parser.add_argument("--fast", action="store_true", default=False)
-    parser.add_argument("--maxtrees", type=int, default=50)
     options = parser.parse_args()
     main(options)
