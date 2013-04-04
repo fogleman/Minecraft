@@ -127,6 +127,7 @@ class WaterBlock(Block):
     bottom_texture = 0, 2
     side_texture = 0, 2
     transparent = True
+    hardness = -1  # Unobtainable
     id = 8
     name = "Water"
 
@@ -215,7 +216,7 @@ class LeafBlock(Block):
     top_texture = 7, 2
     bottom_texture = 7, 2
     side_texture = 7, 2
-    hardness = 0.6
+    hardness = 0.1
     id = 18.0
 
     def __init__(self):

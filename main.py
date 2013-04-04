@@ -131,7 +131,7 @@ class Player(Entity):
         self.quick_slots = Inventory(9)
         self.flying = flying
         initial_items = [dirt_block, sand_block, brick_block, stone_block,
-                         glass_block, water_block, chest_block,
+                         glass_block, stonebrick_block, chest_block,
                          sandstone_block, marble_block]
         flat_world = config.getboolean('World', 'flat')
         for item in initial_items:
@@ -538,6 +538,9 @@ class Window(pyglet.window.Window):
         self.white = vec(1.0, 1.0, 1.0, 1.0)
         self.ambient = vec(1.0, 1.0, 1.0, 1.0)
         self.polished = GLfloat(100.0)
+        self.highlighted_block = None
+        self.block_damage = 0
+        self.mouse_pressed = False
         self.dy = 0
         self.show_fog = False
         save_len = -1 if self.save is None else len(self.save)
@@ -675,6 +678,26 @@ class Window(pyglet.window.Window):
         dt = min(dt, 0.2)
         for _ in xrange(m):
             self._update(dt / m)
+        if self.mouse_pressed:
+            vector = self.get_sight_vector()
+            block, previous = self.model.hit_test(self.player.position, vector)
+            if block:
+                if self.highlighted_block != block:
+                    self.highlighted_block = block
+                    self.block_damage = 0
+            
+            if self.highlighted_block:
+                hit_block = self.model.world[self.highlighted_block]
+                if hit_block.hardness >= 0:
+                    self.block_damage += 0.05
+                    if self.block_damage >= hit_block.hardness:
+                        self.model.remove_block(self.highlighted_block)
+                        self.highlighted_block = None
+                        self.block_damage = 0
+                        if hit_block.drop_id is not None \
+                                and self.player.add_item(hit_block.drop_id):
+                            self.item_list.update_items()
+                            self.inventory_list.update_items()
         self.update_time()
 
     def _update(self, dt):
@@ -743,13 +766,7 @@ class Window(pyglet.window.Window):
             block, previous = self.model.hit_test(self.player.position, vector)
             if button == pyglet.window.mouse.LEFT:
                 if block:
-                    hit_block = self.model.world[block]
-                    if hit_block.hardness >= 0:
-                        self.model.remove_block(block)
-                        if hit_block.drop_id is not None \
-                                and self.player.add_item(hit_block.drop_id):
-                            self.item_list.update_items()
-                            self.inventory_list.update_items()
+                    self.mouse_pressed = True
             else:
                 if previous:
                     current_block = self.item_list.get_current_block()
@@ -763,6 +780,11 @@ class Window(pyglet.window.Window):
         else:
             self.set_exclusive_mouse(True)
 
+    def on_mouse_release(self, x, y, button, modifiers):
+        self.highlighted_block = None
+        self.block_damage = 0
+        self.mouse_pressed = False
+
     def on_mouse_motion(self, x, y, dx, dy):
         if self.exclusive:
             m = 0.15
@@ -770,6 +792,14 @@ class Window(pyglet.window.Window):
             x, y = x + dx * m, y + dy * m
             y = max(-90, min(90, y))
             self.player.rotation = (x, y)
+
+    def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
+        if button == pyglet.window.mouse.LEFT:
+            if self.show_inventory:
+                self.inventory_list.on_mouse_drag(x, y, dx, dy, button, modifiers)
+                return
+            if self.exclusive:
+                self.on_mouse_motion(x, y, dx, dy)
 
     def on_key_press(self, symbol, modifiers):
         if symbol == key.W:
