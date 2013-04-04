@@ -20,7 +20,6 @@ from inventory import *
 from entity import *
 from gui import *
 
-
 APP_NAME = 'pyCraftr'  # should I stay or should I go?
 
 SECTOR_SIZE = 16
@@ -328,8 +327,6 @@ class Model(object):
 
 
         o = n - 10 + hill_height - 6
-        if flat_world:
-            return
 
         world_type_blocks = (
             grass_block,
@@ -825,7 +822,13 @@ class Window(pyglet.window.Window):
             block, previous = self.model.hit_test(self.player.position, vector)
             if button == pyglet.window.mouse.LEFT:
                 if block:
-                    self.mouse_pressed = True
+                    hit_block = self.model.world[block]
+                    if hit_block.hardness >= 0:
+                        self.model.remove_block(block)
+                        if hit_block.drop_id is not None \
+                                and self.player.add_item(hit_block.drop_id):
+                            self.item_list.update_items()
+                            self.inventory_list.update_items()
             else:
                 if previous:
                     current_block = self.item_list.get_current_block()
@@ -1089,13 +1092,13 @@ def main(options):
 
     if options.hillheight:
         config.set('World', 'hill_height', str(options.hillheight))
-        
+
     if options.worldsize:
         config.set('World', 'size', str(options.worldsize))
 
     if options.flat:
         config.set('World', 'flat', '1')
-        
+
     if options.maxtrees:
         config.set('World', 'max_trees', str(options.maxtrees))
 
@@ -1130,11 +1133,12 @@ def main(options):
             print "Problem: Write error."
 
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-width", type=int, default=850)
     parser.add_argument("-height", type=int, default=480)
-    parser.add_argument("-terrain", choices=terrain_options.keys())
+    parser.add_argument("-terrain", type=str, default="grass")
     parser.add_argument("-hillheight", type=int)
     parser.add_argument("-worldsize", type=int)
     parser.add_argument("-maxtrees", type=int)
