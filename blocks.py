@@ -26,7 +26,7 @@ class Block(object):
     # Inventory attributes
     max_stack_size = 64
     amount_label_color = 255, 255, 255, 255
-    name = "Block"
+    name = "Block"  # Blocks that drop another item don't need a name
 
     def __init__(self):
         self.drop_id = self.id
@@ -69,7 +69,6 @@ class GrassBlock(Block):
     side_texture = 0, 0
     hardness = 0.6
     id = 2
-    name = "Dirt"
 
     def __init__(self):
         super(GrassBlock, self).__init__()
@@ -201,7 +200,6 @@ class SnowGrassBlock(Block):
     side_texture = 4, 0
     hardness = 0.6
     id = 2
-    name = "Dirt"
 
     def __init__(self):
         super(SnowGrassBlock, self).__init__()
@@ -221,7 +219,7 @@ class LeafBlock(Block):
     top_texture = 7, 2
     bottom_texture = 7, 2
     side_texture = 7, 2
-    hardness = 0.1
+    hardness = 0.2
     id = 18.0
     name = "Leaves"
 
