@@ -23,9 +23,9 @@ FOV = 65.0  # TODO: add menu option to change FOV
 NEAR_CLIP_DISTANCE = 0.1  # TODO: make min and max clip distance dynamic
 FAR_CLIP_DISTANCE = 200.0  # Maximum render distance,
                            # ignoring effects of sector_size and fog
-WORLDTYPE = 0  # 1=grass,2=dirt,3=sand,4=islands
+WORLDTYPE = 0  # 0=grass,1=dirt,2=desert,3=islands,4=sand,5=stone,6=snow
 HILLHEIGHT = 6  # height of the hills, increase for mountains :D
-FLATWORLD = 0  # dont make mountains,  make a flat world
+FLATWORLD = False  # dont make hills, make a flat world
 SAVE_FILENAME = 'save.dat'
 DISABLE_SAVE = True
 TIME_RATE = 240 * 10  # Rate of change (steps per hour).
@@ -102,12 +102,12 @@ class Player(Entity):
                          sandstone_block, marble_block]
         for item in initial_items:
             quantity = random.randint(1, 10)
-            if FLATWORLD == 1:
+            if FLATWORLD:
                 if random.randint(0, 1) == 0:
                     self.inventory.add_item(item.id, 99)
                 else:
                     self.quick_slots.add_item(item.id, 99)
-            if FLATWORLD == 0:
+            else:
                 if random.randint(0, 1) == 0:
                     self.inventory.add_item(item.id, quantity)
                 else:
@@ -240,29 +240,28 @@ class Model(object):
             self.initialize()
 
     def initialize(self):
+        global RND_FOREST
         global WORLDSIZE
         n = WORLDSIZE / 2  # 80
         s = 1
         y = 0
-        global RND_FOREST
+
+        worldtypes_grounds = (
+            grass_block,
+            dirt_block,
+            sand_block,
+            water_block,
+            grass_block,
+            (grass_block,) * 15 + (dirt_block,) * 3 + (stone_block,),
+            snowgrass_block,
+        )
+
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
-                if WORLDTYPE == 0:
-                    self.init_block((x, y - 2, z), grass_block)
-                if WORLDTYPE == 1:
-                    self.init_block((x, y - 2, z), dirt_block)
-                if WORLDTYPE == 2:
-                    self.init_block((x, y - 2, z), sand_block)
-                if WORLDTYPE == 3:
-                    self.init_block((x, y - 2, z), water_block)
-                if WORLDTYPE == 4:
-                    self.init_block((x, y - 2, z), grass_block)
-                if WORLDTYPE == 5:
-                    t = random.choice((grass_block, grass_block,
-                                       dirt_block, stone_block))
-                    self.init_block((x, y - 2, z), t)
-                if WORLDTYPE == 6:
-                    self.init_block((x, y - 2, z), snowgrass_block)
+                block = worldtypes_grounds[WORLDTYPE]
+                if isinstance(block, (tuple, list)):
+                    block = random.choice(block)
+                self.init_block((x, y - 2, z), block)
 
                 self.init_block((x, y - 3, z), dirt_block)
                 self.init_block((x, y - 4, z), bed_block)  # was stone_block
@@ -272,7 +271,7 @@ class Model(object):
                         self.init_block((x, y + dy, z), stone_block)
 
         o = n - 10 + HILLHEIGHT - 6
-        if FLATWORLD == 1:
+        if FLATWORLD:
             return
 
         for _ in xrange(WORLDSIZE / 2 + 40):  # (120):
