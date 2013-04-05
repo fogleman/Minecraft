@@ -155,10 +155,8 @@ class Model(object):
             b = random.randint(-o, o)  # z position of the hill
             c = -1  # base of the hill
             h = random.randint(1, 6)  # height of the hill
-            h = 60
             s = random.randint(4, 8)  # 2 * s is the side length of the hill
-            s = 30
-            d = 1
+            d = 1  # how quickly to taper off the hills
             t = random.choice([GRASS, SAND, BRICK])
             for y in xrange(c, c + h):
                 for x in xrange(a - s, a + s + 1):
@@ -283,15 +281,6 @@ class Model(object):
                 if key in self.shown:
                     self.hide_block(key)
 
-    def show_blocks(self):
-        """ Ensure all exposed blocks are shown.
-
-        """
-        # FIXME This method is not currently used
-        for position in self.world:
-            if position not in self.shown and self.exposed(position):
-                self.show_block(position)
-
     def show_block(self, position, immediate=True):
         """ Show the block at the given `position`. This method assumes the
         block has already been added with add_block()
@@ -324,24 +313,11 @@ class Model(object):
 
         """
         x, y, z = position
-        # only show exposed faces
-        index = 0
-        count = 24
         vertex_data = cube_vertices(x, y, z, 0.5)
         texture_data = list(texture)
-        for dx, dy, dz in []:  # FACES:
-            # FIXME This block never gets called.
-            if (x + dx, y + dy, z + dz) in self.world:
-                count -= 4
-                i = index * 12
-                j = index * 8
-                del vertex_data[i:i + 12]
-                del texture_data[j:j + 8]
-            else:
-                index += 1
         # create vertex list
         # FIXME Maybe `add_indexed()` should be used instead
-        self._shown[position] = self.batch.add(count, GL_QUADS, self.group,
+        self._shown[position] = self.batch.add(24, GL_QUADS, self.group,
             ('v3f/static', vertex_data),
             ('t2f/static', texture_data))
 
@@ -642,17 +618,6 @@ class Window(pyglet.window.Window):
                         self.dy = 0
                     break
         return tuple(p)
-
-    def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
-        """ Called when the player scrolls the mouse.
-
-        """
-        # FIXME This method is not used at all.
-        return
-        x, y, z = self.position
-        dx, dy, dz = self.get_sight_vector()
-        d = scroll_y * 10
-        self.position = (x + dx * d, y + dy * d, z + dz * d)
 
     def on_mouse_press(self, x, y, button, modifiers):
         """ Called when a mouse button is pressed. See pyglet docs for button
