@@ -82,12 +82,13 @@ For git:
 ### Quitting
 
 - **ESC**: release mouse, then close window
+- **Q**: Exits game when in Fullscreen
 
 ### Command-line arguments
     usage: main.py [-h] [-width WIDTH] [-height HEIGHT] [-terrain plains/mountains/desert/islands]
                    [-hillheight HILLHEIGHT] [-flat FLAT] [--hide-fog] [--show-gui]
                    [--disable-auto-save] [-draw-distance {short,medium,long}]
-                   [-save SAVE] [--disable-save] [-newcfg] [-nosound]
+                   [-save SAVE] [--disable-save] [-fullscreen]
     
     optional arguments:
       -h, --help            show this help message and exit
@@ -103,5 +104,4 @@ For git:
       -save SAVE
       --disable-save
       --fast
-      -newcfg (generates a new game config)
-      -nosound (no sounds)
+      -fullscreen
