@@ -906,7 +906,11 @@ class Window(pyglet.window.Window):
 
     def save_to_file(self):
         if DISABLE_SAVE:
-            save_world(self, game_dir, SAVE_FILENAME)
+            if not options.nocompression:
+                save_world(self, game_dir, SAVE_FILENAME)
+            else:
+                save_world(self, game_dir, SAVE_FILENAME, CLASSIC_SAVE_TYPE)
+            #save_world(self, game_dir, SAVE_FILENAME)
             #pickle.dump((self.model.world, self.model.sectors, self.strafe,
                          #self.player, self.time_of_day),
                         #open(SAVE_FILENAME, "wb"))
@@ -1312,5 +1316,6 @@ if __name__ == '__main__':
     parser.add_argument("--fast", action="store_true", default=False, help = "Makes time progress faster then normal.")
     parser.add_argument("--save-config", action="store_true", default=False, help = "Saves the choices as the default config.")
     parser.add_argument("-fullscreen", action="store_true", default=False, help = "Runs the game in fullscreen. Press 'Q' to exit the game.")
+    parser.add_argument("-nocompression", action="store_true", default=False, help = "Enables compression for a smaller save file.")
     options = parser.parse_args()
     main(options)
