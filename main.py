@@ -1,12 +1,15 @@
+import argparse
+from binascii import hexlify
+from collections import deque, defaultdict
+import datetime
 from math import cos, sin, atan2, pi, fmod, radians
+import operator
+import os
+import cPickle as pickle
+from posix import urandom
 import random
 import time
-import argparse
-import os
-import operator
-import cPickle as pickle
-from ConfigParser import ConfigParser, RawConfigParser
-import datetime
+from ConfigParser import ConfigParser
 
 import pyglet
 # Disable error checking for increased performance
@@ -15,12 +18,11 @@ from pyglet.gl import *
 from pyglet.window import key
 
 # import kytten #unused, future potential reference
-from collections import deque, defaultdict
 from blocks import *
-from items import *
-from inventory import *
 from entity import *
 from gui import *
+from items import *
+from inventory import *
 from nature import *
 
 APP_NAME = 'pyCraftr'  # should I stay or should I go?
@@ -651,11 +653,7 @@ class Model(object):
 class Window(pyglet.window.Window):
     def __init__(self, *args, **kwargs):
         self.show_gui = kwargs.pop('show_gui', True)
-        if 'save' in kwargs and kwargs['save'] is not None:
-            self.save = kwargs['save']
-        else:
-            self.save = None
-        del kwargs['save']
+        self.save = kwargs.pop('save', None)
         super(Window, self).__init__(*args, **kwargs)
         self.exclusive = False
         self.strafe = [0, 0]
@@ -1220,6 +1218,24 @@ def main(options):
     if options.fast:
         TIME_RATE /= 20
 
+    seed = options.seed
+    if seed is None:
+        # Generates pseudo-random number.
+        try:
+            seed = long(hexlify(urandom(16)), 16)
+        except NotImplementedError:
+            import time
+            seed = long(time.time() * 256)  # use fractional seconds
+        # Then convert it to a string so all seeds have the same type.
+        seed = str(seed)
+
+    random.seed(seed)
+
+    with open(os.path.join(game_dir, 'seeds.txt'), 'a') as seeds:
+        seeds.write(datetime.datetime.now().strftime(
+            'Seed used the %d %m %Y at %H:%M:%S\n'))
+        seeds.write('%s\n\n' % seed)
+
     # try:
         # window_config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
         # window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=window_config, save=save_object)
@@ -1252,6 +1268,7 @@ if __name__ == '__main__':
     parser.add_argument("-hillheight", type=int)
     parser.add_argument("-worldsize", type=int)
     parser.add_argument("-maxtrees", type=int)
+    parser.add_argument("-seed", default=None)
     parser.add_argument("--flat", action="store_true", default=False)
     parser.add_argument("--hide-fog", action="store_true", default=False)
     parser.add_argument("--show-gui", action="store_true", default=True)
