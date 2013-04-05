@@ -299,8 +299,15 @@ class InventorySelector(object):
                 self.update_items()
                 return False
             item = inventory.at(index)
-            if item and item.type == self.selected_item.type:
-                remaining = item.change_amount(self.selected_item.amount)
+            if (item and item.type == self.selected_item.type) or not item:
+                amount_to_change = 1
+                if button != pyglet.window.mouse.RIGHT:
+                    amount_to_change = self.selected_item.amount
+                if item:
+                    remaining = item.change_amount(amount_to_change)
+                else:
+                    inventory.slots[index] = ItemStack(type=self.selected_item.type, amount=amount_to_change)
+                    remaining = self.selected_item.amount - amount_to_change
                 if remaining > 0:
                     self.selected_item.change_amount((self.selected_item.amount - remaining) * -1)
                 else:

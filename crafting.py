@@ -77,7 +77,7 @@ class Recipes(object):
 			id_list.append([b.id for b in line])	# removed b.id != 0: it may make the shape different
 			shapeless_id_list.extend([b.id for b in line if b.id != 0])
 		shapeless_id_list.sort()
-        
+
 		self.remove_empty_line_col(id_list)
 		for r in self.recipes:
 			if r.shapeless:

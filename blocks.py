@@ -140,6 +140,9 @@ class WaterBlock(Block):
     id = 8
     name = "Water"
 
+    def play_break_sound(self):
+        sounds.water_break.play()
+
 
 class ChestBlock(Block):
     top_texture = 1, 2
