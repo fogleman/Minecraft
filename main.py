@@ -189,9 +189,9 @@ class Player(Entity):
         self.inventory = Inventory()
         self.quick_slots = Inventory(9)
         self.flying = flying
-        initial_items = [dirt_block, sand_block, brick_block, stone_block,
+        initial_items = [bookshelf_block, furnace_block, brick_block, cobble_block,
                          glass_block, stonebrick_block, chest_block,
-                         sandstone_block, marble_block]
+                         sandstone_block, melon_block]
         for item in initial_items:
             quantity = random.randint(1, 10)
             if random.choice((True, False)):
@@ -359,7 +359,7 @@ class Model(object):
             grass_block,
             dirt_block,
             (sand_block, ) * 15 + (sandstone_block,) * 4,
-            water_block,
+            (water_block,) * 30 + (clay_block,) * 4,
             grass_block,
             (grass_block,) * 15 + (dirt_block,) * 3 + (stone_block,),
             snowgrass_block,
@@ -375,6 +375,14 @@ class Model(object):
             (OakTree, BirchTree),
         )
 
+        ore_type_blocks = (
+            coalore_block,
+            ironore_block,
+            goldore_block,
+            diamondore_block,
+            stone_block, # dummy block
+            )
+
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
 
@@ -384,13 +392,30 @@ class Model(object):
                         self.init_block((x, y + dy, z), stone_block)
                     continue
 
+                ## Generation of the ground
+                #block = worldtypes_grounds[world_type]
+                #if isinstance(block, (tuple, list)):
+                    #block = random.choice(block)
+                #self.init_block((x, y - 2, z), block)
+                #self.init_block((x, y - 3, z), dirt_block)
+                #self.init_block((x, y - 4, z), bed_block)
+
                 # Generation of the ground
+
                 block = worldtypes_grounds[world_type]
                 if isinstance(block, (tuple, list)):
                     block = random.choice(block)
-                self.init_block((x, y - 2, z), block)
-                self.init_block((x, y - 3, z), dirt_block)
-                self.init_block((x, y - 4, z), bed_block)
+                # generate Ores.... 5% chance out of 100
+                randomOre = random.randrange(1,100)
+                if randomOre <= 5:
+                    oblock = random.choice(ore_type_blocks)
+                    self.init_block((x, y - 2, z), block)
+                    self.init_block((x, y - 3 , z), oblock)
+                    self.init_block((x, y - 4, z), bed_block)
+                elif randomOre > 5:
+                    self.init_block((x, y - 2, z), block)
+                    self.init_block((x, y - 3, z), dirt_block)
+                    self.init_block((x, y - 4, z), bed_block)
 
                 # Perhaps a tree
                 if self.max_trees > 0:
@@ -438,7 +463,21 @@ class Model(object):
                             continue
                         if (x, y, z) in self.world:
                             continue
-                        self.init_block((x, y, z), block)
+
+                        randomOre = random.randrange(1,100)
+                        if randomOre <= 5:
+                            oblock = random.choice(ore_type_blocks)
+                            self.init_block((x, y +1 , z), block) #cover up the ore block top
+                            self.init_block((x, y , z -1), block) #cover up the ore block back
+                            self.init_block((x, y , z +1), block) #cover up the ore block front
+                            self.init_block((x -1, y , z), block) #cover up the ore block left
+                            self.init_block((x +1, y , z), block) #cover up the ore block right
+                            self.init_block((x, y , z), oblock)
+                        elif randomOre > 5:
+                            self.init_block((x, y, z), block)
+
+                        #self.init_block((x, y, z), block)
+
 
                         # Perhaps a tree
                         if self.max_trees > 0:
@@ -524,7 +563,7 @@ class Model(object):
                     dirt_blocks.extend([block])
                     if len(dirt_blocks) >= number_of_expansions:
                         break
-        # random.shuffle(dirt_blocks)
+
         for i in xrange(0, min(len(dirt_blocks), number_of_expansions)):
             self.remove_block(dirt_blocks[i], sound=False)
         for i in xrange(0, min(len(dirt_blocks), number_of_expansions)):
@@ -989,6 +1028,9 @@ class Window(pyglet.window.Window):
             self.item_list.set_index(index)
         elif symbol == key.V:
             self.save_to_file()
+        elif symbol == key.Q:
+            if options.fullscreen == True:
+                pyglet.app.exit() # for fullscreen
         elif symbol == key.M:
             if self.last_key == symbol and not self.sorted:
                 self.player.quick_slots.sort()
@@ -1162,7 +1204,7 @@ def setup_fog(window):
     glFogi(GL_FOG_MODE, GL_LINEAR)
     glFogf(GL_FOG_DENSITY, 0.35)
     glFogf(GL_FOG_START, 20.0)
-    glFogf(GL_FOG_END, DRAW_DISTANCE)
+    glFogf(GL_FOG_END, DRAW_DISTANCE) # 80)
     window.show_fog = True
 
 
@@ -1222,7 +1264,12 @@ def main(options):
         # window_config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
         # window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=window_config, save=save_object)
     # except pyglet.window.NoSuchConfigException:
-    window = Window(
+    if options.fullscreen == True:
+        window = Window(
+        fullscreen=True, caption=APP_NAME,
+        resizable=True, save=save_object, vsync=False)
+    elif options.fullscreen == False:
+            window = Window(
         width=options.width, height=options.height, caption=APP_NAME,
         resizable=True, save=save_object, vsync=False)
 
@@ -1259,5 +1306,6 @@ if __name__ == '__main__':
     parser.add_argument("--disable-save", action="store_false", default=True)
     parser.add_argument("--fast", action="store_true", default=False)
     parser.add_argument("--save-config", action="store_true", default=False)
+    parser.add_argument("-fullscreen", action="store_true", default=False)
     options = parser.parse_args()
     main(options)
