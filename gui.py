@@ -147,13 +147,15 @@ class InventorySelector(object):
                 group=self.amount_labels_group)
             self.amount_labels.append(amount_label)
             self.icons.append(icon)
-            if block.id > 0:
-                crafting_ingredients.append(block)
+            crafting_ingredients.append(block)
             
         if len(crafting_ingredients) > 0:
-            outcome = recipes.craft([crafting_ingredients])
+            outcome = recipes.craft([crafting_ingredients[:2], crafting_ingredients[2:]])
+            for crafting_ingredient in crafting_ingredients:
+                print(crafting_ingredient.name)
+            print('-----------------------')
             if outcome:
-                print "Hooray, you crafted something. Now we need to handle this."
+                print("Hooray, you crafted something. Now we need to handle this.")
             
         self.update_current()
 

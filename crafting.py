@@ -77,13 +77,15 @@ class Recipes(object):
 			id_list.append([b.id for b in line if b.id != 0])
 			shapeless_id_list.extend([b.id for b in line if b.id != 0])
 		shapeless_id_list.sort()
-        
+
 		self.remove_empty_line_col(id_list)
 		for r in self.recipes:
 			if r.shapeless:
 				if r.ingre == shapeless_id_list:
 					return r.output
 			else:
+				print("=== " + str(r.ingre))
+				print("=== " + str(id_list))
 				if r.ingre == id_list:
 					return r.output
 
