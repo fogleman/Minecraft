@@ -1,7 +1,7 @@
 import os
 import cPickle as pickle
 import zlib
-import StringIO
+import cStringIO as StringIO
 
 # Save types
 
