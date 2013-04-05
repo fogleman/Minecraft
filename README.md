@@ -13,6 +13,8 @@
     cd Minecraft
     python main.py
 
+You may also need to install **AVBin library** (http://avbin.github.com/AVbin/Download.html), especially if you are on **Linux** machine.
+
 ### Mac
 
 On **Mac OS X**, you may have an issue with running **Pyglet in 64-bit mode**. Try running **Python in 32-bit mode** first:
