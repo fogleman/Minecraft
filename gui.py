@@ -147,7 +147,8 @@ class InventorySelector(object):
                 group=self.amount_labels_group)
             self.amount_labels.append(amount_label)
             self.icons.append(icon)
-            crafting_ingredients.append(item)
+            if block.id > 0:
+                crafting_ingredients.append(block)
             
         if len(crafting_ingredients) > 0:
             outcome = recipes.craft([crafting_ingredients])

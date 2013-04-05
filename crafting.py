@@ -17,6 +17,9 @@ class Recipes(object):
 
 	def remove_empty_line_col(self, ingre_list):
 		# remove empty lines
+		if len(ingre_list) == 0:
+		    return
+		    
 		for i in (0, -1):
 			line = ingre_list[i]
 			sum = 0
@@ -71,10 +74,10 @@ class Recipes(object):
 		id_list = []
 		shapeless_id_list = []
 		for line in input_blocks:
-			id_list.append([b.id for b in line])
+			id_list.append([b.id for b in line if b.id != 0])
 			shapeless_id_list.extend([b.id for b in line if b.id != 0])
 		shapeless_id_list.sort()
-
+        
 		self.remove_empty_line_col(id_list)
 		for r in self.recipes:
 			if r.shapeless:
@@ -117,6 +120,7 @@ smelting = SmeltingRecipes()
 #--------------  ---->  dirt
 # grass | grass
 recipes.add_recipe(["##", "##"], {'#': grass_block}, ItemStack(dirt_block.id, amount=1))
+recipes.add_recipe(["##", "##"], {'#': stone_block}, ItemStack(stonebrick_block.id, amount=4))
 recipes.add_shapeless_recipe([grass_block, stone_block], ItemStack(stone_block.id, amount=1))
 
 if __name__ == '__main__':
