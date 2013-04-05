@@ -191,8 +191,7 @@ class Player(Entity):
                          glass_block, stonebrick_block, chest_block,
                          sandstone_block, marble_block]
         for item in initial_items:
-            #quantity = random.randint(1, 10)
-            quantity = 5
+            quantity = random.randint(1, 10)
             if random.choice((True, False)):
                 self.inventory.add_item(item.id, quantity)
             else:
@@ -1166,8 +1165,7 @@ def main(options):
     SAVE_FILENAME = options.save
     DISABLE_SAVE = options.disable_save
     if os.path.exists(SAVE_FILENAME) and options.disable_save:
-        pass
-    #    save_object = pickle.load(open(SAVE_FILENAME, "rb"))
+        save_object = pickle.load(open(SAVE_FILENAME, "rb"))
     if options.draw_distance == 'medium':
         DRAW_DISTANCE = 60.0 * 1.5
     elif options.draw_distance == 'long':
