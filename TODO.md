@@ -12,7 +12,6 @@
 # Inventory
 
 * create inventory management screen implementing:
-- item stacks
 - Jimx's crafting system
 
 # Graphics
