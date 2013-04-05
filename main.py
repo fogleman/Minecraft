@@ -55,7 +55,7 @@ SAVE_FILENAME = os.path.join(game_dir, 'save.dat')
 
 config = ConfigParser()
 config_file = os.path.join(game_dir, 'game.cfg')
-if not os.path.lexists(config_file):
+if  not os.path.lexists(config_file):
     type, hill_height, max_trees = terrain_options['plains']
     config.add_section('World')
     config.set('World', 'type', str(type))  # 0=plains,1=dirt,2=desert,3=islands,4=sand,5=stone,6=snow
@@ -191,7 +191,8 @@ class Player(Entity):
                          glass_block, stonebrick_block, chest_block,
                          sandstone_block, marble_block]
         for item in initial_items:
-            quantity = random.randint(1, 10)
+            #quantity = random.randint(1, 10)
+            quantity = 5
             if random.choice((True, False)):
                 self.inventory.add_item(item.id, quantity)
             else:
@@ -1102,6 +1103,8 @@ class Window(pyglet.window.Window):
                 self.inventory_list.batch.draw()
                 if self.inventory_list.selected_item_icon:
                     self.inventory_list.selected_item_icon.draw()
+                if self.inventory_list.crafting_outcome_icon:
+                    self.inventory_list.crafting_outcome_icon.draw()
         if self.exclusive:
             self.draw_reticle()
 
@@ -1163,7 +1166,8 @@ def main(options):
     SAVE_FILENAME = options.save
     DISABLE_SAVE = options.disable_save
     if os.path.exists(SAVE_FILENAME) and options.disable_save:
-        save_object = pickle.load(open(SAVE_FILENAME, "rb"))
+        pass
+    #    save_object = pickle.load(open(SAVE_FILENAME, "rb"))
     if options.draw_distance == 'medium':
         DRAW_DISTANCE = 60.0 * 1.5
     elif options.draw_distance == 'long':

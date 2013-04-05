@@ -21,6 +21,8 @@ class InventorySelector(object):
         image = pyglet.image.load('inventory.png')
         self.frame = pyglet.sprite.Sprite(image.get_region(0, 0, image.width, image.height), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
         self.crafting_panel = Inventory(4)
+        self.crafting_outcome = None  # should be an item stack
+        self.crafting_outcome_icon = None
         #self.active = pyglet.sprite.Sprite(image.get_region(0, 0, image.height / 4, image.height / 4), batch=self.batch, group=pyglet.graphics.OrderedGroup(2))
         #self.active.opacity = 0
         self.frame.x = (width - self.frame.width) / 2
@@ -116,7 +118,8 @@ class InventorySelector(object):
         y = self.frame.y + crafting_y + crafting_height
         items = self.crafting_panel.get_items()
         items = items[:self.crafting_panel.slot_count]
-        crafting_ingredients = []
+        # NOTE: each line in the crafting panel should be a sub-list in the crafting ingredient list
+        crafting_ingredients = [[], []]
         for i, item in enumerate(items):
             if not item:
                 x += (self.icon_size * 0.5) + 3
@@ -148,12 +151,14 @@ class InventorySelector(object):
             self.amount_labels.append(amount_label)
             self.icons.append(icon)
             if block.id > 0:
-                crafting_ingredients.append(block)
+                crafting_ingredients[int(floor(i / 2))].append(block)
             
         if len(crafting_ingredients) > 0:
-            outcome = recipes.craft([crafting_ingredients])
+            outcome = recipes.craft(crafting_ingredients)
             if outcome:
-                print "Hooray, you crafted something. Now we need to handle this."
+                self.set_crafting_outcome(outcome)
+            elif self.crafting_outcome:
+                self.remove_crafting_outcome()
             
         self.update_current()
 
@@ -190,6 +195,10 @@ class InventorySelector(object):
         crafting_x = self.frame.x + 165
         crafting_height = (crafting_rows * (self.icon_size * 0.5)) + (crafting_rows * 3)
         crafting_width = (crafting_items_per_row * (self.icon_size * 0.5)) + (crafting_items_per_row-1) * 3
+
+        crafting_outcome_y = inventory_y + inventory_height + 60
+        crafting_outcome_x = self.frame.x + 270
+        crafting_outcome_width = crafting_outcome_height = self.icon_size * 0.5
         # out of bound
         
         if (x <= self.frame.x + 7) or (x >= (self.frame.x + self.frame.width) - 7) or (y <= quick_slots_y) or y >= (crafting_y + crafting_height):
@@ -206,19 +215,42 @@ class InventorySelector(object):
             row = floor(y_offset // (self.icon_size * 0.5 + 3))
             inventory = self.player.inventory
             items_per_row = 9
-        elif y <= crafting_y + crafting_height and y >= crafting_y and x >= crafting_x \
+        elif crafting_y <= y <= crafting_y + crafting_height and x >= crafting_x \
             and x <= crafting_x + crafting_width:
             y_offset = (y - (crafting_y + crafting_height)) * -1
             row = floor(y_offset // (self.icon_size * 0.5 + 3))
             inventory = self.crafting_panel
             x_offset = x - crafting_x
             items_per_row = crafting_items_per_row
+        elif crafting_outcome_y <= y <= crafting_outcome_y + crafting_outcome_height and \
+            crafting_outcome_x <= x <= crafting_outcome_x + crafting_outcome_width:
+            return 0, 256   # 256 for crafting outcome
         else:
             return -1, -1
 
         col = x_offset // (self.icon_size * 0.5 + 3)
         
         return inventory, int(row * items_per_row + col)
+
+    def set_crafting_outcome(self, item):
+        if not item:
+            self.remove_crafting_outcome()
+            return
+        self.crafting_outcome = item
+
+        block = BLOCKS_DIR[item.type]
+        item_icon = self.model.group.texture.get_region(int(block.side_texture[0] * 8) * self.icon_size, int(block.side_texture[1] * 8) * self.icon_size, int(self.icon_size * 0.5), int(self.icon_size * 0.5))
+        self.crafting_outcome_icon = pyglet.sprite.Sprite(item_icon, batch=self.batch, group=self.group)
+        inventory_rows = floor(self.max_items / 9)
+        inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
+        quick_slots_y = self.frame.y + 4
+        inventory_y = quick_slots_y + 42
+        self.crafting_outcome_icon.y = inventory_y + inventory_height + 60
+        self.crafting_outcome_icon.x = self.frame.x + 270
+
+    def remove_crafting_outcome(self):
+        self.crafting_outcome = None
+        self.crafting_outcome_icon = None
 
     def set_selected_item(self, item):
         if not item:
@@ -239,6 +271,28 @@ class InventorySelector(object):
         if x < 0.0 or y < 0.0:
             return False
         inventory, index = self.mouse_coords_to_index(x, y)
+        if index == 256:    # 256 for crafting outcome
+            if self.crafting_outcome:
+                self.remove_selected_item()
+                # set selected_item to the crafting outcome so that users can put it in inventory
+                self.set_selected_item(self.crafting_outcome)
+                # set coordinates
+                inventory_rows = floor(self.max_items / 9)
+                inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
+                quick_slots_y = self.frame.y + 4
+                inventory_y = quick_slots_y + 42
+                self.selected_item_icon.y = inventory_y + inventory_height + 60
+                self.selected_item_icon.x = self.frame.x + 270
+                # cost
+                for ingre in self.crafting_panel.slots:
+                    if ingre :
+                        ingre.change_amount(-1)
+                        # ingredient has been used up
+                        if ingre.amount == 0:
+                            self.remove_crafting_outcome()
+                return True
+            else:   # nothing happens
+                return True
         if self.selected_item:
             if index == -1:
                 # throw it
