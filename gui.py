@@ -1,6 +1,7 @@
 from pyglet.gl import *
-from math import floor
+from math import floor, ceil
 from blocks import *
+from items import *
 
 class InventorySelector(object):
     def __init__(self, width, height, player, model):
@@ -168,7 +169,7 @@ class InventorySelector(object):
         self.selected_item = None
         self.selected_item_icon = None
 
-    def on_mouse_press(self, x, y, button):
+    def on_mouse_press(self, x, y, button, modifiers):
         if x < 0.0 or y < 0.0:
             return False
         inventory, index = self.mouse_coords_to_index(x, y)
@@ -178,6 +179,14 @@ class InventorySelector(object):
                 self.update_items()
                 return False
             item = inventory.at(index)
+            if item and item.type == self.selected_item.type:
+                remaining = item.change_amount(self.selected_item.amount)
+                if remaining > 0:
+                    self.selected_item.change_amount((self.selected_item.amount - remaining) * -1)
+                else:
+                    self.set_selected_item(None)
+                self.update_items()
+                return
             inventory.slots[index] = self.selected_item
             self.set_selected_item(item)
             if self.selected_item_icon:
@@ -189,13 +198,31 @@ class InventorySelector(object):
             item = inventory.at(index)
             if not item:
                 return True
+                
+            if modifiers & pyglet.window.key.MOD_SHIFT:
+                add_to = self.player.quick_slots if inventory == self.player.inventory else self.player.inventory
+                add_to.add_item(item.type, item.amount)
+                inventory.remove_all_by_index(index)
+                self.update_items()
+                return True
 
-            self.set_selected_item(item)
+            new_stack = False
+            if button == pyglet.window.mouse.RIGHT:
+                if item.amount > 1:
+                    split_amount = int(ceil(item.amount / 2))
+                    item.change_amount(split_amount * -1)
+                    new_item = ItemStack(item.type, split_amount, item.durability, item.data)
+                    self.set_selected_item(new_item)
+                    new_stack = True
+
+            if not new_stack:
+                self.set_selected_item(item)
             if self.selected_item_icon:
                 self.selected_item_icon.x = x - (self.selected_item_icon.width / 2)
                 self.selected_item_icon.y = y - (self.selected_item_icon.height / 2)
 
-            inventory.remove_all_by_index(index)
+            if not new_stack:
+                inventory.remove_all_by_index(index)
 
         self.update_items()
         self.update_current()

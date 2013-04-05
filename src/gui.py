@@ -148,7 +148,7 @@ class InventorySelector(object):
             item = self.player.inventory.at(index)
             if not item:
                 return True
-
+                
             self.set_selected_item(item)
             if self.selected_item_icon:
                 self.selected_item_icon.x = x - (self.selected_item_icon.width / 2)

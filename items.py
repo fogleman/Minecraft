@@ -31,11 +31,16 @@ class ItemStack(object):
         return '{ Item stack with type = ' + str(self.type) + ' }'
 
     def change_amount(self, change=0):
-        if change == 0:
-            return
-        self.amount += change
-        if self.amount < 0:
-            self.amount = 0
+        overflow = 0
+        if change != 0:
+            self.amount += change
+            if self.amount < 0:
+                self.amount = 0
+            elif self.amount > self.max_stack_size:
+                overflow = self.amount - self.max_stack_size
+                self.amount -= overflow
+            
+        return overflow
 
     # compatible with blocks
     @property
