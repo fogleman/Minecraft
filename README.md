@@ -31,6 +31,14 @@ Or try **Pyglet 1.2 alpha**, which **supports 64-bit mode**:
 
 ### If you don't have pip or git
 
+### Windows Pyglet builds
+    See this website, and download the correct version for the OS.  
+    This is important to get this, as how it will have AVBin included with it.
+    
+    http://www.lfd.uci.edu/~gohlke/pythonlibs/#pyglet
+        For a 32 bit Windows Os, get the file named "pyglet-1.2alpha1.win32-py2.7.‌exe"
+        For a 64 bit Windows Os, get the file named "pyglet-1.2alpha1.win-amd64-py2.7.‌exe"
+
 For pip:
 
 - **Mac or Linux**: install with `sudo easy_install pip` (Mac or Linux) or (Linux) find a package called something like 'python-pip' in your package manager.
@@ -68,7 +76,6 @@ For git:
 - **B / F3**: Toggle UI
 - **E**: Show inventory
 - **V**: Saving (save filename in command-line arguments)
-- **M**: Sort items in the quick slots (3 choices)
 - **ENTER**: Move selected item to inventory / quick slots
 - **Mouse left-click (in inventory)**: Pick up item and after second click put off last item
 
@@ -80,7 +87,7 @@ For git:
     usage: main.py [-h] [-width WIDTH] [-height HEIGHT] [-terrain plains/mountains/desert/islands]
                    [-hillheight HILLHEIGHT] [-flat FLAT] [--hide-fog] [--show-gui]
                    [--disable-auto-save] [-draw-distance {short,medium,long}]
-                   [-save SAVE] [--disable-save]
+                   [-save SAVE] [--disable-save] [-newcfg] [-nosound]
     
     optional arguments:
       -h, --help            show this help message and exit
@@ -96,3 +103,5 @@ For git:
       -save SAVE
       --disable-save
       --fast
+      -newcfg (generates a new game config)
+      -nosound (no sounds)
