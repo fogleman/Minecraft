@@ -11,7 +11,8 @@ def save_world(window, game_dir, filename=None):
                         open(filename, "wb"))
 
 def world_exists(game_dir, filename):
-  return os.path.lexists(os.path.join(game_dir, filename))
+    filename = filename or get_default_filename(game_dir)
+    return os.path.lexists(os.path.join(game_dir, filename))
 
 def open_world(game_dir, filename=None):
   filename = os.path.join(game_dir, filename) if filename else get_default_filename(game_dir)
