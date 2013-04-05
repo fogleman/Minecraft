@@ -6,7 +6,7 @@ from math import cos, sin, atan2, pi, fmod, radians
 import operator
 import os
 import cPickle as pickle
-from posix import urandom
+from os import urandom
 import random
 import time
 from ConfigParser import ConfigParser
