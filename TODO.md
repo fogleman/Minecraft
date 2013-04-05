@@ -4,6 +4,7 @@
 * Show cracks (and particles) as block_damage increases
 * Implement sinking in blocks, based on their density
 * Add option to change world (for example from save) during program execution without closing Window
+* improve block rendering - shouldn't show bits of other textures around edges
 
 # Items
 
