@@ -884,13 +884,7 @@ class Window(pyglet.window.Window):
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.show_inventory:
-            if not self.inventory_list.on_mouse_press(x, y, button):
-                self.inventory_list.toggle_active_frame_visibility()
-                self.item_list.toggle_active_frame_visibility()
-                self.show_inventory = not self.show_inventory
-                self.set_exclusive_mouse(not self.show_inventory)
-            self.inventory_list.update_items()
-            self.item_list.update_items()
+            self.inventory_list.on_mouse_press(x, y, button)
             return
         if self.exclusive:
             vector = self.get_sight_vector()
@@ -1101,7 +1095,8 @@ class Window(pyglet.window.Window):
                 self.inventory_list.batch.draw()
                 if self.inventory_list.selected_item_icon:
                     self.inventory_list.selected_item_icon.draw()
-        self.draw_reticle()
+        if self.exclusive:
+            self.draw_reticle()
 
     def draw_focused_block(self):
         glDisable(GL_LIGHTING)
