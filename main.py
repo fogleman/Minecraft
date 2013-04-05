@@ -22,6 +22,7 @@ from inventory import *
 from entity import *
 from gui import *
 from nature import *
+from savingsystem import *
 
 APP_NAME = 'pyCraftr'  # should I stay or should I go?
 
@@ -40,6 +41,7 @@ BACK_GREEN = 0.0  # 0.81
 BACK_BLUE = 0.0  # 0.98
 HALF_PI = pi / 2.0  # 90 degrees
 GRASS_EXPANSION_TIME = datetime.timedelta(seconds=5)
+SAVE_FILENAME = None
 
 terrain_options = {
     'plains': ('0', '2', '700'),  # type, hill_height, max_trees
@@ -53,7 +55,7 @@ game_dir = pyglet.resource.get_settings_path(APP_NAME)
 if not os.path.exists(game_dir):
     os.makedirs(game_dir)
 
-SAVE_FILENAME = os.path.join(game_dir, 'save.dat')
+#SAVE_FILENAME = os.path.join(game_dir, 'save.dat')
 
 config = ConfigParser()
 config_file = os.path.join(game_dir, 'game.cfg')
@@ -904,9 +906,10 @@ class Window(pyglet.window.Window):
 
     def save_to_file(self):
         if DISABLE_SAVE:
-            pickle.dump((self.model.world, self.model.sectors, self.strafe,
-                         self.player, self.time_of_day),
-                        open(SAVE_FILENAME, "wb"))
+            save_world(self, game_dir, SAVE_FILENAME)
+            #pickle.dump((self.model.world, self.model.sectors, self.strafe,
+                         #self.player, self.time_of_day),
+                        #open(SAVE_FILENAME, "wb"))
 
     def collide(self, position, height):
         pad = 0.25
@@ -1227,8 +1230,10 @@ def main(options):
     global DRAW_DISTANCE
     SAVE_FILENAME = options.save
     DISABLE_SAVE = options.disable_save
-    if os.path.exists(SAVE_FILENAME) and options.disable_save:
-        save_object = pickle.load(open(SAVE_FILENAME, "rb"))
+    #if os.path.exists(SAVE_FILENAME) and options.disable_save:
+        #save_object = pickle.load(open(SAVE_FILENAME, "rb"))
+    if options.disable_save and world_exists(game_dir, SAVE_FILENAME) and SAVE_FILENAME:
+        save_object = open_world(game_dir, SAVE_FILENAME)
     if options.draw_distance == 'medium':
         DRAW_DISTANCE = 60.0 * 1.5
     elif options.draw_distance == 'long':
@@ -1290,22 +1295,22 @@ def main(options):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-width", type=int, default=850)
-    parser.add_argument("-height", type=int, default=480)
-    parser.add_argument("-terrain", choices=terrain_options.keys())
-    parser.add_argument("-hillheight", type=int)
-    parser.add_argument("-worldsize", type=int)
-    parser.add_argument("-maxtrees", type=int)
-    parser.add_argument("--flat", action="store_true", default=False)
-    parser.add_argument("--hide-fog", action="store_true", default=False)
-    parser.add_argument("--show-gui", action="store_true", default=True)
-    parser.add_argument("--disable-auto-save", action="store_false", default=True)
-    parser.add_argument("-draw-distance", choices=['short', 'medium', 'long'], default='short')
-    parser.add_argument("-save", type=unicode, default=SAVE_FILENAME)
-    parser.add_argument("--disable-save", action="store_false", default=True)
-    parser.add_argument("--fast", action="store_true", default=False)
-    parser.add_argument("--save-config", action="store_true", default=False)
-    parser.add_argument("-fullscreen", action="store_true", default=False)
+    parser = argparse.ArgumentParser(description='Play a Python made Minecraft clone.')
+    parser.add_argument("-width", type=int, default=850, help = "Set the default Widht.")
+    parser.add_argument("-height", type=int, default=480, help = "Set the default Height.")
+    parser.add_argument("-terrain", choices=terrain_options.keys(), help = "Different terains. Choose grass, island, mountains,desert, plains")
+    parser.add_argument("-hillheight", type=int, help = "How high the hills are.")
+    parser.add_argument("-worldsize", type=int, help = "The width size of the world.")
+    parser.add_argument("-maxtrees", type=int, help = "How many trees and cacti should be made.")
+    parser.add_argument("--flat", action="store_true", default=False, help = "Generate a flat world.")
+    parser.add_argument("--hide-fog", action="store_true", default=False, help ="Hides the fog, see the whole landscape.")
+    parser.add_argument("--show-gui", action="store_true", default=True, help = "Enabled by default.")
+    parser.add_argument("--disable-auto-save", action="store_false", default=True, help = "Do not save world on exit.")
+    parser.add_argument("-draw-distance", choices=['short', 'medium', 'long'], default='short', help =" How far to draw the map. Choose short, medium or long.")
+    parser.add_argument("-save", type=unicode, default=SAVE_FILENAME, help = "Type a name for the world to be saved as.")
+    parser.add_argument("--disable-save", action="store_false", default=True, help = "Disables saving.")
+    parser.add_argument("--fast", action="store_true", default=False, help = "Makes time progress faster then normal.")
+    parser.add_argument("--save-config", action="store_true", default=False, help = "Saves the choices as the default config.")
+    parser.add_argument("-fullscreen", action="store_true", default=False, help = "Runs the game in fullscreen. Press 'Q' to exit the game.")
     options = parser.parse_args()
     main(options)
