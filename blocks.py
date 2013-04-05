@@ -38,6 +38,8 @@ class Block(object):
             v = getattr(self, k)
             setattr(self, k, get_texture_coordinates(*v))
 
+        self.texture_data = self.get_texture_data()
+
         BLOCKS_DIR[self.id] = self
 
     def get_texture_data(self):

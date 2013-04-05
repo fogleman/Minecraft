@@ -13,7 +13,7 @@ from pyglet.gl import *
 from pyglet.window import key
 
 # import kytten #unused, future potential reference
-from collections import deque
+from collections import deque, defaultdict
 from blocks import *
 from items import *
 from inventory import *
@@ -82,13 +82,19 @@ else:
 
 
 def cube_vertices(x, y, z, n):
+    xmn = x - n
+    xpn = x + n
+    ymn = y - n
+    ypn = y + n
+    zmn = z - n
+    zpn = z + n
     return [
-        x-n,y+n,z-n, x-n,y+n,z+n, x+n,y+n,z+n, x+n,y+n,z-n, # top
-        x-n,y-n,z-n, x+n,y-n,z-n, x+n,y-n,z+n, x-n,y-n,z+n, # bottom
-        x-n,y-n,z-n, x-n,y-n,z+n, x-n,y+n,z+n, x-n,y+n,z-n, # left
-        x+n,y-n,z+n, x+n,y-n,z-n, x+n,y+n,z-n, x+n,y+n,z+n, # right
-        x-n,y-n,z+n, x+n,y-n,z+n, x+n,y+n,z+n, x-n,y+n,z+n, # front
-        x+n,y-n,z-n, x-n,y-n,z-n, x-n,y+n,z-n, x+n,y+n,z-n, # back
+        xmn,ypn,zmn, xmn,ypn,zpn, xpn,ypn,zpn, xpn,ypn,zmn, # top
+        xmn,ymn,zmn, xpn,ymn,zmn, xpn,ymn,zpn, xmn,ymn,zpn, # bottom
+        xmn,ymn,zmn, xmn,ymn,zpn, xmn,ypn,zpn, xmn,ypn,zmn, # left
+        xpn,ymn,zpn, xpn,ymn,zmn, xpn,ypn,zmn, xpn,ypn,zpn, # right
+        xmn,ymn,zpn, xpn,ymn,zpn, xpn,ypn,zpn, xmn,ypn,zpn, # front
+        xpn,ymn,zmn, xmn,ymn,zmn, xmn,ypn,zmn, xpn,ypn,zmn, # back
     ]
 
 
@@ -130,10 +136,36 @@ class TextureGroup(pyglet.graphics.Group):
         glDisable(self.texture.target)
 
 
+def normalize_float(f):
+    """
+    This is faster than int(round(f)).  Nearly two times faster.
+    Since it is run at least 500,000 times during map generation,
+    and also in game logic, it has a major impact on performance.
+
+    >>> normalize_float(0.2)
+    0
+    >>> normalize_float(-0.4)
+    0
+    >>> normalize_float(0.5)
+    1
+    >>> normalize_float(-0.5)
+    -1
+    >>> normalize_float(0.0)
+    0
+    """
+    int_f = int(f)
+    if f > 0:
+        if f - int_f < 0.5:
+            return int_f
+        return int_f + 1
+    if f - int_f > -0.5:
+        return int_f
+    return int_f - 1
+
+
 def normalize(position):
     x, y, z = position
-    x, y, z = int(round(x)), int(round(y)), int(round(z))
-    return x, y, z
+    return normalize_float(x), normalize_float(y), normalize_float(z)
 
 
 def sectorize(position):
@@ -158,7 +190,7 @@ class Player(Entity):
                          sandstone_block, marble_block]
         for item in initial_items:
             quantity = random.randint(1, 10)
-            if random.randint(0, 1) == 0:
+            if random.choice((True, False)):
                 self.inventory.add_item(item.id, quantity)
             else:
                 self.quick_slots.add_item(item.id, quantity)
@@ -265,16 +297,15 @@ class ItemSelector(object):
 
     def get_current_block(self, remove=True):
         item = self.player.quick_slots.at(self.current_index)
-        if item:
-            item_id = item.type
-            if remove:
-                self.player.quick_slots.remove_by_index(self.current_index)
-            self.update_items()
-            if item_id >= ITEM_ID_MIN:
-                return ITEMS_DIR[item_id]
-            else:
-                return BLOCKS_DIR[item_id]
-        return False
+        if not item:
+            return
+        item_id = item.type
+        if remove:
+            self.player.quick_slots.remove_by_index(self.current_index)
+        self.update_items()
+        if item_id >= ITEM_ID_MIN:
+            return ITEMS_DIR[item_id]
+        return BLOCKS_DIR[item_id]
 
 
     def get_current_block_item(self, remove=True):
@@ -304,7 +335,7 @@ class Model(object):
         self.world = {}
         self.shown = {}
         self._shown = {}
-        self.sectors = {}
+        self.sectors = defaultdict(list)
         self.queue = deque()  # note: could add limit here
         if initialize:
             self.initialize()
@@ -605,13 +636,14 @@ class Model(object):
         m = 8
         x, y, z = position
         dx, dy, dz = vector
+        dx, dy, dz = dx / m, dy / m, dz / m
         previous = None
         for _ in xrange(max_distance * m):
             key = normalize((x, y, z))
             if key != previous and key in self.world:
                 return key, previous
             previous = key
-            x, y, z = x + dx / m, y + dy / m, z + dz / m
+            x, y, z = x + dx, y + dy, z + dz
         return None, None
 
     def exposed(self, position):
@@ -622,13 +654,16 @@ class Model(object):
         return False
 
     def init_block(self, position, block):
-        self.add_block(position, block, False)
+        self.add_block(position, block, sync=False, force=False)
 
-    def add_block(self, position, block, sync=True):
+    def add_block(self, position, block, sync=True, force=True):
         if position in self.world:
-            self.remove_block(position, sync)
+            if force:
+                self.remove_block(position, sync)
+            else:
+                return
         self.world[position] = block
-        self.sectors.setdefault(sectorize(position), []).append(position)
+        self.sectors[sectorize(position)].append(position)
         if sync:
             if self.exposed(position):
                 self.show_block(position)
@@ -689,7 +724,7 @@ class Model(object):
         index = 0
         count = 24
         vertex_data = cube_vertices(x, y, z, 0.5)
-        texture_data = block.get_texture_data()
+        texture_data = block.texture_data
         for dx, dy, dz in []:  # FACES:
             if (x + dx, y + dy, z + dz) in self.world:
                 count -= 8  # 4
@@ -715,12 +750,12 @@ class Model(object):
         self._shown.pop(position).delete()
 
     def show_sector(self, sector):
-        for position in self.sectors.get(sector, []):
+        for position in self.sectors.get(sector, ()):
             if position not in self.shown and self.exposed(position):
                 self.show_block(position, False)
 
     def hide_sector(self, sector):
-        for position in self.sectors.get(sector, []):
+        for position in self.sectors.get(sector, ()):
             if position in self.shown:
                 self.hide_block(position, False)
 
@@ -1031,7 +1066,7 @@ class Window(pyglet.window.Window):
             else:
                 if previous:
                     current_block = self.item_list.get_current_block()
-                    if current_block:
+                    if current_block is not None:
                         # if current block is an item,
                         # call its on_right_click() method to handle this event
                         if current_block.id >= ITEM_ID_MIN:
@@ -1070,7 +1105,7 @@ class Window(pyglet.window.Window):
             self.strafe[0] -= 1
         elif symbol == self.key_move_backward:
             self.strafe[0] += 1
-        elif symbol ==self. key_move_left:
+        elif symbol == self. key_move_left:
             self.strafe[1] -= 1
         elif symbol == self.key_move_right:
             self.strafe[1] += 1

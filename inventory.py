@@ -95,7 +95,7 @@ class Inventory(object):
 
     def at(self, index):
         index = int(index)
-        if index >= 0 and index < self.slot_count:
+        if 0 <= index < self.slot_count:
             return self.slots[index]
         return None
 
