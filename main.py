@@ -22,6 +22,7 @@ from inventory import *
 from entity import *
 from gui import *
 from nature import *
+from savingsystem import *
 
 APP_NAME = 'pyCraftr'  # should I stay or should I go?
 
@@ -40,6 +41,7 @@ BACK_GREEN = 0.0  # 0.81
 BACK_BLUE = 0.0  # 0.98
 HALF_PI = pi / 2.0  # 90 degrees
 GRASS_EXPANSION_TIME = datetime.timedelta(seconds=10)
+SAVE_FILENAME = None
 
 terrain_options = {
     'plains': ('0', '2', '700'),  # type, hill_height, max_trees
@@ -52,8 +54,6 @@ terrain_options = {
 game_dir = pyglet.resource.get_settings_path(APP_NAME)
 if not os.path.exists(game_dir):
     os.makedirs(game_dir)
-
-SAVE_FILENAME = os.path.join(game_dir, 'save.dat')
 
 config = ConfigParser()
 config_file = os.path.join(game_dir, 'game.cfg')
@@ -867,9 +867,7 @@ class Window(pyglet.window.Window):
 
     def save_to_file(self):
         if DISABLE_SAVE:
-            pickle.dump((self.model.world, self.model.sectors, self.strafe,
-                         self.player, self.time_of_day),
-                        open(SAVE_FILENAME, "wb"))
+            save_world(self, game_dir, SAVE_FILENAME)
 
     def collide(self, position, height):
         pad = 0.25
@@ -1186,8 +1184,8 @@ def main(options):
     global DISABLE_SAVE
     SAVE_FILENAME = options.save
     DISABLE_SAVE = options.disable_save
-    if os.path.exists(SAVE_FILENAME) and options.disable_save:
-        save_object = pickle.load(open(SAVE_FILENAME, "rb"))
+    if options.disable_save and world_exists(game_dir, SAVE_FILENAME) and SAVE_FILENAME:
+        save_object = open_world(game_dir, SAVE_FILENAME)
     if options.draw_distance == 'medium':
         DRAW_DISTANCE = 60.0 * 1.5
     elif options.draw_distance == 'long':
