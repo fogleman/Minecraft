@@ -1096,7 +1096,8 @@ class Window(pyglet.window.Window):
         self.set_2d()
         if self.show_gui:
             self.draw_label()
-            self.item_list.batch.draw()
+            if not self.show_inventory:
+                self.item_list.batch.draw()
             if self.show_inventory:
                 self.inventory_list.batch.draw()
                 if self.inventory_list.selected_item_icon:

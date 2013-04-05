@@ -24,7 +24,7 @@ class InventorySelector(object):
         #self.active = pyglet.sprite.Sprite(image.get_region(0, 0, image.height / 4, image.height / 4), batch=self.batch, group=pyglet.graphics.OrderedGroup(2))
         #self.active.opacity = 0
         self.frame.x = (width - self.frame.width) / 2
-        self.frame.y = self.icon_size + 20 # 20 is padding
+        self.frame.y = self.icon_size / 2 - 4
 
     def change_index(self, change):
         self.set_index(self.current_index + change)
@@ -164,7 +164,7 @@ class InventorySelector(object):
         
     def set_position(self, width, height):
         self.frame.x = (width - self.frame.width) / 2
-        self.frame.y = self.icon_size + 20 # 20 is padding
+        self.frame.y = self.icon_size / 2 - 4 
         self.update_current()
         self.update_items()
 
