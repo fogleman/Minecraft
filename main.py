@@ -1184,7 +1184,7 @@ def main(options):
     global DISABLE_SAVE
     SAVE_FILENAME = options.save
     DISABLE_SAVE = options.disable_save
-    if options.disable_save and world_exists(game_dir, SAVE_FILENAME) and SAVE_FILENAME:
+    if options.disable_save and world_exists(game_dir, SAVE_FILENAME):
         save_object = open_world(game_dir, SAVE_FILENAME)
     if options.draw_distance == 'medium':
         DRAW_DISTANCE = 60.0 * 1.5
