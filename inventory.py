@@ -74,6 +74,11 @@ class Inventory(object):
     def remove_all_by_index(self, index):
         self.slots[index] = None
 
+    def remove_unnecessary_stacks(self):
+        for i, slot in enumerate(self.slots):
+            if slot and slot.amount == 0:
+                self.slots[i] = None
+
     def sort(self, reverse=True):
         if self.sort_mode == 0:
             self.sort_with_key(key=lambda x: x.id if x != None else -sys.maxint - 1, reverse=True)

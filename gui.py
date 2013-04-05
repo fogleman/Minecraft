@@ -159,7 +159,7 @@ class InventorySelector(object):
                 self.set_crafting_outcome(outcome)
             elif self.crafting_outcome:
                 self.remove_crafting_outcome()
-            
+
         self.update_current()
 
         
@@ -219,6 +219,7 @@ class InventorySelector(object):
             and x <= crafting_x + crafting_width:
             y_offset = (y - (crafting_y + crafting_height)) * -1
             row = floor(y_offset // (self.icon_size * 0.5 + 3))
+            self.crafting_panel.remove_unnecessary_stacks()
             inventory = self.crafting_panel
             x_offset = x - crafting_x
             items_per_row = crafting_items_per_row
@@ -288,8 +289,9 @@ class InventorySelector(object):
                     if ingre :
                         ingre.change_amount(-1)
                         # ingredient has been used up
-                        if ingre.amount == 0:
+                        if ingre.amount <= 0:
                             self.remove_crafting_outcome()
+                self.crafting_panel.remove_unnecessary_stacks()
                 return True
             else:   # nothing happens
                 return True
