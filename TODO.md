@@ -2,7 +2,6 @@
 
 * Enable blending mode to get semi-transparent textures working. Render in the right order so they show up correctly.
 * Show cracks (and particles) as block_damage increases
-* Prevent user from placing blocks directly below him/her#
 * Implement sinking in blocks, based on their density
 * Add option to change world (for example from save) during program execution without closing Window
 
