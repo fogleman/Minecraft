@@ -125,7 +125,8 @@ class Model(object):
         # Mapping from sector to a list of positions inside that sector.
         self.sectors = {}
 
-        # Simple function queue implementation.
+        # Simple function queue implementation. The queue is populated with
+        # _show_block() and _hide_block() calls
         self.queue = []
 
         self._initialize()
@@ -140,22 +141,22 @@ class Model(object):
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
                 # create a layer stone an grass everywhere.
-                self.init_block((x, y - 2, z), GRASS)
-                self.init_block((x, y - 3, z), STONE)
+                self.add_block((x, y - 2, z), GRASS, immediate=False)
+                self.add_block((x, y - 3, z), STONE, immediate=False)
                 if x in (-n, n) or z in (-n, n):
                     # create outer walls.
                     for dy in xrange(-2, 3):
-                        self.init_block((x, y + dy, z), STONE)
+                        self.add_block((x, y + dy, z), STONE, immediate=False)
 
         # generate the hills randomly
         o = n - 10
         for _ in xrange(120):
-            a = random.randint(-o, o)
-            b = random.randint(-o, o)
-            c = -1
-            h = random.randint(1, 6)
-            s = random.randint(4, 8)
-            d = 1
+            a = random.randint(-o, o)  # x position of the hill
+            b = random.randint(-o, o)  # z position of the hill
+            c = -1  # base of the hill
+            h = random.randint(1, 6)  # height of the hill
+            s = random.randint(4, 8)  # 2 * s is the side length of the hill
+            d = 1  # how quickly to taper off the hills
             t = random.choice([GRASS, SAND, BRICK])
             for y in xrange(c, c + h):
                 for x in xrange(a - s, a + s + 1):
@@ -164,8 +165,8 @@ class Model(object):
                             continue
                         if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
                             continue
-                        self.init_block((x, y, z), t)
-                s -= d
+                        self.add_block((x, y, z), t, immediate=False)
+                s -= d  # decrement side lenth so hills taper off
 
     def hit_test(self, position, vector, max_distance=8):
         """ Line of sight search from current position. If a block is
@@ -205,22 +206,7 @@ class Model(object):
                 return True
         return False
 
-    def init_block(self, position, texture):
-        """ Initialize a block at the given `position` and `texture`, but do
-        not draw it.
-
-        Parameters
-        ----------
-        position : tuple of len 3
-            The (x, y, z) position of the block to initialize.
-        texture : list of len 3
-            The coordinates of the texture squares. Use `tex_coords()` to
-            generate.
-
-        """
-        self.add_block(position, texture, False)
-
-    def add_block(self, position, texture, sync=True):
+    def add_block(self, position, texture, immediate=True):
         """ Add a block with the given `texture` and `position` to the world.
 
         Parameters
@@ -230,33 +216,33 @@ class Model(object):
         texture : list of len 3
             The coordinates of the texture squares. Use `tex_coords()` to
             generate.
-        sync : bool
+        immediate : bool
             Whether or not to draw the block immediately.
 
         """
         if position in self.world:
-            self.remove_block(position, sync)
+            self.remove_block(position, immediate)
         self.world[position] = texture
         self.sectors.setdefault(sectorize(position), []).append(position)
-        if sync:
+        if immediate:
             if self.exposed(position):
                 self.show_block(position)
             self.check_neighbors(position)
 
-    def remove_block(self, position, sync=True):
+    def remove_block(self, position, immediate=True):
         """ Remove the block at the given `position`.
 
         Parameters
         ----------
         position : tuple of len 3
             The (x, y, z) position of the block to remove.
-        sync : bool
+        immediate : bool
             Whether or not to immediately remove block from canvas.
 
         """
         del self.world[position]
         self.sectors[sectorize(position)].remove(position)
-        if sync:
+        if immediate:
             if position in self.shown:
                 self.hide_block(position)
             self.check_neighbors(position)
@@ -280,17 +266,9 @@ class Model(object):
                 if key in self.shown:
                     self.hide_block(key)
 
-    def show_blocks(self):
-        """ Ensure all exposed blocks are shown.
-
-        """
-        # FIXME This method is not currently used
-        for position in self.world:
-            if position not in self.shown and self.exposed(position):
-                self.show_block(position)
-
     def show_block(self, position, immediate=True):
-        """ Show the block at the given `position`.
+        """ Show the block at the given `position`. This method assumes the
+        block has already been added with add_block()
 
         Parameters
         ----------
@@ -320,23 +298,11 @@ class Model(object):
 
         """
         x, y, z = position
-        # only show exposed faces
-        index = 0
-        count = 24
         vertex_data = cube_vertices(x, y, z, 0.5)
         texture_data = list(texture)
-        for dx, dy, dz in []:  # FACES:
-            # FIXME This block never gets called.
-            if (x + dx, y + dy, z + dz) in self.world:
-                count -= 4
-                i = index * 12
-                j = index * 8
-                del vertex_data[i:i + 12]
-                del texture_data[j:j + 8]
-            else:
-                index += 1
         # create vertex list
-        self._shown[position] = self.batch.add(count, GL_QUADS, self.group,
+        # FIXME Maybe `add_indexed()` should be used instead
+        self._shown[position] = self.batch.add(24, GL_QUADS, self.group,
             ('v3f/static', vertex_data),
             ('t2f/static', texture_data))
 
@@ -423,7 +389,10 @@ class Model(object):
         func(*args)
 
     def process_queue(self):
-        """ Process the entire queue while taking periodic breaks.
+        """ Process the entire queue while taking periodic breaks. This allows
+        the game loop to run smoothly. The queue contains calls to
+        _show_block() and _hide_block() so this method should be called if
+        add_block() or remove_block() was called with immediate=False
 
         """
         start = time.clock()
@@ -634,17 +603,6 @@ class Window(pyglet.window.Window):
                         self.dy = 0
                     break
         return tuple(p)
-
-    def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
-        """ Called when the player scrolls the mouse.
-
-        """
-        # FIXME This method is not used at all.
-        return
-        x, y, z = self.position
-        dx, dy, dz = self.get_sight_vector()
-        d = scroll_y * 10
-        self.position = (x + dx * d, y + dy * d, z + dz * d)
 
     def on_mouse_press(self, x, y, button, modifiers):
         """ Called when a mouse button is pressed. See pyglet docs for button
