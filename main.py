@@ -6,6 +6,7 @@ import os
 import operator
 import cPickle as pickle
 from ConfigParser import ConfigParser, RawConfigParser
+import datetime
 
 import pyglet
 # Disable error checking for increased performance
@@ -38,6 +39,7 @@ BACK_RED = 0.0  # 0.53
 BACK_GREEN = 0.0  # 0.81
 BACK_BLUE = 0.0  # 0.98
 HALF_PI = pi / 2.0  # 90 degrees
+GRASS_EXPANSION_TIME = datetime.timedelta(seconds=5)
 
 terrain_options = {
     'plains': ('0', '2', '700'),  # type, hill_height, max_trees
@@ -486,6 +488,8 @@ class Model(object):
         return False
 
     def init_block(self, position, block):
+        if block == dirt_block:
+            block = grass_block
         self.add_block(position, block, sync=False, force=False)
 
     def add_block(self, position, block, sync=True, force=True):
@@ -511,6 +515,18 @@ class Model(object):
             if position in self.shown:
                 self.hide_block(position)
             self.check_neighbors(position)
+
+    def grass_expansion(self, number_of_expansions=1): # TODO -> optimizations
+        dirt_blocks = []
+        for i, block in enumerate(self.world):
+            if isinstance(self.world[block], DirtBlock):
+                if self.has_neighbors(block, type=GrassBlock):
+                    dirt_blocks.extend([block])
+        # random.shuffle(dirt_blocks)
+        for i in xrange(0, min(len(dirt_blocks), number_of_expansions)):
+            self.remove_block(dirt_blocks[i], sound=False)
+        for i in xrange(0, min(len(dirt_blocks), number_of_expansions)):
+            self.add_block(dirt_blocks[i], grass_block, force=False)
 
     def has_neighbors(self, position, type=None, diagonals=False):
         x, y, z = position
@@ -659,6 +675,7 @@ class Window(pyglet.window.Window):
         self.show_fog = False
         self.last_key = None
         self.sorted = False
+        self.last_grass_expansion = None
         global config
         self.key_move_forward = config.getint('Controls', 'move_forward')
         self.key_move_backward = config.getint('Controls', 'move_backward')
@@ -1091,6 +1108,9 @@ class Window(pyglet.window.Window):
         self.clear()
         self.set_3d()
         glColor3d(1, 1, 1)
+        if not self.last_grass_expansion or datetime.datetime.now() - self.last_grass_expansion >= GRASS_EXPANSION_TIME:
+            self.last_grass_expansion = datetime.datetime.now()
+            self.model.grass_expansion()
         self.model.batch.draw()
         self.draw_focused_block()
         self.set_2d()

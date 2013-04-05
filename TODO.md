@@ -24,5 +24,10 @@
 * use ManagedSoundPlayer class (http://www.pyglet.org/doc/api/pyglet.media.ManagedSoundPlayer-class.html) or something better
 * add volume change option
 
+# Grass Expansion
+
+* improve performance
+* grass expansion in new thread
+
 # Misc
 - need place for brainstorming/ideas etc. related to project, so we can cooperate (IRC/forums/Reddit/mailing list?)
