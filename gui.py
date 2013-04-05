@@ -56,8 +56,12 @@ class InventorySelector(object):
                     y -= (self.icon_size * 0.5) + 3
                 continue
             block = BLOCKS_DIR[item.type]
-            block_icon = self.model.group.texture.get_region(int(block.side_texture[0] * 8) * self.icon_size, int(block.side_texture[1] * 8) * self.icon_size, self.icon_size, self.icon_size)
-            icon = pyglet.sprite.Sprite(block_icon, batch=self.batch, group=self.group)
+            block_icon = self.model.group.texture.get_region(
+                int(block.side_texture[0] * 8) * self.icon_size,
+                int(block.side_texture[1] * 8) * self.icon_size, self.icon_size,
+                self.icon_size)
+            icon = pyglet.sprite.Sprite(block_icon, batch=self.batch,
+                                        group=self.group)
             icon.scale = 0.5
             icon.x = x
             icon.y = y - icon.height
@@ -65,11 +69,41 @@ class InventorySelector(object):
             if x >= (self.frame.x + self.frame.width) - 7:
                 x = self.frame.x + 7
                 y -= (self.icon_size * 0.5) + 3
-            amount_label = pyglet.text.Label(str(item.amount), font_name='Arial', font_size=9, 
-                x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom', 
-                color=(block.amount_label_color), batch=self.batch, group=self.amount_labels_group)
+            amount_label = pyglet.text.Label(
+                str(item.amount), font_name='Arial', font_size=9,
+                x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
+                color=block.amount_label_color, batch=self.batch,
+                group=self.amount_labels_group)
             self.amount_labels.append(amount_label)
             self.icons.append(icon)
+            
+        items = self.player.quick_slots.get_items()
+        items = items[:self.player.quick_slots.slot_count]
+        for i, item in enumerate(items):
+            if not item:
+                x += (self.icon_size * 0.5) + 3
+                continue
+            block = BLOCKS_DIR[item.type]
+            block_icon = self.model.group.texture.get_region(
+                int(block.side_texture[0] * 8) * self.icon_size,
+                int(block.side_texture[1] * 8) * self.icon_size, self.icon_size,
+                self.icon_size)
+            icon = pyglet.sprite.Sprite(block_icon, batch=self.batch,
+                                        group=self.group)
+            icon.scale = 0.5
+            icon.x = x
+            icon.y = self.frame.y + 7
+            item.quickslots_x = icon.x
+            item.quickslots_y = icon.y
+            x += (self.icon_size * 0.5) + 3
+            amount_label = pyglet.text.Label(
+                str(item.amount), font_name='Arial', font_size=9,
+                x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
+                color=block.amount_label_color, batch=self.batch,
+                group=self.amount_labels_group)
+            self.amount_labels.append(amount_label)
+            self.icons.append(icon)
+        self.update_current()
 
         
     def update_current(self):
@@ -107,19 +141,29 @@ class InventorySelector(object):
 
     def mouse_coords_to_index(self, x, y):
         rows = floor(self.max_items / 9)
-        inventory_y = self.frame.y + 46
+        quick_slots_y = self.frame.y + 4
+        inventory_y = quick_slots_y + 42
         inventory_height = (rows * (self.icon_size * 0.5)) + (rows * 3)
         # out of bound
-        if (x <= self.frame.x + 7) or (x >= (self.frame.x + self.frame.width) - 7) or (y <= inventory_y) or y >= (inventory_y + inventory_height):
-            return -1
+        
+        if (x <= self.frame.x + 7) or (x >= (self.frame.x + self.frame.width) - 7) or (y <= quick_slots_y) or y >= (inventory_y + inventory_height):
+            return -1, -1
 
         x_offset = x - (self.frame.x + 7)
-        y_offset = (y - (inventory_y + inventory_height)) * -1
 
-        row = floor(y_offset // (self.icon_size * 0.5 + 3))
+        if y >= inventory_y:
+            y_offset = (y - (inventory_y + inventory_height)) * -1
+            row = floor(y_offset // (self.icon_size * 0.5 + 3))
+            inventory = self.player.inventory
+        elif y <= quick_slots_y + 35:
+            row = 0.0
+            inventory = self.player.quick_slots
+        else:
+            return -1, -1
+
         col = x_offset // (self.icon_size * 0.5 + 3)
         
-        return int(row * 9 + col)
+        return inventory, int(row * 9 + col)
 
     def set_selected_item(self, item):
         if not item:
@@ -139,14 +183,14 @@ class InventorySelector(object):
     def on_mouse_press(self, x, y, button):
         if x < 0.0 or y < 0.0:
             return False
-        index = self.mouse_coords_to_index(x, y)
+        inventory, index = self.mouse_coords_to_index(x, y)
         if self.selected_item:
             if index == -1:
                 # throw it
                 self.update_items()
                 return False
-            item = self.player.inventory.at(index)
-            self.player.inventory.slots[index] = self.selected_item
+            item = inventory.at(index)
+            inventory.slots[index] = self.selected_item
             self.set_selected_item(item)
             if self.selected_item_icon:
                 self.selected_item_icon.x = x - (self.selected_item_icon.width / 2)
@@ -154,7 +198,7 @@ class InventorySelector(object):
         else:
             if index == -1:
                 return False
-            item = self.player.inventory.at(index)
+            item = inventory.at(index)
             if not item:
                 return True
 
@@ -163,7 +207,7 @@ class InventorySelector(object):
                 self.selected_item_icon.x = x - (self.selected_item_icon.width / 2)
                 self.selected_item_icon.y = y - (self.selected_item_icon.height / 2)
 
-            self.player.inventory.remove_all_by_index(index)
+            inventory.remove_all_by_index(index)
 
         self.update_items()
         self.update_current()

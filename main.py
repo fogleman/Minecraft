@@ -1085,9 +1085,9 @@ class Window(pyglet.window.Window):
         elif symbol == key.ESCAPE:
             if self.show_inventory:
                 self.inventory_list.toggle_active_frame_visibility()
-                self.item_list.toggle_active_frame_visibility()
                 self.show_inventory = not self.show_inventory
                 self.set_exclusive_mouse(not self.show_inventory)
+                self.item_list.update_items()
             else:
                 self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
@@ -1112,9 +1112,9 @@ class Window(pyglet.window.Window):
                 self.inventory_list.update_items()
         elif symbol == self.key_inventory:
             self.inventory_list.toggle_active_frame_visibility()
-            self.item_list.toggle_active_frame_visibility()
             self.show_inventory = not self.show_inventory
             self.set_exclusive_mouse(not self.show_inventory)
+            self.item_list.update_items()
         elif symbol == key.ENTER:
             if self.show_inventory:
                 current_block = self.inventory_list\
