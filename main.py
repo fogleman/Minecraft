@@ -1162,7 +1162,7 @@ def setup_fog(window):
     glFogi(GL_FOG_MODE, GL_LINEAR)
     glFogf(GL_FOG_DENSITY, 0.35)
     glFogf(GL_FOG_START, 20.0)
-    glFogf(GL_FOG_END, 80)
+    glFogf(GL_FOG_END, DRAW_DISTANCE)
     window.show_fog = True
 
 
@@ -1182,6 +1182,7 @@ def main(options):
     save_object = None
     global SAVE_FILENAME
     global DISABLE_SAVE
+    global DRAW_DISTANCE
     SAVE_FILENAME = options.save
     DISABLE_SAVE = options.disable_save
     if options.disable_save and world_exists(game_dir, SAVE_FILENAME):
