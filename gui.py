@@ -82,7 +82,7 @@ class InventorySelector(object):
                 group=self.amount_labels_group)
             self.amount_labels.append(amount_label)
             self.icons.append(icon)
-            
+
         items = self.player.quick_slots.get_items()
         items = items[:self.player.quick_slots.slot_count]
         for i, item in enumerate(items):
@@ -110,7 +110,7 @@ class InventorySelector(object):
             self.amount_labels.append(amount_label)
             self.icons.append(icon)
         self.update_current()
-            
+
         crafting_y = inventory_y + inventory_height + 42
         crafting_rows = 2
         crafting_height = (crafting_rows * (self.icon_size * 0.5)) + (crafting_rows * 3)
@@ -152,24 +152,24 @@ class InventorySelector(object):
             self.icons.append(icon)
             if block.id > 0:
                 crafting_ingredients[int(floor(i / 2))].append(block)
-            
+
         if len(crafting_ingredients) > 0:
             outcome = recipes.craft(crafting_ingredients)
             if outcome:
                 self.set_crafting_outcome(outcome)
             elif self.crafting_outcome:
                 self.remove_crafting_outcome()
-            
+
         self.update_current()
 
-        
+
     def update_current(self):
         '''self.active.x = self.frame.x + ((self.current_index % 9) * self.icon_size * 0.5) + (self.current_index % 9) * 3
         self.active.y = self.frame.y + floor(self.current_index / 9) * self.icon_size * 0.5 + floor(self.current_index / 9) * 6'''
-        
+
     def set_position(self, width, height):
         self.frame.x = (width - self.frame.width) / 2
-        self.frame.y = self.icon_size / 2 - 4 
+        self.frame.y = self.icon_size / 2 - 4
         self.update_current()
         self.update_items()
 
@@ -200,7 +200,7 @@ class InventorySelector(object):
         crafting_outcome_x = self.frame.x + 270
         crafting_outcome_width = crafting_outcome_height = self.icon_size * 0.5
         # out of bound
-        
+
         if (x <= self.frame.x + 7) or (x >= (self.frame.x + self.frame.width) - 7) or (y <= quick_slots_y) or y >= (crafting_y + crafting_height):
             return -1, -1
 
@@ -213,6 +213,7 @@ class InventorySelector(object):
         elif y <= inventory_y + inventory_height and y >= inventory_y:
             y_offset = (y - (inventory_y + inventory_height)) * -1
             row = floor(y_offset // (self.icon_size * 0.5 + 3))
+            self.crafting_panel.remove_unnecessary_stacks()
             inventory = self.player.inventory
             items_per_row = 9
         elif crafting_y <= y <= crafting_y + crafting_height and x >= crafting_x \
@@ -229,7 +230,7 @@ class InventorySelector(object):
             return -1, -1
 
         col = x_offset // (self.icon_size * 0.5 + 3)
-        
+
         return inventory, int(row * items_per_row + col)
 
     def set_crafting_outcome(self, item):
@@ -288,8 +289,9 @@ class InventorySelector(object):
                     if ingre :
                         ingre.change_amount(-1)
                         # ingredient has been used up
-                        if ingre.amount == 0:
+                        if ingre.amount <= 0:
                             self.remove_crafting_outcome()
+                self.crafting_panel.remove_unnecessary_stacks()
                 return True
             else:   # nothing happens
                 return True
@@ -325,7 +327,7 @@ class InventorySelector(object):
             item = inventory.at(index)
             if not item:
                 return False
-                
+
             if modifiers & pyglet.window.key.MOD_SHIFT:
                 add_to = self.player.quick_slots if inventory == self.player.inventory else self.player.inventory
                 add_to.add_item(item.type, item.amount)
