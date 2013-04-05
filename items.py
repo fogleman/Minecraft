@@ -39,7 +39,7 @@ class ItemStack(object):
             elif self.amount > self.max_stack_size:
                 overflow = self.amount - self.max_stack_size
                 self.amount -= overflow
-
+            
         return overflow
 
     # compatible with blocks

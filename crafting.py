@@ -17,6 +17,9 @@ class Recipes(object):
 
 	def remove_empty_line_col(self, ingre_list):
 		# remove empty lines
+		if len(ingre_list) == 0:
+		    return
+		    
 		for i in (0, -1):
 			line = ingre_list[i]
 			sum = 0
@@ -71,7 +74,7 @@ class Recipes(object):
 		id_list = []
 		shapeless_id_list = []
 		for line in input_blocks:
-			id_list.append([b.id for b in line])
+			id_list.append([b.id for b in line])	# removed b.id != 0: it may make the shape different
 			shapeless_id_list.extend([b.id for b in line if b.id != 0])
 		shapeless_id_list.sort()
 
@@ -84,7 +87,7 @@ class Recipes(object):
 				if r.ingre == id_list:
 					return r.output
 
-		return False
+		return None
 
 class SmeltingRecipe(object):
 	def __init__(self, ingre, output):
@@ -117,16 +120,18 @@ smelting = SmeltingRecipes()
 #--------------  ---->  dirt
 # grass | grass
 recipes.add_recipe(["##", "##"], {'#': grass_block}, ItemStack(dirt_block.id, amount=1))
+recipes.add_recipe(["##", "##"], {'#': stone_block}, ItemStack(stonebrick_block.id, amount=4))
 recipes.add_shapeless_recipe([grass_block, stone_block], ItemStack(stone_block.id, amount=1))
 
-print(recipes.craft([ [grass_block, grass_block, air_block], \
-					  [grass_block, grass_block, air_block], \
-					  [air_block,   air_block,   air_block] ]))
+if __name__ == '__main__':
+    print(recipes.craft([ [grass_block, grass_block, air_block], \
+					      [grass_block, grass_block, air_block], \
+					      [air_block,   air_block,   air_block] ]))
 
-print(recipes.craft([ [air_block, grass_block, grass_block], \
-				      [air_block, grass_block, grass_block], \
-				      [air_block,   air_block,   air_block] ]))
+    print(recipes.craft([ [air_block, grass_block, grass_block], \
+				          [air_block, grass_block, grass_block], \
+				          [air_block,   air_block,   air_block] ]))
 
-print(recipes.craft([ [air_block, stone_block, grass_block], \
-				      [air_block, air_block, air_block], \
-				      [air_block,   air_block,   air_block] ]))
+    print(recipes.craft([ [air_block, stone_block, grass_block], \
+				          [air_block, air_block, air_block], \
+				          [air_block,   air_block,   air_block] ]))

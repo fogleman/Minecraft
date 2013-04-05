@@ -1,6 +1,9 @@
 import sounds
 
-def get_texture_coordinates(x, y, tileset_size=8):
+global TERRAINMAP_BLOCK_SIZE
+TERRAINMAP_BLOCK_SIZE = 8
+
+def get_texture_coordinates(x, y, tileset_size=TERRAINMAP_BLOCK_SIZE):
     m = 1.0 / tileset_size
     dx = x * m
     dy = y * m
@@ -70,6 +73,10 @@ class StoneBlock(Block):
     id = 1
     name = "Stone"
 
+    def __init__(self):
+        super(StoneBlock, self).__init__()
+        self.drop_id = CobbleBlock.id
+
 
 class GrassBlock(Block):
     top_texture = 1, 0
@@ -100,6 +107,38 @@ class SandBlock(Block):
     amount_label_color = 0, 0, 0, 255
     id = 12
     name = "Sand"
+
+class GoldOreBlock(Block):
+    top_texture = 3, 4
+    bottom_texture = 3, 4
+    side_texture = 3, 4
+    hardness = 1.5
+    id = 14
+    name = "Coal Ore"
+
+class IronOreBlock(Block):
+    top_texture = 1, 4
+    bottom_texture = 1, 4
+    side_texture = 1, 4
+    hardness = 1.5
+    id = 15
+    name = "Iron Ore"
+
+class DiamondOreBlock(Block):
+    top_texture = 2, 4
+    bottom_texture = 2, 4
+    side_texture = 2, 4
+    hardness = 1.5
+    id = 56
+    name = "Diamond Ore"
+
+class CoalOreBlock(Block):
+    top_texture = 0, 4
+    bottom_texture = 0, 4
+    side_texture = 0, 4
+    hardness = 1.5
+    id = 16
+    name = "Coal Ore"
 
 
 class BrickBlock(Block):
@@ -277,7 +316,7 @@ class CactusBlock(Block):
     bottom_texture = 7, 3
     side_texture = 7, 4
     hardness = 0.6
-    id = 17.0
+    id = 81
     name = "Cactus"
 
 class OakLeafBlock(Block):
@@ -317,6 +356,69 @@ class BirchLeafBlock(Block):
         super(BirchLeafBlock, self).__init__()
         self.drop_id = None
 
+class MelonBlock(Block):
+    top_texture = 4, 3
+    bottom_texture = 4, 3
+    side_texture = 4, 2
+    hardness = 0.5
+    id = 103
+    name = "Melon"
+
+class StoneSlabBlock(Block):
+    top_texture = 4, 4
+    bottom_texture = 4, 4
+    side_texture = 4, 4
+    hardness = 1.1
+    id = 43
+    name = "Full Stone Slab"
+
+class ClayBlock(Block):
+    top_texture = 6, 4
+    bottom_texture = 6, 4
+    side_texture = 6, 4
+    hardness = 0.5
+    id = 82
+    name = "Clay Block"
+
+class CobbleBlock(Block):
+    top_texture = 6, 3
+    bottom_texture = 6, 3
+    side_texture = 6, 3
+    hardness = 1.0
+    id = 5
+    name = "Cobblestone"
+
+
+class BookshelfBlock(Block):
+    top_texture = 0, 2
+    bottom_texture = 0, 2
+    side_texture = 5, 4
+    hardness = 0.7
+    id = 47
+    name = "Bookshelf"
+
+
+class FurnaceBlock(Block):
+    top_texture = 7, 7
+    bottom_texture = 6, 3
+    side_texture = 7, 6
+    hardness = 0.7
+    id = 61
+    name = "Furnace"
+
+
+class FarmBlock(Block):
+    top_texture = 5, 3
+    bottom_texture = 0, 1
+    side_texture = 0, 1
+    hardness = 0.5
+    id = 60
+    name = "Farm Dirt"
+
+    def __init__(self):
+        super(FarmBlock, self).__init__()
+        self.drop_id = DirtBlock.id
+
 ## These two branches currently not used, so that OAK is a 'bigger tree'
 
 #class JungleBranchBlock(Block):
@@ -344,6 +446,7 @@ class BirchLeafBlock(Block):
         #self.drop_id = BirchWoodBlock.id
 
 
+
 air_block = AirBlock()
 grass_block = GrassBlock()
 sand_block = SandBlock()
@@ -369,3 +472,17 @@ jungleleaf_block = JungleLeafBlock()
 birchwood_block = BirchWoodBlock()
 birchleaf_block = BirchLeafBlock()
 cactus_block = CactusBlock()
+coalore_block = CoalOreBlock()
+ironore_block = IronOreBlock()
+goldore_block = GoldOreBlock()
+diamondore_block = DiamondOreBlock()
+melon_block = MelonBlock()
+stoneslab_block = StoneSlabBlock()
+clay_block = ClayBlock()
+cobble_block = CobbleBlock()
+bookshelf_block = BookshelfBlock()
+furnace_block = FurnaceBlock()
+farm_block = FarmBlock()
+
+
+

@@ -21,7 +21,7 @@ class Inventory(object):
         else:
             max_size = BLOCKS_DIR[item_id].max_stack_size
 
-
+        
         retval = False
         while quantity > 0:
             # can't find an unfilled slot
@@ -114,5 +114,5 @@ class Inventory(object):
     def __str__(self):
         return str(self.__dict__)
 
-    def __eq__(self, other):
+    def __eq__(self, other): 
         return self.__dict__ == other.__dict__
