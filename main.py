@@ -141,12 +141,12 @@ class Model(object):
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
                 # create a layer stone an grass everywhere.
-                self.init_block((x, y - 2, z), GRASS)
-                self.init_block((x, y - 3, z), STONE)
+                self.add_block((x, y - 2, z), GRASS, immediate=False)
+                self.add_block((x, y - 3, z), STONE, immediate=False)
                 if x in (-n, n) or z in (-n, n):
                     # create outer walls.
                     for dy in xrange(-2, 3):
-                        self.init_block((x, y + dy, z), STONE)
+                        self.add_block((x, y + dy, z), STONE, immediate=False)
 
         # generate the hills randomly
         o = n - 10
@@ -165,7 +165,7 @@ class Model(object):
                             continue
                         if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
                             continue
-                        self.init_block((x, y, z), t)
+                        self.add_block((x, y, z), t, immediate=False)
                 s -= d  # decrement side lenth so hills taper off
 
     def hit_test(self, position, vector, max_distance=8):
@@ -205,21 +205,6 @@ class Model(object):
             if (x + dx, y + dy, z + dz) not in self.world:
                 return True
         return False
-
-    def init_block(self, position, texture):
-        """ Initialize a block at the given `position` and `texture`, but do
-        not draw it.
-
-        Parameters
-        ----------
-        position : tuple of len 3
-            The (x, y, z) position of the block to initialize.
-        texture : list of len 3
-            The coordinates of the texture squares. Use `tex_coords()` to
-            generate.
-
-        """
-        self.add_block(position, texture, False)
 
     def add_block(self, position, texture, immediate=True):
         """ Add a block with the given `texture` and `position` to the world.
