@@ -1228,6 +1228,7 @@ def main(options):
             seed = long(time.time() * 256)  # use fractional seconds
         # Then convert it to a string so all seeds have the same type.
         seed = str(seed)
+        print('Random seed: ' + seed)
 
     random.seed(seed)
 
