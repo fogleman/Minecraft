@@ -6,7 +6,6 @@ from math import cos, sin, atan2, pi, fmod, radians
 import operator
 import os
 import cPickle as pickle
-from os import urandom
 import random
 import time
 from ConfigParser import ConfigParser
@@ -1222,7 +1221,7 @@ def main(options):
     if seed is None:
         # Generates pseudo-random number.
         try:
-            seed = long(hexlify(urandom(16)), 16)
+            seed = long(hexlify(os.urandom(16)), 16)
         except NotImplementedError:
             import time
             seed = long(time.time() * 256)  # use fractional seconds
