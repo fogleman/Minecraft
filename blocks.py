@@ -1,3 +1,5 @@
+import sounds
+
 def get_texture_coordinates(x, y, tileset_size=8):
     m = 1.0 / tileset_size
     dx = x * m
@@ -27,7 +29,7 @@ class Block(object):
     # Inventory attributes
     max_stack_size = 64
     amount_label_color = 255, 255, 255, 255
-    name = "Block" # Blocks that drop another item don't need a name
+    name = "Block"  # Blocks that drop another item don't need a name
 
     def __init__(self):
         self.drop_id = self.id
@@ -35,6 +37,8 @@ class Block(object):
         for k in ('top_texture', 'bottom_texture', 'side_texture'):
             v = getattr(self, k)
             setattr(self, k, get_texture_coordinates(*v))
+
+        self.texture_data = self.get_texture_data()
 
         BLOCKS_DIR[self.id] = self
 
@@ -45,6 +49,8 @@ class Block(object):
         result.extend(self.side_texture * 4)
         return result
 
+    def play_break_sound(self):
+        pass
 
 class AirBlock(Block):
     top_texture = -1, -1
@@ -71,7 +77,6 @@ class GrassBlock(Block):
     side_texture = 0, 0
     hardness = 0.6
     id = 2
-    name = "Dirt"
 
     def __init__(self):
         super(GrassBlock, self).__init__()
@@ -112,7 +117,6 @@ class GlassBlock(Block):
     side_texture = 3, 1
     hardness = 0.2
     amount_label_color = 0, 0, 0, 255
-    hardness = 0.3
     id = 20
     name = "Glass"
 
@@ -141,7 +145,6 @@ class ChestBlock(Block):
     top_texture = 1, 2
     bottom_texture = 1, 2
     side_texture = 1, 2
-    hardness = 1
     id = 54
     name = "Chest"
 
@@ -151,7 +154,6 @@ class SandstoneBlock(Block):
     bottom_texture = 2, 2
     side_texture = 2, 2
     amount_label_color = 0, 0, 0, 255
-    hardness = 1
     id = 24
     name = "Sandstone"
 
@@ -162,7 +164,6 @@ class MarbleBlock(Block):
     top_texture = 3, 2
     bottom_texture = 3, 2
     side_texture = 3, 2
-    hardness = 1.5
     id = 0
     name = "Marble"
     amount_label_color = 0, 0, 0, 255
@@ -180,27 +181,33 @@ class OakWoodPlankBlock(Block):
     top_texture = 3, 3
     bottom_texture = 3, 3
     side_texture = 3, 3
-    hardness = 1
     id = 5.0
     name = "Oak Wood Planks"
+
+    def play_break_sound(self):
+        sounds.wood_break.play()
 
 
 class SpruceWoodPlankBlock(Block):
     top_texture = 1, 3
     bottom_texture = 1, 3
     side_texture = 1, 3
-    hardness = 1
     id = 5.1
     name = "Spruce Wood Planks"
+
+    def play_break_sound(self):
+        sounds.wood_break.play()
 
 
 class JungleWoodPlankBlock(Block):
     top_texture = 2, 3
     bottom_texture = 2, 3
     side_texture = 2, 3
-    hardness = 1
     id = 5.3
     name = "Jungle Wood Planks"
+
+    def play_break_sound(self):
+        sounds.wood_break.play()
 
 
 # FIXME: Can't find its specific id on minecraftwiki.
@@ -211,7 +218,6 @@ class SnowGrassBlock(Block):
     side_texture = 4, 0
     hardness = 0.6
     id = 2
-    name = "Dirt"
 
     def __init__(self):
         super(SnowGrassBlock, self).__init__()
@@ -222,26 +228,12 @@ class OakWoodBlock(Block):
     top_texture = 7, 1
     bottom_texture = 7, 1
     side_texture = 7, 0
-    hardness = 1
+    hardness = 0.6
     id = 17.0
     name = "Oak wood"
 
-class JungleWoodBlock(Block):
-    top_texture = 6, 1
-    bottom_texture = 6, 1
-    side_texture = 6, 0
-    hardness = 1
-    id = 17.1
-    name = "Jungle wood"
-
-class BirchWoodBlock(Block):
-    top_texture = 5, 1
-    bottom_texture = 5, 1
-    side_texture = 5, 0
-    hardness = 1
-    id = 17.2
-    name = "Birch wood"
-
+    def play_break_sound(self):
+        sounds.wood_break.play()
 
 class OakBranchBlock(Block):
     top_texture = 7, 0
@@ -254,6 +246,76 @@ class OakBranchBlock(Block):
     def __init__(self):
         super(OakBranchBlock, self).__init__()
         self.drop_id = OakWoodBlock.id
+
+    def play_break_sound(self):
+        sounds.wood_break.play()
+
+class JungleWoodBlock(Block):
+    top_texture = 6, 1
+    bottom_texture = 6, 1
+    side_texture = 6, 0
+    hardness = 0.6
+    id = 17.1
+    name = "Jungle wood"
+
+    def play_break_sound(self):
+        sounds.wood_break.play()
+
+class BirchWoodBlock(Block):
+    top_texture = 5, 1
+    bottom_texture = 5, 1
+    side_texture = 5, 0
+    hardness = 0.6
+    id = 17.2
+    name = "Birch wood"
+
+    def play_break_sound(self):
+        sounds.wood_break.play()
+
+class CactusBlock(Block):
+    top_texture = 7, 5
+    bottom_texture = 7, 3
+    side_texture = 7, 4
+    hardness = 0.6
+    id = 17.0
+    name = "Cactus"
+
+class OakLeafBlock(Block):
+    top_texture = 7, 2
+    bottom_texture = 7, 2
+    side_texture = 7, 2
+    hardness = 0.2
+    id = 18.0
+    name = "Oak Leaves"
+
+
+    def __init__(self):
+        super(OakLeafBlock, self).__init__()
+        self.drop_id = None
+
+class JungleLeafBlock(Block):
+    top_texture = 6, 2
+    bottom_texture = 6, 2
+    side_texture = 6, 2
+    hardness = 0.6
+    id = 18.1
+    name = "Jungle Leaves"
+
+    def __init__(self):
+        super(JungleLeafBlock, self).__init__()
+        self.drop_id = None
+
+class BirchLeafBlock(Block):
+    top_texture = 5, 2
+    bottom_texture = 5, 2
+    side_texture = 5, 2
+    hardness = 0.6
+    id = 18.2
+    name = "Birch Leaves"
+
+    def __init__(self):
+        super(BirchLeafBlock, self).__init__()
+        self.drop_id = None
 
 ## These two branches currently not used, so that OAK is a 'bigger tree'
 
@@ -282,52 +344,6 @@ class OakBranchBlock(Block):
         #self.drop_id = BirchWoodBlock.id
 
 
-class CactusBlock(Block):
-    top_texture = 7, 5
-    bottom_texture = 7, 3
-    side_texture = 7, 4
-    hardness = 0.6
-    id = 81
-    name = "Cactus"
-
-class OakLeafBlock(Block):
-    top_texture = 7, 2
-    bottom_texture = 7, 2
-    side_texture = 7, 2
-    hardness = 0.1
-    id = 18.0
-    name = "Oak Leaves"
-
-
-    def __init__(self):
-        super(OakLeafBlock, self).__init__()
-        self.drop_id = None
-
-class JungleLeafBlock(Block):
-    top_texture = 6, 2
-    bottom_texture = 6, 2
-    side_texture = 6, 2
-    hardness = 0.1
-    id = 18.1
-    name = "Jungle Leaves"
-
-    def __init__(self):
-        super(JungleLeafBlock, self).__init__()
-        self.drop_id = None
-
-class BirchLeafBlock(Block):
-    top_texture = 5, 2
-    bottom_texture = 5, 2
-    side_texture = 5, 2
-    hardness = 0.1
-    id = 18.2
-    name = "Birch Leaves"
-
-    def __init__(self):
-        super(BirchLeafBlock, self).__init__()
-        self.drop_id = None
-
-
 air_block = AirBlock()
 grass_block = GrassBlock()
 sand_block = SandBlock()
@@ -347,11 +363,9 @@ sprucewoodplank_block = SpruceWoodPlankBlock()
 snowgrass_block = SnowGrassBlock()
 oakwood_block = OakWoodBlock()
 oakleaf_block = OakLeafBlock()
+oakbranch_block = OakBranchBlock()
 junglewood_block = JungleWoodBlock()
 jungleleaf_block = JungleLeafBlock()
 birchwood_block = BirchWoodBlock()
 birchleaf_block = BirchLeafBlock()
 cactus_block = CactusBlock()
-oakbranch_block = OakBranchBlock()
-#junglebranch_block = JungleBranchBlock()
-#birchbranch_block = BirchBranchBlock()

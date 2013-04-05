@@ -3,6 +3,7 @@ import random
 import time
 import argparse
 import os
+import operator
 import cPickle as pickle
 from ConfigParser import ConfigParser, RawConfigParser
 
@@ -13,7 +14,7 @@ from pyglet.gl import *
 from pyglet.window import key
 
 # import kytten #unused, future potential reference
-from collections import deque
+from collections import deque, defaultdict
 from blocks import *
 from items import *
 from inventory import *
@@ -36,6 +37,7 @@ BACK_RED = 0.0  # 0.53
 BACK_GREEN = 0.0  # 0.81
 BACK_BLUE = 0.0  # 0.98
 HALF_PI = pi / 2.0  # 90 degrees
+NOSOUND = False
 
 terrain_options = {
     'plains': ('0', '2', '700'),  # type, hill_height, max_trees
@@ -63,6 +65,14 @@ if not os.path.lexists(config_file):
     config.set('World', 'show_fog', '1')
     config.set('World', 'max_trees', str(max_trees))
 
+    config.add_section('Controls')
+    config.set('Controls', 'move_forward', str(key.W))
+    config.set('Controls', 'move_backward', str(key.S))
+    config.set('Controls', 'move_left', str(key.A))
+    config.set('Controls', 'move_right', str(key.D))
+    config.set('Controls', 'jump', str(key.SPACE))
+    config.set('Controls', 'inventory', str(key.E))
+
     try:
         with open(config_file, 'wb') as handle:
             config.write(handle)
@@ -74,13 +84,19 @@ else:
 
 
 def cube_vertices(x, y, z, n):
+    xmn = x - n
+    xpn = x + n
+    ymn = y - n
+    ypn = y + n
+    zmn = z - n
+    zpn = z + n
     return [
-        x-n,y+n,z-n, x-n,y+n,z+n, x+n,y+n,z+n, x+n,y+n,z-n, # top
-        x-n,y-n,z-n, x+n,y-n,z-n, x+n,y-n,z+n, x-n,y-n,z+n, # bottom
-        x-n,y-n,z-n, x-n,y-n,z+n, x-n,y+n,z+n, x-n,y+n,z-n, # left
-        x+n,y-n,z+n, x+n,y-n,z-n, x+n,y+n,z-n, x+n,y+n,z+n, # right
-        x-n,y-n,z+n, x+n,y-n,z+n, x+n,y+n,z+n, x-n,y+n,z+n, # front
-        x+n,y-n,z-n, x-n,y-n,z-n, x-n,y+n,z-n, x+n,y+n,z-n, # back
+        xmn,ypn,zmn, xmn,ypn,zpn, xpn,ypn,zpn, xpn,ypn,zmn, # top
+        xmn,ymn,zmn, xpn,ymn,zmn, xpn,ymn,zpn, xmn,ymn,zpn, # bottom
+        xmn,ymn,zmn, xmn,ymn,zpn, xmn,ypn,zpn, xmn,ypn,zmn, # left
+        xpn,ymn,zpn, xpn,ymn,zmn, xpn,ypn,zmn, xpn,ypn,zpn, # right
+        xmn,ymn,zpn, xpn,ymn,zpn, xpn,ypn,zpn, xmn,ypn,zpn, # front
+        xpn,ymn,zmn, xmn,ymn,zmn, xmn,ypn,zmn, xpn,ypn,zmn, # back
     ]
 
 
@@ -122,10 +138,36 @@ class TextureGroup(pyglet.graphics.Group):
         glDisable(self.texture.target)
 
 
+def normalize_float(f):
+    """
+    This is faster than int(round(f)).  Nearly two times faster.
+    Since it is run at least 500,000 times during map generation,
+    and also in game logic, it has a major impact on performance.
+
+    >>> normalize_float(0.2)
+    0
+    >>> normalize_float(-0.4)
+    0
+    >>> normalize_float(0.5)
+    1
+    >>> normalize_float(-0.5)
+    -1
+    >>> normalize_float(0.0)
+    0
+    """
+    int_f = int(f)
+    if f > 0:
+        if f - int_f < 0.5:
+            return int_f
+        return int_f + 1
+    if f - int_f > -0.5:
+        return int_f
+    return int_f - 1
+
+
 def normalize(position):
     x, y, z = position
-    x, y, z = int(round(x)), int(round(y)), int(round(z))
-    return x, y, z
+    return normalize_float(x), normalize_float(y), normalize_float(z)
 
 
 def sectorize(position):
@@ -150,7 +192,7 @@ class Player(Entity):
                          sandstone_block, marble_block]
         for item in initial_items:
             quantity = random.randint(1, 10)
-            if random.randint(0, 1) == 0:
+            if random.choice((True, False)):
                 self.inventory.add_item(item.id, quantity)
             else:
                 self.quick_slots.add_item(item.id, quantity)
@@ -255,19 +297,14 @@ class ItemSelector(object):
         self.update_current()
         self.update_items()
 
-    def get_current_block(self, remove=True):
+    def get_current_block(self):
         item = self.player.quick_slots.at(self.current_index)
-        if item:
-            item_id = item.type
-            if remove:
-                self.player.quick_slots.remove_by_index(self.current_index)
-            self.update_items()
-            if item_id >= ITEM_ID_MIN:
-                return ITEMS_DIR[item_id]
-            else:
-                return BLOCKS_DIR[item_id]
-        return False
-
+        if not item:
+            return
+        item_id = item.type
+        if item_id >= ITEM_ID_MIN:
+            return ITEMS_DIR[item_id]
+        return BLOCKS_DIR[item_id]
 
     def get_current_block_item(self, remove=True):
         item = self.player.quick_slots.at(self.current_index)
@@ -283,6 +320,10 @@ class ItemSelector(object):
             return item, amount
         return False
 
+    def remove_current_block(self, quantity=1):
+        self.player.quick_slots.remove_by_index(self.current_index, quantity=quantity)
+        self.update_items()
+
     def toggle_active_frame_visibility(self):
         self.active.opacity = 0 if self.active.opacity == 255 else 255
 
@@ -296,7 +337,7 @@ class Model(object):
         self.world = {}
         self.shown = {}
         self._shown = {}
-        self.sectors = {}
+        self.sectors = defaultdict(list)
         self.queue = deque()  # note: could add limit here
         if initialize:
             self.initialize()
@@ -344,7 +385,7 @@ class Model(object):
                     showtree = random.random()
                     if showtree <= tree_chance:
                         if world_type is not 2 or 3:
-                            rt = random.randrange(0,4)
+                            rt = random.randrange(0,2)
                             if rt < 1:
                                 self.generate_oak_tree((x, y - 2, z))
                             if rt == 1:
@@ -363,7 +404,6 @@ class Model(object):
                                 self.generate_birch_tree((x, y - 2, z))
                             if rt > 2:
                                 self.generate_cactus((x, y - 2, z))
-
 
 
         o = n - 10 + hill_height - 6
@@ -405,7 +445,7 @@ class Model(object):
                             showtree = random.random()
                             if showtree <= tree_chance:
                                 if world_type is not 2 or 3:
-                                    rt = random.randrange(0,3)
+                                    rt = random.randrange(0,2)
                                     if rt < 1:
                                         self.generate_oak_tree((x, y - 2, z))
                                     if rt == 1:
@@ -452,14 +492,14 @@ class Model(object):
             return
 
         # A tree can't grow on anything.
-        allowedBlocks = (grass_block, dirt_block,snowgrass_block)
-        if self.world[position] not in allowedBlocks:
+        if self.world[position] not in (grass_block, dirt_block, snowgrass_block):
             return
 
         # Trunk generation
         length = random.randint(4, 8)
         for dy in range(length):
-            self.init_block((x, y + dy, z), oakwood_block)
+            self.init_block((x, y + dy, z),
+                            oakwood_block)
 
         treetop = y + dy + 1
         # Leaves generation
@@ -472,13 +512,16 @@ class Model(object):
                     if (xl, yl, zl) in self.world:
                         continue
                         # Avoids orphaned leaves
-                    if not self.has_neighbors((xl, yl, zl), (OakWoodBlock, OakBranchBlock, OakLeafBlock)):
+                    if not self.has_neighbors((xl, yl, zl),
+                                              (OakWoodBlock, OakLeafBlock)):
                         continue
                     dz = abs(zl - z)
                     # The farther we are (horizontally) from the trunk,
                     # the least leaves we can find.
                     if random.uniform(0, dx + dz) > 0.7:
                         continue
+                    #self.init_block((xl, yl, zl),
+                                    #oakleaf_block)
                     rb = random.randrange(0,2)
                     if rb < 1:
                         self.init_block((xl, yl, zl),oakleaf_block)  # leaf
@@ -503,8 +546,8 @@ class Model(object):
             return
 
         # A tree can't grow on anything.
-        allowedBlocks = (grass_block, dirt_block, snowgrass_block)
-        if self.world[position] not in allowedBlocks:
+        if self.world[position] not in (grass_block, dirt_block,
+                                        snowgrass_block):
             return
 
         # Trunk generation
@@ -548,19 +591,17 @@ class Model(object):
             return
 
         # A tree can't grow on anything.
-        if self.world[position] not in (grass_block, dirt_block,
-                                        snowgrass_block):
+        if self.world[position] not in (grass_block, dirt_block, snowgrass_block):
             return
 
         # Trunk generation
         length = random.randint(5, 7)
         for dy in range(length):
-            self.init_block((x, y + dy, z),
-                            birchwood_block)
+            self.init_block((x, y + dy, z), birchwood_block)
 
         treetop = y + dy + 1
         # Leaves generation
-        d = length / 3 + 1
+        d = length / 3 + 2
         for xl in range(x - d, x + d):
             dx = abs(xl - x)
             for yl in range(treetop - d, treetop + d):
@@ -604,13 +645,14 @@ class Model(object):
         m = 8
         x, y, z = position
         dx, dy, dz = vector
+        dx, dy, dz = dx / m, dy / m, dz / m
         previous = None
         for _ in xrange(max_distance * m):
             key = normalize((x, y, z))
             if key != previous and key in self.world:
                 return key, previous
             previous = key
-            x, y, z = x + dx / m, y + dy / m, z + dz / m
+            x, y, z = x + dx, y + dy, z + dz
         return None, None
 
     def exposed(self, position):
@@ -621,19 +663,25 @@ class Model(object):
         return False
 
     def init_block(self, position, block):
-        self.add_block(position, block, False)
+        self.add_block(position, block, sync=False, force=False)
 
-    def add_block(self, position, block, sync=True):
+    def add_block(self, position, block, sync=True, force=True):
         if position in self.world:
-            self.remove_block(position, sync)
+            if force:
+                self.remove_block(position, sync)
+            else:
+                return
         self.world[position] = block
-        self.sectors.setdefault(sectorize(position), []).append(position)
+        self.sectors[sectorize(position)].append(position)
         if sync:
             if self.exposed(position):
                 self.show_block(position)
             self.check_neighbors(position)
 
-    def remove_block(self, position, sync=True):
+    def remove_block(self, position, sync=True, sound=True):
+        if sound:
+            self.world[position].play_break_sound()
+            # BLOCKS_DIR[block].play_break_sound()
         del self.world[position]
         self.sectors[sectorize(position)].remove(position)
         if sync:
@@ -685,7 +733,7 @@ class Model(object):
         index = 0
         count = 24
         vertex_data = cube_vertices(x, y, z, 0.5)
-        texture_data = block.get_texture_data()
+        texture_data = block.texture_data
         for dx, dy, dz in []:  # FACES:
             if (x + dx, y + dy, z + dz) in self.world:
                 count -= 8  # 4
@@ -711,12 +759,12 @@ class Model(object):
         self._shown.pop(position).delete()
 
     def show_sector(self, sector):
-        for position in self.sectors.get(sector, []):
+        for position in self.sectors.get(sector, ()):
             if position not in self.shown and self.exposed(position):
                 self.show_block(position, False)
 
     def hide_sector(self, sector):
-        for position in self.sectors.get(sector, []):
+        for position in self.sectors.get(sector, ()):
             if position in self.shown:
                 self.hide_block(position, False)
 
@@ -786,6 +834,15 @@ class Window(pyglet.window.Window):
         self.mouse_pressed = False
         self.dy = 0
         self.show_fog = False
+        self.last_key = None
+        self.sorted = False
+        global config
+        self.key_move_forward = config.getint('Controls', 'move_forward')
+        self.key_move_backward = config.getint('Controls', 'move_backward')
+        self.key_move_left = config.getint('Controls', 'move_left')
+        self.key_move_right = config.getint('Controls', 'move_right')
+        self.key_jump = config.getint('Controls', 'jump')
+        self.key_inventory = config.getint('Controls', 'inventory')
         save_len = -1 if self.save is None else len(self.save)
         if self.save is None or save_len < 2:  # Model.world and model.sectors
             self.model = Model()
@@ -934,7 +991,7 @@ class Window(pyglet.window.Window):
                 if hit_block.hardness >= 0:
                     self.block_damage += self.player.attack_power
                     if self.block_damage >= hit_block.hardness:
-                        self.model.remove_block(self.highlighted_block)
+                        self.model.remove_block(self.highlighted_block,True, NOSOUND)
                         self.highlighted_block = None
                         self.block_damage = 0
                         if hit_block.drop_id is not None \
@@ -1005,13 +1062,7 @@ class Window(pyglet.window.Window):
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.show_inventory:
-            if not self.inventory_list.on_mouse_press(x, y, button):
-                self.inventory_list.toggle_active_frame_visibility()
-                self.item_list.toggle_active_frame_visibility()
-                self.show_inventory = not self.show_inventory
-                self.set_exclusive_mouse(not self.show_inventory)
-            self.inventory_list.update_items()
-            self.item_list.update_items()
+            self.inventory_list.on_mouse_press(x, y, button, modifiers)
             return
         if self.exclusive:
             vector = self.get_sight_vector()
@@ -1023,14 +1074,19 @@ class Window(pyglet.window.Window):
                     self.block_damage = 0
             else:
                 if previous:
-                    current_block = self.item_list.get_current_block()
-                    if current_block:
-                        # if current block is an item,
-                        # call its on_right_click() method to handle this event
-                        if current_block.id >= ITEM_ID_MIN:
-                            current_block.on_right_click()
-                        else:
-                            self.model.add_block(previous, current_block)
+                    hit_block = self.model.world[block]
+                    if hit_block.density >= 1:
+                        current_block = self.item_list.get_current_block()
+                        if current_block is not None:
+                            # if current block is an item,
+                            # call its on_right_click() method to handle this event
+                            if current_block.id >= ITEM_ID_MIN:
+                                current_block.on_right_click()
+                            else:
+                                localx, localy, localz = map(operator.sub,previous,normalize(self.player.position))
+                                if localx != 0 or localz != 0 or (localy != 0 and localy != -1):
+                                    self.model.add_block(previous, current_block)
+                                    self.item_list.remove_current_block()
         else:
             self.set_exclusive_mouse(True)
 
@@ -1059,15 +1115,15 @@ class Window(pyglet.window.Window):
                 self.on_mouse_motion(x, y, dx, dy)
 
     def on_key_press(self, symbol, modifiers):
-        if symbol == key.W:
+        if symbol == self.key_move_forward:
             self.strafe[0] -= 1
-        elif symbol == key.S:
+        elif symbol == self.key_move_backward:
             self.strafe[0] += 1
-        elif symbol == key.A:
+        elif symbol == self. key_move_left:
             self.strafe[1] -= 1
-        elif symbol == key.D:
+        elif symbol == self.key_move_right:
             self.strafe[1] += 1
-        elif symbol == key.SPACE:
+        elif symbol == self.key_jump:
             if self.player.flying:
                 self.dy = 0.045  # jump speed
             elif self.dy == 0:
@@ -1078,9 +1134,9 @@ class Window(pyglet.window.Window):
         elif symbol == key.ESCAPE:
             if self.show_inventory:
                 self.inventory_list.toggle_active_frame_visibility()
-                self.item_list.toggle_active_frame_visibility()
                 self.show_inventory = not self.show_inventory
                 self.set_exclusive_mouse(not self.show_inventory)
+                self.item_list.update_items()
             else:
                 self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
@@ -1094,10 +1150,6 @@ class Window(pyglet.window.Window):
         elif symbol == key.V:
             self.save_to_file()
         elif symbol == key.M:
-            #self.player.quick_slots.change_sort_mode()
-            #self.player.inventory.change_sort_mode()
-            #self.item_list.update_items()
-            #self.inventory_list.update_items()
             if self.last_key == symbol and not self.sorted:
                 self.player.quick_slots.sort()
                 self.player.inventory.sort()
@@ -1107,11 +1159,11 @@ class Window(pyglet.window.Window):
                 self.player.inventory.change_sort_mode()
                 self.item_list.update_items()
                 self.inventory_list.update_items()
-        elif symbol == key.E:
+        elif symbol == self.key_inventory:
             self.inventory_list.toggle_active_frame_visibility()
-            self.item_list.toggle_active_frame_visibility()
             self.show_inventory = not self.show_inventory
             self.set_exclusive_mouse(not self.show_inventory)
+            self.item_list.update_items()
         elif symbol == key.ENTER:
             if self.show_inventory:
                 current_block = self.inventory_list\
@@ -1136,26 +1188,19 @@ class Window(pyglet.window.Window):
         self.last_key = symbol
 
     def on_key_release(self, symbol, modifiers):
-        if symbol == key.W:
+        if symbol == self.key_move_forward:
             self.strafe[0] += 1
-        elif symbol == key.S:
+        elif symbol == self.key_move_backward:
             self.strafe[0] -= 1
-        elif symbol == key.A:
+        elif symbol == self.key_move_left:
             self.strafe[1] += 1
-        elif symbol == key.D:
+        elif symbol == self.key_move_right:
             self.strafe[1] -= 1
-        elif (symbol == key.SPACE or symbol == key.LSHIFT
+        elif (symbol == self.key_jump or symbol == key.LSHIFT
               or symbol == key.RSHIFT) and self.player.flying:
             self.dy = 0
-        #elif symbol == key.M:
-            #self.player.quick_slots.change_sort_mode()
-            #self.player.inventory.change_sort_mode()
-            #self.item_list.update_items()
-            #self.inventory_list.update_items()
 
     def on_resize(self, width, height):
-        # label
-        # reticle
         if self.reticle:
             self.reticle.delete()
         x, y = self.width / 2, self.height / 2
@@ -1233,19 +1278,22 @@ class Window(pyglet.window.Window):
                 self.inventory_list.batch.draw()
                 if self.inventory_list.selected_item_icon:
                     self.inventory_list.selected_item_icon.draw()
-        self.draw_reticle()
+        if self.exclusive:
+            self.draw_reticle()
 
     def draw_focused_block(self):
         glDisable(GL_LIGHTING)
         vector = self.get_sight_vector()
         block = self.model.hit_test(self.player.position, vector)[0]
         if block:
-            x, y, z = block
-            vertex_data = cube_vertices(x, y, z, 0.51)
-            glColor3d(0, 0, 0)
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
-            pyglet.graphics.draw(24, GL_QUADS, ('v3f/static', vertex_data))
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+            hit_block = self.model.world[block]
+            if hit_block.density >= 1:
+                x, y, z = block
+                vertex_data = cube_vertices(x, y, z, 0.51)
+                glColor3d(0, 0, 0)
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+                pyglet.graphics.draw(24, GL_QUADS, ('v3f/static', vertex_data))
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
 
     def draw_label(self):
         x, y, z = self.player.position
@@ -1288,8 +1336,15 @@ def main(options):
     save_object = None
     global SAVE_FILENAME
     global DISABLE_SAVE
+    global NOSOUND
     SAVE_FILENAME = options.save
     DISABLE_SAVE = options.disable_save
+
+    if options.newcfg == True:
+        print game_dir
+        if (os.path.exists(config_file)):
+            os.remove(config_file)
+
     if os.path.exists(SAVE_FILENAME) and options.disable_save:
         save_object = pickle.load(open(SAVE_FILENAME, "rb"))
     if options.draw_distance == 'medium':
@@ -1338,6 +1393,7 @@ def main(options):
     pyglet.app.run()
     if options.disable_auto_save and options.disable_save:
         window.save_to_file()
+    NOSOUND = options.nosound
     if options.save_config:
         try:
             with open(config_file, 'wb') as handle:
@@ -1364,5 +1420,7 @@ if __name__ == '__main__':
     parser.add_argument("--disable-save", action="store_false", default=True)
     parser.add_argument("--fast", action="store_true", default=False)
     parser.add_argument("--save-config", action="store_true", default=False)
+    parser.add_argument("-newcfg", action="store_true",default=False)
+    parser.add_argument("-nosound", action="store_true",default=False)
     options = parser.parse_args()
     main(options)
