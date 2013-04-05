@@ -125,7 +125,8 @@ class Model(object):
         # Mapping from sector to a list of positions inside that sector.
         self.sectors = {}
 
-        # Simple function queue implementation.
+        # Simple function queue implementation. The queue is populated with
+        # _show_block() and _hide_block() calls
         self.queue = []
 
         self._initialize()
@@ -150,11 +151,13 @@ class Model(object):
         # generate the hills randomly
         o = n - 10
         for _ in xrange(120):
-            a = random.randint(-o, o)
-            b = random.randint(-o, o)
-            c = -1
-            h = random.randint(1, 6)
-            s = random.randint(4, 8)
+            a = random.randint(-o, o)  # x position of the hill
+            b = random.randint(-o, o)  # z position of the hill
+            c = -1  # base of the hill
+            h = random.randint(1, 6)  # height of the hill
+            h = 60
+            s = random.randint(4, 8)  # 2 * s is the side length of the hill
+            s = 30
             d = 1
             t = random.choice([GRASS, SAND, BRICK])
             for y in xrange(c, c + h):
@@ -165,7 +168,7 @@ class Model(object):
                         if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
                             continue
                         self.init_block((x, y, z), t)
-                s -= d
+                s -= d  # decrement side lenth so hills taper off
 
     def hit_test(self, position, vector, max_distance=8):
         """ Line of sight search from current position. If a block is
@@ -290,7 +293,8 @@ class Model(object):
                 self.show_block(position)
 
     def show_block(self, position, immediate=True):
-        """ Show the block at the given `position`.
+        """ Show the block at the given `position`. This method assumes the
+        block has already been added with add_block()
 
         Parameters
         ----------
@@ -336,6 +340,7 @@ class Model(object):
             else:
                 index += 1
         # create vertex list
+        # FIXME Maybe `add_indexed()` should be used instead
         self._shown[position] = self.batch.add(count, GL_QUADS, self.group,
             ('v3f/static', vertex_data),
             ('t2f/static', texture_data))
@@ -423,7 +428,10 @@ class Model(object):
         func(*args)
 
     def process_queue(self):
-        """ Process the entire queue while taking periodic breaks.
+        """ Process the entire queue while taking periodic breaks. This allows
+        the game loop to run smoothly. The queue contains calls to
+        _show_block() and _hide_block() so this method should be called if
+        add_block() or remove_block() was called with sync=False
 
         """
         start = time.clock()
