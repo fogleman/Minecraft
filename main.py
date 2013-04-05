@@ -3,6 +3,7 @@ import random
 import time
 import argparse
 import os
+import operator
 import cPickle as pickle
 from ConfigParser import ConfigParser, RawConfigParser
 
@@ -296,14 +297,11 @@ class ItemSelector(object):
         self.update_current()
         self.update_items()
 
-    def get_current_block(self, remove=True):
+    def get_current_block(self):
         item = self.player.quick_slots.at(self.current_index)
         if not item:
             return
         item_id = item.type
-        if remove:
-            self.player.quick_slots.remove_by_index(self.current_index)
-        self.update_items()
         if item_id >= ITEM_ID_MIN:
             return ITEMS_DIR[item_id]
         return BLOCKS_DIR[item_id]
@@ -321,6 +319,10 @@ class ItemSelector(object):
                                                         quantity=item.amount)
             return item, amount
         return False
+
+    def remove_current_block(self, quantity=1):
+        self.player.quick_slots.remove_by_index(self.current_index, quantity=quantity)
+        self.update_items()
 
     def toggle_active_frame_visibility(self):
         self.active.opacity = 0 if self.active.opacity == 255 else 255
@@ -880,7 +882,7 @@ class Window(pyglet.window.Window):
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.show_inventory:
-            self.inventory_list.on_mouse_press(x, y, button)
+            self.inventory_list.on_mouse_press(x, y, button, modifiers)
             return
         if self.exclusive:
             vector = self.get_sight_vector()
@@ -892,14 +894,19 @@ class Window(pyglet.window.Window):
                     self.block_damage = 0
             else:
                 if previous:
-                    current_block = self.item_list.get_current_block()
-                    if current_block is not None:
-                        # if current block is an item,
-                        # call its on_right_click() method to handle this event
-                        if current_block.id >= ITEM_ID_MIN:
-                            current_block.on_right_click()
-                        else:
-                            self.model.add_block(previous, current_block)
+                    hit_block = self.model.world[block]
+                    if hit_block.density >= 1:
+                        current_block = self.item_list.get_current_block()
+                        if current_block is not None:
+                            # if current block is an item,
+                            # call its on_right_click() method to handle this event
+                            if current_block.id >= ITEM_ID_MIN:
+                                current_block.on_right_click()
+                            else:
+                                localx, localy, localz = map(operator.sub,previous,normalize(self.player.position))
+                                if localx != 0 or localz != 0 or (localy != 0 and localy != -1):
+                                    self.model.add_block(previous, current_block)
+                                    self.item_list.remove_current_block()
         else:
             self.set_exclusive_mouse(True)
 
@@ -1099,12 +1106,14 @@ class Window(pyglet.window.Window):
         vector = self.get_sight_vector()
         block = self.model.hit_test(self.player.position, vector)[0]
         if block:
-            x, y, z = block
-            vertex_data = cube_vertices(x, y, z, 0.51)
-            glColor3d(0, 0, 0)
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
-            pyglet.graphics.draw(24, GL_QUADS, ('v3f/static', vertex_data))
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+            hit_block = self.model.world[block]
+            if hit_block.density >= 1:
+                x, y, z = block
+                vertex_data = cube_vertices(x, y, z, 0.51)
+                glColor3d(0, 0, 0)
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+                pyglet.graphics.draw(24, GL_QUADS, ('v3f/static', vertex_data))
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
 
     def draw_label(self):
         x, y, z = self.player.position
