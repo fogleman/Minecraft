@@ -906,7 +906,10 @@ class Window(pyglet.window.Window):
 
     def save_to_file(self):
         if DISABLE_SAVE:
-            save_world(self, game_dir, SAVE_FILENAME)
+            if not options.nocompression:
+                save_world(self, game_dir, SAVE_FILENAME)
+            else:
+                save_world(self, game_dir, SAVE_FILENAME, CLASSIC_SAVE_TYPE)
 
     def collide(self, position, height):
         pad = 0.25
@@ -1307,5 +1310,6 @@ if __name__ == '__main__':
     parser.add_argument("--fast", action="store_true", default=False)
     parser.add_argument("--save-config", action="store_true", default=False)
     parser.add_argument("-fullscreen", action="store_true", default=False)
+    parser.add_argument("-nocompression", action="store_true", default=False)
     options = parser.parse_args()
     main(options)
