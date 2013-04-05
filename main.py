@@ -57,7 +57,7 @@ SAVE_FILENAME = os.path.join(game_dir, 'save.dat')
 
 config = ConfigParser()
 config_file = os.path.join(game_dir, 'game.cfg')
-if not os.path.lexists(config_file):
+if  not os.path.lexists(config_file):
     type, hill_height, max_trees = terrain_options['plains']
     config.add_section('World')
     config.set('World', 'type', str(type))  # 0=plains,1=dirt,2=desert,3=islands,4=sand,5=stone,6=snow
@@ -1122,6 +1122,8 @@ class Window(pyglet.window.Window):
                 self.inventory_list.batch.draw()
                 if self.inventory_list.selected_item_icon:
                     self.inventory_list.selected_item_icon.draw()
+                if self.inventory_list.crafting_outcome_icon:
+                    self.inventory_list.crafting_outcome_icon.draw()
         if self.exclusive:
             self.draw_reticle()
 

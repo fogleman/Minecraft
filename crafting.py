@@ -74,7 +74,7 @@ class Recipes(object):
 		id_list = []
 		shapeless_id_list = []
 		for line in input_blocks:
-			id_list.append([b.id for b in line if b.id != 0])
+			id_list.append([b.id for b in line])	# removed b.id != 0: it may make the shape different
 			shapeless_id_list.extend([b.id for b in line if b.id != 0])
 		shapeless_id_list.sort()
 
@@ -84,12 +84,10 @@ class Recipes(object):
 				if r.ingre == shapeless_id_list:
 					return r.output
 			else:
-				print("=== " + str(r.ingre))
-				print("=== " + str(id_list))
 				if r.ingre == id_list:
 					return r.output
 
-		return False
+		return None
 
 class SmeltingRecipe(object):
 	def __init__(self, ingre, output):
