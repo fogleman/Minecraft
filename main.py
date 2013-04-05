@@ -39,7 +39,7 @@ BACK_RED = 0.0  # 0.53
 BACK_GREEN = 0.0  # 0.81
 BACK_BLUE = 0.0  # 0.98
 HALF_PI = pi / 2.0  # 90 degrees
-GRASS_EXPANSION_TIME = datetime.timedelta(seconds=5)
+GRASS_EXPANSION_TIME = datetime.timedelta(seconds=10)
 
 terrain_options = {
     'plains': ('0', '2', '700'),  # type, hill_height, max_trees
@@ -185,7 +185,7 @@ def vec(*args):
 
 class Player(Entity):
     def __init__(self, position, rotation, flying=False):
-        super(Player, self).__init__(position, rotation, health=20, attack_power=0.05)
+        super(Player, self).__init__(position, rotation, health=100, attack_power=0.05)
         self.inventory = Inventory()
         self.quick_slots = Inventory(9)
         self.flying = flying
@@ -522,6 +522,8 @@ class Model(object):
             if isinstance(self.world[block], DirtBlock):
                 if self.has_neighbors(block, type=GrassBlock):
                     dirt_blocks.extend([block])
+                    if len(dirt_blocks) >= number_of_expansions:
+                        break
         # random.shuffle(dirt_blocks)
         for i in xrange(0, min(len(dirt_blocks), number_of_expansions)):
             self.remove_block(dirt_blocks[i], sound=False)
