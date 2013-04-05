@@ -34,7 +34,7 @@ class InventorySelector(object):
         if self.current_index >= self.max_items:
             self.current_index = 0
         elif self.current_index < 0:
-            self.current_index = self.max_items - 1;
+            self.current_index = self.max_items - 1
         self.update_current()
 
     def update_items(self):
@@ -62,7 +62,7 @@ class InventorySelector(object):
                 x = self.frame.x + 3
             amount_label = pyglet.text.Label(str(item.amount), font_name='Arial', font_size=9, 
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom', 
-                color=(block.amount_label_color), batch=self.batch, group=self.amount_labels_group)
+                color=block.amount_label_color, batch=self.batch, group=self.amount_labels_group)
             self.amount_labels.append(amount_label)
             self.icons.append(icon)
 
@@ -77,24 +77,12 @@ class InventorySelector(object):
         self.update_current()
         self.update_items()
 
-    def get_current_block(self):
-        item = self.player.inventory.at(self.current_index)
-        if item:
-            item_id = item.type
-            self.player.inventory.remove_by_index(self.current_index)
-            self.update_items()
-            if item_id >= ITEM_ID_MIN:
-                return ITEMS_DIR[item_id]
-            else:
-                return BLOCKS_DIR[item_id]
-        return False
-
     def get_current_block_item_and_amount(self):
         item = self.player.inventory.at(self.current_index)
         if item:
             amount = item.amount
             self.player.inventory.remove_by_index(self.current_index, quantity=item.amount)
-            return (item, amount)
+            return item, amount
         return False
 
     def toggle_active_frame_visibility(self):
