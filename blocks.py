@@ -390,7 +390,7 @@ class CobbleBlock(Block):
 
 
 class BookshelfBlock(Block):
-    top_texture = 0, 2
+    top_texture = 1, 2
     bottom_texture = 0, 2
     side_texture = 5, 4
     hardness = 0.7

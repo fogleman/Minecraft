@@ -189,7 +189,7 @@ class Player(Entity):
         self.inventory = Inventory()
         self.quick_slots = Inventory(9)
         self.flying = flying
-        initial_items = [dirt_block, sand_block, brick_block, stone_block,
+        initial_items = [bookshelf_block, furnace_block, brick_block, cobble_block,
                          glass_block, stonebrick_block, chest_block,
                          sandstone_block, marble_block]
         for item in initial_items:
