@@ -1066,17 +1066,19 @@ class Window(pyglet.window.Window):
                     self.block_damage = 0
             else:
                 if previous:
-                    current_block = self.item_list.get_current_block()
-                    if current_block is not None:
-                        # if current block is an item,
-                        # call its on_right_click() method to handle this event
-                        if current_block.id >= ITEM_ID_MIN:
-                            current_block.on_right_click()
-                        else:
-                            localx, localy, localz = map(operator.sub,previous,normalize(self.player.position))
-                            if localx != 0 or localz != 0 or (localy != 0 and localy != -1):
-                                self.model.add_block(previous, current_block)
-                                self.item_list.remove_current_block()
+                    hit_block = self.model.world[block]
+                    if hit_block.density >= 1:
+                        current_block = self.item_list.get_current_block()
+                        if current_block is not None:
+                            # if current block is an item,
+                            # call its on_right_click() method to handle this event
+                            if current_block.id >= ITEM_ID_MIN:
+                                current_block.on_right_click()
+                            else:
+                                localx, localy, localz = map(operator.sub,previous,normalize(self.player.position))
+                                if localx != 0 or localz != 0 or (localy != 0 and localy != -1):
+                                    self.model.add_block(previous, current_block)
+                                    self.item_list.remove_current_block()
         else:
             self.set_exclusive_mouse(True)
 
@@ -1276,12 +1278,14 @@ class Window(pyglet.window.Window):
         vector = self.get_sight_vector()
         block = self.model.hit_test(self.player.position, vector)[0]
         if block:
-            x, y, z = block
-            vertex_data = cube_vertices(x, y, z, 0.51)
-            glColor3d(0, 0, 0)
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
-            pyglet.graphics.draw(24, GL_QUADS, ('v3f/static', vertex_data))
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+            hit_block = self.model.world[block]
+            if hit_block.density >= 1:
+                x, y, z = block
+                vertex_data = cube_vertices(x, y, z, 0.51)
+                glColor3d(0, 0, 0)
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+                pyglet.graphics.draw(24, GL_QUADS, ('v3f/static', vertex_data))
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
 
     def draw_label(self):
         x, y, z = self.player.position
