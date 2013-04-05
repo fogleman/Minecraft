@@ -191,7 +191,7 @@ class Player(Entity):
         self.flying = flying
         initial_items = [bookshelf_block, furnace_block, brick_block, cobble_block,
                          glass_block, stonebrick_block, chest_block,
-                         sandstone_block, marble_block]
+                         sandstone_block, melon_block]
         for item in initial_items:
             quantity = random.randint(1, 10)
             if random.choice((True, False)):
@@ -1028,6 +1028,9 @@ class Window(pyglet.window.Window):
             self.item_list.set_index(index)
         elif symbol == key.V:
             self.save_to_file()
+        elif symbol == key.Q:
+            if options.fullscreen == True:
+                pyglet.app.exit() # for fullscreen
         elif symbol == key.M:
             if self.last_key == symbol and not self.sorted:
                 self.player.quick_slots.sort()
@@ -1201,7 +1204,7 @@ def setup_fog(window):
     glFogi(GL_FOG_MODE, GL_LINEAR)
     glFogf(GL_FOG_DENSITY, 0.35)
     glFogf(GL_FOG_START, 20.0)
-    glFogf(GL_FOG_END, 80)
+    glFogf(GL_FOG_END, DRAW_DISTANCE) # 80)
     window.show_fog = True
 
 
@@ -1221,6 +1224,7 @@ def main(options):
     save_object = None
     global SAVE_FILENAME
     global DISABLE_SAVE
+    global DRAW_DISTANCE
     SAVE_FILENAME = options.save
     DISABLE_SAVE = options.disable_save
     if os.path.exists(SAVE_FILENAME) and options.disable_save:
@@ -1260,7 +1264,12 @@ def main(options):
         # window_config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
         # window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=window_config, save=save_object)
     # except pyglet.window.NoSuchConfigException:
-    window = Window(
+    if options.fullscreen == True:
+        window = Window(
+        fullscreen=True, caption=APP_NAME,
+        resizable=True, save=save_object, vsync=False)
+    elif options.fullscreen == False:
+            window = Window(
         width=options.width, height=options.height, caption=APP_NAME,
         resizable=True, save=save_object, vsync=False)
 
@@ -1297,5 +1306,6 @@ if __name__ == '__main__':
     parser.add_argument("--disable-save", action="store_false", default=True)
     parser.add_argument("--fast", action="store_true", default=False)
     parser.add_argument("--save-config", action="store_true", default=False)
+    parser.add_argument("-fullscreen", action="store_true", default=False)
     options = parser.parse_args()
     main(options)
