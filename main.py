@@ -399,6 +399,9 @@ class Model(object):
                             tree_class = random.choice(tree_class)
                         self.generate_tree((x, y - 2, z), tree_class)
 
+        if flat_world:
+            return
+
         o = n - 10 + hill_height - 6
 
         world_type_blocks = (
