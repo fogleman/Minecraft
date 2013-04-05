@@ -221,7 +221,7 @@ class Model(object):
         """
         self.add_block(position, texture, False)
 
-    def add_block(self, position, texture, sync=True):
+    def add_block(self, position, texture, immediate=True):
         """ Add a block with the given `texture` and `position` to the world.
 
         Parameters
@@ -231,33 +231,33 @@ class Model(object):
         texture : list of len 3
             The coordinates of the texture squares. Use `tex_coords()` to
             generate.
-        sync : bool
+        immediate : bool
             Whether or not to draw the block immediately.
 
         """
         if position in self.world:
-            self.remove_block(position, sync)
+            self.remove_block(position, immediate)
         self.world[position] = texture
         self.sectors.setdefault(sectorize(position), []).append(position)
-        if sync:
+        if immediate:
             if self.exposed(position):
                 self.show_block(position)
             self.check_neighbors(position)
 
-    def remove_block(self, position, sync=True):
+    def remove_block(self, position, immediate=True):
         """ Remove the block at the given `position`.
 
         Parameters
         ----------
         position : tuple of len 3
             The (x, y, z) position of the block to remove.
-        sync : bool
+        immediate : bool
             Whether or not to immediately remove block from canvas.
 
         """
         del self.world[position]
         self.sectors[sectorize(position)].remove(position)
-        if sync:
+        if immediate:
             if position in self.shown:
                 self.hide_block(position)
             self.check_neighbors(position)
@@ -407,7 +407,7 @@ class Model(object):
         """ Process the entire queue while taking periodic breaks. This allows
         the game loop to run smoothly. The queue contains calls to
         _show_block() and _hide_block() so this method should be called if
-        add_block() or remove_block() was called with sync=False
+        add_block() or remove_block() was called with immediate=False
 
         """
         start = time.clock()
