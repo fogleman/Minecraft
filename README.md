@@ -87,12 +87,13 @@ For git:
 
 ### Command-line arguments
     usage: main.py [-h] [-width WIDTH] [-height HEIGHT]
-               [-terrain {plains,island,desert,snow,mountains}]
-               [-hillheight HILLHEIGHT] [-worldsize WORLDSIZE]
-               [-maxtrees MAXTREES] [--flat] [--hide-fog] [--show-gui]
-               [--disable-auto-save] [-draw-distance {short,medium,long}]
-               [-save SAVE] [--disable-save] [--fast] [--save-config]
-               [-fullscreen]
+                   [-terrain {plains,island,desert,snow,mountains}]
+                   [-hillheight HILLHEIGHT] [-worldsize WORLDSIZE]
+                   [-maxtrees MAXTREES] [-seed SEED] [--flat] [--hide-fog]
+                   [--show-gui] [--disable-auto-save]
+                   [-draw-distance {short,medium,long}] [-save SAVE]
+                   [--disable-save] [--fast] [--save-config] [-fullscreen]
+                   [-nocompression] [-gamemode GAMEMODE]
 
     Play a Python made Minecraft clone.
 
@@ -107,6 +108,7 @@ For git:
                             How high the hills are.
       -worldsize WORLDSIZE  The width size of the world.
       -maxtrees MAXTREES    How many trees and cacti should be made.
+      -seed SEED
       --flat                Generate a flat world.
       --hide-fog            Hides the fog, see the whole landscape.
       --show-gui            Enabled by default.
@@ -117,4 +119,8 @@ For git:
       --disable-save        Disables saving.
       --fast                Makes time progress faster then normal.
       --save-config         Saves the choices as the default config.
-      -fullscreen           Runs the game in fullscreen. Press 'Q' to exit the game.
+      -fullscreen           Runs the game in fullscreen. Press 'Q' to exit the
+                            game.
+      -nocompression        Enables compression for a smaller save file.
+      -gamemode GAMEMODE    Set the Gamemode for player. 0 = Creative, 1 =
+                            Survival
