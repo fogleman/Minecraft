@@ -33,6 +33,7 @@ class Block(object):
     hardness = 0    # hardness can be found on http://www.minecraftwiki.net/wiki/Digging#Blocks_by_hardness
     density = 1
     transparent = False
+    regenerated_health = 0
 
     # Inventory attributes
     max_stack_size = 64
@@ -449,6 +450,7 @@ class MelonBlock(Block):
     width = 0.8
     id = 103
     name = "Melon"
+    regenerated_health = 3
 
 class PumpkinBlock(Block):
     top_texture = 2, 5
