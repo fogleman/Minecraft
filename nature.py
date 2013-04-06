@@ -132,6 +132,19 @@ class Pumpkin(object):
         for item in trunk.blocks.items():
             world.init_block(*item)
 
+class YFlowers(object):
+    trunk_block = yflowers_block
+    trunk_height_range = 1, 2
+    grows_on = grass_block, dirt_block
+
+    @classmethod
+    def add_to_world(cls, world, position):
+        trunk = Trunk(position, block=cls.trunk_block,
+                      height_range=cls.trunk_height_range)
+
+        for item in trunk.blocks.items():
+            world.init_block(*item)
+
 TREES = (
     OakTree,
     JungleTree,
@@ -139,6 +152,8 @@ TREES = (
     Cactus,  # FIXME: A cactus isn't really a tree.
     TallCactus,
     WaterMelon,
+    Pumpkin,
+    YFlowers,
 )
 
 TREE_BLOCKS = tuple(tree.trunk_block.__class__ for tree in TREES)
