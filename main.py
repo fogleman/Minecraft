@@ -15,7 +15,7 @@ pyglet.options['debug_gl'] = False
 from pyglet.gl import *
 from pyglet.window import key
 
-import kytten
+#import kytten
 from blocks import *
 from entity import *
 from globals import *
@@ -437,10 +437,10 @@ class Model(World):
 
 
 class Window(pyglet.window.Window):
-    def __init__(self, *args, **kwargs):
-        self.show_gui = kwargs.pop('show_gui', True)
-        self.save = kwargs.pop('save', None)
-        super(Window, self).__init__(*args, **kwargs)
+    def __init__(self, width, height, launch_fullscreen=False, show_gui=True, save=None, **kwargs):
+        super(Window, self).__init__(width, height, **kwargs)
+        self.show_gui = show_gui
+        self.save = save
         self.exclusive = False
         self.strafe = [0, 0]
         self.sector = None
@@ -503,6 +503,9 @@ class Window(pyglet.window.Window):
             self.label = pyglet.text.Label(
                 '', font_name='Arial', font_size=8, x=10, y=self.height - 10,
                 anchor_x='left', anchor_y='top', color=(255, 255, 255, 255))
+        self.set_exclusive_mouse(True)
+        if launch_fullscreen:
+            self.set_fullscreen()
         pyglet.clock.schedule_interval(self.update, 1.0 / MAX_FPS)
         pyglet.clock.schedule_interval_soft(self.model.process_queue, 1.0 / MAX_FPS)
 
@@ -1092,16 +1095,9 @@ def main(options):
         # window_config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
         # window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=window_config, save=save_object)
     # except pyglet.window.NoSuchConfigException:
-    if options.fullscreen == True:
-        window = Window(
-        fullscreen=True, caption=APP_NAME,
-        resizable=True, save=save_object, vsync=False)
-    elif options.fullscreen == False:
-            window = Window(
-        width=options.width, height=options.height, caption=APP_NAME,
-        resizable=True, save=save_object, vsync=False)
+    window = Window(options.width, options.height, launch_fullscreen=options.fullscreen,
+        show_gui=options.show_gui, save=save_object, caption=APP_NAME, resizable=True, vsync=False)
 
-    window.set_exclusive_mouse(True)
     window.setup_game(show_fog=config.getboolean('World', 'show_fog'))
     pyglet.clock.set_fps_limit(MAX_FPS)
     pyglet.app.run()
