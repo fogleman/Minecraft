@@ -86,7 +86,7 @@ class TextureGroup(pyglet.graphics.Group):
         glDisable(self.texture.target)
 
 
-class World(dict):
+class World(object):
     spreading_mutations = {
         DirtBlock: GrassBlock,
     }
@@ -102,6 +102,7 @@ class World(dict):
         self.sectors = defaultdict(list)
         self.urgent_queue = deque()
         self.lazy_queue = deque()
+        self.world = {} # with World(dict) saving system was broken
 
         self.spreading_mutation_classes = tuple(self.spreading_mutations)
         self.spreading_mutable_blocks = {}
@@ -123,11 +124,11 @@ class World(dict):
             del self.spreading_mutable_blocks[position]
 
     def add_block(self, position, block, sync=True, force=True):
-        if position in self:
+        if position in self.world:
             if not force:
                 return
             self.remove_block(position, sync)
-        self[position] = block
+        self.world[position] = block
         self.sectors[sectorize(position)].append(position)
         if sync:
             if self.is_exposed(position):
@@ -136,9 +137,9 @@ class World(dict):
 
     def remove_block(self, position, sync=True, sound=True):
         if sound:
-            self[position].play_break_sound()
+            self.world[position].play_break_sound()
             # BLOCKS_DIR[block].play_break_sound()
-        del self[position]
+        del self.world[position]
         self.sectors[sectorize(position)].remove(position)
         if sync:
             if position in self.shown:
@@ -152,7 +153,7 @@ class World(dict):
 
     def check_neighbors(self, position):
         for other_position in self.neighbors_iterator(position):
-            if other_position not in self:
+            if other_position not in self.world:
                 continue
             if self.is_exposed(position):
                 if other_position not in self.shown:
@@ -165,8 +166,8 @@ class World(dict):
         faces = FACES_WITH_DIAGONALS if diagonals else FACES
         for other_position in self.neighbors_iterator(
                 position, relative_neighbors_positions=faces):
-            if other_position in self:
-                if type is None or isinstance(self[other_position], type):
+            if other_position in self.world:
+                if type is None or isinstance(self.world[other_position], type):
                     return True
         return False
 
@@ -174,7 +175,7 @@ class World(dict):
         if self.exposed.get(position, False):
             return True
         for other_position in self.neighbors_iterator(position, FACES_WITH_DIAGONALS):
-            if other_position not in self:
+            if other_position not in self.world:
                 self.exposed[position] = True
                 return True
         self.exposed[position] = False
@@ -188,7 +189,7 @@ class World(dict):
         previous = None
         for _ in xrange(max_distance * m):
             key = normalize((x, y, z))
-            if key != previous and key in self:
+            if key != previous and key in self.world:
                 return key, previous
             previous = key
             x, y, z = x + dx, y + dy, z + dz
@@ -210,7 +211,7 @@ class World(dict):
                 self.show_block(position)
 
     def show_block(self, position, immediate=True):
-        block = self[position]
+        block = self.world[position]
         self.shown[position] = block
         if immediate:
             self._show_block(position, block)
@@ -226,7 +227,7 @@ class World(dict):
         texture_data = block.texture_data
         # FIXME: Do something of what follows.
         for dx, dy, dz in []:  # FACES:
-            if (x + dx, y + dy, z + dz) in self:
+            if (x + dx, y + dy, z + dz) in self.world:
                 count -= 8  # 4
                 i = index * 12
                 j = index * 8

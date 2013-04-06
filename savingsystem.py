@@ -15,7 +15,7 @@ def get_default_filename(game_dir):
 
 def save_world(window, game_dir, filename=None, save_type=COMPRESSED_SAVE_TYPE):
 	filename = os.path.join(game_dir, filename) if filename else get_default_filename(game_dir)
-	save = (window.model, window.model.sectors, window.strafe,
+	save = (window.model.world, window.model.sectors, window.strafe,
                          window.player, window.time_of_day)
 	if save_type == COMPRESSED_SAVE_TYPE:
 		save_string = zlib.compress(pickle.dumps(save), 9)
