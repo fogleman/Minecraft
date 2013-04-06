@@ -510,7 +510,9 @@ class Window(pyglet.window.Window):
         super(Window, self).set_exclusive_mouse(exclusive)
         self.exclusive = exclusive
 
-    def setup_game(self):
+    def setup_game(self, show_fog = False):
+        self.show_fog = show_fog
+            
         glClearColor(BACK_RED, BACK_GREEN, BACK_BLUE, 1)
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)
@@ -520,6 +522,15 @@ class Window(pyglet.window.Window):
         glEnable(GL_BLEND)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+
+        if self.show_fog:
+            glEnable(GL_FOG)
+            glFogfv(GL_FOG_COLOR, vec(BACK_RED, BACK_GREEN, BACK_BLUE, 1))
+            glHint(GL_FOG_HINT, GL_DONT_CARE)
+            glFogi(GL_FOG_MODE, GL_LINEAR)
+            glFogf(GL_FOG_DENSITY, 0.35)
+            glFogf(GL_FOG_START, 20.0)
+            glFogf(GL_FOG_END, DRAW_DISTANCE) # 80)
 
     def get_sight_vector(self):
         x, y = self.player.rotation
@@ -1015,17 +1026,6 @@ class Window(pyglet.window.Window):
         self.reticle.draw(GL_LINES)
 
 
-def setup_fog(window):
-    glEnable(GL_FOG)
-    glFogfv(GL_FOG_COLOR, vec(BACK_RED, BACK_GREEN, BACK_BLUE, 1))
-    glHint(GL_FOG_HINT, GL_DONT_CARE)
-    glFogi(GL_FOG_MODE, GL_LINEAR)
-    glFogf(GL_FOG_DENSITY, 0.35)
-    glFogf(GL_FOG_START, 20.0)
-    glFogf(GL_FOG_END, DRAW_DISTANCE) # 80)
-    window.show_fog = True
-
-
 def main(options):
     save_object = None
     global SAVE_FILENAME
@@ -1102,9 +1102,7 @@ def main(options):
         resizable=True, save=save_object, vsync=False)
 
     window.set_exclusive_mouse(True)
-    window.setup_game()
-    if config.getboolean('World', 'show_fog'):
-        setup_fog(window)
+    window.setup_game(show_fog=config.getboolean('World', 'show_fog'))
     pyglet.clock.set_fps_limit(MAX_FPS)
     pyglet.app.run()
     if options.disable_auto_save and options.disable_save:
