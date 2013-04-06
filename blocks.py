@@ -186,10 +186,19 @@ class BrickBlock(Block):
     name = "Bricks"
 
 
-class GlassBlock(Block):
+class LampBlock(Block):
     top_texture = 3, 1
     bottom_texture = 3, 1
     side_texture = 3, 1
+    hardness = 0.2
+    amount_label_color = 0, 0, 0, 255
+    id = 124
+    name = "Lamp"
+
+class GlassBlock(Block):
+    top_texture = 0, 5
+    bottom_texture = 0, 5
+    side_texture = 0, 5
     hardness = 0.2
     amount_label_color = 0, 0, 0, 255
     id = 20
@@ -521,7 +530,7 @@ sand_block = SandBlock()
 brick_block = BrickBlock()
 stone_block = StoneBlock()
 dirt_block = DirtBlock()
-glass_block = GlassBlock()
+lamp_block = LampBlock()
 bed_block = BedrockBlock()
 water_block = WaterBlock()
 chest_block = ChestBlock()
@@ -551,6 +560,7 @@ cobble_block = CobbleBlock()
 bookshelf_block = BookshelfBlock()
 furnace_block = FurnaceBlock()
 farm_block = FarmBlock()
+glass_block = GlassBlock()
 
 
 

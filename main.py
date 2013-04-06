@@ -82,7 +82,7 @@ class Player(Entity):
         self.quick_slots = Inventory(9)
         self.flying = flying
         initial_items = [bookshelf_block, furnace_block, brick_block, cobble_block,
-                         glass_block, stonebrick_block, chest_block,
+                         lamp_block, glass_block, chest_block,
                          sandstone_block, melon_block]
         for item in initial_items:
             quantity = random.randint(1, 10)
@@ -308,14 +308,16 @@ class Model(World):
                     if randomOre_depth == 7:
                         self.init_block((x, y - 7, z), oblock)
                     else:
-                        self.init_block((x, y - 7, z), bed_block)
+                        self.init_block((x, y - 7, z), stone_block)
+                    self.init_block((x, y - 8, z), bed_block)
                 elif randomOre > 5:
                     self.init_block((x, y - 2, z), block)
                     self.init_block((x, y - 3, z), dirt_block)
                     self.init_block((x, y - 4, z), stone_block)
                     self.init_block((x, y - 5, z), stone_block)
                     self.init_block((x, y - 6, z), stone_block)
-                    self.init_block((x, y - 7, z), bed_block)
+                    self.init_block((x, y - 7, z), stone_block)
+                    self.init_block((x, y - 8, z), bed_block)
 
                 # Perhaps a tree
                 if self.max_trees > 0:
@@ -630,6 +632,13 @@ class Window(pyglet.window.Window):
         x, y, z = self.collide((x + dx, y + dy, z + dz), 2)
         self.player.position = (x, y, z)
         
+    def set_highlighted_block(self, block):
+        self.highlighted_block = block
+        self.block_damage = 0
+        if self.crack:
+            self.crack.delete()
+        self.crack = None
+
     def set_highlighted_block(self, block):
         self.highlighted_block = block
         self.block_damage = 0
