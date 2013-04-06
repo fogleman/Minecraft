@@ -325,7 +325,7 @@ class Model(World):
                     # ores and filler...
                     oblock = random.choice(ore_type_blocks)
                     self.init_block((x, yy , z), oblock)
-                    self.init_block((x, y - 16, z), bed_block)
+                self.init_block((x, y - 16, z), bed_block)
 
                 # Perhaps a tree
                 if self.max_trees > 0:
