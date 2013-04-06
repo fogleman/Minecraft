@@ -122,6 +122,6 @@ For git:
       --save-config         Saves the choices as the default config.
       -fullscreen           Runs the game in fullscreen. Press 'Q' to exit the
                             game.
-      -nocompression        Enables compression for a smaller save file.
+      -nocompression        Disables compression for a smaller save file.
       -gamemode GAMEMODE    Set the Gamemode for player. 0 = Creative, 1 =
                             Survival

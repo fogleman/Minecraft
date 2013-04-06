@@ -695,7 +695,7 @@ class Window(pyglet.window.Window):
                     p[i] -= (d - pad) * face[i]
                     if face == (0, -1, 0) or face == (0, 1, 0):
                         # jump damage
-                        if not self.player.flying and GAMEMODE is not 0:
+                        if not self.player.flying and self.model.game_mode is not 0:
                             damage = self.dy * -1000.0
                             damage = 3.0 * damage / 22.0
                             damage -= 2.0
@@ -1137,7 +1137,7 @@ if __name__ == '__main__':
     parser.add_argument("--fast", action="store_true", default=False, help = "Makes time progress faster then normal.")
     parser.add_argument("--save-config", action="store_true", default=False, help = "Saves the choices as the default config.")
     parser.add_argument("-fullscreen", action="store_true", default=False, help = "Runs the game in fullscreen. Press 'Q' to exit the game.")
-    parser.add_argument("-nocompression", action="store_true", default=False, help = "Enables compression for a smaller save file.")
+    parser.add_argument("-nocompression", action="store_true", default=False, help = "Disables compression for a smaller save file.")
     parser.add_argument("-gamemode", type=int, default=0, help = "Set the Gamemode for player.  0 = Creative, 1 = Survival")
     options = parser.parse_args()
     main(options)
