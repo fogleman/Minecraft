@@ -151,6 +151,7 @@ class ItemSelector(object):
         self.update_current()
 
     def update_items(self):
+        self.player.quick_slots.remove_unnecessary_stacks()
         self.icons = []
         for amount_label in self.amount_labels:
             amount_label.delete()
@@ -806,6 +807,7 @@ class Window(pyglet.window.Window):
                 self.item_list.update_items()
                 self.inventory_list.update_items()
         elif symbol == self.key_inventory:
+            self.inventory_list.update_items()
             self.inventory_list.toggle_active_frame_visibility()
             self.show_inventory = not self.show_inventory
             self.set_exclusive_mouse(not self.show_inventory)
