@@ -1,7 +1,7 @@
 import sounds
 
 global TERRAINMAP_BLOCK_SIZE
-TERRAINMAP_BLOCK_SIZE = 8
+TERRAINMAP_BLOCK_SIZE = 8 #Change this to 16 for a larget terrain file of 1024x1024
 
 def get_texture_coordinates(x, y, tileset_size=TERRAINMAP_BLOCK_SIZE):
     m = 1.0 / tileset_size

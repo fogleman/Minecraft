@@ -42,6 +42,7 @@ BACK_BLUE = 0.0  # 0.98
 HALF_PI = pi / 2.0  # 90 degrees
 GRASS_EXPANSION_TIME = datetime.timedelta(seconds=5)
 SAVE_FILENAME = None
+TERRAINMAP_BLOCK_SIZE = 8
 
 terrain_options = {
     'plains': ('0', '2', '700'),  # type, hill_height, max_trees
@@ -249,6 +250,7 @@ class ItemSelector(object):
         self.update_current()
 
     def update_items(self):
+        global TERRAINMAP_BLOCK_SIZE
         self.icons = []
         for amount_label in self.amount_labels:
             amount_label.delete()
@@ -262,8 +264,8 @@ class ItemSelector(object):
                 continue
             block = BLOCKS_DIR[item.type]
             block_icon = self.model.group.texture.get_region(
-                int(block.side_texture[0] * 8) * self.icon_size,
-                int(block.side_texture[1] * 8) * self.icon_size, self.icon_size,
+                int(block.side_texture[0] * TERRAINMAP_BLOCK_SIZE) * self.icon_size,
+                int(block.side_texture[1] * TERRAINMAP_BLOCK_SIZE) * self.icon_size, self.icon_size,
                 self.icon_size)
             icon = pyglet.sprite.Sprite(block_icon, batch=self.batch,
                                         group=self.group)
@@ -1228,6 +1230,8 @@ def setup():
 
 
 def main(options):
+    global TERRAINMAP_BLOCK_SIZE
+    TERRAINMAP_BLOCK_SIZE = 8  #Change this to 16 for a larget terrain file of 1024x1024
     save_object = None
     global SAVE_FILENAME
     global DISABLE_SAVE

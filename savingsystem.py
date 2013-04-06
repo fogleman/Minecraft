@@ -17,9 +17,10 @@ def save_world(window, game_dir, filename=None, save_type=COMPRESSED_SAVE_TYPE):
   save = (window.model.world, window.model.sectors, window.strafe,
                          window.player, window.time_of_day)
   if save_type == COMPRESSED_SAVE_TYPE:
-    save_string = StringIO.StringIO()
-    save = pickle.dump(save, save_string)
-    save_string = zlib.compress(save_string.getvalue(), 9)
+    #save_string = StringIO.StringIO()
+    #save = pickle.dump(save, save_string)
+    #save_string = zlib.compress(save_string.getvalue(), 9)
+    save_string = zlib.compress(pickle.dumps(save), 9)
     pickle.dump((COMPRESSED_SAVE_TYPE, save_string),
                           open(filename, "wb"))
   elif save_type == CLASSIC_SAVE_TYPE:
