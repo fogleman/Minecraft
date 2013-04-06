@@ -222,7 +222,7 @@ class ItemSelector(object):
         self.current_index = 1
         self.icon_size = self.model.group.texture.width / 8  # 4
 
-        image = pyglet.image.load('textures/slots.png')
+        image = pyglet.image.load('resources/textures/slots.png')
         frame_size = image.height / 2
         self.frame = pyglet.sprite.Sprite(
             image.get_region(0, frame_size, image.width, frame_size),
@@ -336,7 +336,7 @@ class ItemSelector(object):
 class Model(object):
     def __init__(self, initialize=True):
         self.batch = pyglet.graphics.Batch()
-        self.group = TextureGroup('textures/texture.png')
+        self.group = TextureGroup('resources/textures/texture.png')
         self.world = {}
         self.shown = {}
         self._shown = {}
