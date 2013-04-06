@@ -21,6 +21,7 @@
 * improve lighting system
 * add shadows
 * add lamps light
+* add main menu with large project name/logo, save files manager, new world creation options and settings
 
 # Sounds
 
