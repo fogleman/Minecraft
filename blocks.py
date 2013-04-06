@@ -392,6 +392,14 @@ class CactusBlock(Block):
     id = 81
     name = "Cactus"
 
+class TallCactusBlock(Block):
+    top_texture = 7, 5
+    bottom_texture = 7, 3
+    side_texture = 7, 4
+    width = 0.3
+    hardness = 1
+    id = 81.1 # not a real MC block, so the last possible # i think.
+    name = "Thin Cactus"
 
 class LeafBlock(Block):
     def __init__(self):
@@ -399,7 +407,7 @@ class LeafBlock(Block):
         self.drop_id = None
 
     def play_break_sound(self):
-        sounds.leaves_break.play()   
+        sounds.leaves_break.play()
 
 
 class OakLeafBlock(LeafBlock):
@@ -438,8 +446,27 @@ class MelonBlock(Block):
     bottom_texture = 4, 3
     side_texture = 4, 2
     hardness = 1
+    width = 0.8
     id = 103
     name = "Melon"
+
+class PumpkinBlock(Block):
+    top_texture = 2, 5
+    bottom_texture = 2, 5
+    side_texture = 3, 5
+    hardness = 1
+    width = 0.8
+    id = 86
+    name = "Pumpkin"
+
+class TorchBlock(Block):
+    top_texture = 5,5
+    bottom_texture = 0, 1
+    side_texture = 4, 5
+    hardness = 1
+    width = 0.2
+    id = 50
+    name = "Torch"
 
 
 class StoneSlabBlock(Block):
@@ -578,6 +605,11 @@ furnace_block = FurnaceBlock()
 farm_block = FarmBlock()
 glass_block = GlassBlock()
 gravel_block = GravelBlock()
+tallcactus_block = TallCactusBlock()
+pumpkin_block = PumpkinBlock()
+torch_block = TorchBlock()
+
+
 
 
 

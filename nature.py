@@ -79,6 +79,7 @@ class BirchTree(Tree):
     trunk_height_range = 5, 7
 
 
+
 class Cactus(object):
     trunk_block = cactus_block
     trunk_height_range = 1, 4
@@ -92,12 +93,52 @@ class Cactus(object):
         for item in trunk.blocks.items():
             world.init_block(*item)
 
+class TallCactus(object):
+    trunk_block = tallcactus_block
+    trunk_height_range = 1, 10
+    grows_on = sand_block, sandstone_block, grass_block, dirt_block
+
+    @classmethod
+    def add_to_world(cls, world, position):
+        trunk = Trunk(position, block=cls.trunk_block,
+                      height_range=cls.trunk_height_range)
+
+        for item in trunk.blocks.items():
+            world.init_block(*item)
+
+class WaterMelon(object):
+    trunk_block = melon_block
+    trunk_height_range = 1, 2
+    grows_on = grass_block, dirt_block, snowgrass_block
+
+    @classmethod
+    def add_to_world(cls, world, position):
+        trunk = Trunk(position, block=cls.trunk_block,
+                      height_range=cls.trunk_height_range)
+
+        for item in trunk.blocks.items():
+            world.init_block(*item)
+
+class Pumpkin(object):
+    trunk_block = pumpkin_block
+    trunk_height_range = 1, 2
+    grows_on = grass_block, dirt_block, snowgrass_block
+
+    @classmethod
+    def add_to_world(cls, world, position):
+        trunk = Trunk(position, block=cls.trunk_block,
+                      height_range=cls.trunk_height_range)
+
+        for item in trunk.blocks.items():
+            world.init_block(*item)
 
 TREES = (
     OakTree,
     JungleTree,
     BirchTree,
     Cactus,  # FIXME: A cactus isn't really a tree.
+    TallCactus,
+    WaterMelon,
 )
 
 TREE_BLOCKS = tuple(tree.trunk_block.__class__ for tree in TREES)

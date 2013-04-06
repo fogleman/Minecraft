@@ -81,7 +81,7 @@ class Player(Entity):
         self.inventory = Inventory()
         self.quick_slots = Inventory(9)
         self.flying = flying
-        initial_items = [bookshelf_block, furnace_block, brick_block, cobble_block,
+        initial_items = [bookshelf_block, furnace_block, brick_block, torch_block,
                          lamp_block, glass_block, chest_block,
                          sandstone_block, melon_block]
         for item in initial_items:
@@ -185,7 +185,7 @@ class ItemSelector(object):
         if hasattr(self.get_current_block_item(False), 'quickslots_x') and hasattr(self.get_current_block_item(False), 'quickslots_y'):
             self.current_block_label = pyglet.text.Label(
                 self.get_current_block_item(False).name, font_name='Arial', font_size=9,
-                x=self.get_current_block_item(False).quickslots_x + 0.25 * self.icon_size, y=self.get_current_block_item(False).quickslots_y - 20, 
+                x=self.get_current_block_item(False).quickslots_x + 0.25 * self.icon_size, y=self.get_current_block_item(False).quickslots_y - 20,
                 anchor_x='center', anchor_y='bottom',
                 color=(255, 255, 255, 255), batch=self.batch,
                 group=self.labels_group)
@@ -203,7 +203,7 @@ class ItemSelector(object):
         hearts_to_show = self.player.health
         showed_hearts = 0
         for i, heart in enumerate(self.hearts):
-            heart.x = self.frame.x + i * (20 + 2) + (self.frame.width - hearts_to_show * (20 + 2)) / 2 
+            heart.x = self.frame.x + i * (20 + 2) + (self.frame.width - hearts_to_show * (20 + 2)) / 2
             heart.y = self.icon_size * 1.0 + 12
             heart.opacity = 255
             if showed_hearts >= hearts_to_show:
@@ -269,13 +269,13 @@ class Model(World):
         )
 
         world_type_trees = (
-            (OakTree, BirchTree),
-            OakTree,
-            Cactus,
-            (OakTree, JungleTree, BirchTree, Cactus),
-            (Cactus, BirchTree),
-            (OakTree, BirchTree),
-            (OakTree, BirchTree),
+            (OakTree, BirchTree, WaterMelon, Pumpkin,),
+            (OakTree, WaterMelon,),
+            (Cactus, TallCactus,),
+            (OakTree, JungleTree, BirchTree, Cactus, TallCactus, WaterMelon,),
+            (Cactus, BirchTree, TallCactus,),
+            (OakTree, BirchTree, Pumpkin,),
+            (OakTree, BirchTree, WaterMelon,),
         )
 
         ore_type_blocks = (
@@ -639,7 +639,7 @@ class Window(pyglet.window.Window):
         x, y, z = self.player.position
         x, y, z = self.collide((x + dx, y + dy, z + dz), 2)
         self.player.position = (x, y, z)
-        
+
     def set_highlighted_block(self, block):
         self.highlighted_block = block
         self.block_damage = 0
@@ -927,6 +927,8 @@ class Window(pyglet.window.Window):
         if position:
             hit_block = self.model[position]
             if hit_block.density >= 1:
+                self.focus_block.width = hit_block.width * 1.05
+                self.focus_block.height = hit_block.height * 1.05
                 vertex_data = self.focus_block.get_vertices(*position)
                 glColor3d(0, 0, 0)
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
