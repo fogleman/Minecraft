@@ -496,7 +496,7 @@ class CobbleBlock(HardBlock):
     id = 4
     name = "Cobblestone"
 
-class CobbleFenceBlock(Block):
+class CobbleFenceBlock(HardBlock):
     top_texture = 6, 3
     bottom_texture = 6, 3
     side_texture = 6, 3
