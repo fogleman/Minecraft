@@ -9,6 +9,8 @@ from pyglet.gl import *
 from blocks import *
 from globals import *
 
+pyglet.resource.path = ['resources', 'resources/textures', 'resources/sounds']
+pyglet.resource.reindex()
 
 FACES = (
     ( 0,  1,  0),
@@ -94,7 +96,7 @@ class World(dict):
     def __init__(self):
         super(World, self).__init__()
         self.batch = pyglet.graphics.Batch()
-        self.group = TextureGroup('texture.png')
+        self.group = TextureGroup(os.path.join('resources', 'textures', 'texture.png'))  #('resources/textures/texture.png')
 
         self.shown = {}
         self._shown = {}
@@ -131,6 +133,30 @@ class World(dict):
             if self.is_exposed(position):
                 self.show_block(position)
             self.check_neighbors(position)
+
+    #def grass_expansion(self, number_of_expansions=1): # TODO -> optimizations
+        #dirt_blocks = []
+        #for i, block in enumerate(self.world):
+            #if isinstance(self.world[block], DirtBlock):
+                #if self.has_neighbors(block, type=GrassBlock):
+                    #dirt_blocks.extend([block])
+        ## random.shuffle(dirt_blocks)
+        #for i in xrange(0, min(len(dirt_blocks), number_of_expansions)):
+            #self.remove_block(dirt_blocks[i], sound=False)
+        #for i in xrange(0, min(len(dirt_blocks), number_of_expansions)):
+            #self.add_block(dirt_blocks[i], grass_block, force=False)
+
+    #def water_expansion(self, number_of_expansions=1): # TODO -> optimizations
+        #water_blocks = []
+        #for i, block in enumerate(self.world):
+            #if isinstance(self.world[block], water_block):
+                #if self.has_neighbors(block, type=AirBlock):
+                    #water_blocks.extend([block])
+        ## random.shuffle(dirt_blocks)
+        #for i in xrange(0, min(len(water_blocks), number_of_expansions)):
+            #self.remove_block(water_blocks[i], sound=False)
+        #for i in xrange(0, min(len(water_blocks), number_of_expansions)):
+            #self.add_block(water_blocks[i], water_block, force=False)
 
     def remove_block(self, position, sync=True, sound=True):
         if sound:

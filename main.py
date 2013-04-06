@@ -7,6 +7,7 @@ import os
 import cPickle as pickle
 import random
 import time
+import datetime
 from ConfigParser import ConfigParser
 
 import pyglet
@@ -25,6 +26,9 @@ from inventory import *
 from nature import *
 from world import *
 from savingsystem import *
+
+pyglet.resource.path = ['resources', 'resources/textures', 'resources/sounds']
+pyglet.resource.reindex()
 
 APP_NAME = 'pyCraftr'  # should I stay or should I go?
 
@@ -130,7 +134,7 @@ class ItemSelector(object):
         self.current_index = 1
         self.icon_size = self.model.group.texture.width / 8  # 4
 
-        image = pyglet.image.load('slots.png')
+        image = pyglet.image.load(os.path.join('resources', 'textures', 'slots.png'))  #('resources/textures/slots.png')
         frame_size = image.height / 2
         self.frame = pyglet.sprite.Sprite(
             image.get_region(0, frame_size, image.width, frame_size),
@@ -605,6 +609,7 @@ class Window(pyglet.window.Window):
                             self.inventory_list.update_items()
                 else:
                     self.set_highlighted_block(None)
+
         self.update_time()
 
     def _update(self, dt):
@@ -626,6 +631,7 @@ class Window(pyglet.window.Window):
         x, y, z = self.player.position
         x, y, z = self.collide((x + dx, y + dy, z + dz), 2)
         self.player.position = (x, y, z)
+
 
     def set_highlighted_block(self, block):
         self.highlighted_block = block
@@ -878,6 +884,12 @@ class Window(pyglet.window.Window):
         self.clear()
         self.set_3d()
         glColor3d(1, 1, 1)
+        #if not self.model.last_grass_expansion or datetime.datetime.now() - self.model.last_grass_expansion >= GRASS_EXPANSION_TIME:
+            #self.last_grass_expansion = datetime.datetime.now()
+            #self.model.grass_expansion()
+        #if not self.model.last_water_expansion or datetime.datetime.now() - self.model.last_water_expansion >= GRASS_EXPANSION_TIME:
+            #self.last_water_expansion = datetime.datetime.now()
+            #self.model.water_expansion()
         self.model.batch.draw()
         self.draw_focused_block()
         self.set_2d()
