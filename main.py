@@ -234,7 +234,7 @@ class Model(World):
         hill_height = config.getint('World', 'hill_height')
         flat_world = config.getboolean('World', 'flat')
         self.max_trees = config.getint('World', 'max_trees')
-        tree_chance = self.max_trees / float(world_size * (SECTOR_SIZE ** 2))
+        tree_chance = self.max_trees / float(world_size * (SECTOR_SIZE ** 3))
         n = world_size / 2  # 80
         s = 1
         y = 0
