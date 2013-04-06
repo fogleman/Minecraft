@@ -373,6 +373,9 @@ class LeafBlock(Block):
         super(LeafBlock, self).__init__()
         self.drop_id = None
 
+    def play_break_sound(self):
+        sounds.leaves_break.play()   
+
 
 class OakLeafBlock(LeafBlock):
     top_texture = 7, 2
