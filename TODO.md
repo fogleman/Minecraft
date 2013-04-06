@@ -18,6 +18,8 @@
 # Graphics
 
 * improve lighting system
+* add shadows
+* add lamps light
 
 # Sounds
 
