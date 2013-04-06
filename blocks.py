@@ -1,5 +1,6 @@
 import sounds
 
+
 def get_texture_coordinates(x, y, tileset_size=8):
     m = 1.0 / tileset_size
     dx = x * m
@@ -15,6 +16,8 @@ class Block(object):
                # Verify on http://www.minecraftwiki.net/wiki/Data_values
                # when creating a new "official" block.
     drop_id = None
+
+    size = 1.0
 
     # Texture coordinates from the tileset.
     top_texture = ()
@@ -34,12 +37,17 @@ class Block(object):
     amount_label_color = 255, 255, 255, 255
     name = "Block"  # Blocks that drop another item don't need a name
 
-    def __init__(self):
+    def __init__(self, size=None):
         self.drop_id = self.id
+
+        if size is not None:
+            self.size = size
+
         # Applies get_texture_coordinates to each of the faces to be textured.
         for k in ('top_texture', 'bottom_texture', 'side_texture'):
             v = getattr(self, k)
-            setattr(self, k, get_texture_coordinates(*v))
+            if v:
+                setattr(self, k, get_texture_coordinates(*v))
 
         self.texture_data = self.get_texture_data()
 
@@ -51,6 +59,23 @@ class Block(object):
         result.extend(self.bottom_texture)
         result.extend(self.side_texture * 4)
         return result
+
+    def get_vertices(self, x, y, z):
+        n = self.size / 2.0
+        xmn = x - n
+        xpn = x + n
+        ymn = y - n
+        ypn = y + n
+        zmn = z - n
+        zpn = z + n
+        return [
+            xmn,ypn,zmn, xmn,ypn,zpn, xpn,ypn,zpn, xpn,ypn,zmn,  # top
+            xmn,ymn,zmn, xpn,ymn,zmn, xpn,ymn,zpn, xmn,ymn,zpn,  # bottom
+            xmn,ymn,zmn, xmn,ymn,zpn, xmn,ypn,zpn, xmn,ypn,zmn,  # left
+            xpn,ymn,zpn, xpn,ymn,zmn, xpn,ypn,zmn, xpn,ypn,zpn,  # right
+            xmn,ymn,zpn, xpn,ymn,zpn, xpn,ypn,zpn, xmn,ypn,zpn,  # front
+            xpn,ymn,zmn, xmn,ymn,zmn, xmn,ypn,zmn, xpn,ypn,zmn,  # back
+        ]
 
     def play_break_sound(self):
         if self.break_sound is not None:
