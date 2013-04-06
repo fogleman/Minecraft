@@ -19,7 +19,7 @@ class Recipes(object):
 		# remove empty lines
 		if len(ingre_list) == 0:
 		    return
-		    
+
 		for i in (0, -1):
 			line = ingre_list[i]
 			sum = 0
