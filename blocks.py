@@ -470,6 +470,16 @@ class TorchBlock(Block):
     id = 50
     name = "Torch"
 
+class YFlowersBlock(Block):
+    top_texture = 6, 6
+    bottom_texture = 0, 1
+    side_texture = 6, 5
+    hardness = 0.1
+    transparent = True
+    width = 0.5
+    id = 37
+    name = "Dandelion"
+
 
 class StoneSlabBlock(Block):
     top_texture = 4, 4
@@ -610,7 +620,7 @@ gravel_block = GravelBlock()
 tallcactus_block = TallCactusBlock()
 pumpkin_block = PumpkinBlock()
 torch_block = TorchBlock()
-
+yflowers_block = YFlowersBlock()
 
 
 

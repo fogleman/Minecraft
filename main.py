@@ -278,13 +278,13 @@ class Model(World):
         )
 
         world_type_trees = (
-            (OakTree, BirchTree, WaterMelon, Pumpkin,),
-            (OakTree, WaterMelon,),
+            (OakTree, BirchTree, WaterMelon, Pumpkin, YFlowers),
+            (OakTree, WaterMelon, YFlowers),
             (Cactus, TallCactus,),
-            (OakTree, JungleTree, BirchTree, Cactus, TallCactus, WaterMelon,),
-            (Cactus, BirchTree, TallCactus,),
-            (OakTree, BirchTree, Pumpkin,),
-            (OakTree, BirchTree, WaterMelon,),
+            (OakTree, JungleTree, BirchTree, Cactus, TallCactus, WaterMelon, YFlowers),
+            (Cactus, BirchTree, TallCactus, YFlowers),
+            (OakTree, BirchTree, Pumpkin, YFlowers),
+            (OakTree, BirchTree, WaterMelon, YFlowers),
         )
 
         ore_type_blocks = (
