@@ -422,7 +422,7 @@ class Window(pyglet.window.Window):
         self.exclusive = False
         self.strafe = [0, 0]
         self.sector = None
-        self.focus_block = Block(size=1.1)
+        self.focus_block = Block(width=1.05, height=1.05)
         self.reticle = None
         self.time_of_day = 0.0
         self.count = 0

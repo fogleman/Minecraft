@@ -173,7 +173,7 @@ class World(dict):
     def is_exposed(self, position):
         if self.exposed.get(position, False):
             return True
-        for other_position in self.neighbors_iterator(position):
+        for other_position in self.neighbors_iterator(position, FACES_WITH_DIAGONALS):
             if other_position not in self:
                 self.exposed[position] = True
                 return True

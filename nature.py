@@ -85,12 +85,12 @@ class Cactus(object):
     grows_on = sand_block, sandstone_block
 
     @classmethod
-    def add_to_world(cls, model, position):
+    def add_to_world(cls, world, position):
         trunk = Trunk(position, block=cls.trunk_block,
                       height_range=cls.trunk_height_range)
 
         for item in trunk.blocks.items():
-            model.init_block(*item)
+            world.init_block(*item)
 
 
 TREES = (
