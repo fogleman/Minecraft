@@ -93,7 +93,7 @@ class World(dict):
     def __init__(self):
         super(World, self).__init__()
         self.batch = pyglet.graphics.Batch()
-        self.group = TextureGroup('resources/textures/texture.png')
+        self.group = TextureGroup(os.path.join('resources', 'textures', 'texture.png'))
 
         self.shown = {}
         self._shown = {}
