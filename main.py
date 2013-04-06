@@ -695,7 +695,7 @@ class Window(pyglet.window.Window):
                     p[i] -= (d - pad) * face[i]
                     if face == (0, -1, 0) or face == (0, 1, 0):
                         # jump damage
-                        if not self.player.flying:
+                        if not self.player.flying and GAMEMODE is not 0:
                             damage = self.dy * -1000.0
                             damage = 3.0 * damage / 22.0
                             damage -= 2.0
@@ -1027,6 +1027,8 @@ def main(options):
     global SAVE_FILENAME
     global DISABLE_SAVE
     global DRAW_DISTANCE
+    global GAMEMODE
+    GAMEMODE = options.gamemode
     SAVE_FILENAME = options.save
     DISABLE_SAVE = options.disable_save
     if options.disable_save and world_exists(game_dir, SAVE_FILENAME):
@@ -1072,6 +1074,11 @@ def main(options):
             seed = long(time.time() * 256)  # use fractional seconds
         # Then convert it to a string so all seeds have the same type.
         seed = str(seed)
+        if GAMEMODE == 0:
+            print('Game mode: Creative')
+        if GAMEMODE == 1:
+            print('Game mode: Survival')
+
         print('Random seed: ' + seed)
 
     random.seed(seed)
@@ -1131,5 +1138,6 @@ if __name__ == '__main__':
     parser.add_argument("--save-config", action="store_true", default=False, help = "Saves the choices as the default config.")
     parser.add_argument("-fullscreen", action="store_true", default=False, help = "Runs the game in fullscreen. Press 'Q' to exit the game.")
     parser.add_argument("-nocompression", action="store_true", default=False, help = "Enables compression for a smaller save file.")
+    parser.add_argument("-gamemode", type=int, default=0, help = "Set the Gamemode for player.  0 = Creative, 1 = Survival")
     options = parser.parse_args()
     main(options)
