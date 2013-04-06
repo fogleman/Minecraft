@@ -24,7 +24,26 @@ from items import *
 from inventory import *
 from nature import *
 from world import *
+from savingsystem import *
 
+APP_NAME = 'pyCraftr'  # should I stay or should I go?
+
+SECTOR_SIZE = 16
+DRAW_DISTANCE = 60.0
+FOV = 65.0  # TODO: add menu option to change FOV
+NEAR_CLIP_DISTANCE = 0.1  # TODO: make min and max clip distance dynamic
+FAR_CLIP_DISTANCE = 200.0  # Maximum render distance,
+                           # ignoring effects of sector_size and fog
+DISABLE_SAVE = True
+TIME_RATE = 240 * 10  # Rate of change (steps per hour).
+DEG_RAD = pi / 180.0
+HOUR_DEG = 15.0
+BACK_RED = 0.0  # 0.53
+BACK_GREEN = 0.0  # 0.81
+BACK_BLUE = 0.0  # 0.98
+HALF_PI = pi / 2.0  # 90 degrees
+GRASS_EXPANSION_TIME = datetime.timedelta(seconds=10)
+SAVE_FILENAME = None
 
 terrain_options = {
     'plains': ('0', '2', '700'),  # type, hill_height, max_trees
@@ -37,8 +56,6 @@ terrain_options = {
 game_dir = pyglet.resource.get_settings_path(APP_NAME)
 if not os.path.exists(game_dir):
     os.makedirs(game_dir)
-
-SAVE_FILENAME = os.path.join(game_dir, 'save.dat')
 
 config = ConfigParser()
 config_file = os.path.join(game_dir, 'game.cfg')
@@ -81,9 +98,9 @@ class Player(Entity):
         self.inventory = Inventory()
         self.quick_slots = Inventory(9)
         self.flying = flying
-        initial_items = [dirt_block, sand_block, brick_block, stone_block,
+        initial_items = [bookshelf_block, furnace_block, brick_block, cobble_block,
                          glass_block, stonebrick_block, chest_block,
-                         sandstone_block, marble_block]
+                         sandstone_block, melon_block]
         for item in initial_items:
             quantity = random.randint(1, 10)
             if random.choice((True, False)):
@@ -113,7 +130,7 @@ class ItemSelector(object):
         self.current_index = 1
         self.icon_size = self.model.group.texture.width / 8  # 4
 
-        image = pyglet.image.load('slots.png')
+        image = pyglet.image.load('resources/textures/slots.png')
         frame_size = image.height / 2
         self.frame = pyglet.sprite.Sprite(
             image.get_region(0, frame_size, image.width, frame_size),
@@ -243,7 +260,7 @@ class Model(World):
             grass_block,
             dirt_block,
             (sand_block,) * 15 + (sandstone_block,) * 4,
-            water_block,
+            (water_block,) * 30 + (clay_block,) * 4,
             grass_block,
             (grass_block,) * 15 + (dirt_block,) * 3 + (stone_block,),
             snowgrass_block,
@@ -259,6 +276,14 @@ class Model(World):
             (OakTree, BirchTree),
         )
 
+        ore_type_blocks = (
+            coalore_block,
+            ironore_block,
+            goldore_block,
+            diamondore_block,
+            stone_block, # dummy block
+            )
+
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
 
@@ -268,13 +293,30 @@ class Model(World):
                         self.init_block((x, y + dy, z), stone_block)
                     continue
 
+                ## Generation of the ground
+                #block = worldtypes_grounds[world_type]
+                #if isinstance(block, (tuple, list)):
+                    #block = random.choice(block)
+                #self.init_block((x, y - 2, z), block)
+                #self.init_block((x, y - 3, z), dirt_block)
+                #self.init_block((x, y - 4, z), bed_block)
+
                 # Generation of the ground
+
                 block = worldtypes_grounds[world_type]
                 if isinstance(block, (tuple, list)):
                     block = random.choice(block)
-                self.init_block((x, y - 2, z), block)
-                self.init_block((x, y - 3, z), dirt_block)
-                self.init_block((x, y - 4, z), bed_block)
+                # generate Ores.... 5% chance out of 100
+                randomOre = random.randrange(1,100)
+                if randomOre <= 5:
+                    oblock = random.choice(ore_type_blocks)
+                    self.init_block((x, y - 2, z), block)
+                    self.init_block((x, y - 3 , z), oblock)
+                    self.init_block((x, y - 4, z), bed_block)
+                elif randomOre > 5:
+                    self.init_block((x, y - 2, z), block)
+                    self.init_block((x, y - 3, z), dirt_block)
+                    self.init_block((x, y - 4, z), bed_block)
 
                 # Perhaps a tree
                 if self.max_trees > 0:
@@ -322,7 +364,21 @@ class Model(World):
                             continue
                         if (x, y, z) in self:
                             continue
-                        self.init_block((x, y, z), block)
+
+                        randomOre = random.randrange(1,100)
+                        if randomOre <= 5:
+                            oblock = random.choice(ore_type_blocks)
+                            self.init_block((x, y +1 , z), block) #cover up the ore block top
+                            self.init_block((x, y , z -1), block) #cover up the ore block back
+                            self.init_block((x, y , z +1), block) #cover up the ore block front
+                            self.init_block((x -1, y , z), block) #cover up the ore block left
+                            self.init_block((x +1, y , z), block) #cover up the ore block right
+                            self.init_block((x, y , z), oblock)
+                        elif randomOre > 5:
+                            self.init_block((x, y, z), block)
+
+                        #self.init_block((x, y, z), block)
+
 
                         # Perhaps a tree
                         if self.max_trees > 0:
@@ -366,7 +422,7 @@ class Window(pyglet.window.Window):
         self.exclusive = False
         self.strafe = [0, 0]
         self.sector = None
-        self.focus_block = Block(size=1.2)
+        self.focus_block = Block(size=1.1)
         self.reticle = None
         self.time_of_day = 0.0
         self.count = 0
@@ -576,9 +632,10 @@ class Window(pyglet.window.Window):
 
     def save_to_file(self):
         if DISABLE_SAVE:
-            pickle.dump((self.model, self.model.sectors,
-                         self.strafe, self.player, self.time_of_day),
-                        open(SAVE_FILENAME, "wb"))
+            if not options.nocompression:
+                save_world(self, game_dir, SAVE_FILENAME)
+            else:
+                save_world(self, game_dir, SAVE_FILENAME, CLASSIC_SAVE_TYPE)
 
     def collide(self, position, height):
         pad = 0.25
@@ -700,6 +757,9 @@ class Window(pyglet.window.Window):
             self.item_list.set_index(index)
         elif symbol == key.V:
             self.save_to_file()
+        elif symbol == key.Q:
+            if options.fullscreen == True:
+                pyglet.app.exit() # for fullscreen
         elif symbol == key.M:
             if self.last_key == symbol and not self.sorted:
                 self.player.quick_slots.sort()
@@ -871,7 +931,7 @@ def setup_fog(window):
     glFogi(GL_FOG_MODE, GL_LINEAR)
     glFogf(GL_FOG_DENSITY, 0.35)
     glFogf(GL_FOG_START, 20.0)
-    glFogf(GL_FOG_END, DRAW_DISTANCE)
+    glFogf(GL_FOG_END, DRAW_DISTANCE) # 80)
     window.show_fog = True
 
 
@@ -894,8 +954,8 @@ def main(options):
     global DRAW_DISTANCE
     SAVE_FILENAME = options.save
     DISABLE_SAVE = options.disable_save
-    if os.path.exists(SAVE_FILENAME) and options.disable_save:
-        save_object = pickle.load(open(SAVE_FILENAME, "rb"))
+    if options.disable_save and world_exists(game_dir, SAVE_FILENAME):
+        save_object = open_world(game_dir, SAVE_FILENAME)
     if options.draw_distance == 'medium':
         DRAW_DISTANCE = 60.0 * 1.5
     elif options.draw_distance == 'long':
@@ -950,7 +1010,12 @@ def main(options):
         # window_config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
         # window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=window_config, save=save_object)
     # except pyglet.window.NoSuchConfigException:
-    window = Window(
+    if options.fullscreen == True:
+        window = Window(
+        fullscreen=True, caption=APP_NAME,
+        resizable=True, save=save_object, vsync=False)
+    elif options.fullscreen == False:
+            window = Window(
         width=options.width, height=options.height, caption=APP_NAME,
         resizable=True, save=save_object, vsync=False)
 
@@ -972,22 +1037,24 @@ def main(options):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-width", type=int, default=850)
-    parser.add_argument("-height", type=int, default=480)
-    parser.add_argument("-terrain", choices=terrain_options.keys())
-    parser.add_argument("-hillheight", type=int)
-    parser.add_argument("-worldsize", type=int)
-    parser.add_argument("-maxtrees", type=int)
+    parser = argparse.ArgumentParser(description='Play a Python made Minecraft clone.')
+    parser.add_argument("-width", type=int, default=850, help = "Set the default Widht.")
+    parser.add_argument("-height", type=int, default=480, help = "Set the default Height.")
+    parser.add_argument("-terrain", choices=terrain_options.keys(), help = "Different terains. Choose grass, island, mountains,desert, plains")
+    parser.add_argument("-hillheight", type=int, help = "How high the hills are.")
+    parser.add_argument("-worldsize", type=int, help = "The width size of the world.")
+    parser.add_argument("-maxtrees", type=int, help = "How many trees and cacti should be made.")
     parser.add_argument("-seed", default=None)
-    parser.add_argument("--flat", action="store_true", default=False)
-    parser.add_argument("--hide-fog", action="store_true", default=False)
-    parser.add_argument("--show-gui", action="store_true", default=True)
-    parser.add_argument("--disable-auto-save", action="store_false", default=True)
-    parser.add_argument("-draw-distance", choices=['short', 'medium', 'long'], default='short')
-    parser.add_argument("-save", type=unicode, default=SAVE_FILENAME)
-    parser.add_argument("--disable-save", action="store_false", default=True)
-    parser.add_argument("--fast", action="store_true", default=False)
-    parser.add_argument("--save-config", action="store_true", default=False)
+    parser.add_argument("--flat", action="store_true", default=False, help = "Generate a flat world.")
+    parser.add_argument("--hide-fog", action="store_true", default=False, help ="Hides the fog, see the whole landscape.")
+    parser.add_argument("--show-gui", action="store_true", default=True, help = "Enabled by default.")
+    parser.add_argument("--disable-auto-save", action="store_false", default=True, help = "Do not save world on exit.")
+    parser.add_argument("-draw-distance", choices=['short', 'medium', 'long'], default='short', help =" How far to draw the map. Choose short, medium or long.")
+    parser.add_argument("-save", type=unicode, default=SAVE_FILENAME, help = "Type a name for the world to be saved as.")
+    parser.add_argument("--disable-save", action="store_false", default=True, help = "Disables saving.")
+    parser.add_argument("--fast", action="store_true", default=False, help = "Makes time progress faster then normal.")
+    parser.add_argument("--save-config", action="store_true", default=False, help = "Saves the choices as the default config.")
+    parser.add_argument("-fullscreen", action="store_true", default=False, help = "Runs the game in fullscreen. Press 'Q' to exit the game.")
+    parser.add_argument("-nocompression", action="store_true", default=False, help = "Enables compression for a smaller save file.")
     options = parser.parse_args()
     main(options)

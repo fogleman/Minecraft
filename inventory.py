@@ -21,7 +21,7 @@ class Inventory(object):
         else:
             max_size = BLOCKS_DIR[item_id].max_stack_size
 
-        
+
         retval = False
         while quantity > 0:
             # can't find an unfilled slot
@@ -74,6 +74,11 @@ class Inventory(object):
     def remove_all_by_index(self, index):
         self.slots[index] = None
 
+    def remove_unnecessary_stacks(self):
+        for i, slot in enumerate(self.slots):
+            if slot and slot.amount == 0:
+                self.slots[i] = None
+
     def sort(self, reverse=True):
         if self.sort_mode == 0:
             self.sort_with_key(key=lambda x: x.id if x != None else -sys.maxint - 1, reverse=True)
@@ -114,5 +119,5 @@ class Inventory(object):
     def __str__(self):
         return str(self.__dict__)
 
-    def __eq__(self, other): 
+    def __eq__(self, other):
         return self.__dict__ == other.__dict__

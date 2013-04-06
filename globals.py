@@ -19,3 +19,4 @@ BACK_GREEN = 0.0  # 0.81
 BACK_BLUE = 0.0  # 0.98
 HALF_PI = pi / 2.0  # 90 degrees
 SPREADING_MUTATION_DELAY = 10  # in seconds
+TERRAINMAP_BLOCK_SIZE = 8
