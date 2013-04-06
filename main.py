@@ -450,7 +450,7 @@ class Window(pyglet.window.Window):
         self.key_jump = config.getint('Controls', 'jump')
         self.key_inventory = config.getint('Controls', 'inventory')
         save_len = -1 if self.save is None else len(self.save)
-        if not (self.save is None or save_len < 2):  # model and model.sectors
+        if self.save is None or save_len < 2:  # model and model.sectors
             self.model = Model()
             self.player = Player((0, 0, 0), (-20, 0))
         else:
