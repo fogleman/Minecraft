@@ -15,7 +15,7 @@ pyglet.options['debug_gl'] = False
 from pyglet.gl import *
 from pyglet.window import key
 
-# import kytten #unused, future potential reference
+import kytten
 from blocks import *
 from entity import *
 from globals import *
