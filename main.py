@@ -345,7 +345,7 @@ class Model(World):
                             continue
                         if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
                             continue
-                        if (x, y, z) in self.world:
+                        if (x, y, z) in self:
                             continue
 
                         randomOre = random.randrange(1,100)
@@ -382,7 +382,7 @@ class Model(World):
             return
 
         # A tree can't grow on anything.
-        if self.world[position] not in tree_class.grows_on:
+        if self[position] not in tree_class.grows_on:
             return
 
         tree_class.add_to_world(self, position)
@@ -436,7 +436,7 @@ class Window(pyglet.window.Window):
             self.player = Player((0, 0, 0), (-20, 0))
         else:
             self.model = Model(initialize=False)
-            self.model.world = self.save[0]
+            self.model = self.save[0]
             self.model.sectors = self.save[1]
             if save_len > 2 and isinstance(self.save[2], list) \
                     and len(self.save[2]) == 2:
@@ -577,7 +577,7 @@ class Window(pyglet.window.Window):
                     self.set_highlighted_block(block)
 
             if self.highlighted_block:
-                hit_block = self.model.world[self.highlighted_block]
+                hit_block = self.model[self.highlighted_block]
                 if hit_block.hardness >= 0:
                     self.block_damage += self.player.attack_power
                     if self.block_damage >= hit_block.hardness:
@@ -638,7 +638,7 @@ class Window(pyglet.window.Window):
                     op[1] -= dy
                     op[i] += face[i]
                     op = tuple(op)
-                    if op not in self.model.world:
+                    if op not in self.model:
                         continue
                     p[i] -= (d - pad) * face[i]
                     if face == (0, -1, 0) or face == (0, 1, 0):
@@ -666,7 +666,7 @@ class Window(pyglet.window.Window):
                     self.set_highlighted_block(None)
             else:
                 if previous:
-                    hit_block = self.model.world[block]
+                    hit_block = self.model[block]
                     if hit_block.density >= 1:
                         current_block = self.item_list.get_current_block()
                         if current_block is not None:
@@ -885,7 +885,7 @@ class Window(pyglet.window.Window):
         vector = self.get_sight_vector()
         position = self.model.hit_test(self.player.position, vector)[0]
         if position:
-            hit_block = self.model.world[position]
+            hit_block = self.model[position]
             if hit_block.density >= 1:
                 vertex_data = self.focus_block.get_vertices(*position)
                 glColor3d(0, 0, 0)
@@ -899,7 +899,7 @@ class Window(pyglet.window.Window):
             % (self.time_of_day if (self.time_of_day < 12.0)
                else (24.0 - self.time_of_day),
                pyglet.clock.get_fps(), x, y, z,
-               len(self.model._shown), len(self.model.world))
+               len(self.model._shown), len(self.model))
         self.label.draw()
 
     def draw_reticle(self):

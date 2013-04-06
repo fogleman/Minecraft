@@ -48,7 +48,7 @@ class Tree(object):
             for yl in range(treetop - d, treetop + d):
                 for zl in range(z - d, z + d):
                     # Don't replace existing blocks
-                    if (xl, yl, zl) in world.world:
+                    if (xl, yl, zl) in world:
                         continue
                     # Avoids orphaned leaves
                     if not world.has_neighbors((xl, yl, zl),
