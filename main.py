@@ -927,6 +927,8 @@ class Window(pyglet.window.Window):
         if position:
             hit_block = self.model[position]
             if hit_block.density >= 1:
+                self.focus_block.width = hit_block.width * 1.05
+                self.focus_block.height = hit_block.height * 1.05
                 vertex_data = self.focus_block.get_vertices(*position)
                 glColor3d(0, 0, 0)
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
