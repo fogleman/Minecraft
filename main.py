@@ -806,6 +806,7 @@ class Window(pyglet.window.Window):
             x, y = x + dx * m, y + dy * m
             y = max(-90, min(90, y))
             self.player.rotation = (x, y)
+            self.camera.rotate(x, y)
 
     def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
         if button == pyglet.window.mouse.LEFT:

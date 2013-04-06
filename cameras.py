@@ -10,9 +10,12 @@ class Camera3D(object):
         self.x_rotation = 0.0
         self.y_rotation = 0.0
 
+    def rotate(self, x, y):
+        self.x_rotation = x
+        self.y_rotation = y
+
     def update(self):
         if self.target:
-            self.x_rotation, self.y_rotation = self.target.rotation
             self.x, self.y, self.z = self.target.position
 
     def transform(self):
