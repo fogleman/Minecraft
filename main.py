@@ -76,12 +76,13 @@ def vec(*args):
 
 
 class Player(Entity):
-    def __init__(self, position, rotation, flying=False):
+    def __init__(self, position, rotation, flying=False, game_mode=0):
         super(Player, self).__init__(position, rotation, health=7, attack_power=0.05)
         self.inventory = Inventory()
         self.quick_slots = Inventory(9)
         self.flying = flying
         self.max_health = 10
+        self.game_mode = game_mode
         initial_items = [bookshelf_block, furnace_block, brick_block, torch_block,
                          lamp_block, glass_block, chest_block,
                          sandstone_block, melon_block]
@@ -473,7 +474,7 @@ class Window(pyglet.window.Window):
         save_len = -1 if self.save is None else len(self.save)
         if self.save is None or save_len < 2:  # model and model.sectors
             self.model = Model()
-            self.player = Player((0, 0, 0), (-20, 0))
+            self.player = Player((0, 0, 0), (-20, 0), game_mode=GAMEMODE)
         else:
             self.model = Model(initialize=False)
             for item in self.save[0]:
@@ -486,6 +487,10 @@ class Window(pyglet.window.Window):
                 self.player = self.save[3]
             if save_len > 4 and isinstance(self.save[4], float):
                 self.time_of_day = self.save[4]
+        if self.player.game_mode == 0:
+            print('Game mode: Creative')
+        if self.player.game_mode == 1:
+            print('Game mode: Survival')
         self.item_list = ItemSelector(self.width, self.height, self.player,
                                       self.model)
         self.inventory_list = InventorySelector(self.width, self.height,
@@ -695,7 +700,7 @@ class Window(pyglet.window.Window):
                     p[i] -= (d - pad) * face[i]
                     if face == (0, -1, 0) or face == (0, 1, 0):
                         # jump damage
-                        if not self.player.flying and self.model.game_mode is not 0:
+                        if not self.player.flying and self.player.game_mode is not 0:
                             damage = self.dy * -1000.0
                             damage = 3.0 * damage / 22.0
                             damage -= 2.0
@@ -1074,10 +1079,6 @@ def main(options):
             seed = long(time.time() * 256)  # use fractional seconds
         # Then convert it to a string so all seeds have the same type.
         seed = str(seed)
-        if GAMEMODE == 0:
-            print('Game mode: Creative')
-        if GAMEMODE == 1:
-            print('Game mode: Survival')
 
         print('Random seed: ' + seed)
 
