@@ -440,7 +440,7 @@ class CobbleBlock(Block):
     bottom_texture = 6, 3
     side_texture = 6, 3
     hardness = 1.0
-    id = 5
+    id = 4
     name = "Cobblestone"
 
 
