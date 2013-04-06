@@ -14,6 +14,7 @@
 
 * show player model in the inventory
 * add gear slots/handling
+* add furnance GUI
 
 # Graphics
 
