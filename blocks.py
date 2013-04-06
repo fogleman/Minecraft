@@ -98,7 +98,11 @@ class AirBlock(Block):
     name = "Air"
 
 
-class StoneBlock(Block):
+class HardBlock(Block):
+    break_sound = sounds.stone_break
+
+
+class StoneBlock(HardBlock):
     top_texture = 2, 1
     bottom_texture = 2, 1
     side_texture = 2, 1
@@ -117,6 +121,7 @@ class GrassBlock(Block):
     side_texture = 0, 0
     hardness = 0.6
     id = 2
+    break_sound = sounds.dirt_break
 
     def __init__(self):
         super(GrassBlock, self).__init__()
@@ -130,6 +135,7 @@ class DirtBlock(Block):
     hardness = 0.5
     id = 3
     name = "Dirt"
+    break_sound = sounds.dirt_break
 
 
 class SandBlock(Block):
@@ -142,7 +148,7 @@ class SandBlock(Block):
     name = "Sand"
 
 
-class GoldOreBlock(Block):
+class GoldOreBlock(HardBlock):
     top_texture = 3, 4
     bottom_texture = 3, 4
     side_texture = 3, 4
@@ -151,7 +157,7 @@ class GoldOreBlock(Block):
     name = "Coal Ore"
 
 
-class IronOreBlock(Block):
+class IronOreBlock(HardBlock):
     top_texture = 1, 4
     bottom_texture = 1, 4
     side_texture = 1, 4
@@ -160,7 +166,7 @@ class IronOreBlock(Block):
     name = "Iron Ore"
 
 
-class DiamondOreBlock(Block):
+class DiamondOreBlock(HardBlock):
     top_texture = 2, 4
     bottom_texture = 2, 4
     side_texture = 2, 4
@@ -169,7 +175,7 @@ class DiamondOreBlock(Block):
     name = "Diamond Ore"
 
 
-class CoalOreBlock(Block):
+class CoalOreBlock(HardBlock):
     top_texture = 0, 4
     bottom_texture = 0, 4
     side_texture = 0, 4
@@ -178,7 +184,7 @@ class CoalOreBlock(Block):
     name = "Coal Ore"
 
 
-class BrickBlock(Block):
+class BrickBlock(HardBlock):
     top_texture = 2, 0
     bottom_texture = 2, 0
     side_texture = 2, 0
@@ -195,6 +201,7 @@ class LampBlock(Block):
     amount_label_color = 0, 0, 0, 255
     id = 124
     name = "Lamp"
+    break_sound = sounds.glass_break
 
 class GlassBlock(Block):
     top_texture = 0, 5
@@ -205,6 +212,7 @@ class GlassBlock(Block):
     amount_label_color = 0, 0, 0, 255
     id = 20
     name = "Glass"
+    break_sound = sounds.glass_break
 
 class GravelBlock(Block):
     top_texture = 1, 5
@@ -214,6 +222,7 @@ class GravelBlock(Block):
     amount_label_color = 0, 0, 0, 255
     id = 13
     name = "Gravel"
+    break_sound = sounds.gravel_break
 
 
 class BedrockBlock(Block):
@@ -248,7 +257,7 @@ class ChestBlock(Block):
     name = "Chest"
 
 
-class SandstoneBlock(Block):
+class SandstoneBlock(HardBlock):
     top_texture = 2, 2
     bottom_texture = 2, 2
     side_texture = 2, 2
@@ -260,7 +269,7 @@ class SandstoneBlock(Block):
 
 # FIXME: This texture is not in the original Minecraft.  Or is it quartz?
 # from ronmurphy .. this is taken, as all images are, from the sphax purebd craft. it is marble, from the tekkit pack.
-class MarbleBlock(Block):
+class MarbleBlock(HardBlock):
     top_texture = 3, 2
     bottom_texture = 3, 2
     side_texture = 3, 2
@@ -269,7 +278,7 @@ class MarbleBlock(Block):
     amount_label_color = 0, 0, 0, 255
 
 
-class StonebrickBlock(Block):
+class StonebrickBlock(HardBlock):
     top_texture = 0, 3
     bottom_texture = 0, 3
     side_texture = 0, 3
@@ -460,7 +469,7 @@ class YFlowersBlock(Block):
     name = "Dandelion"
 
 
-class StoneSlabBlock(Block):
+class StoneSlabBlock(HardBlock):
     top_texture = 4, 4
     bottom_texture = 4, 4
     side_texture = 4, 4
@@ -469,7 +478,7 @@ class StoneSlabBlock(Block):
     name = "Full Stone Slab"
 
 
-class ClayBlock(Block):
+class ClayBlock(HardBlock):
     top_texture = 6, 4
     bottom_texture = 6, 4
     side_texture = 6, 4
@@ -478,7 +487,7 @@ class ClayBlock(Block):
     name = "Clay Block"
 
 
-class CobbleBlock(Block):
+class CobbleBlock(HardBlock):
     top_texture = 6, 3
     bottom_texture = 6, 3
     side_texture = 6, 3
@@ -487,7 +496,7 @@ class CobbleBlock(Block):
     name = "Cobblestone"
 
 
-class BookshelfBlock(Block):
+class BookshelfBlock(WoodBlock):
     top_texture = 1, 2
     bottom_texture = 0, 2
     side_texture = 5, 4
@@ -496,7 +505,7 @@ class BookshelfBlock(Block):
     name = "Bookshelf"
 
 
-class FurnaceBlock(Block):
+class FurnaceBlock(HardBlock):
     top_texture = 7, 7
     bottom_texture = 6, 3
     side_texture = 7, 6
