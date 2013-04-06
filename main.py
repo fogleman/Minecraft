@@ -2,6 +2,7 @@ import math
 import random
 import time
 
+from collections import deque
 from pyglet import image
 from pyglet.gl import *
 from pyglet.graphics import TextureGroup
@@ -127,7 +128,7 @@ class Model(object):
 
         # Simple function queue implementation. The queue is populated with
         # _show_block() and _hide_block() calls
-        self.queue = []
+        self.queue = deque()
 
         self._initialize()
 
@@ -385,7 +386,7 @@ class Model(object):
         """ Pop the top function from the internal queue and call it.
 
         """
-        func, args = self.queue.pop(0)
+        func, args = self.queue.popleft()
         func(*args)
 
     def process_queue(self):
