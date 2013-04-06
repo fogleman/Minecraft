@@ -1,6 +1,7 @@
 from collections import deque, defaultdict
 import random
 import time
+import os
 
 import pyglet
 from pyglet.gl import *
