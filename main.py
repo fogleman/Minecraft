@@ -25,6 +25,7 @@ from inventory import *
 from nature import *
 from world import *
 from savingsystem import *
+from cameras import *
 
 SAVE_FILENAME = None
 
@@ -495,6 +496,7 @@ class Window(pyglet.window.Window):
                                       self.model)
         self.inventory_list = InventorySelector(self.width, self.height,
                                                 self.player, self.model)
+        self.camera = Camera3D(target=self.player)
         self.num_keys = [
             key._1, key._2, key._3, key._4, key._5,
             key._6, key._7, key._8, key._9, key._0]
@@ -682,6 +684,7 @@ class Window(pyglet.window.Window):
         x, y, z = self.collide((x + dx, y + dy, z + dz), 2)
       #  print(str(dy) + ' ' + str(self.dy)) 
         self.player.position = (x, y, z)
+        self.camera.update()
 
     def set_highlighted_block(self, block):
         self.highlighted_block = block
@@ -944,12 +947,7 @@ class Window(pyglet.window.Window):
             gluPerspective(FOV, 1, NEAR_CLIP_DISTANCE, FAR_CLIP_DISTANCE)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
-        x, y = self.player.rotation
-        glRotatef(x, 0, 1, 0)
-        x_r = radians(x)
-        glRotatef(-y, cos(x_r), 0, sin(x_r))
-        x, y, z = self.player.position
-        glTranslatef(-x, -y, -z)
+        self.camera.transform()
         glEnable(GL_LIGHTING)
         glLightfv(GL_LIGHT0, GL_DIFFUSE, vec(0.9, 0.9, 0.9, 1.0))
         glLightfv(GL_LIGHT0, GL_SPECULAR, vec(0.9, 0.9, 0.9, 1.0))
