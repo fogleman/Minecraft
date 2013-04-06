@@ -479,6 +479,21 @@ class FarmBlock(Block):
         #super(BirchBranchBlock, self).__init__()
         #self.drop_id = BirchWoodBlock.id
 
+CRACK_LEVEL = 6
+
+# not a real block, used to store crack texture data
+class CrackTextureBlock(object):
+    def __init__(self):
+        self.crack_level = CRACK_LEVEL
+        self.texture_data = []
+        for i in range(self.crack_level):
+            texture_coords = get_texture_coordinates(i, 7)
+            tmp = []
+            tmp.extend(texture_coords * 6)
+            self.texture_data.append(tmp)
+
+crack_textures = CrackTextureBlock()
+
 air_block = AirBlock()
 grass_block = GrassBlock()
 sand_block = SandBlock()

@@ -435,6 +435,8 @@ class Window(pyglet.window.Window):
         self.polished = GLfloat(100.0)
         self.highlighted_block = None
         self.block_damage = 0
+        self.crack = None
+        self.crack_batch = pyglet.graphics.Batch()
         self.mouse_pressed = False
         self.dy = 0
         self.show_fog = False
@@ -448,7 +450,7 @@ class Window(pyglet.window.Window):
         self.key_jump = config.getint('Controls', 'jump')
         self.key_inventory = config.getint('Controls', 'inventory')
         save_len = -1 if self.save is None else len(self.save)
-        if self.save is None or save_len < 2:  # model and model.sectors
+        if not (self.save is None or save_len < 2):  # model and model.sectors
             self.model = Model()
             self.player = Player((0, 0, 0), (-20, 0))
         else:
@@ -630,6 +632,9 @@ class Window(pyglet.window.Window):
     def set_highlighted_block(self, block):
         self.highlighted_block = block
         self.block_damage = 0
+        if self.crack:
+            self.crack.delete()
+        self.crack = None
 
     def save_to_file(self):
         if DISABLE_SAVE:
@@ -879,6 +884,7 @@ class Window(pyglet.window.Window):
         self.set_3d()
         glColor3d(1, 1, 1)
         self.model.batch.draw()
+        self.crack_batch.draw()
         self.draw_focused_block()
         self.set_2d()
         if self.show_gui:
@@ -908,6 +914,17 @@ class Window(pyglet.window.Window):
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
                 pyglet.graphics.draw(24, GL_QUADS, ('v3f/static', vertex_data))
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+                if self.block_damage == 0:
+                    pass
+                else:   # also show the cracks
+                    crack_level = int(floor((self.block_damage / hit_block.hardness) * CRACK_LEVEL)) # range: [0, CRACK_LEVEL]
+                    if crack_level > CRACK_LEVEL:
+                        return
+                    texture_data = crack_textures.texture_data[crack_level]
+                    if self.crack:
+                        self.crack.delete()
+                    self.crack = self.crack_batch.add(24, GL_QUADS, self.model.group, ('v3f/static', vertex_data) ,
+                                                                            ('t2f/static', texture_data))
 
     def draw_label(self):
         x, y, z = self.player.position

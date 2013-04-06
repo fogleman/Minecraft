@@ -115,23 +115,6 @@ class SmeltingRecipes(object):
 recipes = Recipes()
 smelting = SmeltingRecipes()
 
-# a test:
-# grass | grass
-#--------------  ---->  dirt
-# grass | grass
-recipes.add_recipe(["##", "##"], {'#': grass_block}, ItemStack(dirt_block.id, amount=1))
 recipes.add_recipe(["##", "##"], {'#': stone_block}, ItemStack(stonebrick_block.id, amount=4))
-recipes.add_shapeless_recipe([grass_block, stone_block], ItemStack(stone_block.id, amount=1))
-
-if __name__ == '__main__':
-    print(recipes.craft([ [grass_block, grass_block, air_block], \
-					      [grass_block, grass_block, air_block], \
-					      [air_block,   air_block,   air_block] ]))
-
-    print(recipes.craft([ [air_block, grass_block, grass_block], \
-				          [air_block, grass_block, grass_block], \
-				          [air_block,   air_block,   air_block] ]))
-
-    print(recipes.craft([ [air_block, stone_block, grass_block], \
-				          [air_block, air_block, air_block], \
-				          [air_block,   air_block,   air_block] ]))
+recipes.add_recipe(["#"], {'#': oakwood_block}, ItemStack(oakwoodplank_block.id, amount=4))
+recipes.add_recipe(["#"], {'#': junglewood_block}, ItemStack(junglewoodplank_block.id, amount=4))
