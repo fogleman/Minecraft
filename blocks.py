@@ -199,10 +199,20 @@ class GlassBlock(Block):
     top_texture = 0, 5
     bottom_texture = 0, 5
     side_texture = 0, 5
+    transparent = True
     hardness = 0.2
     amount_label_color = 0, 0, 0, 255
     id = 20
     name = "Glass"
+
+class GravelBlock(Block):
+    top_texture = 1, 5
+    bottom_texture = 1, 5
+    side_texture = 1, 5
+    hardness = 0.4
+    amount_label_color = 0, 0, 0, 255
+    id = 13
+    name = "Gravel"
 
 
 class BedrockBlock(Block):
@@ -308,7 +318,7 @@ class SnowGrassBlock(Block):
     bottom_texture = 0, 1
     side_texture = 4, 0
     hardness = 0.6
-    id = 2
+    id = 80
 
     def __init__(self):
         super(SnowGrassBlock, self).__init__()
@@ -561,6 +571,7 @@ bookshelf_block = BookshelfBlock()
 furnace_block = FurnaceBlock()
 farm_block = FarmBlock()
 glass_block = GlassBlock()
+gravel_block = GravelBlock()
 
 
 
