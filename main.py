@@ -438,7 +438,8 @@ class Window(pyglet.window.Window):
             self.player = Player((0, 0, 0), (-20, 0))
         else:
             self.model = Model(initialize=False)
-            self.model = self.save[0]
+            for item in self.save[0]:
+                self.model[item[0]] = item[1]
             self.model.sectors = self.save[1]
             if save_len > 2 and isinstance(self.save[2], list) \
                     and len(self.save[2]) == 2:
