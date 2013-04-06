@@ -647,6 +647,7 @@ class Window(pyglet.window.Window):
             # collisions
         x, y, z = self.player.position
         x, y, z = self.collide((x + dx, y + dy, z + dz), 2)
+      #  print(str(dy) + ' ' + str(self.dy)) 
         self.player.position = (x, y, z)
 
     def set_highlighted_block(self, block):
@@ -690,6 +691,26 @@ class Window(pyglet.window.Window):
                         continue
                     p[i] -= (d - pad) * face[i]
                     if face == (0, -1, 0) or face == (0, 1, 0):
+                        # jump damage
+                        if not self.player.flying:
+                            damage = self.dy * -1000.0
+                            damage = 3.0 * damage / 22.0
+                            damage -= 2.0
+                            if damage >= 0.0:
+                                health_change = 0
+                                if damage <= 0.639:
+                                    health_change = 0
+                                elif damage <= 0.946:
+                                    health_change = -1
+                                elif damage <= 1.24:
+                                    health_change = -2
+                                elif damage <= 2.06:
+                                    health_change = -2
+                                else:
+                                    health_change = -3
+                                if health_change != 0:
+                                    self.player.change_health(health_change)
+                                    self.item_list.update_health()
                         self.dy = 0
                     break
         return tuple(p)

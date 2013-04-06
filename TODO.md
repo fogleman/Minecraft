@@ -28,6 +28,9 @@
 * use ManagedSoundPlayer class (http://www.pyglet.org/doc/api/pyglet.media.ManagedSoundPlayer-class.html) or something better
 * add volume change option
 
+# Health
+* Improve damage from falling from too high.
+
 # Grass Expansion
 
 * improve performance
