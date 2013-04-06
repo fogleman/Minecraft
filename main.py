@@ -840,7 +840,7 @@ class Window(pyglet.window.Window):
             else:
                 self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
-            if GAMEMODE == 0:
+            if self.player.game_mode == 0:
                 self.dy = 0
                 self.player.flying = not self.player.flying
         elif symbol == key.B or symbol == key.F3:
