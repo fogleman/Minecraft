@@ -728,13 +728,13 @@ class Window(pyglet.window.Window):
                                 damage -= 2.0
                                 if damage >= 0.0:
                                     health_change = 0
-                                    if damage <= 0.639:
+                                    if damage <= 0.839:
                                         health_change = 0
-                                    elif damage <= 0.946:
+                                    elif damage <= 1.146:
                                         health_change = -1
-                                    elif damage <= 1.24:
+                                    elif damage <= 1.44:
                                         health_change = -2
-                                    elif damage <= 2.06:
+                                    elif damage <= 2.26:
                                         health_change = -2
                                     else:
                                         health_change = -3
@@ -835,8 +835,9 @@ class Window(pyglet.window.Window):
             else:
                 self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
-            self.dy = 0
-            self.player.flying = not self.player.flying
+            if GAMEMODE == 0:
+                self.dy = 0
+                self.player.flying = not self.player.flying
         elif symbol == key.B or symbol == key.F3:
             self.show_gui = not self.show_gui
         elif symbol in self.num_keys:
@@ -1036,7 +1037,6 @@ def setup_fog(window):
     glFogf(GL_FOG_END, DRAW_DISTANCE) # 80)
     window.show_fog = True
 
-
 def setup():
     glClearColor(BACK_RED, BACK_GREEN, BACK_BLUE, 1)
     glEnable(GL_LIGHTING)
@@ -1115,10 +1115,7 @@ def main(options):
             'Seed used the %d %m %Y at %H:%M:%S\n'))
         seeds.write('%s\n\n' % seed)
 
-    # try:
-        # window_config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
-        # window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=window_config, save=save_object)
-    # except pyglet.window.NoSuchConfigException:
+
     if options.fullscreen == True:
         window = Window(
         fullscreen=True, caption=APP_NAME,
@@ -1164,7 +1161,7 @@ if __name__ == '__main__':
     parser.add_argument("--fast", action="store_true", default=False, help = "Makes time progress faster then normal.")
     parser.add_argument("--save-config", action="store_true", default=False, help = "Saves the choices as the default config.")
     parser.add_argument("-fullscreen", action="store_true", default=False, help = "Runs the game in fullscreen. Press 'Q' to exit the game.")
-    parser.add_argument("-nocompression", action="store_true", default=False, help = "Enables compression for a smaller save file.")
+    parser.add_argument("-nocompression", action="store_true", default=False, help = "Disables compression for a smaller save file.")
     parser.add_argument("-gamemode", type=int, default=1, help = "Set the Gamemode for player.  0 = Creative, 1 = Survival")
     options = parser.parse_args()
     main(options)
