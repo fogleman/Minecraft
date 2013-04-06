@@ -14,7 +14,7 @@ class InventorySelector(object):
         self.amount_labels = []
         self.model = model
         self.player = player
-        self.max_items = 27
+        self.max_items = self.player.inventory.slot_count
         self.current_index = 1
         self.icon_size = self.model.group.texture.width / 8 #4
         self.selected_item = None
