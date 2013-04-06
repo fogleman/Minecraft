@@ -289,16 +289,26 @@ class Model(World):
                 block = worldtypes_grounds[world_type]
                 if isinstance(block, (tuple, list)):
                     block = random.choice(block)
-                # generate Ores.... 5% chance out of 100
+                # generate Ores.... 10% chance out of 100
                 randomOre = random.randrange(1,100)
-                if randomOre <= 5:
+                randomOre_depth = random.randrange(5, 8) # 5 - 7
+                if randomOre <= 10:
                     oblock = random.choice(ore_type_blocks)
                     self.init_block((x, y - 2, z), block)
-                    self.init_block((x, y - 3 , z), oblock)
+                    self.init_block((x, y - 3, z), dirt_block)
                     self.init_block((x, y - 4, z), stone_block)
-                    self.init_block((x, y - 5, z), stone_block)
-                    self.init_block((x, y - 6, z), stone_block)
-                    self.init_block((x, y - 7, z), bed_block)
+                    if randomOre_depth == 5:
+                        self.init_block((x, y - 5, z), oblock)
+                    else:
+                        self.init_block((x, y - 5, z), stone_block)
+                    if randomOre_depth == 6:
+                        self.init_block((x, y - 6, z), oblock)
+                    else:
+                        self.init_block((x, y - 6, z), stone_block)
+                    if randomOre_depth == 7:
+                        self.init_block((x, y - 7, z), oblock)
+                    else:
+                        self.init_block((x, y - 7, z), bed_block)
                 elif randomOre > 5:
                     self.init_block((x, y - 2, z), block)
                     self.init_block((x, y - 3, z), dirt_block)
