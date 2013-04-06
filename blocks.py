@@ -378,6 +378,7 @@ class BirchWoodBlock(Block):
     side_texture = 5, 0
     hardness = 2
     id = 17.2
+    amount_label_color = 0, 0, 0, 255
     name = "Birch wood"
 
     def play_break_sound(self):
@@ -507,6 +508,15 @@ class CobbleBlock(Block):
     id = 4
     name = "Cobblestone"
 
+class CobbleFenceBlock(Block):
+    top_texture = 6, 3
+    bottom_texture = 6, 3
+    side_texture = 6, 3
+    hardness = 2
+    width = 0.6
+    id = 4
+    name = "Cobblestone Fence Post"
+
 
 class BookshelfBlock(Block):
     top_texture = 1, 2
@@ -621,6 +631,7 @@ tallcactus_block = TallCactusBlock()
 pumpkin_block = PumpkinBlock()
 torch_block = TorchBlock()
 yflowers_block = YFlowersBlock()
+cobblefence_block = CobbleFenceBlock()
 
 
 

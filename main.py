@@ -83,15 +83,32 @@ class Player(Entity):
         self.flying = flying
         self.max_health = 10
         self.game_mode = game_mode
-        initial_items = [bookshelf_block, furnace_block, brick_block, torch_block,
-                         lamp_block, glass_block, chest_block,
-                         sandstone_block, melon_block]
-        for item in initial_items:
-            quantity = random.randint(1, 10)
-            if random.choice((True, False)):
+        if self.game_mode == 1:
+
+            initial_items = [bookshelf_block, furnace_block, brick_block, torch_block,
+                             lamp_block, glass_block, chest_block,
+                             sandstone_block, melon_block]
+            for item in initial_items:
+                quantity = random.randint(1, 10)
+                if random.choice((True, False)):
+                    self.inventory.add_item(item.id, quantity)
+                else:
+                    self.quick_slots.add_item(item.id, quantity)
+
+        if self.game_mode == 0:
+            initial_items = [bookshelf_block, furnace_block, brick_block, torch_block,
+                             lamp_block, glass_block, chest_block, cobblefence_block,
+                             sandstone_block, melon_block, lamp_block, stonebrick_block,
+                             oakwoodplank_block, junglewoodplank_block, sprucewoodplank_block,
+                             oakwood_block, oakleaf_block, junglewood_block, jungleleaf_block,
+                             birchwood_block, birchleaf_block, stoneslab_block, clay_block,
+                             farm_block, gravel_block]
+            for item in initial_items:
+                quantity = 64
+                #if random.choice((True, False)):
                 self.inventory.add_item(item.id, quantity)
-            else:
-                self.quick_slots.add_item(item.id, quantity)
+                #else:
+                #    self.quick_slots.add_item(item.id, quantity)
 
     def add_item(self, item_id):
         if self.quick_slots.add_item(item_id):
@@ -624,17 +641,27 @@ class Window(pyglet.window.Window):
 
             if self.highlighted_block:
                 hit_block = self.model[self.highlighted_block]
-                if hit_block.hardness >= 0:
-                    self.block_damage += self.player.attack_power
-                    if self.block_damage >= hit_block.hardness:
-                        self.model.remove_block(self.highlighted_block)
+                if GAMEMODE == 1:
+                    if hit_block.hardness >= 0:
+                        self.block_damage += self.player.attack_power
+                        if self.block_damage >= hit_block.hardness:
+                            self.model.remove_block(self.highlighted_block)
+                            self.set_highlighted_block(None)
+                            if hit_block.drop_id is not None \
+                                    and self.player.add_item(hit_block.drop_id):
+                                self.item_list.update_items()
+                                self.inventory_list.update_items()
+                    else:
                         self.set_highlighted_block(None)
-                        if hit_block.drop_id is not None \
-                                and self.player.add_item(hit_block.drop_id):
-                            self.item_list.update_items()
-                            self.inventory_list.update_items()
-                else:
+                if GAMEMODE == 0:
+                    self.model.remove_block(self.highlighted_block)
                     self.set_highlighted_block(None)
+                    if hit_block.drop_id is not None \
+                            and self.player.add_item(hit_block.drop_id):
+                        self.item_list.update_items()
+                        self.inventory_list.update_items()
+                    else:
+                        self.set_highlighted_block(None)
         self.update_time()
 
     def _update(self, dt):
@@ -813,8 +840,9 @@ class Window(pyglet.window.Window):
             else:
                 self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
-            self.dy = 0
-            self.player.flying = not self.player.flying
+            if GAMEMODE == 0:
+                self.dy = 0
+                self.player.flying = not self.player.flying
         elif symbol == key.B or symbol == key.F3:
             self.show_gui = not self.show_gui
         elif symbol in self.num_keys:
@@ -1014,7 +1042,6 @@ def setup_fog(window):
     glFogf(GL_FOG_END, DRAW_DISTANCE) # 80)
     window.show_fog = True
 
-
 def setup():
     glClearColor(BACK_RED, BACK_GREEN, BACK_BLUE, 1)
     glEnable(GL_LIGHTING)
@@ -1089,10 +1116,7 @@ def main(options):
             'Seed used the %d %m %Y at %H:%M:%S\n'))
         seeds.write('%s\n\n' % seed)
 
-    # try:
-        # window_config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
-        # window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=window_config, save=save_object)
-    # except pyglet.window.NoSuchConfigException:
+
     if options.fullscreen == True:
         window = Window(
         fullscreen=True, caption=APP_NAME,
@@ -1139,6 +1163,6 @@ if __name__ == '__main__':
     parser.add_argument("--save-config", action="store_true", default=False, help = "Saves the choices as the default config.")
     parser.add_argument("-fullscreen", action="store_true", default=False, help = "Runs the game in fullscreen. Press 'Q' to exit the game.")
     parser.add_argument("-nocompression", action="store_true", default=False, help = "Disables compression for a smaller save file.")
-    parser.add_argument("-gamemode", type=int, default=0, help = "Set the Gamemode for player.  0 = Creative, 1 = Survival")
+    parser.add_argument("-gamemode", type=int, default=1, help = "Set the Gamemode for player.  0 = Creative, 1 = Survival")
     options = parser.parse_args()
     main(options)
