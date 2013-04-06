@@ -18,7 +18,7 @@ class InventorySelector(object):
         self.icon_size = self.model.group.texture.width / 8 #4
         self.selected_item = None
         self.selected_item_icon = None
-        image = pyglet.image.load('inventory.png')
+        image = pyglet.image.load('textures/inventory.png')
         self.frame = pyglet.sprite.Sprite(image.get_region(0, 0, image.width, image.height), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
         self.crafting_panel = Inventory(4)
         self.crafting_outcome = None  # should be an item stack
