@@ -590,8 +590,7 @@ class Window(pyglet.window.Window):
             block, previous = self.model.hit_test(self.player.position, vector)
             if block:
                 if self.highlighted_block != block:
-                    self.highlighted_block = block
-                    self.block_damage = 0
+                    self.set_highlighted_block(block)
 
             if self.highlighted_block:
                 hit_block = self.model[self.highlighted_block]
@@ -599,15 +598,13 @@ class Window(pyglet.window.Window):
                     self.block_damage += self.player.attack_power
                     if self.block_damage >= hit_block.hardness:
                         self.model.remove_block(self.highlighted_block)
-                        self.highlighted_block = None
-                        self.block_damage = 0
+                        self.set_highlighted_block(None)
                         if hit_block.drop_id is not None \
                                 and self.player.add_item(hit_block.drop_id):
                             self.item_list.update_items()
                             self.inventory_list.update_items()
                 else:
-                    self.highlighted_block = None
-                    self.block_damage = 0
+                    self.set_highlighted_block(None)
         self.update_time()
 
     def _update(self, dt):
@@ -629,6 +626,10 @@ class Window(pyglet.window.Window):
         x, y, z = self.player.position
         x, y, z = self.collide((x + dx, y + dy, z + dz), 2)
         self.player.position = (x, y, z)
+        
+    def set_highlighted_block(self, block):
+        self.highlighted_block = block
+        self.block_damage = 0
 
     def save_to_file(self):
         if DISABLE_SAVE:
@@ -678,8 +679,7 @@ class Window(pyglet.window.Window):
             if button == pyglet.window.mouse.LEFT:
                 if block:
                     self.mouse_pressed = True
-                    self.highlighted_block = None
-                    self.block_damage = 0
+                    self.set_highlighted_block(None)
             else:
                 if previous:
                     hit_block = self.model[block]
@@ -699,8 +699,7 @@ class Window(pyglet.window.Window):
             self.set_exclusive_mouse(True)
 
     def on_mouse_release(self, x, y, button, modifiers):
-        self.highlighted_block = None
-        self.block_damage = 0
+        self.set_highlighted_block(None)
         self.mouse_pressed = False
 
     def on_mouse_motion(self, x, y, dx, dy):
