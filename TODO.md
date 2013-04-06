@@ -14,16 +14,23 @@
 
 * show player model in the inventory
 * add gear slots/handling
+* add furnance GUI
 
 # Graphics
 
 * improve lighting system
+* add shadows
+* add lamps light
+* add main menu with large project name/logo, save files manager, new world creation options and settings
 
 # Sounds
 
 * add new sounds
 * use ManagedSoundPlayer class (http://www.pyglet.org/doc/api/pyglet.media.ManagedSoundPlayer-class.html) or something better
 * add volume change option
+
+# Health
+* Improve damage from falling from too high.
 
 # Grass Expansion
 

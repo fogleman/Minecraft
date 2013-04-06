@@ -76,13 +76,13 @@ def vec(*args):
 
 
 class Player(Entity):
-    def __init__(self, position, rotation, flying=False):
-        super(Player, self).__init__(position, rotation, health=7, attack_power=0.05)
+    def __init__(self, position, rotation, flying=False, game_mode=0):
+        super(Player, self).__init__(position, rotation, health=7, max_health=10, attack_power=0.05, attack_range=4)
         self.inventory = Inventory()
         self.quick_slots = Inventory(9)
         self.flying = flying
-        self.max_health = 10
-        if GAMEMODE == 1:
+        self.game_mode = game_mode
+        if self.game_mode == 1:
 
             initial_items = [bookshelf_block, furnace_block, brick_block, torch_block,
                              lamp_block, glass_block, chest_block,
@@ -94,7 +94,7 @@ class Player(Entity):
                 else:
                     self.quick_slots.add_item(item.id, quantity)
 
-        if GAMEMODE == 0:
+        if self.game_mode == 0:
             initial_items = [bookshelf_block, furnace_block, brick_block, torch_block,
                              lamp_block, glass_block, chest_block, cobblefence_block,
                              sandstone_block, melon_block, lamp_block, stonebrick_block,
@@ -490,7 +490,7 @@ class Window(pyglet.window.Window):
         save_len = -1 if self.save is None else len(self.save)
         if self.save is None or save_len < 2:  # model and model.sectors
             self.model = Model()
-            self.player = Player((0, 0, 0), (-20, 0))
+            self.player = Player((0, 0, 0), (-20, 0), game_mode=GAMEMODE)
         else:
             self.model = Model(initialize=False)
             for item in self.save[0]:
@@ -503,6 +503,10 @@ class Window(pyglet.window.Window):
                 self.player = self.save[3]
             if save_len > 4 and isinstance(self.save[4], float):
                 self.time_of_day = self.save[4]
+        if self.player.game_mode == 0:
+            print('Game mode: Creative')
+        if self.player.game_mode == 1:
+            print('Game mode: Survival')
         self.item_list = ItemSelector(self.width, self.height, self.player,
                                       self.model)
         self.inventory_list = InventorySelector(self.width, self.height,
@@ -629,7 +633,7 @@ class Window(pyglet.window.Window):
             self._update(dt / m)
         if self.mouse_pressed:
             vector = self.get_sight_vector()
-            block, previous = self.model.hit_test(self.player.position, vector)
+            block, previous = self.model.hit_test(self.player.position, vector, self.player.attack_range)
             if block:
                 if self.highlighted_block != block:
                     self.set_highlighted_block(block)
@@ -649,14 +653,15 @@ class Window(pyglet.window.Window):
                     else:
                         self.set_highlighted_block(None)
                 if GAMEMODE == 0:
-                    self.model.remove_block(self.highlighted_block)
-                    self.set_highlighted_block(None)
-                    if hit_block.drop_id is not None \
-                            and self.player.add_item(hit_block.drop_id):
-                        self.item_list.update_items()
-                        self.inventory_list.update_items()
-                    else:
+                    if hit_block.hardness >= 0:
+                        self.model.remove_block(self.highlighted_block)
                         self.set_highlighted_block(None)
+                        if hit_block.drop_id is not None \
+                                and self.player.add_item(hit_block.drop_id):
+                            self.item_list.update_items()
+                            self.inventory_list.update_items()
+                        else:
+                            self.set_highlighted_block(None)
         self.update_time()
 
     def _update(self, dt):
@@ -677,6 +682,7 @@ class Window(pyglet.window.Window):
             # collisions
         x, y, z = self.player.position
         x, y, z = self.collide((x + dx, y + dy, z + dz), 2)
+      #  print(str(dy) + ' ' + str(self.dy))
         self.player.position = (x, y, z)
 
     def set_highlighted_block(self, block):
@@ -720,27 +726,26 @@ class Window(pyglet.window.Window):
                         continue
                     p[i] -= (d - pad) * face[i]
                     if face == (0, -1, 0) or face == (0, 1, 0):
-                        if GAMEMODE is not 0:
-                            # jump damage
-                            if not self.player.flying:
-                                damage = self.dy * -1000.0
-                                damage = 3.0 * damage / 22.0
-                                damage -= 2.0
-                                if damage >= 0.0:
+                        # jump damage
+                        if not self.player.flying and self.player.game_mode is not 0:
+                            damage = self.dy * -1000.0
+                            damage = 3.0 * damage / 22.0
+                            damage -= 2.0
+                            if damage >= 0.0:
+                                health_change = 0
+                                if damage <= 0.839:
                                     health_change = 0
-                                    if damage <= 0.839:
-                                        health_change = 0
-                                    elif damage <= 1.146:
-                                        health_change = -1
-                                    elif damage <= 1.44:
-                                        health_change = -2
-                                    elif damage <= 2.26:
-                                        health_change = -2
-                                    else:
-                                        health_change = -3
-                                    if health_change != 0:
-                                        self.player.change_health(health_change)
-                                        self.item_list.update_health()
+                                elif damage <= 1.146:
+                                    health_change = -1
+                                elif damage <= 1.44:
+                                    health_change = -2
+                                elif damage <= 2.26:
+                                    health_change = -2
+                                else:
+                                    health_change = -3
+                                if health_change != 0:
+                                    self.player.change_health(health_change)
+                                    self.item_list.update_health()
                         self.dy = 0
                     break
         return tuple(p)
@@ -758,7 +763,7 @@ class Window(pyglet.window.Window):
             return
         if self.exclusive:
             vector = self.get_sight_vector()
-            block, previous = self.model.hit_test(self.player.position, vector)
+            block, previous = self.model.hit_test(self.player.position, vector, self.player.attack_range)
             if button == pyglet.window.mouse.LEFT:
                 if block:
                     self.mouse_pressed = True
@@ -835,7 +840,7 @@ class Window(pyglet.window.Window):
             else:
                 self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
-            if GAMEMODE == 0:
+            if self.player.game_mode == 0:
                 self.dy = 0
                 self.player.flying = not self.player.flying
         elif symbol == key.B or symbol == key.F3:
@@ -990,7 +995,7 @@ class Window(pyglet.window.Window):
     def draw_focused_block(self):
         glDisable(GL_LIGHTING)
         vector = self.get_sight_vector()
-        position = self.model.hit_test(self.player.position, vector)[0]
+        position = self.model.hit_test(self.player.position, vector, self.player.attack_range)[0]
         if position:
             hit_block = self.model[position]
             if hit_block.density >= 1:
@@ -1101,10 +1106,6 @@ def main(options):
             seed = long(time.time() * 256)  # use fractional seconds
         # Then convert it to a string so all seeds have the same type.
         seed = str(seed)
-        if GAMEMODE == 0:
-            print('Game mode: Creative')
-        if GAMEMODE == 1:
-            print('Game mode: Survival')
 
         print('Random seed: ' + seed)
 
@@ -1144,24 +1145,31 @@ def main(options):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Play a Python made Minecraft clone.')
-    parser.add_argument("-width", type=int, default=850, help = "Set the default Widht.")
-    parser.add_argument("-height", type=int, default=480, help = "Set the default Height.")
-    parser.add_argument("-terrain", choices=terrain_options.keys(), help = "Different terains. Choose grass, island, mountains,desert, plains")
-    parser.add_argument("-hillheight", type=int, help = "How high the hills are.")
-    parser.add_argument("-worldsize", type=int, help = "The width size of the world.")
-    parser.add_argument("-maxtrees", type=int, help = "How many trees and cacti should be made.")
+
+    display_group = parser.add_argument_group('Display options')
+    display_group.add_argument("-width", type=int, default=850, help = "Set the window width.")
+    display_group.add_argument("-height", type=int, default=480, help = "Set the window height.")
+    display_group.add_argument("--show-gui", action="store_true", default=True, help = "Enabled by default.")
+    display_group.add_argument("--hide-fog", action="store_true", default=False, help ="Hides the fog, see the whole landscape.")
+    display_group.add_argument("-draw-distance", choices=['short', 'medium', 'long'], default='short', help =" How far to draw the map. Choose short, medium or long.")
+    display_group.add_argument("-fullscreen", action="store_true", default=False, help = "Runs the game in fullscreen. Press 'Q' to exit the game.")
+
+    game_group = parser.add_argument_group('Game options')
+    game_group.add_argument("-terrain", choices=terrain_options.keys(), help = "Different terains. Choose grass, island, mountains,desert, plains")
+    game_group.add_argument("-hillheight", type=int, help = "How high the hills are.")
+    game_group.add_argument("-worldsize", type=int, help = "The width size of the world.")
+    game_group.add_argument("-maxtrees", type=int, help = "How many trees and cacti should be made.")
+    game_group.add_argument("--flat", action="store_true", default=False, help = "Generate a flat world.")
+    game_group.add_argument("--fast", action="store_true", default=False, help = "Makes time progress faster then normal.")
+    game_group.add_argument("-gamemode", type=int, default=1, help = "Set the Gamemode for player.  0 = Creative, 1 = Survival")
+
+    save_group = parser.add_argument_group('Save options')
+    save_group.add_argument("--disable-auto-save", action="store_false", default=True, help = "Do not save world on exit.")
+    save_group.add_argument("-save", type=unicode, default=SAVE_FILENAME, help = "Type a name for the world to be saved as.")
+    save_group.add_argument("--disable-save", action="store_false", default=True, help = "Disables saving.")
+    save_group.add_argument("--save-config", action="store_true", default=False, help = "Saves the choices as the default config.")
+    save_group.add_argument("-nocompression", action="store_true", default=False, help = "Disables compression for a smaller save file.")
+
     parser.add_argument("-seed", default=None)
-    parser.add_argument("--flat", action="store_true", default=False, help = "Generate a flat world.")
-    parser.add_argument("--hide-fog", action="store_true", default=False, help ="Hides the fog, see the whole landscape.")
-    parser.add_argument("--show-gui", action="store_true", default=True, help = "Enabled by default.")
-    parser.add_argument("--disable-auto-save", action="store_false", default=True, help = "Do not save world on exit.")
-    parser.add_argument("-draw-distance", choices=['short', 'medium', 'long'], default='short', help =" How far to draw the map. Choose short, medium or long.")
-    parser.add_argument("-save", type=unicode, default=SAVE_FILENAME, help = "Type a name for the world to be saved as.")
-    parser.add_argument("--disable-save", action="store_false", default=True, help = "Disables saving.")
-    parser.add_argument("--fast", action="store_true", default=False, help = "Makes time progress faster then normal.")
-    parser.add_argument("--save-config", action="store_true", default=False, help = "Saves the choices as the default config.")
-    parser.add_argument("-fullscreen", action="store_true", default=False, help = "Runs the game in fullscreen. Press 'Q' to exit the game.")
-    parser.add_argument("-nocompression", action="store_true", default=False, help = "Disables compression for a smaller save file.")
-    parser.add_argument("-gamemode", type=int, default=1, help = "Set the Gamemode for player.  0 = Creative, 1 = Survival")
     options = parser.parse_args()
     main(options)

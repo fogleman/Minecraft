@@ -80,10 +80,11 @@ For git:
 - **V**: Saving (save filename in command-line arguments)
 - **ENTER**: Move selected item to inventory / quick slots
 - **Mouse left-click (in inventory)**: Pick up item and after second click put off last item
+- **Mouse right-click** when not focused on block: Eat item
 
 ### Quitting
 
-- **ESC**: release mouse, then close window
+- **ESC** / **Q**: release mouse, then close window
 
 ### Command-line arguments
     usage: main.py [-h] [-width WIDTH] [-height HEIGHT]
@@ -121,6 +122,6 @@ For git:
       --save-config         Saves the choices as the default config.
       -fullscreen           Runs the game in fullscreen. Press 'Q' to exit the
                             game.
-      -nocompression        Enables compression for a smaller save file.
+      -nocompression        Disables compression for a smaller save file.
       -gamemode GAMEMODE    Set the Gamemode for player. 0 = Creative, 1 =
                             Survival
