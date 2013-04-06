@@ -26,23 +26,6 @@ from nature import *
 from world import *
 from savingsystem import *
 
-APP_NAME = 'pyCraftr'  # should I stay or should I go?
-
-SECTOR_SIZE = 16
-DRAW_DISTANCE = 60.0
-FOV = 65.0  # TODO: add menu option to change FOV
-NEAR_CLIP_DISTANCE = 0.1  # TODO: make min and max clip distance dynamic
-FAR_CLIP_DISTANCE = 200.0  # Maximum render distance,
-                           # ignoring effects of sector_size and fog
-DISABLE_SAVE = True
-TIME_RATE = 240 * 10  # Rate of change (steps per hour).
-DEG_RAD = pi / 180.0
-HOUR_DEG = 15.0
-BACK_RED = 0.0  # 0.53
-BACK_GREEN = 0.0  # 0.81
-BACK_BLUE = 0.0  # 0.98
-HALF_PI = pi / 2.0  # 90 degrees
-GRASS_EXPANSION_TIME = datetime.timedelta(seconds=10)
 SAVE_FILENAME = None
 
 terrain_options = {
@@ -251,7 +234,7 @@ class Model(World):
         hill_height = config.getint('World', 'hill_height')
         flat_world = config.getboolean('World', 'flat')
         self.max_trees = config.getint('World', 'max_trees')
-        tree_chance = self.max_trees / float(world_size * (SECTOR_SIZE ** 2))
+        tree_chance = self.max_trees / float(world_size * (SECTOR_SIZE ** 3))
         n = world_size / 2  # 80
         s = 1
         y = 0
@@ -281,8 +264,8 @@ class Model(World):
             ironore_block,
             goldore_block,
             diamondore_block,
-            stone_block, # dummy block
-            )
+            stone_block,  # dummy block
+        )
 
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
@@ -422,7 +405,7 @@ class Window(pyglet.window.Window):
         self.exclusive = False
         self.strafe = [0, 0]
         self.sector = None
-        self.focus_block = Block(size=1.1)
+        self.focus_block = Block(width=1.05, height=1.05)
         self.reticle = None
         self.time_of_day = 0.0
         self.count = 0
@@ -477,6 +460,7 @@ class Window(pyglet.window.Window):
                 '', font_name='Arial', font_size=8, x=10, y=self.height - 10,
                 anchor_x='left', anchor_y='top', color=(255, 255, 255, 255))
         pyglet.clock.schedule_interval(self.update, 1.0 / MAX_FPS)
+        pyglet.clock.schedule_interval_soft(self.model.process_queue, 1.0 / MAX_FPS)
 
     def set_exclusive_mouse(self, exclusive):
         super(Window, self).set_exclusive_mouse(exclusive)

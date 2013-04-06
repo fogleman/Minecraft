@@ -18,7 +18,8 @@ class Block(object):
                # when creating a new "official" block.
     drop_id = None
 
-    size = 1.0
+    width = 1.0
+    height = 1.0
 
     # Texture coordinates from the tileset.
     top_texture = ()
@@ -38,11 +39,13 @@ class Block(object):
     amount_label_color = 255, 255, 255, 255
     name = "Block"  # Blocks that drop another item don't need a name
 
-    def __init__(self, size=None):
+    def __init__(self, width=None, height=None):
         self.drop_id = self.id
 
-        if size is not None:
-            self.size = size
+        if width is not None:
+            self.width = width
+        if height is not None:
+            self.height = height
 
         # Applies get_texture_coordinates to each of the faces to be textured.
         for k in ('top_texture', 'bottom_texture', 'side_texture'):
@@ -62,25 +65,27 @@ class Block(object):
         return result
 
     def get_vertices(self, x, y, z):
-        n = self.size / 2.0
-        xmn = x - n
-        xpn = x + n
-        ymn = y - n
-        ypn = y + n
-        zmn = z - n
-        zpn = z + n
+        w = self.width / 2.0
+        h = self.height / 2.0
+        xm = x - w
+        xp = x + w
+        ym = y - h
+        yp = y + h
+        zm = z - w
+        zp = z + w
         return [
-            xmn,ypn,zmn, xmn,ypn,zpn, xpn,ypn,zpn, xpn,ypn,zmn,  # top
-            xmn,ymn,zmn, xpn,ymn,zmn, xpn,ymn,zpn, xmn,ymn,zpn,  # bottom
-            xmn,ymn,zmn, xmn,ymn,zpn, xmn,ypn,zpn, xmn,ypn,zmn,  # left
-            xpn,ymn,zpn, xpn,ymn,zmn, xpn,ypn,zmn, xpn,ypn,zpn,  # right
-            xmn,ymn,zpn, xpn,ymn,zpn, xpn,ypn,zpn, xmn,ypn,zpn,  # front
-            xpn,ymn,zmn, xmn,ymn,zmn, xmn,ypn,zmn, xpn,ypn,zmn,  # back
+            xm,yp,zm, xm,yp,zp, xp,yp,zp, xp,yp,zm,  # top
+            xm,ym,zm, xp,ym,zm, xp,ym,zp, xm,ym,zp,  # bottom
+            xm,ym,zm, xm,ym,zp, xm,yp,zp, xm,yp,zm,  # left
+            xp,ym,zp, xp,ym,zm, xp,yp,zm, xp,yp,zp,  # right
+            xm,ym,zp, xp,ym,zp, xp,yp,zp, xm,yp,zp,  # front
+            xp,ym,zm, xm,ym,zm, xm,yp,zm, xp,yp,zm,  # back
         ]
 
     def play_break_sound(self):
         if self.break_sound is not None:
             self.break_sound.play()
+
 
 class AirBlock(Block):
     top_texture = -1, -1
@@ -135,6 +140,7 @@ class SandBlock(Block):
     id = 12
     name = "Sand"
 
+
 class GoldOreBlock(Block):
     top_texture = 3, 4
     bottom_texture = 3, 4
@@ -142,6 +148,7 @@ class GoldOreBlock(Block):
     hardness = 1.5
     id = 14
     name = "Coal Ore"
+
 
 class IronOreBlock(Block):
     top_texture = 1, 4
@@ -151,6 +158,7 @@ class IronOreBlock(Block):
     id = 15
     name = "Iron Ore"
 
+
 class DiamondOreBlock(Block):
     top_texture = 2, 4
     bottom_texture = 2, 4
@@ -158,6 +166,7 @@ class DiamondOreBlock(Block):
     hardness = 1.5
     id = 56
     name = "Diamond Ore"
+
 
 class CoalOreBlock(Block):
     top_texture = 0, 4
@@ -308,6 +317,7 @@ class OakWoodBlock(WoodBlock):
     def play_break_sound(self):
         sounds.wood_break.play()
 
+
 class OakBranchBlock(Block):
     top_texture = 7, 0
     bottom_texture = 7, 0
@@ -323,6 +333,7 @@ class OakBranchBlock(Block):
     def play_break_sound(self):
         sounds.wood_break.play()
 
+
 class JungleWoodBlock(Block):
     top_texture = 6, 1
     bottom_texture = 6, 1
@@ -333,6 +344,7 @@ class JungleWoodBlock(Block):
 
     def play_break_sound(self):
         sounds.wood_break.play()
+
 
 class BirchWoodBlock(Block):
     top_texture = 5, 1
@@ -345,10 +357,12 @@ class BirchWoodBlock(Block):
     def play_break_sound(self):
         sounds.wood_break.play()
 
+
 class CactusBlock(Block):
     top_texture = 7, 5
     bottom_texture = 7, 3
     side_texture = 7, 4
+    width = 0.8
     hardness = 0.6
     id = 81
     name = "Cactus"
@@ -390,6 +404,7 @@ class BirchLeafBlock(LeafBlock):
         super(BirchLeafBlock, self).__init__()
         self.drop_id = None
 
+
 class MelonBlock(Block):
     top_texture = 4, 3
     bottom_texture = 4, 3
@@ -397,6 +412,7 @@ class MelonBlock(Block):
     hardness = 0.5
     id = 103
     name = "Melon"
+
 
 class StoneSlabBlock(Block):
     top_texture = 4, 4
@@ -406,6 +422,7 @@ class StoneSlabBlock(Block):
     id = 43
     name = "Full Stone Slab"
 
+
 class ClayBlock(Block):
     top_texture = 6, 4
     bottom_texture = 6, 4
@@ -413,6 +430,7 @@ class ClayBlock(Block):
     hardness = 0.5
     id = 82
     name = "Clay Block"
+
 
 class CobbleBlock(Block):
     top_texture = 6, 3
