@@ -505,6 +505,17 @@ class Window(pyglet.window.Window):
         super(Window, self).set_exclusive_mouse(exclusive)
         self.exclusive = exclusive
 
+    def setup_game(self):
+        glClearColor(BACK_RED, BACK_GREEN, BACK_BLUE, 1)
+        glEnable(GL_LIGHTING)
+        glEnable(GL_LIGHT0)
+        glEnable(GL_LIGHT1)
+        glEnable(GL_LIGHT2)
+        glEnable(GL_CULL_FACE)
+        glEnable(GL_BLEND)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+
     def get_sight_vector(self):
         x, y = self.player.rotation
         y_r = radians(y)
@@ -1010,18 +1021,6 @@ def setup_fog(window):
     window.show_fog = True
 
 
-def setup():
-    glClearColor(BACK_RED, BACK_GREEN, BACK_BLUE, 1)
-    glEnable(GL_LIGHTING)
-    glEnable(GL_LIGHT0)
-    glEnable(GL_LIGHT1)
-    glEnable(GL_LIGHT2)
-    glEnable(GL_CULL_FACE)
-    glEnable(GL_BLEND)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-
-
 def main(options):
     save_object = None
     global SAVE_FILENAME
@@ -1102,7 +1101,7 @@ def main(options):
         resizable=True, save=save_object, vsync=False)
 
     window.set_exclusive_mouse(True)
-    setup()
+    window.setup_game()
     if config.getboolean('World', 'show_fog'):
         setup_fog(window)
     pyglet.clock.set_fps_limit(MAX_FPS)
