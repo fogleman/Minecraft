@@ -1,7 +1,6 @@
 # Terrain
 
-* Enable blending mode to get semi-transparent textures working. Render in the right order so they show up correctly.
-* Show cracks (and particles) as block_damage increases
+* Render blocks in the right order so they show up correctly (see water).
 * Implement sinking in blocks, based on their density
 * Add option to change world (for example from save) during program execution without closing Window
 * improve block rendering - shouldn't show bits of other textures around edges
