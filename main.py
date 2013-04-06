@@ -7,7 +7,6 @@ import os
 import cPickle as pickle
 import random
 import time
-import datetime
 from ConfigParser import ConfigParser
 
 import pyglet
@@ -27,26 +26,6 @@ from nature import *
 from world import *
 from savingsystem import *
 
-pyglet.resource.path = ['resources', 'resources/textures', 'resources/sounds']
-pyglet.resource.reindex()
-
-APP_NAME = 'pyCraftr'  # should I stay or should I go?
-
-SECTOR_SIZE = 16
-DRAW_DISTANCE = 60.0
-FOV = 65.0  # TODO: add menu option to change FOV
-NEAR_CLIP_DISTANCE = 0.1  # TODO: make min and max clip distance dynamic
-FAR_CLIP_DISTANCE = 200.0  # Maximum render distance,
-                           # ignoring effects of sector_size and fog
-DISABLE_SAVE = True
-TIME_RATE = 240 * 10  # Rate of change (steps per hour).
-DEG_RAD = pi / 180.0
-HOUR_DEG = 15.0
-BACK_RED = 0.0  # 0.53
-BACK_GREEN = 0.0  # 0.81
-BACK_BLUE = 0.0  # 0.98
-HALF_PI = pi / 2.0  # 90 degrees
-GRASS_EXPANSION_TIME = datetime.timedelta(seconds=10)
 SAVE_FILENAME = None
 
 terrain_options = {
@@ -103,7 +82,7 @@ class Player(Entity):
         self.quick_slots = Inventory(9)
         self.flying = flying
         initial_items = [bookshelf_block, furnace_block, brick_block, cobble_block,
-                         glass_block, stonebrick_block, chest_block,
+                         lamp_block, glass_block, chest_block,
                          sandstone_block, melon_block]
         for item in initial_items:
             quantity = random.randint(1, 10)
@@ -134,7 +113,7 @@ class ItemSelector(object):
         self.current_index = 1
         self.icon_size = self.model.group.texture.width / 8  # 4
 
-        image = pyglet.image.load(os.path.join('resources', 'textures', 'slots.png'))  #('resources/textures/slots.png')
+        image = pyglet.image.load(os.path.join('resources', 'textures', 'slots.png'))
         frame_size = image.height / 2
         self.frame = pyglet.sprite.Sprite(
             image.get_region(0, frame_size, image.width, frame_size),
@@ -255,7 +234,7 @@ class Model(World):
         hill_height = config.getint('World', 'hill_height')
         flat_world = config.getboolean('World', 'flat')
         self.max_trees = config.getint('World', 'max_trees')
-        tree_chance = self.max_trees / float(world_size * (SECTOR_SIZE ** 2))
+        tree_chance = self.max_trees / float(world_size * (SECTOR_SIZE ** 3))
         n = world_size / 2  # 80
         s = 1
         y = 0
@@ -285,8 +264,8 @@ class Model(World):
             ironore_block,
             goldore_block,
             diamondore_block,
-            stone_block, # dummy block
-            )
+            stone_block,  # dummy block
+        )
 
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
@@ -316,11 +295,17 @@ class Model(World):
                     oblock = random.choice(ore_type_blocks)
                     self.init_block((x, y - 2, z), block)
                     self.init_block((x, y - 3 , z), oblock)
-                    self.init_block((x, y - 4, z), bed_block)
+                    self.init_block((x, y - 4, z), stone_block)
+                    self.init_block((x, y - 5, z), stone_block)
+                    self.init_block((x, y - 6, z), stone_block)
+                    self.init_block((x, y - 7, z), bed_block)
                 elif randomOre > 5:
                     self.init_block((x, y - 2, z), block)
                     self.init_block((x, y - 3, z), dirt_block)
-                    self.init_block((x, y - 4, z), bed_block)
+                    self.init_block((x, y - 4, z), stone_block)
+                    self.init_block((x, y - 5, z), stone_block)
+                    self.init_block((x, y - 6, z), stone_block)
+                    self.init_block((x, y - 7, z), bed_block)
 
                 # Perhaps a tree
                 if self.max_trees > 0:
@@ -426,7 +411,7 @@ class Window(pyglet.window.Window):
         self.exclusive = False
         self.strafe = [0, 0]
         self.sector = None
-        self.focus_block = Block(size=1.1)
+        self.focus_block = Block(width=1.05, height=1.05)
         self.reticle = None
         self.time_of_day = 0.0
         self.count = 0
@@ -439,6 +424,8 @@ class Window(pyglet.window.Window):
         self.polished = GLfloat(100.0)
         self.highlighted_block = None
         self.block_damage = 0
+        self.crack = None
+        self.crack_batch = pyglet.graphics.Batch()
         self.mouse_pressed = False
         self.dy = 0
         self.show_fog = False
@@ -457,7 +444,8 @@ class Window(pyglet.window.Window):
             self.player = Player((0, 0, 0), (-20, 0))
         else:
             self.model = Model(initialize=False)
-            self.model = self.save[0]
+            for item in self.save[0]:
+                self.model[item[0]] = item[1]
             self.model.sectors = self.save[1]
             if save_len > 2 and isinstance(self.save[2], list) \
                     and len(self.save[2]) == 2:
@@ -479,6 +467,7 @@ class Window(pyglet.window.Window):
                 '', font_name='Arial', font_size=8, x=10, y=self.height - 10,
                 anchor_x='left', anchor_y='top', color=(255, 255, 255, 255))
         pyglet.clock.schedule_interval(self.update, 1.0 / MAX_FPS)
+        pyglet.clock.schedule_interval_soft(self.model.process_queue, 1.0 / MAX_FPS)
 
     def set_exclusive_mouse(self, exclusive):
         super(Window, self).set_exclusive_mouse(exclusive)
@@ -609,7 +598,6 @@ class Window(pyglet.window.Window):
                             self.inventory_list.update_items()
                 else:
                     self.set_highlighted_block(None)
-
         self.update_time()
 
     def _update(self, dt):
@@ -632,10 +620,12 @@ class Window(pyglet.window.Window):
         x, y, z = self.collide((x + dx, y + dy, z + dz), 2)
         self.player.position = (x, y, z)
 
-
     def set_highlighted_block(self, block):
         self.highlighted_block = block
         self.block_damage = 0
+        if self.crack:
+            self.crack.delete()
+        self.crack = None
 
     def save_to_file(self):
         if DISABLE_SAVE:
@@ -884,13 +874,8 @@ class Window(pyglet.window.Window):
         self.clear()
         self.set_3d()
         glColor3d(1, 1, 1)
-        #if not self.model.last_grass_expansion or datetime.datetime.now() - self.model.last_grass_expansion >= GRASS_EXPANSION_TIME:
-            #self.last_grass_expansion = datetime.datetime.now()
-            #self.model.grass_expansion()
-        #if not self.model.last_water_expansion or datetime.datetime.now() - self.model.last_water_expansion >= GRASS_EXPANSION_TIME:
-            #self.last_water_expansion = datetime.datetime.now()
-            #self.model.water_expansion()
         self.model.batch.draw()
+        self.crack_batch.draw()
         self.draw_focused_block()
         self.set_2d()
         if self.show_gui:
@@ -920,6 +905,17 @@ class Window(pyglet.window.Window):
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
                 pyglet.graphics.draw(24, GL_QUADS, ('v3f/static', vertex_data))
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+                if self.block_damage == 0:
+                    pass
+                else:   # also show the cracks
+                    crack_level = int(floor((self.block_damage / hit_block.hardness) * CRACK_LEVEL)) # range: [0, CRACK_LEVEL]
+                    if crack_level > CRACK_LEVEL:
+                        return
+                    texture_data = crack_textures.texture_data[crack_level]
+                    if self.crack:
+                        self.crack.delete()
+                    self.crack = self.crack_batch.add(24, GL_QUADS, self.model.group, ('v3f/static', vertex_data) ,
+                                                                            ('t2f/static', texture_data))
 
     def draw_label(self):
         x, y, z = self.player.position
@@ -1055,7 +1051,7 @@ if __name__ == '__main__':
     parser.add_argument("-hillheight", type=int, help = "How high the hills are.")
     parser.add_argument("-worldsize", type=int, help = "The width size of the world.")
     parser.add_argument("-maxtrees", type=int, help = "How many trees and cacti should be made.")
-    parser.add_argument("-seed", default=None, help = "A random seed to use for generating a world.")
+    parser.add_argument("-seed", default=None)
     parser.add_argument("--flat", action="store_true", default=False, help = "Generate a flat world.")
     parser.add_argument("--hide-fog", action="store_true", default=False, help ="Hides the fog, see the whole landscape.")
     parser.add_argument("--show-gui", action="store_true", default=True, help = "Enabled by default.")

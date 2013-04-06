@@ -6,9 +6,6 @@ from items import *
 from crafting import *
 from inventory import *
 
-pyglet.resource.path = ['resources/textures']
-pyglet.resource.reindex()
-
 class InventorySelector(object):
     def __init__(self, width, height, player, model):
         self.batch = pyglet.graphics.Batch()
@@ -17,12 +14,12 @@ class InventorySelector(object):
         self.amount_labels = []
         self.model = model
         self.player = player
-        self.max_items = 27
+        self.max_items = self.player.inventory.slot_count
         self.current_index = 1
         self.icon_size = self.model.group.texture.width / 8 #4
         self.selected_item = None
         self.selected_item_icon = None
-        image = pyglet.image.load(os.path.join('resources', 'textures', 'inventory.png'))  #('resources/textures/inventory.png')
+        image = pyglet.image.load(os.path.join('resources', 'textures', 'inventory.png'))
         self.frame = pyglet.sprite.Sprite(image.get_region(0, 0, image.width, image.height), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
         self.crafting_panel = Inventory(4)
         self.crafting_outcome = None  # should be an item stack
