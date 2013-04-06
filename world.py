@@ -115,7 +115,7 @@ class World(dict):
             self.spreading_mutable_blocks[position] = block
 
     def __delitem__(self, position):
-        del self[position]
+        super(World, self).__delitem__(position)
 
         if position in self.spreading_mutable_blocks:
             del self.spreading_mutable_blocks[position]
