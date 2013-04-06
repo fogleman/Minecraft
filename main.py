@@ -77,11 +77,10 @@ def vec(*args):
 
 class Player(Entity):
     def __init__(self, position, rotation, flying=False, game_mode=0):
-        super(Player, self).__init__(position, rotation, health=7, attack_power=0.05)
+        super(Player, self).__init__(position, rotation, health=7, max_health=10, attack_power=0.05, attack_range=4)
         self.inventory = Inventory()
         self.quick_slots = Inventory(9)
         self.flying = flying
-        self.max_health = 10
         self.game_mode = game_mode
         if self.game_mode == 1:
 
@@ -634,7 +633,7 @@ class Window(pyglet.window.Window):
             self._update(dt / m)
         if self.mouse_pressed:
             vector = self.get_sight_vector()
-            block, previous = self.model.hit_test(self.player.position, vector)
+            block, previous = self.model.hit_test(self.player.position, vector, self.player.attack_range)
             if block:
                 if self.highlighted_block != block:
                     self.set_highlighted_block(block)
@@ -763,7 +762,7 @@ class Window(pyglet.window.Window):
             return
         if self.exclusive:
             vector = self.get_sight_vector()
-            block, previous = self.model.hit_test(self.player.position, vector)
+            block, previous = self.model.hit_test(self.player.position, vector, self.player.attack_range)
             if button == pyglet.window.mouse.LEFT:
                 if block:
                     self.mouse_pressed = True
@@ -995,7 +994,7 @@ class Window(pyglet.window.Window):
     def draw_focused_block(self):
         glDisable(GL_LIGHTING)
         vector = self.get_sight_vector()
-        position = self.model.hit_test(self.player.position, vector)[0]
+        position = self.model.hit_test(self.player.position, vector, self.player.attack_range)[0]
         if position:
             hit_block = self.model[position]
             if hit_block.density >= 1:
