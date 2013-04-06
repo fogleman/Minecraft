@@ -701,13 +701,13 @@ class Window(pyglet.window.Window):
                             damage -= 2.0
                             if damage >= 0.0:
                                 health_change = 0
-                                if damage <= 0.639:
+                                if damage <= 0.839:
                                     health_change = 0
-                                elif damage <= 0.946:
+                                elif damage <= 1.146:
                                     health_change = -1
-                                elif damage <= 1.24:
+                                elif damage <= 1.44:
                                     health_change = -2
-                                elif damage <= 2.06:
+                                elif damage <= 2.26:
                                     health_change = -2
                                 else:
                                     health_change = -3
