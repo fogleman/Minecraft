@@ -3,7 +3,8 @@ from math import pi
 
 APP_NAME = 'pyCraftr'  # should I stay or should I go?
 
-SECTOR_SIZE = 16
+SECTOR_SIZE = 8
+VISIBLE_SECTORS_RADIUS = 8
 DRAW_DISTANCE = 60.0
 FOV = 65.0  # TODO: add menu option to change FOV
 NEAR_CLIP_DISTANCE = 0.1  # TODO: make min and max clip distance dynamic

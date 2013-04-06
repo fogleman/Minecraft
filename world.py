@@ -96,10 +96,12 @@ class World(dict):
         self.batch = pyglet.graphics.Batch()
         self.group = TextureGroup(os.path.join('resources', 'textures', 'texture.png'))
 
+        self.exposed = {}
         self.shown = {}
         self._shown = {}
         self.sectors = defaultdict(list)
-        self.queue = deque()  # note: could add limit here
+        self.urgent_queue = deque()
+        self.lazy_queue = deque()
 
         self.spreading_mutation_classes = tuple(self.spreading_mutations)
         self.spreading_mutable_blocks = {}
@@ -169,9 +171,13 @@ class World(dict):
         return False
 
     def is_exposed(self, position):
+        if self.exposed.get(position, False):
+            return True
         for other_position in self.neighbors_iterator(position):
             if other_position not in self:
+                self.exposed[position] = True
                 return True
+        self.exposed[position] = False
         return False
 
     def hit_test(self, position, vector, max_distance=8):
@@ -200,7 +206,7 @@ class World(dict):
 
     def show_blocks(self):
         for position in self:
-            if position not in self.shown and self.is_exposed(position):
+            if self.is_exposed(position) and position not in self.shown:
                 self.show_block(position)
 
     def show_block(self, position, immediate=True):
@@ -228,25 +234,42 @@ class World(dict):
                 del texture_data[j:j + 8]
             else:
                 index += 1
-                # create vertex list
+
+        # create vertex list
         self._shown[position] = self.batch.add(count, GL_QUADS, self.group,
                                                ('v3f/static', vertex_data),
                                                ('t2f/static', texture_data))
 
     def show_sector(self, sector, immediate=False):
+        self.delete_opposite_task(self._hide_sector, sector)
+
+        if immediate:
+            self._show_sector(sector)
+        else:
+            self.enqueue(self._show_sector, sector, urgent=True)
+
+    def _show_sector(self, sector):
         for position in self.sectors.get(sector, ()):
             if position not in self.shown and self.is_exposed(position):
-                self.show_block(position, immediate=immediate)
+                self.show_block(position)
 
     def hide_sector(self, sector, immediate=False):
+        self.delete_opposite_task(self._show_sector, sector)
+
+        if immediate:
+            self._hide_sector(sector)
+        else:
+            self.enqueue(self._hide_sector, sector)
+
+    def _hide_sector(self, sector):
         for position in self.sectors.get(sector, ()):
             if position in self.shown:
-                self.hide_block(position, immediate=immediate)
+                self.hide_block(position)
 
     def change_sectors(self, before, after):
         before_set = set()
         after_set = set()
-        pad = 4
+        pad = VISIBLE_SECTORS_RADIUS
         for dx in xrange(-pad, pad + 1):
             for dy in (0,):  # xrange(-pad, pad + 1):
                 for dz in xrange(-pad, pad + 1):
@@ -265,21 +288,29 @@ class World(dict):
         for sector in hide:
             self.hide_sector(sector)
 
-    def enqueue(self, func, *args):
-        self.queue.append((func, args))
+    def enqueue(self, func, *args, **kwargs):
+        task = func, args, kwargs
+        urgent = kwargs.pop('urgent', False)
+        queue = self.urgent_queue if urgent else self.lazy_queue
+        if task not in queue:
+            queue.appendleft(task)
 
     def dequeue(self):
-        func, args = self.queue.popleft()
-        func(*args)
+        queue = self.urgent_queue or self.lazy_queue
+        func, args, kwargs = queue.pop()
+        func(*args, **kwargs)
 
-    def process_queue(self):
-        start = time.clock()
-        allowed_lag = 0.3 / MAX_FPS  # in seconds
-        while self.queue and time.clock() - start < allowed_lag:
+    def delete_opposite_task(self, func, *args, **kwargs):
+        opposite_task = func, args, kwargs
+        if opposite_task in self.lazy_queue:
+            self.lazy_queue.remove(opposite_task)
+
+    def process_queue(self, dt):
+        if self.urgent_queue or self.lazy_queue:
             self.dequeue()
 
     def process_entire_queue(self):
-        while self.queue:
+        while self.urgent_queue or self.lazy_queue:
             self.dequeue()
 
     def content_update(self, dt):
@@ -287,11 +318,9 @@ class World(dict):
         # TODO: This is too simple
         self.spreading_time += dt
         if self.spreading_mutable_blocks \
-            and self.spreading_time >= SPREADING_MUTATION_DELAY:
+                and self.spreading_time >= SPREADING_MUTATION_DELAY:
             self.spreading_time = 0.0
             position, block = random.choice(
                 self.spreading_mutable_blocks.items())
             self.remove_block(position, sound=False)
             self.add_block(position, grass_block, force=False)
-
-        self.process_queue()

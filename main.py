@@ -281,8 +281,8 @@ class Model(World):
             ironore_block,
             goldore_block,
             diamondore_block,
-            stone_block, # dummy block
-            )
+            stone_block,  # dummy block
+        )
 
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
@@ -475,6 +475,7 @@ class Window(pyglet.window.Window):
                 '', font_name='Arial', font_size=8, x=10, y=self.height - 10,
                 anchor_x='left', anchor_y='top', color=(255, 255, 255, 255))
         pyglet.clock.schedule_interval(self.update, 1.0 / MAX_FPS)
+        pyglet.clock.schedule_interval_soft(self.model.process_queue, 1.0 / MAX_FPS)
 
     def set_exclusive_mouse(self, exclusive):
         super(Window, self).set_exclusive_mouse(exclusive)
