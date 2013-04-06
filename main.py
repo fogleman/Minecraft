@@ -77,7 +77,7 @@ def vec(*args):
 
 class Player(Entity):
     def __init__(self, position, rotation, flying=False):
-        super(Player, self).__init__(position, rotation, health=100, attack_power=0.05)
+        super(Player, self).__init__(position, rotation, health=10, attack_power=0.05)
         self.inventory = Inventory()
         self.quick_slots = Inventory(9)
         self.flying = flying
@@ -114,6 +114,7 @@ class ItemSelector(object):
         self.icon_size = self.model.group.texture.width / 8  # 4
 
         image = pyglet.image.load(os.path.join('resources', 'textures', 'slots.png'))
+        heart_image = pyglet.image.load(os.path.join('resources', 'textures', 'heart.png'))
         frame_size = image.height / 2
         self.frame = pyglet.sprite.Sprite(
             image.get_region(0, frame_size, image.width, frame_size),
@@ -121,6 +122,12 @@ class ItemSelector(object):
         self.active = pyglet.sprite.Sprite(
             image.get_region(0, 0, frame_size, frame_size), batch=self.batch,
             group=pyglet.graphics.OrderedGroup(2))
+        self.hearts = []
+        for i in range(0, 10):
+            heart = pyglet.sprite.Sprite(
+                heart_image.get_region(0, 0, heart_image.width, heart_image.width),
+                batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
+            self.hearts.append(heart)
         self.current_block_label = None
         self.set_position(width, height)
 
@@ -178,7 +185,7 @@ class ItemSelector(object):
         if hasattr(self.get_current_block_item(False), 'quickslots_x') and hasattr(self.get_current_block_item(False), 'quickslots_y'):
             self.current_block_label = pyglet.text.Label(
                 self.get_current_block_item(False).name, font_name='Arial', font_size=9,
-                x=self.get_current_block_item(False).quickslots_x + 0.25 * self.icon_size, y=self.get_current_block_item(False).quickslots_y - 20,
+                x=self.get_current_block_item(False).quickslots_x + 0.25 * self.icon_size, y=self.get_current_block_item(False).quickslots_y - 20, 
                 anchor_x='center', anchor_y='bottom',
                 color=(255, 255, 255, 255), batch=self.batch,
                 group=self.labels_group)
@@ -188,8 +195,20 @@ class ItemSelector(object):
         self.frame.x = (width - self.frame.width) / 2
         self.frame.y = self.icon_size * 0.5
         self.active.y = self.frame.y
+        self.update_health()
         self.update_current()
         self.update_items()
+
+    def update_health(self):
+        hearts_to_show = self.player.health
+        showed_hearts = 0
+        for i, heart in enumerate(self.hearts):
+            heart.x = self.frame.x + i * (20 + 2) + (self.frame.width - hearts_to_show * (20 + 2)) / 2 
+            heart.y = self.icon_size * 1.0 + 12
+            heart.opacity = 255
+            if showed_hearts >= hearts_to_show:
+                heart.opacity = 0
+            showed_hearts += 1
 
     def get_current_block(self):
         item = self.player.quick_slots.at(self.current_index)
@@ -306,7 +325,7 @@ class Model(World):
                     # ores and filler...
                     oblock = random.choice(ore_type_blocks)
                     self.init_block((x, yy , z), oblock)
-                    self.init_block((x, y - 16, z), bed_block)
+                self.init_block((x, y - 16, z), bed_block)
 
                 # Perhaps a tree
                 if self.max_trees > 0:
@@ -620,6 +639,13 @@ class Window(pyglet.window.Window):
         x, y, z = self.player.position
         x, y, z = self.collide((x + dx, y + dy, z + dz), 2)
         self.player.position = (x, y, z)
+        
+    def set_highlighted_block(self, block):
+        self.highlighted_block = block
+        self.block_damage = 0
+        if self.crack:
+            self.crack.delete()
+        self.crack = None
 
     def set_highlighted_block(self, block):
         self.highlighted_block = block
