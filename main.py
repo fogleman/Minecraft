@@ -77,10 +77,11 @@ def vec(*args):
 
 class Player(Entity):
     def __init__(self, position, rotation, flying=False):
-        super(Player, self).__init__(position, rotation, health=10, attack_power=0.05)
+        super(Player, self).__init__(position, rotation, health=7, attack_power=0.05)
         self.inventory = Inventory()
         self.quick_slots = Inventory(9)
         self.flying = flying
+        self.max_health = 10
         initial_items = [bookshelf_block, furnace_block, brick_block, torch_block,
                          lamp_block, glass_block, chest_block,
                          sandstone_block, melon_block]
@@ -97,6 +98,10 @@ class Player(Entity):
         elif self.inventory.add_item(item_id):
             return True
         return False
+
+    def change_health(self, change):
+        self.health += change
+        self.health = self.health if self.health < self.max_health else self.max_health
 
 
 ####
@@ -219,8 +224,11 @@ class ItemSelector(object):
             return ITEMS_DIR[item_id]
         return BLOCKS_DIR[item_id]
 
-    def get_current_block_item(self, remove=True):
+    def get_current_block_item(self, remove=False):
         item = self.player.quick_slots.at(self.current_index)
+        if remove:
+            self.player.quick_slots.remove_by_index(self.current_index,
+                                                        quantity=item.amount)
         return item
 
     def get_current_block_item_and_amount(self, remove=True):
@@ -718,6 +726,11 @@ class Window(pyglet.window.Window):
                                 if localx != 0 or localz != 0 or (localy != 0 and localy != -1):
                                     self.model.add_block(previous, current_block)
                                     self.item_list.remove_current_block()
+                elif self.item_list.get_current_block() and self.item_list.get_current_block().regenerated_health != 0 and self.player.health < self.player.max_health:
+                    self.player.change_health(self.item_list.get_current_block().regenerated_health)
+                    self.item_list.get_current_block_item().change_amount(-1)
+                    self.item_list.update_health()
+                    self.item_list.update_items()
         else:
             self.set_exclusive_mouse(True)
 
