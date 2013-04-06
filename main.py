@@ -82,7 +82,7 @@ class Player(Entity):
         self.quick_slots = Inventory(9)
         self.flying = flying
         initial_items = [bookshelf_block, furnace_block, brick_block, cobble_block,
-                         glass_block, stonebrick_block, chest_block,
+                         lamp_block, glass_block, chest_block,
                          sandstone_block, melon_block]
         for item in initial_items:
             quantity = random.randint(1, 10)
@@ -632,6 +632,13 @@ class Window(pyglet.window.Window):
         x, y, z = self.collide((x + dx, y + dy, z + dz), 2)
         self.player.position = (x, y, z)
         
+    def set_highlighted_block(self, block):
+        self.highlighted_block = block
+        self.block_damage = 0
+        if self.crack:
+            self.crack.delete()
+        self.crack = None
+
     def set_highlighted_block(self, block):
         self.highlighted_block = block
         self.block_damage = 0
