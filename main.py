@@ -34,13 +34,14 @@ FAR_CLIP_DISTANCE = 200.0  # Maximum render distance,
                            # ignoring effects of sector_size and fog
 DISABLE_SAVE = True
 TIME_RATE = 240 * 10  # Rate of change (steps per hour).
+MAX_FPS = 60  # Maximum frames per second.
 DEG_RAD = pi / 180.0
 HOUR_DEG = 15.0
 BACK_RED = 0.0  # 0.53
 BACK_GREEN = 0.0  # 0.81
 BACK_BLUE = 0.0  # 0.98
 HALF_PI = pi / 2.0  # 90 degrees
-GRASS_EXPANSION_TIME = datetime.timedelta(seconds=10)
+SPREADING_MUTATION_DELAY = 10  # in seconds
 
 terrain_options = {
     'plains': ('0', '2', '700'),  # type, hill_height, max_trees
@@ -86,7 +87,7 @@ else:
     config.read(config_file)
 
 
-def cube_vertices(x, y, z, n):
+def cube_vertices(x, y, z, n=0.5):
     xmn = x - n
     xpn = x + n
     ymn = y - n
@@ -331,17 +332,219 @@ class ItemSelector(object):
         self.active.opacity = 0 if self.active.opacity == 255 else 255
 
 
-####
+class World(dict):
+    spreading_mutations = {
+        DirtBlock: GrassBlock,
+    }
 
-class Model(object):
-    def __init__(self, initialize=True):
+    def __init__(self):
+        super(World, self).__init__()
         self.batch = pyglet.graphics.Batch()
         self.group = TextureGroup('texture.png')
-        self.world = {}
+
         self.shown = {}
         self._shown = {}
         self.sectors = defaultdict(list)
         self.queue = deque()  # note: could add limit here
+
+        self.spreading_mutation_classes = tuple(self.spreading_mutations)
+        self.spreading_mutable_blocks = {}
+        self.spreading_time = 0.0
+
+    def __setitem__(self, position, block):
+        super(World, self).__setitem__(position, block)
+
+        if block.__class__ in self.spreading_mutation_classes \
+            and self.has_neighbors(
+                position, type=self.spreading_mutations[block.__class__]):
+            self.spreading_mutable_blocks[position] = block
+
+    def __delitem__(self, position):
+        del self[position]
+
+        if position in self.spreading_mutable_blocks:
+            del self.spreading_mutable_blocks[position]
+
+    def add_block(self, position, block, sync=True, force=True):
+        if position in self:
+            if not force:
+                return
+            self.remove_block(position, sync)
+        self[position] = block
+        self.sectors[sectorize(position)].append(position)
+        if sync:
+            if self.is_exposed(position):
+                self.show_block(position)
+            self.check_neighbors(position)
+
+    def remove_block(self, position, sync=True, sound=True):
+        if sound:
+            self[position].play_break_sound()
+            # BLOCKS_DIR[block].play_break_sound()
+        del self[position]
+        self.sectors[sectorize(position)].remove(position)
+        if sync:
+            if position in self.shown:
+                self.hide_block(position)
+            self.check_neighbors(position)
+
+    def neighbors_iterator(self, position, relative_neighbors_positions=FACES):
+        x, y, z = position
+        for dx, dy, dz in relative_neighbors_positions:
+            yield x + dx, y + dy, z + dz
+
+    def check_neighbors(self, position):
+        for other_position in self.neighbors_iterator(position):
+            if other_position not in self:
+                continue
+            if self.is_exposed(position):
+                if other_position not in self.shown:
+                    self.show_block(other_position)
+            else:
+                if other_position in self.shown:
+                    self.hide_block(other_position)
+
+    def has_neighbors(self, position, type=None, diagonals=False):
+        faces = FACES_WITH_DIAGONALS if diagonals else FACES
+        for other_position in self.neighbors_iterator(
+                position, relative_neighbors_positions=faces):
+            if other_position in self:
+                if type is None or isinstance(self[other_position], type):
+                    return True
+        return False
+
+    def is_exposed(self, position):
+        for other_position in self.neighbors_iterator(position):
+            if other_position not in self:
+                return True
+        return False
+
+    def hit_test(self, position, vector, max_distance=8):
+        m = 8
+        x, y, z = position
+        dx, dy, dz = vector
+        dx, dy, dz = dx / m, dy / m, dz / m
+        previous = None
+        for _ in xrange(max_distance * m):
+            key = normalize((x, y, z))
+            if key != previous and key in self:
+                return key, previous
+            previous = key
+            x, y, z = x + dx, y + dy, z + dz
+        return None, None
+
+    def hide_block(self, position, immediate=True):
+        del self.shown[position]
+        if immediate:
+            self._hide_block(position)
+        else:
+            self.enqueue(self._hide_block, position)
+
+    def _hide_block(self, position):
+        self._shown.pop(position).delete()
+
+    def show_blocks(self):
+        for position in self:
+            if position not in self.shown and self.is_exposed(position):
+                self.show_block(position)
+
+    def show_block(self, position, immediate=True):
+        block = self[position]
+        self.shown[position] = block
+        if immediate:
+            self._show_block(position, block)
+        else:
+            self.enqueue(self._show_block, position, block)
+
+    def _show_block(self, position, block):
+        x, y, z = position
+        # only show exposed faces
+        index = 0
+        count = 24
+        vertex_data = cube_vertices(*position)
+        texture_data = block.texture_data
+        # FIXME: Do something of what follows.
+        for dx, dy, dz in []:  # FACES:
+            if (x + dx, y + dy, z + dz) in self:
+                count -= 8  # 4
+                i = index * 12
+                j = index * 8
+                del vertex_data[i:i + 12]
+                del texture_data[j:j + 8]
+            else:
+                index += 1
+        # create vertex list
+        self._shown[position] = self.batch.add(count, GL_QUADS, self.group,
+                                               ('v3f/static', vertex_data),
+                                               ('t2f/static', texture_data))
+
+    def show_sector(self, sector, immediate=False):
+        for position in self.sectors.get(sector, ()):
+            if position not in self.shown and self.is_exposed(position):
+                self.show_block(position, immediate=immediate)
+
+    def hide_sector(self, sector, immediate=False):
+        for position in self.sectors.get(sector, ()):
+            if position in self.shown:
+                self.hide_block(position, immediate=immediate)
+
+    def change_sectors(self, before, after):
+        before_set = set()
+        after_set = set()
+        pad = 4
+        for dx in xrange(-pad, pad + 1):
+            for dy in (0,):  # xrange(-pad, pad + 1):
+                for dz in xrange(-pad, pad + 1):
+                    if dx ** 2 + dy ** 2 + dz ** 2 > (pad + 1) ** 2:
+                        continue
+                    if before:
+                        x, y, z = before
+                        before_set.add((x + dx, y + dy, z + dz))
+                    if after:
+                        x, y, z = after
+                        after_set.add((x + dx, y + dy, z + dz))
+        show = after_set - before_set
+        hide = before_set - after_set
+        for sector in show:
+            self.show_sector(sector)
+        for sector in hide:
+            self.hide_sector(sector)
+
+    def enqueue(self, func, *args):
+        self.queue.append((func, args))
+
+    def dequeue(self):
+        func, args = self.queue.popleft()
+        func(*args)
+
+    def process_queue(self):
+        start = time.clock()
+        allowed_lag = 0.3 / MAX_FPS  # in seconds
+        while self.queue and time.clock() - start < allowed_lag:
+            self.dequeue()
+
+    def process_entire_queue(self):
+        while self.queue:
+            self.dequeue()
+
+    def content_update(self, dt):
+        # Updates spreading
+        # TODO: This is too simple
+        self.spreading_time += dt
+        if self.spreading_mutable_blocks \
+                and self.spreading_time >= SPREADING_MUTATION_DELAY:
+            self.spreading_time = 0.0
+            position, block = random.choice(
+                self.spreading_mutable_blocks.items())
+            self.remove_block(position, sound=False)
+            self.add_block(position, grass_block, force=False)
+
+        self.process_queue()
+
+
+class Model(World):
+    def __init__(self, initialize=True):
+        super(Model, self).__init__()
         if initialize:
             self.initialize()
 
@@ -359,7 +562,7 @@ class Model(object):
         worldtypes_grounds = (
             grass_block,
             dirt_block,
-            (sand_block, ) * 15 + (sandstone_block,) * 4,
+            (sand_block,) * 15 + (sandstone_block,) * 4,
             water_block,
             grass_block,
             (grass_block,) * 15 + (dirt_block,) * 3 + (stone_block,),
@@ -437,7 +640,7 @@ class Model(object):
                             continue
                         if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
                             continue
-                        if (x, y, z) in self.world:
+                        if (x, y, z) in self:
                             continue
                         self.init_block((x, y, z), block)
 
@@ -460,193 +663,19 @@ class Model(object):
             return
 
         # A tree can't grow on anything.
-        if self.world[position] not in tree_class.grows_on:
+        if self[position] not in tree_class.grows_on:
             return
 
-        tree_class.add_to_model(self, position)
+        tree_class.add_to_world(self, position)
 
         self.max_trees -= 1
 
-    def hit_test(self, position, vector, max_distance=8):
-        m = 8
-        x, y, z = position
-        dx, dy, dz = vector
-        dx, dy, dz = dx / m, dy / m, dz / m
-        previous = None
-        for _ in xrange(max_distance * m):
-            key = normalize((x, y, z))
-            if key != previous and key in self.world:
-                return key, previous
-            previous = key
-            x, y, z = x + dx, y + dy, z + dz
-        return None, None
-
-    def exposed(self, position):
-        x, y, z = position
-        for dx, dy, dz in FACES:
-            if (x + dx, y + dy, z + dz) not in self.world:
-                return True
-        return False
-
     def init_block(self, position, block):
+        # FIXME: This should be more complex than that, and use
+        # self.spreading_mutations.
         if block == dirt_block:
             block = grass_block
         self.add_block(position, block, sync=False, force=False)
-
-    def add_block(self, position, block, sync=True, force=True):
-        if position in self.world:
-            if force:
-                self.remove_block(position, sync)
-            else:
-                return
-        self.world[position] = block
-        self.sectors[sectorize(position)].append(position)
-        if sync:
-            if self.exposed(position):
-                self.show_block(position)
-            self.check_neighbors(position)
-
-    def remove_block(self, position, sync=True, sound=True):
-        if sound:
-            self.world[position].play_break_sound()
-            # BLOCKS_DIR[block].play_break_sound()
-        del self.world[position]
-        self.sectors[sectorize(position)].remove(position)
-        if sync:
-            if position in self.shown:
-                self.hide_block(position)
-            self.check_neighbors(position)
-
-    def grass_expansion(self, number_of_expansions=1): # TODO -> optimizations
-        dirt_blocks = []
-        for i, block in enumerate(self.world):
-            if isinstance(self.world[block], DirtBlock):
-                if self.has_neighbors(block, type=GrassBlock):
-                    dirt_blocks.extend([block])
-                    if len(dirt_blocks) >= number_of_expansions:
-                        break
-        # random.shuffle(dirt_blocks)
-        for i in xrange(0, min(len(dirt_blocks), number_of_expansions)):
-            self.remove_block(dirt_blocks[i], sound=False)
-        for i in xrange(0, min(len(dirt_blocks), number_of_expansions)):
-            self.add_block(dirt_blocks[i], grass_block, force=False)
-
-    def has_neighbors(self, position, type=None, diagonals=False):
-        x, y, z = position
-        faces = FACES_WITH_DIAGONALS if diagonals else FACES
-        for dx, dy, dz in faces:
-            k = (x + dx, y + dy, z + dz)
-            if k in self.world:
-                if type is None:
-                    return True
-                if isinstance(self.world[k], type):
-                    return True
-        return False
-
-    def check_neighbors(self, position):
-        x, y, z = position
-        for dx, dy, dz in FACES:
-            key = (x + dx, y + dy, z + dz)
-            if key not in self.world:
-                continue
-            if self.exposed(key):
-                if key not in self.shown:
-                    self.show_block(key)
-            else:
-                if key in self.shown:
-                    self.hide_block(key)
-
-    def show_blocks(self):
-        for position in self.world:
-            if position not in self.shown and self.exposed(position):
-                self.show_block(position)
-
-    def show_block(self, position, immediate=True):
-        block = self.world[position]
-        self.shown[position] = block
-        if immediate:
-            self._show_block(position, block)
-        else:
-            self.enqueue(self._show_block, position, block)
-
-    def _show_block(self, position, block):
-        x, y, z = position
-        # only show exposed faces
-        index = 0
-        count = 24
-        vertex_data = cube_vertices(x, y, z, 0.5)
-        texture_data = block.texture_data
-        for dx, dy, dz in []:  # FACES:
-            if (x + dx, y + dy, z + dz) in self.world:
-                count -= 8  # 4
-                i = index * 12
-                j = index * 8
-                del vertex_data[i:i + 12]
-                del texture_data[j:j + 8]
-            else:
-                index += 1
-            # create vertex list
-        self._shown[position] = self.batch.add(count, GL_QUADS, self.group,
-                                               ('v3f/static', vertex_data),
-                                               ('t2f/static', texture_data))
-
-    def hide_block(self, position, immediate=True):
-        self.shown.pop(position)
-        if immediate:
-            self._hide_block(position)
-        else:
-            self.enqueue(self._hide_block, position)
-
-    def _hide_block(self, position):
-        self._shown.pop(position).delete()
-
-    def show_sector(self, sector):
-        for position in self.sectors.get(sector, ()):
-            if position not in self.shown and self.exposed(position):
-                self.show_block(position, False)
-
-    def hide_sector(self, sector):
-        for position in self.sectors.get(sector, ()):
-            if position in self.shown:
-                self.hide_block(position, False)
-
-    def change_sectors(self, before, after):
-        before_set = set()
-        after_set = set()
-        pad = 4
-        for dx in xrange(-pad, pad + 1):
-            for dy in [0]: # xrange(-pad, pad + 1):
-                for dz in xrange(-pad, pad + 1):
-                    if dx ** 2 + dy ** 2 + dz ** 2 > (pad + 1) ** 2:
-                        continue
-                    if before:
-                        x, y, z = before
-                        before_set.add((x + dx, y + dy, z + dz))
-                    if after:
-                        x, y, z = after
-                        after_set.add((x + dx, y + dy, z + dz))
-        show = after_set - before_set
-        hide = before_set - after_set
-        for sector in show:
-            self.show_sector(sector)
-        for sector in hide:
-            self.hide_sector(sector)
-
-    def enqueue(self, func, *args):
-        self.queue.append((func, args))
-
-    def dequeue(self):
-        func, args = self.queue.popleft()
-        func(*args)
-
-    def process_queue(self):
-        start = time.clock()
-        while self.queue and time.clock() - start < 1 / 60.0:
-            self.dequeue()
-
-    def process_entire_queue(self):
-        while self.queue:
-            self.dequeue()
 
 
 class Window(pyglet.window.Window):
@@ -674,7 +703,6 @@ class Window(pyglet.window.Window):
         self.show_fog = False
         self.last_key = None
         self.sorted = False
-        self.last_grass_expansion = None
         global config
         self.key_move_forward = config.getint('Controls', 'move_forward')
         self.key_move_backward = config.getint('Controls', 'move_backward')
@@ -683,12 +711,12 @@ class Window(pyglet.window.Window):
         self.key_jump = config.getint('Controls', 'jump')
         self.key_inventory = config.getint('Controls', 'inventory')
         save_len = -1 if self.save is None else len(self.save)
-        if self.save is None or save_len < 2:  # Model.world and model.sectors
+        if self.save is None or save_len < 2:  # model and model.sectors
             self.model = Model()
             self.player = Player((0, 0, 0), (-20, 0))
         else:
             self.model = Model(initialize=False)
-            self.model.world = self.save[0]
+            self.model = self.save[0]
             self.model.sectors = self.save[1]
             if save_len > 2 and isinstance(self.save[2], list) \
                     and len(self.save[2]) == 2:
@@ -709,7 +737,7 @@ class Window(pyglet.window.Window):
             self.label = pyglet.text.Label(
                 '', font_name='Arial', font_size=8, x=10, y=self.height - 10,
                 anchor_x='left', anchor_y='top', color=(255, 255, 255, 255))
-        pyglet.clock.schedule_interval(self.update, 1.0 / 60)
+        pyglet.clock.schedule_interval(self.update, 1.0 / MAX_FPS)
 
     def set_exclusive_mouse(self, exclusive):
         super(Window, self).set_exclusive_mouse(exclusive)
@@ -806,13 +834,16 @@ class Window(pyglet.window.Window):
                 self.clock += 1
 
     def update(self, dt):
-        self.model.process_queue()
         sector = sectorize(self.player.position)
         if sector != self.sector:
             self.model.change_sectors(self.sector, sector)
+            # When the world is loaded, show every visible sector.
             if self.sector is None:
                 self.model.process_entire_queue()
             self.sector = sector
+
+        self.model.content_update(dt)
+
         m = 8
         dt = min(dt, 0.2)
         for _ in xrange(m):
@@ -826,7 +857,7 @@ class Window(pyglet.window.Window):
                     self.block_damage = 0
 
             if self.highlighted_block:
-                hit_block = self.model.world[self.highlighted_block]
+                hit_block = self.model[self.highlighted_block]
                 if hit_block.hardness >= 0:
                     self.block_damage += self.player.attack_power
                     if self.block_damage >= hit_block.hardness:
@@ -864,8 +895,8 @@ class Window(pyglet.window.Window):
 
     def save_to_file(self):
         if DISABLE_SAVE:
-            pickle.dump((self.model.world, self.model.sectors, self.strafe,
-                         self.player, self.time_of_day),
+            pickle.dump((self.model, self.model.sectors,
+                         self.strafe, self.player, self.time_of_day),
                         open(SAVE_FILENAME, "wb"))
 
     def collide(self, position, height):
@@ -884,7 +915,7 @@ class Window(pyglet.window.Window):
                     op[1] -= dy
                     op[i] += face[i]
                     op = tuple(op)
-                    if op not in self.model.world:
+                    if op not in self.model:
                         continue
                     p[i] -= (d - pad) * face[i]
                     if face == (0, -1, 0) or face == (0, 1, 0):
@@ -913,7 +944,7 @@ class Window(pyglet.window.Window):
                     self.block_damage = 0
             else:
                 if previous:
-                    hit_block = self.model.world[block]
+                    hit_block = self.model[block]
                     if hit_block.density >= 1:
                         current_block = self.item_list.get_current_block()
                         if current_block is not None:
@@ -1107,9 +1138,6 @@ class Window(pyglet.window.Window):
         self.clear()
         self.set_3d()
         glColor3d(1, 1, 1)
-        if not self.last_grass_expansion or datetime.datetime.now() - self.last_grass_expansion >= GRASS_EXPANSION_TIME:
-            self.last_grass_expansion = datetime.datetime.now()
-            self.model.grass_expansion()
         self.model.batch.draw()
         self.draw_focused_block()
         self.set_2d()
@@ -1126,12 +1154,14 @@ class Window(pyglet.window.Window):
         if self.exclusive:
             self.draw_reticle()
 
+        pyglet.clock.tick()
+
     def draw_focused_block(self):
         glDisable(GL_LIGHTING)
         vector = self.get_sight_vector()
         block = self.model.hit_test(self.player.position, vector)[0]
         if block:
-            hit_block = self.model.world[block]
+            hit_block = self.model[block]
             if hit_block.density >= 1:
                 x, y, z = block
                 vertex_data = cube_vertices(x, y, z, 0.51)
@@ -1146,7 +1176,7 @@ class Window(pyglet.window.Window):
             % (self.time_of_day if (self.time_of_day < 12.0)
                else (24.0 - self.time_of_day),
                pyglet.clock.get_fps(), x, y, z,
-               len(self.model._shown), len(self.model.world))
+               len(self.model._shown), len(self.model))
         self.label.draw()
 
     def draw_reticle(self):
@@ -1244,10 +1274,11 @@ def main(options):
         width=options.width, height=options.height, caption=APP_NAME,
         resizable=True, save=save_object, vsync=False)
 
-    window.set_exclusive_mouse(True)
+    # window.set_exclusive_mouse(True)
     setup()
     if config.getboolean('World', 'show_fog'):
         setup_fog(window)
+    pyglet.clock.set_fps_limit(MAX_FPS)
     pyglet.app.run()
     if options.disable_auto_save and options.disable_save:
         window.save_to_file()
