@@ -279,64 +279,53 @@ class Model(World):
         )
 
         ore_type_blocks = (
-            coalore_block,
-            ironore_block,
-            goldore_block,
-            diamondore_block,
-            stone_block,  # dummy block
+            stone_block, stone_block, stone_block, stone_block, stone_block,
+            stone_block, stone_block, stone_block, stone_block, stone_block,
+            stone_block, stone_block, stone_block, stone_block, stone_block,
+            stone_block, stone_block, stone_block, stone_block, stone_block,
+            stone_block, stone_block, stone_block, stone_block, stone_block,
+            stone_block, stone_block, stone_block, stone_block, stone_block,
+            stone_block, stone_block, stone_block, stone_block, stone_block,
+            stone_block, stone_block, stone_block, stone_block, stone_block,
+            stone_block, stone_block, stone_block, stone_block, stone_block,
+            stone_block, stone_block, stone_block, stone_block, stone_block,
+            stone_block, stone_block, stone_block, stone_block, stone_block,
+            stone_block, stone_block, stone_block, stone_block, stone_block,
+            gravel_block, gravel_block, gravel_block, gravel_block, gravel_block,
+            gravel_block, gravel_block, gravel_block, gravel_block, gravel_block,
+            coalore_block, coalore_block, coalore_block, coalore_block, coalore_block,
+            ironore_block, ironore_block, ironore_block, ironore_block,
+            goldore_block, goldore_block, goldore_block,
+            diamondore_block, diamondore_block,
+            stone_block, stone_block, stone_block, stone_block, stone_block,
+            stone_block, stone_block, stone_block, stone_block, stone_block,
+            stone_block, stone_block, stone_block, stone_block, stone_block,
         )
+
 
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
 
                 # Generation of the outside wall
                 if x in (-n, n) or z in (-n, n):
-                    for dy in xrange(-3, 10):  # was -2 ,6
+                    for dy in xrange(-16, 10):  # was -2 ,6
                         self.init_block((x, y + dy, z), stone_block)
                     continue
 
-                ## Generation of the ground
-                #block = worldtypes_grounds[world_type]
-                #if isinstance(block, (tuple, list)):
-                    #block = random.choice(block)
-                #self.init_block((x, y - 2, z), block)
-                #self.init_block((x, y - 3, z), dirt_block)
-                #self.init_block((x, y - 4, z), bed_block)
+
 
                 # Generation of the ground
 
                 block = worldtypes_grounds[world_type]
+
                 if isinstance(block, (tuple, list)):
                     block = random.choice(block)
-                # generate Ores.... 10% chance out of 100
-                randomOre = random.randrange(1,100)
-                randomOre_depth = random.randrange(5, 8) # 5 - 7
-                if randomOre <= 10:
+                self.init_block((x, y - 2, z), block)
+                for yy in xrange(-16, -2):
+                    # ores and filler...
                     oblock = random.choice(ore_type_blocks)
-                    self.init_block((x, y - 2, z), block)
-                    self.init_block((x, y - 3, z), dirt_block)
-                    self.init_block((x, y - 4, z), stone_block)
-                    if randomOre_depth == 5:
-                        self.init_block((x, y - 5, z), oblock)
-                    else:
-                        self.init_block((x, y - 5, z), stone_block)
-                    if randomOre_depth == 6:
-                        self.init_block((x, y - 6, z), oblock)
-                    else:
-                        self.init_block((x, y - 6, z), stone_block)
-                    if randomOre_depth == 7:
-                        self.init_block((x, y - 7, z), oblock)
-                    else:
-                        self.init_block((x, y - 7, z), stone_block)
-                    self.init_block((x, y - 8, z), bed_block)
-                elif randomOre > 5:
-                    self.init_block((x, y - 2, z), block)
-                    self.init_block((x, y - 3, z), dirt_block)
-                    self.init_block((x, y - 4, z), stone_block)
-                    self.init_block((x, y - 5, z), stone_block)
-                    self.init_block((x, y - 6, z), stone_block)
-                    self.init_block((x, y - 7, z), stone_block)
-                    self.init_block((x, y - 8, z), bed_block)
+                    self.init_block((x, yy , z), oblock)
+                self.init_block((x, y - 16, z), bed_block)
 
                 # Perhaps a tree
                 if self.max_trees > 0:
