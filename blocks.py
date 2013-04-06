@@ -30,7 +30,7 @@ class Block(object):
     break_sound = None
 
     # Physical attributes
-    hardness = 0
+    hardness = 0    # hardness can be found on http://www.minecraftwiki.net/wiki/Digging#Blocks_by_hardness
     density = 1
     transparent = False
 
@@ -145,7 +145,7 @@ class GoldOreBlock(Block):
     top_texture = 3, 4
     bottom_texture = 3, 4
     side_texture = 3, 4
-    hardness = 1.5
+    hardness = 3
     id = 14
     name = "Coal Ore"
 
@@ -154,7 +154,7 @@ class IronOreBlock(Block):
     top_texture = 1, 4
     bottom_texture = 1, 4
     side_texture = 1, 4
-    hardness = 1.5
+    hardness = 3
     id = 15
     name = "Iron Ore"
 
@@ -163,7 +163,7 @@ class DiamondOreBlock(Block):
     top_texture = 2, 4
     bottom_texture = 2, 4
     side_texture = 2, 4
-    hardness = 1.5
+    hardness = 3
     id = 56
     name = "Diamond Ore"
 
@@ -172,7 +172,7 @@ class CoalOreBlock(Block):
     top_texture = 0, 4
     bottom_texture = 0, 4
     side_texture = 0, 4
-    hardness = 1.5
+    hardness = 3
     id = 16
     name = "Coal Ore"
 
@@ -181,7 +181,7 @@ class BrickBlock(Block):
     top_texture = 2, 0
     bottom_texture = 2, 0
     side_texture = 2, 0
-    hardness = 1.5
+    hardness = 2
     id = 45
     name = "Bricks"
 
@@ -190,7 +190,7 @@ class LampBlock(Block):
     top_texture = 3, 1
     bottom_texture = 3, 1
     side_texture = 3, 1
-    hardness = 0.2
+    hardness = 0.3
     amount_label_color = 0, 0, 0, 255
     id = 124
     name = "Lamp"
@@ -232,6 +232,7 @@ class ChestBlock(Block):
     top_texture = 1, 2
     bottom_texture = 1, 2
     side_texture = 1, 2
+    hardness = 2.5
     id = 54
     name = "Chest"
 
@@ -241,6 +242,7 @@ class SandstoneBlock(Block):
     bottom_texture = 2, 2
     side_texture = 2, 2
     amount_label_color = 0, 0, 0, 255
+    hardness = 0.8
     id = 24
     name = "Sandstone"
 
@@ -260,6 +262,7 @@ class StonebrickBlock(Block):
     top_texture = 0, 3
     bottom_texture = 0, 3
     side_texture = 0, 3
+    hardness = 1.5
     id = 98
     name = "Stone Bricks"
 
@@ -272,6 +275,7 @@ class OakWoodPlankBlock(WoodBlock):
     top_texture = 3, 3
     bottom_texture = 3, 3
     side_texture = 3, 3
+    hardness = 2
     id = 5.0
     name = "Oak Wood Planks"
 
@@ -283,6 +287,7 @@ class SpruceWoodPlankBlock(WoodBlock):
     top_texture = 1, 3
     bottom_texture = 1, 3
     side_texture = 1, 3
+    hardness = 2
     id = 5.1
     name = "Spruce Wood Planks"
 
@@ -294,6 +299,7 @@ class JungleWoodPlankBlock(WoodBlock):
     top_texture = 2, 3
     bottom_texture = 2, 3
     side_texture = 2, 3
+    hardness = 2
     id = 5.3
     name = "Jungle Wood Planks"
 
@@ -319,7 +325,7 @@ class OakWoodBlock(WoodBlock):
     top_texture = 7, 1
     bottom_texture = 7, 1
     side_texture = 7, 0
-    hardness = 0.6
+    hardness = 2
     id = 17.0
     name = "Oak wood"
 
@@ -331,7 +337,7 @@ class OakBranchBlock(Block):
     top_texture = 7, 0
     bottom_texture = 7, 0
     side_texture = 7, 0
-    hardness = 1
+    hardness = 2
     id = 17.1
     name = "Oak wood"
 
@@ -347,7 +353,7 @@ class JungleWoodBlock(Block):
     top_texture = 6, 1
     bottom_texture = 6, 1
     side_texture = 6, 0
-    hardness = 0.6
+    hardness = 2
     id = 17.1
     name = "Jungle wood"
 
@@ -359,7 +365,7 @@ class BirchWoodBlock(Block):
     top_texture = 5, 1
     bottom_texture = 5, 1
     side_texture = 5, 0
-    hardness = 0.6
+    hardness = 2
     id = 17.2
     name = "Birch wood"
 
@@ -372,7 +378,7 @@ class CactusBlock(Block):
     bottom_texture = 7, 3
     side_texture = 7, 4
     width = 0.8
-    hardness = 0.6
+    hardness = 2
     id = 81
     name = "Cactus"
 
@@ -399,7 +405,7 @@ class JungleLeafBlock(LeafBlock):
     top_texture = 6, 2
     bottom_texture = 6, 2
     side_texture = 6, 2
-    hardness = 0.6
+    hardness = 0.2
     id = 18.1
     name = "Jungle Leaves"
 
@@ -408,7 +414,7 @@ class BirchLeafBlock(LeafBlock):
     top_texture = 5, 2
     bottom_texture = 5, 2
     side_texture = 5, 2
-    hardness = 0.6
+    hardness = 0.2
     id = 18.2
     name = "Birch Leaves"
 
@@ -421,7 +427,7 @@ class MelonBlock(Block):
     top_texture = 4, 3
     bottom_texture = 4, 3
     side_texture = 4, 2
-    hardness = 0.5
+    hardness = 1
     id = 103
     name = "Melon"
 
@@ -430,7 +436,7 @@ class StoneSlabBlock(Block):
     top_texture = 4, 4
     bottom_texture = 4, 4
     side_texture = 4, 4
-    hardness = 1.1
+    hardness = 2
     id = 43
     name = "Full Stone Slab"
 
@@ -439,7 +445,7 @@ class ClayBlock(Block):
     top_texture = 6, 4
     bottom_texture = 6, 4
     side_texture = 6, 4
-    hardness = 0.5
+    hardness = 0.6
     id = 82
     name = "Clay Block"
 
@@ -448,7 +454,7 @@ class CobbleBlock(Block):
     top_texture = 6, 3
     bottom_texture = 6, 3
     side_texture = 6, 3
-    hardness = 1.0
+    hardness = 2
     id = 4
     name = "Cobblestone"
 
@@ -457,7 +463,7 @@ class BookshelfBlock(Block):
     top_texture = 1, 2
     bottom_texture = 0, 2
     side_texture = 5, 4
-    hardness = 0.7
+    hardness = 1.5
     id = 47
     name = "Bookshelf"
 
@@ -466,7 +472,7 @@ class FurnaceBlock(Block):
     top_texture = 7, 7
     bottom_texture = 6, 3
     side_texture = 7, 6
-    hardness = 0.7
+    hardness = 3.5
     id = 61
     name = "Furnace"
 
