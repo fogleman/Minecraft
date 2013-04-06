@@ -295,11 +295,17 @@ class Model(World):
                     oblock = random.choice(ore_type_blocks)
                     self.init_block((x, y - 2, z), block)
                     self.init_block((x, y - 3 , z), oblock)
-                    self.init_block((x, y - 4, z), bed_block)
+                    self.init_block((x, y - 4, z), stone_block)
+                    self.init_block((x, y - 5, z), stone_block)
+                    self.init_block((x, y - 6, z), stone_block)
+                    self.init_block((x, y - 7, z), bed_block)
                 elif randomOre > 5:
                     self.init_block((x, y - 2, z), block)
                     self.init_block((x, y - 3, z), dirt_block)
-                    self.init_block((x, y - 4, z), bed_block)
+                    self.init_block((x, y - 4, z), stone_block)
+                    self.init_block((x, y - 5, z), stone_block)
+                    self.init_block((x, y - 6, z), stone_block)
+                    self.init_block((x, y - 7, z), bed_block)
 
                 # Perhaps a tree
                 if self.max_trees > 0:
