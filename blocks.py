@@ -1,7 +1,6 @@
+from globals import *
 import sounds
 
-global TERRAINMAP_BLOCK_SIZE
-TERRAINMAP_BLOCK_SIZE = 8 #Change this to 16 for a larget terrain file of 1024x1024
 
 def get_texture_coordinates(x, y, tileset_size=TERRAINMAP_BLOCK_SIZE):
     m = 1.0 / tileset_size
@@ -19,10 +18,15 @@ class Block(object):
                # when creating a new "official" block.
     drop_id = None
 
+    size = 1.0
+
     # Texture coordinates from the tileset.
     top_texture = ()
     bottom_texture = ()
     side_texture = ()
+
+    # Sounds
+    break_sound = None
 
     # Physical attributes
     hardness = 0
@@ -34,12 +38,17 @@ class Block(object):
     amount_label_color = 255, 255, 255, 255
     name = "Block"  # Blocks that drop another item don't need a name
 
-    def __init__(self):
+    def __init__(self, size=None):
         self.drop_id = self.id
+
+        if size is not None:
+            self.size = size
+
         # Applies get_texture_coordinates to each of the faces to be textured.
         for k in ('top_texture', 'bottom_texture', 'side_texture'):
             v = getattr(self, k)
-            setattr(self, k, get_texture_coordinates(*v))
+            if v:
+                setattr(self, k, get_texture_coordinates(*v))
 
         self.texture_data = self.get_texture_data()
 
@@ -52,8 +61,26 @@ class Block(object):
         result.extend(self.side_texture * 4)
         return result
 
+    def get_vertices(self, x, y, z):
+        n = self.size / 2.0
+        xmn = x - n
+        xpn = x + n
+        ymn = y - n
+        ypn = y + n
+        zmn = z - n
+        zpn = z + n
+        return [
+            xmn,ypn,zmn, xmn,ypn,zpn, xpn,ypn,zpn, xpn,ypn,zmn,  # top
+            xmn,ymn,zmn, xpn,ymn,zmn, xpn,ymn,zpn, xmn,ymn,zpn,  # bottom
+            xmn,ymn,zmn, xmn,ymn,zpn, xmn,ypn,zpn, xmn,ypn,zmn,  # left
+            xpn,ymn,zpn, xpn,ymn,zmn, xpn,ypn,zmn, xpn,ypn,zpn,  # right
+            xmn,ymn,zpn, xpn,ymn,zpn, xpn,ypn,zpn, xmn,ypn,zpn,  # front
+            xpn,ymn,zmn, xmn,ymn,zmn, xmn,ypn,zmn, xpn,ypn,zmn,  # back
+        ]
+
     def play_break_sound(self):
-        pass
+        if self.break_sound is not None:
+            self.break_sound.play()
 
 class AirBlock(Block):
     top_texture = -1, -1
@@ -179,6 +206,9 @@ class WaterBlock(Block):
     id = 8
     name = "Water"
 
+    def play_break_sound(self):
+        sounds.water_break.play()
+
 
 class ChestBlock(Block):
     top_texture = 1, 2
@@ -216,7 +246,11 @@ class StonebrickBlock(Block):
     name = "Stone Bricks"
 
 
-class OakWoodPlankBlock(Block):
+class WoodBlock(Block):
+    break_sound = sounds.wood_break
+
+
+class OakWoodPlankBlock(WoodBlock):
     top_texture = 3, 3
     bottom_texture = 3, 3
     side_texture = 3, 3
@@ -227,7 +261,7 @@ class OakWoodPlankBlock(Block):
         sounds.wood_break.play()
 
 
-class SpruceWoodPlankBlock(Block):
+class SpruceWoodPlankBlock(WoodBlock):
     top_texture = 1, 3
     bottom_texture = 1, 3
     side_texture = 1, 3
@@ -238,7 +272,7 @@ class SpruceWoodPlankBlock(Block):
         sounds.wood_break.play()
 
 
-class JungleWoodPlankBlock(Block):
+class JungleWoodPlankBlock(WoodBlock):
     top_texture = 2, 3
     bottom_texture = 2, 3
     side_texture = 2, 3
@@ -263,7 +297,7 @@ class SnowGrassBlock(Block):
         self.drop_id = DirtBlock.id
 
 
-class OakWoodBlock(Block):
+class OakWoodBlock(WoodBlock):
     top_texture = 7, 1
     bottom_texture = 7, 1
     side_texture = 7, 0
@@ -319,7 +353,14 @@ class CactusBlock(Block):
     id = 81
     name = "Cactus"
 
-class OakLeafBlock(Block):
+
+class LeafBlock(Block):
+    def __init__(self):
+        super(LeafBlock, self).__init__()
+        self.drop_id = None
+
+
+class OakLeafBlock(LeafBlock):
     top_texture = 7, 2
     bottom_texture = 7, 2
     side_texture = 7, 2
@@ -328,11 +369,7 @@ class OakLeafBlock(Block):
     name = "Oak Leaves"
 
 
-    def __init__(self):
-        super(OakLeafBlock, self).__init__()
-        self.drop_id = None
-
-class JungleLeafBlock(Block):
+class JungleLeafBlock(LeafBlock):
     top_texture = 6, 2
     bottom_texture = 6, 2
     side_texture = 6, 2
@@ -340,11 +377,8 @@ class JungleLeafBlock(Block):
     id = 18.1
     name = "Jungle Leaves"
 
-    def __init__(self):
-        super(JungleLeafBlock, self).__init__()
-        self.drop_id = None
 
-class BirchLeafBlock(Block):
+class BirchLeafBlock(LeafBlock):
     top_texture = 5, 2
     bottom_texture = 5, 2
     side_texture = 5, 2
@@ -444,8 +478,6 @@ class FarmBlock(Block):
     #def __init__(self):
         #super(BirchBranchBlock, self).__init__()
         #self.drop_id = BirchWoodBlock.id
-
-
 
 air_block = AirBlock()
 grass_block = GrassBlock()

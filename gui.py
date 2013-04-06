@@ -1,3 +1,4 @@
+import os
 from pyglet.gl import *
 from math import floor, ceil
 from blocks import *
@@ -220,6 +221,7 @@ class InventorySelector(object):
             and x <= crafting_x + crafting_width:
             y_offset = (y - (crafting_y + crafting_height)) * -1
             row = floor(y_offset // (self.icon_size * 0.5 + 3))
+            self.crafting_panel.remove_unnecessary_stacks()
             inventory = self.crafting_panel
             x_offset = x - crafting_x
             items_per_row = crafting_items_per_row

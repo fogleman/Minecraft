@@ -9,9 +9,11 @@
 ## How to Run
 
     pip install pyglet
-    git clone https://github.com/ronmurphy/Minecraft.git
+    git clone https://github.com/[current repository name]/Minecraft.git
     cd Minecraft
     python main.py
+
+You may also need to install **AVBin library** (http://avbin.github.com/AVbin/Download.html), especially if you are on **Linux** machine.
 
 ### Mac
 

@@ -1,12 +1,13 @@
+import argparse
+from binascii import hexlify
+import datetime
 from math import cos, sin, atan2, pi, fmod, radians
+import operator
+import os
+import cPickle as pickle
 import random
 import time
-import argparse
-import os
-import operator
-import cPickle as pickle
-from ConfigParser import ConfigParser, RawConfigParser
-import datetime
+from ConfigParser import ConfigParser
 
 import pyglet
 # Disable error checking for increased performance
@@ -15,13 +16,14 @@ from pyglet.gl import *
 from pyglet.window import key
 
 # import kytten #unused, future potential reference
-from collections import deque, defaultdict
 from blocks import *
+from entity import *
+from globals import *
+from gui import *
 from items import *
 from inventory import *
-from entity import *
-from gui import *
 from nature import *
+from world import *
 from savingsystem import *
 
 APP_NAME = 'pyCraftr'  # should I stay or should I go?
@@ -40,9 +42,8 @@ BACK_RED = 0.0  # 0.53
 BACK_GREEN = 0.0  # 0.81
 BACK_BLUE = 0.0  # 0.98
 HALF_PI = pi / 2.0  # 90 degrees
-GRASS_EXPANSION_TIME = datetime.timedelta(seconds=5)
+GRASS_EXPANSION_TIME = datetime.timedelta(seconds=10)
 SAVE_FILENAME = None
-TERRAINMAP_BLOCK_SIZE = 8
 
 terrain_options = {
     'plains': ('0', '2', '700'),  # type, hill_height, max_trees
@@ -56,11 +57,9 @@ game_dir = pyglet.resource.get_settings_path(APP_NAME)
 if not os.path.exists(game_dir):
     os.makedirs(game_dir)
 
-#SAVE_FILENAME = os.path.join(game_dir, 'save.dat')
-
 config = ConfigParser()
 config_file = os.path.join(game_dir, 'game.cfg')
-if  not os.path.lexists(config_file):
+if not os.path.lexists(config_file):
     type, hill_height, max_trees = terrain_options['plains']
     config.add_section('World')
     config.set('World', 'type', str(type))  # 0=plains,1=dirt,2=desert,3=islands,4=sand,5=stone,6=snow
@@ -88,99 +87,6 @@ else:
     config.read(config_file)
 
 
-def cube_vertices(x, y, z, n):
-    xmn = x - n
-    xpn = x + n
-    ymn = y - n
-    ypn = y + n
-    zmn = z - n
-    zpn = z + n
-    return [
-        xmn,ypn,zmn, xmn,ypn,zpn, xpn,ypn,zpn, xpn,ypn,zmn,  # top
-        xmn,ymn,zmn, xpn,ymn,zmn, xpn,ymn,zpn, xmn,ymn,zpn,  # bottom
-        xmn,ymn,zmn, xmn,ymn,zpn, xmn,ypn,zpn, xmn,ypn,zmn,  # left
-        xpn,ymn,zpn, xpn,ymn,zmn, xpn,ypn,zmn, xpn,ypn,zpn,  # right
-        xmn,ymn,zpn, xpn,ymn,zpn, xpn,ypn,zpn, xmn,ypn,zpn,  # front
-        xpn,ymn,zmn, xmn,ymn,zmn, xmn,ypn,zmn, xpn,ypn,zmn,  # back
-    ]
-
-
-FACES = (
-    ( 0,  1,  0),
-    ( 0, -1,  0),
-    (-1,  0,  0),
-    ( 1,  0,  0),
-    ( 0,  0,  1),
-    ( 0,  0, -1),
-)
-
-FACES_WITH_DIAGONALS = FACES + (
-    (-1, -1,  0),
-    (-1,  0, -1),
-    ( 0, -1, -1),
-    ( 1,  1,  0),
-    ( 1,  0,  1),
-    ( 0,  1,  1),
-    ( 1, -1,  0),
-    ( 1,  0, -1),
-    ( 0,  1, -1),
-    (-1,  1,  0),
-    (-1,  0,  1),
-    ( 0, -1,  1),
-)
-
-
-class TextureGroup(pyglet.graphics.Group):
-    def __init__(self, path):
-        super(TextureGroup, self).__init__()
-        self.texture = pyglet.image.load(path).get_texture()
-
-    def set_state(self):
-        glEnable(self.texture.target)
-        glBindTexture(self.texture.target, self.texture.id)
-
-    def unset_state(self):
-        glDisable(self.texture.target)
-
-
-def normalize_float(f):
-    """
-    This is faster than int(round(f)).  Nearly two times faster.
-    Since it is run at least 500,000 times during map generation,
-    and also in game logic, it has a major impact on performance.
-
-    >>> normalize_float(0.2)
-    0
-    >>> normalize_float(-0.4)
-    0
-    >>> normalize_float(0.5)
-    1
-    >>> normalize_float(-0.5)
-    -1
-    >>> normalize_float(0.0)
-    0
-    """
-    int_f = int(f)
-    if f > 0:
-        if f - int_f < 0.5:
-            return int_f
-        return int_f + 1
-    if f - int_f > -0.5:
-        return int_f
-    return int_f - 1
-
-
-def normalize(position):
-    x, y, z = position
-    return normalize_float(x), normalize_float(y), normalize_float(z)
-
-
-def sectorize(position):
-    x, y, z = normalize(position)
-    x, y, z = x / SECTOR_SIZE, y / SECTOR_SIZE, z / SECTOR_SIZE
-    return x, 0, z
-
-
 # Define a simple function to create GLfloat arrays of floats:
 def vec(*args):
     return (GLfloat * len(args))(*args)
@@ -188,7 +94,7 @@ def vec(*args):
 
 class Player(Entity):
     def __init__(self, position, rotation, flying=False):
-        super(Player, self).__init__(position, rotation, health=20, attack_power=0.05)
+        super(Player, self).__init__(position, rotation, health=100, attack_power=0.05)
         self.inventory = Inventory()
         self.quick_slots = Inventory(9)
         self.flying = flying
@@ -250,7 +156,6 @@ class ItemSelector(object):
         self.update_current()
 
     def update_items(self):
-        global TERRAINMAP_BLOCK_SIZE
         self.icons = []
         for amount_label in self.amount_labels:
             amount_label.delete()
@@ -264,8 +169,8 @@ class ItemSelector(object):
                 continue
             block = BLOCKS_DIR[item.type]
             block_icon = self.model.group.texture.get_region(
-                int(block.side_texture[0] * TERRAINMAP_BLOCK_SIZE) * self.icon_size,
-                int(block.side_texture[1] * TERRAINMAP_BLOCK_SIZE) * self.icon_size, self.icon_size,
+                int(block.side_texture[0] * 8) * self.icon_size,
+                int(block.side_texture[1] * 8) * self.icon_size, self.icon_size,
                 self.icon_size)
             icon = pyglet.sprite.Sprite(block_icon, batch=self.batch,
                                         group=self.group)
@@ -334,17 +239,9 @@ class ItemSelector(object):
         self.active.opacity = 0 if self.active.opacity == 255 else 255
 
 
-####
-
-class Model(object):
+class Model(World):
     def __init__(self, initialize=True):
-        self.batch = pyglet.graphics.Batch()
-        self.group = TextureGroup('texture.png')
-        self.world = {}
-        self.shown = {}
-        self._shown = {}
-        self.sectors = defaultdict(list)
-        self.queue = deque()  # note: could add limit here
+        super(Model, self).__init__()
         if initialize:
             self.initialize()
 
@@ -362,7 +259,7 @@ class Model(object):
         worldtypes_grounds = (
             grass_block,
             dirt_block,
-            (sand_block, ) * 15 + (sandstone_block,) * 4,
+            (sand_block,) * 15 + (sandstone_block,) * 4,
             (water_block,) * 30 + (clay_block,) * 4,
             grass_block,
             (grass_block,) * 15 + (dirt_block,) * 3 + (stone_block,),
@@ -465,7 +362,7 @@ class Model(object):
                             continue
                         if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
                             continue
-                        if (x, y, z) in self.world:
+                        if (x, y, z) in self:
                             continue
 
                         randomOre = random.randrange(1,100)
@@ -502,205 +399,30 @@ class Model(object):
             return
 
         # A tree can't grow on anything.
-        if self.world[position] not in tree_class.grows_on:
+        if self[position] not in tree_class.grows_on:
             return
 
-        tree_class.add_to_model(self, position)
+        tree_class.add_to_world(self, position)
 
         self.max_trees -= 1
 
-    def hit_test(self, position, vector, max_distance=8):
-        m = 8
-        x, y, z = position
-        dx, dy, dz = vector
-        dx, dy, dz = dx / m, dy / m, dz / m
-        previous = None
-        for _ in xrange(max_distance * m):
-            key = normalize((x, y, z))
-            if key != previous and key in self.world:
-                return key, previous
-            previous = key
-            x, y, z = x + dx, y + dy, z + dz
-        return None, None
-
-    def exposed(self, position):
-        x, y, z = position
-        for dx, dy, dz in FACES:
-            if (x + dx, y + dy, z + dz) not in self.world:
-                return True
-        return False
-
     def init_block(self, position, block):
+        # FIXME: This should be more complex than that, and use
+        # self.spreading_mutations.
         if block == dirt_block:
             block = grass_block
         self.add_block(position, block, sync=False, force=False)
-
-    def add_block(self, position, block, sync=True, force=True):
-        if position in self.world:
-            if force:
-                self.remove_block(position, sync)
-            else:
-                return
-        self.world[position] = block
-        self.sectors[sectorize(position)].append(position)
-        if sync:
-            if self.exposed(position):
-                self.show_block(position)
-            self.check_neighbors(position)
-
-    def remove_block(self, position, sync=True, sound=True):
-        if sound:
-            self.world[position].play_break_sound()
-            # BLOCKS_DIR[block].play_break_sound()
-        del self.world[position]
-        self.sectors[sectorize(position)].remove(position)
-        if sync:
-            if position in self.shown:
-                self.hide_block(position)
-            self.check_neighbors(position)
-
-    def grass_expansion(self, number_of_expansions=1): # TODO -> optimizations
-        dirt_blocks = []
-        for i, block in enumerate(self.world):
-            if isinstance(self.world[block], DirtBlock):
-                if self.has_neighbors(block, type=GrassBlock):
-                    dirt_blocks.extend([block])
-        # random.shuffle(dirt_blocks)
-        for i in xrange(0, min(len(dirt_blocks), number_of_expansions)):
-            self.remove_block(dirt_blocks[i], sound=False)
-        for i in xrange(0, min(len(dirt_blocks), number_of_expansions)):
-            self.add_block(dirt_blocks[i], grass_block, force=False)
-
-    def has_neighbors(self, position, type=None, diagonals=False):
-        x, y, z = position
-        faces = FACES_WITH_DIAGONALS if diagonals else FACES
-        for dx, dy, dz in faces:
-            k = (x + dx, y + dy, z + dz)
-            if k in self.world:
-                if type is None:
-                    return True
-                if isinstance(self.world[k], type):
-                    return True
-        return False
-
-    def check_neighbors(self, position):
-        x, y, z = position
-        for dx, dy, dz in FACES:
-            key = (x + dx, y + dy, z + dz)
-            if key not in self.world:
-                continue
-            if self.exposed(key):
-                if key not in self.shown:
-                    self.show_block(key)
-            else:
-                if key in self.shown:
-                    self.hide_block(key)
-
-    def show_blocks(self):
-        for position in self.world:
-            if position not in self.shown and self.exposed(position):
-                self.show_block(position)
-
-    def show_block(self, position, immediate=True):
-        block = self.world[position]
-        self.shown[position] = block
-        if immediate:
-            self._show_block(position, block)
-        else:
-            self.enqueue(self._show_block, position, block)
-
-    def _show_block(self, position, block):
-        x, y, z = position
-        # only show exposed faces
-        index = 0
-        count = 24
-        vertex_data = cube_vertices(x, y, z, 0.5)
-        texture_data = block.texture_data
-        for dx, dy, dz in []:  # FACES:
-            if (x + dx, y + dy, z + dz) in self.world:
-                count -= 8  # 4
-                i = index * 12
-                j = index * 8
-                del vertex_data[i:i + 12]
-                del texture_data[j:j + 8]
-            else:
-                index += 1
-            # create vertex list
-        self._shown[position] = self.batch.add(count, GL_QUADS, self.group,
-                                               ('v3f/static', vertex_data),
-                                               ('t2f/static', texture_data))
-
-    def hide_block(self, position, immediate=True):
-        self.shown.pop(position)
-        if immediate:
-            self._hide_block(position)
-        else:
-            self.enqueue(self._hide_block, position)
-
-    def _hide_block(self, position):
-        self._shown.pop(position).delete()
-
-    def show_sector(self, sector):
-        for position in self.sectors.get(sector, ()):
-            if position not in self.shown and self.exposed(position):
-                self.show_block(position, False)
-
-    def hide_sector(self, sector):
-        for position in self.sectors.get(sector, ()):
-            if position in self.shown:
-                self.hide_block(position, False)
-
-    def change_sectors(self, before, after):
-        before_set = set()
-        after_set = set()
-        pad = 4
-        for dx in xrange(-pad, pad + 1):
-            for dy in [0]: # xrange(-pad, pad + 1):
-                for dz in xrange(-pad, pad + 1):
-                    if dx ** 2 + dy ** 2 + dz ** 2 > (pad + 1) ** 2:
-                        continue
-                    if before:
-                        x, y, z = before
-                        before_set.add((x + dx, y + dy, z + dz))
-                    if after:
-                        x, y, z = after
-                        after_set.add((x + dx, y + dy, z + dz))
-        show = after_set - before_set
-        hide = before_set - after_set
-        for sector in show:
-            self.show_sector(sector)
-        for sector in hide:
-            self.hide_sector(sector)
-
-    def enqueue(self, func, *args):
-        self.queue.append((func, args))
-
-    def dequeue(self):
-        func, args = self.queue.popleft()
-        func(*args)
-
-    def process_queue(self):
-        start = time.clock()
-        while self.queue and time.clock() - start < 1 / 60.0:
-            self.dequeue()
-
-    def process_entire_queue(self):
-        while self.queue:
-            self.dequeue()
 
 
 class Window(pyglet.window.Window):
     def __init__(self, *args, **kwargs):
         self.show_gui = kwargs.pop('show_gui', True)
-        if 'save' in kwargs and kwargs['save'] is not None:
-            self.save = kwargs['save']
-        else:
-            self.save = None
-        del kwargs['save']
+        self.save = kwargs.pop('save', None)
         super(Window, self).__init__(*args, **kwargs)
         self.exclusive = False
         self.strafe = [0, 0]
         self.sector = None
+        self.focus_block = Block(size=1.1)
         self.reticle = None
         self.time_of_day = 0.0
         self.count = 0
@@ -718,7 +440,6 @@ class Window(pyglet.window.Window):
         self.show_fog = False
         self.last_key = None
         self.sorted = False
-        self.last_grass_expansion = None
         global config
         self.key_move_forward = config.getint('Controls', 'move_forward')
         self.key_move_backward = config.getint('Controls', 'move_backward')
@@ -727,12 +448,12 @@ class Window(pyglet.window.Window):
         self.key_jump = config.getint('Controls', 'jump')
         self.key_inventory = config.getint('Controls', 'inventory')
         save_len = -1 if self.save is None else len(self.save)
-        if self.save is None or save_len < 2:  # Model.world and model.sectors
+        if self.save is None or save_len < 2:  # model and model.sectors
             self.model = Model()
             self.player = Player((0, 0, 0), (-20, 0))
         else:
             self.model = Model(initialize=False)
-            self.model.world = self.save[0]
+            self.model = self.save[0]
             self.model.sectors = self.save[1]
             if save_len > 2 and isinstance(self.save[2], list) \
                     and len(self.save[2]) == 2:
@@ -753,7 +474,7 @@ class Window(pyglet.window.Window):
             self.label = pyglet.text.Label(
                 '', font_name='Arial', font_size=8, x=10, y=self.height - 10,
                 anchor_x='left', anchor_y='top', color=(255, 255, 255, 255))
-        pyglet.clock.schedule_interval(self.update, 1.0 / 60)
+        pyglet.clock.schedule_interval(self.update, 1.0 / MAX_FPS)
 
     def set_exclusive_mouse(self, exclusive):
         super(Window, self).set_exclusive_mouse(exclusive)
@@ -850,13 +571,16 @@ class Window(pyglet.window.Window):
                 self.clock += 1
 
     def update(self, dt):
-        self.model.process_queue()
         sector = sectorize(self.player.position)
         if sector != self.sector:
             self.model.change_sectors(self.sector, sector)
+            # When the world is loaded, show every visible sector.
             if self.sector is None:
                 self.model.process_entire_queue()
             self.sector = sector
+
+        self.model.content_update(dt)
+
         m = 8
         dt = min(dt, 0.2)
         for _ in xrange(m):
@@ -866,24 +590,21 @@ class Window(pyglet.window.Window):
             block, previous = self.model.hit_test(self.player.position, vector)
             if block:
                 if self.highlighted_block != block:
-                    self.highlighted_block = block
-                    self.block_damage = 0
+                    self.set_highlighted_block(block)
 
             if self.highlighted_block:
-                hit_block = self.model.world[self.highlighted_block]
+                hit_block = self.model[self.highlighted_block]
                 if hit_block.hardness >= 0:
                     self.block_damage += self.player.attack_power
                     if self.block_damage >= hit_block.hardness:
                         self.model.remove_block(self.highlighted_block)
-                        self.highlighted_block = None
-                        self.block_damage = 0
+                        self.set_highlighted_block(None)
                         if hit_block.drop_id is not None \
                                 and self.player.add_item(hit_block.drop_id):
                             self.item_list.update_items()
                             self.inventory_list.update_items()
                 else:
-                    self.highlighted_block = None
-                    self.block_damage = 0
+                    self.set_highlighted_block(None)
         self.update_time()
 
     def _update(self, dt):
@@ -906,16 +627,16 @@ class Window(pyglet.window.Window):
         x, y, z = self.collide((x + dx, y + dy, z + dz), 2)
         self.player.position = (x, y, z)
 
+    def set_highlighted_block(self, block):
+        self.highlighted_block = block
+        self.block_damage = 0
+
     def save_to_file(self):
         if DISABLE_SAVE:
             if not options.nocompression:
                 save_world(self, game_dir, SAVE_FILENAME)
             else:
                 save_world(self, game_dir, SAVE_FILENAME, CLASSIC_SAVE_TYPE)
-            #save_world(self, game_dir, SAVE_FILENAME)
-            #pickle.dump((self.model.world, self.model.sectors, self.strafe,
-                         #self.player, self.time_of_day),
-                        #open(SAVE_FILENAME, "wb"))
 
     def collide(self, position, height):
         pad = 0.25
@@ -933,7 +654,7 @@ class Window(pyglet.window.Window):
                     op[1] -= dy
                     op[i] += face[i]
                     op = tuple(op)
-                    if op not in self.model.world:
+                    if op not in self.model:
                         continue
                     p[i] -= (d - pad) * face[i]
                     if face == (0, -1, 0) or face == (0, 1, 0):
@@ -958,11 +679,10 @@ class Window(pyglet.window.Window):
             if button == pyglet.window.mouse.LEFT:
                 if block:
                     self.mouse_pressed = True
-                    self.highlighted_block = None
-                    self.block_damage = 0
+                    self.set_highlighted_block(None)
             else:
                 if previous:
-                    hit_block = self.model.world[block]
+                    hit_block = self.model[block]
                     if hit_block.density >= 1:
                         current_block = self.item_list.get_current_block()
                         if current_block is not None:
@@ -979,8 +699,7 @@ class Window(pyglet.window.Window):
             self.set_exclusive_mouse(True)
 
     def on_mouse_release(self, x, y, button, modifiers):
-        self.highlighted_block = None
-        self.block_damage = 0
+        self.set_highlighted_block(None)
         self.mouse_pressed = False
 
     def on_mouse_motion(self, x, y, dx, dy):
@@ -1159,9 +878,6 @@ class Window(pyglet.window.Window):
         self.clear()
         self.set_3d()
         glColor3d(1, 1, 1)
-        if not self.last_grass_expansion or datetime.datetime.now() - self.last_grass_expansion >= GRASS_EXPANSION_TIME:
-            self.last_grass_expansion = datetime.datetime.now()
-            self.model.grass_expansion()
         self.model.batch.draw()
         self.draw_focused_block()
         self.set_2d()
@@ -1178,15 +894,16 @@ class Window(pyglet.window.Window):
         if self.exclusive:
             self.draw_reticle()
 
+        pyglet.clock.tick()
+
     def draw_focused_block(self):
         glDisable(GL_LIGHTING)
         vector = self.get_sight_vector()
-        block = self.model.hit_test(self.player.position, vector)[0]
-        if block:
-            hit_block = self.model.world[block]
+        position = self.model.hit_test(self.player.position, vector)[0]
+        if position:
+            hit_block = self.model[position]
             if hit_block.density >= 1:
-                x, y, z = block
-                vertex_data = cube_vertices(x, y, z, 0.51)
+                vertex_data = self.focus_block.get_vertices(*position)
                 glColor3d(0, 0, 0)
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
                 pyglet.graphics.draw(24, GL_QUADS, ('v3f/static', vertex_data))
@@ -1198,7 +915,7 @@ class Window(pyglet.window.Window):
             % (self.time_of_day if (self.time_of_day < 12.0)
                else (24.0 - self.time_of_day),
                pyglet.clock.get_fps(), x, y, z,
-               len(self.model._shown), len(self.model.world))
+               len(self.model._shown), len(self.model))
         self.label.draw()
 
     def draw_reticle(self):
@@ -1230,17 +947,13 @@ def setup():
 
 
 def main(options):
-    global TERRAINMAP_BLOCK_SIZE
-    TERRAINMAP_BLOCK_SIZE = 8  #Change this to 16 for a larget terrain file of 1024x1024
     save_object = None
     global SAVE_FILENAME
     global DISABLE_SAVE
     global DRAW_DISTANCE
     SAVE_FILENAME = options.save
     DISABLE_SAVE = options.disable_save
-    #if os.path.exists(SAVE_FILENAME) and options.disable_save:
-        #save_object = pickle.load(open(SAVE_FILENAME, "rb"))
-    if options.disable_save and world_exists(game_dir, SAVE_FILENAME):# and SAVE_FILENAME:
+    if options.disable_save and world_exists(game_dir, SAVE_FILENAME):
         save_object = open_world(game_dir, SAVE_FILENAME)
     if options.draw_distance == 'medium':
         DRAW_DISTANCE = 60.0 * 1.5
@@ -1273,6 +986,25 @@ def main(options):
     if options.fast:
         TIME_RATE /= 20
 
+    seed = options.seed
+    if seed is None:
+        # Generates pseudo-random number.
+        try:
+            seed = long(hexlify(os.urandom(16)), 16)
+        except NotImplementedError:
+            import time
+            seed = long(time.time() * 256)  # use fractional seconds
+        # Then convert it to a string so all seeds have the same type.
+        seed = str(seed)
+        print('Random seed: ' + seed)
+
+    random.seed(seed)
+
+    with open(os.path.join(game_dir, 'seeds.txt'), 'a') as seeds:
+        seeds.write(datetime.datetime.now().strftime(
+            'Seed used the %d %m %Y at %H:%M:%S\n'))
+        seeds.write('%s\n\n' % seed)
+
     # try:
         # window_config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
         # window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=window_config, save=save_object)
@@ -1290,6 +1022,7 @@ def main(options):
     setup()
     if config.getboolean('World', 'show_fog'):
         setup_fog(window)
+    pyglet.clock.set_fps_limit(MAX_FPS)
     pyglet.app.run()
     if options.disable_auto_save and options.disable_save:
         window.save_to_file()
@@ -1310,6 +1043,7 @@ if __name__ == '__main__':
     parser.add_argument("-hillheight", type=int, help = "How high the hills are.")
     parser.add_argument("-worldsize", type=int, help = "The width size of the world.")
     parser.add_argument("-maxtrees", type=int, help = "How many trees and cacti should be made.")
+    parser.add_argument("-seed", default=None, help = "A random seed to use for generating a world.")
     parser.add_argument("--flat", action="store_true", default=False, help = "Generate a flat world.")
     parser.add_argument("--hide-fog", action="store_true", default=False, help ="Hides the fog, see the whole landscape.")
     parser.add_argument("--show-gui", action="store_true", default=True, help = "Enabled by default.")

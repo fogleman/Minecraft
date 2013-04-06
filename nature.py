@@ -27,7 +27,7 @@ class Tree(object):
     grows_on = grass_block, dirt_block, snowgrass_block
 
     @classmethod
-    def add_to_model(cls, model, position):
+    def add_to_world(cls, world, position):
         trunk_class = cls.trunk_block.__class__
         leaf_class = cls.leaf_block.__class__
 
@@ -35,7 +35,7 @@ class Tree(object):
                       height_range=cls.trunk_height_range)
 
         for item in trunk.blocks.items():
-            model.init_block(*item)
+            world.init_block(*item)
 
         x, y, z = position
         height = trunk.height
@@ -48,10 +48,10 @@ class Tree(object):
             for yl in range(treetop - d, treetop + d):
                 for zl in range(z - d, z + d):
                     # Don't replace existing blocks
-                    if (xl, yl, zl) in model.world:
+                    if (xl, yl, zl) in world:
                         continue
                     # Avoids orphaned leaves
-                    if not model.has_neighbors((xl, yl, zl),
+                    if not world.has_neighbors((xl, yl, zl),
                                                (trunk_class, leaf_class)):
                         continue
                     dz = abs(zl - z)
@@ -59,7 +59,7 @@ class Tree(object):
                     # the least leaves we can find.
                     if random.uniform(0, dx + dz) > 0.6:
                         continue
-                    model.init_block((xl, yl, zl), cls.leaf_block)
+                    world.init_block((xl, yl, zl), cls.leaf_block)
 
 
 class OakTree(Tree):
@@ -85,7 +85,7 @@ class Cactus(object):
     grows_on = sand_block, sandstone_block
 
     @classmethod
-    def add_to_model(cls, model, position):
+    def add_to_world(cls, model, position):
         trunk = Trunk(position, block=cls.trunk_block,
                       height_range=cls.trunk_height_range)
 
