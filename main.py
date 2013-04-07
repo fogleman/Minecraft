@@ -436,10 +436,9 @@ class Model(World):
             block = grass_block
         self.add_block(position, block, sync=False, force=False)
 
-
-class Window(pyglet.window.Window):
-    def __init__(self, width, height, launch_fullscreen=False, show_gui=True, save=None, **kwargs):
-        super(Window, self).__init__(width, height, **kwargs)
+class GameController(object):
+    def __init__(self, window, show_gui=True, save=None):
+        self.window = window
         self.show_gui = show_gui
         self.save = save
         self.exclusive = False
@@ -492,9 +491,9 @@ class Window(pyglet.window.Window):
             print('Game mode: Creative')
         if self.player.game_mode == 1:
             print('Game mode: Survival')
-        self.item_list = ItemSelector(self.width, self.height, self.player,
+        self.item_list = ItemSelector(self.window.width, self.window.height, self.player,
                                       self.model)
-        self.inventory_list = InventorySelector(self.width, self.height,
+        self.inventory_list = InventorySelector(self.window.width, self.window.height,
                                                 self.player, self.model)
         self.camera = Camera3D(target=self.player)
         self.num_keys = [
@@ -503,19 +502,48 @@ class Window(pyglet.window.Window):
         self.show_inventory = False
         if self.show_gui:
             self.label = pyglet.text.Label(
-                '', font_name='Arial', font_size=8, x=10, y=self.height - 10,
+                '', font_name='Arial', font_size=8, x=10, y=self.window.height - 10,
                 anchor_x='left', anchor_y='top', color=(255, 255, 255, 255))
-        self.set_exclusive_mouse(True)
-        if launch_fullscreen:
-            self.set_fullscreen()
-        pyglet.clock.schedule_interval(self.update, 1.0 / MAX_FPS)
         pyglet.clock.schedule_interval_soft(self.model.process_queue, 1.0 / MAX_FPS)
 
-    def set_exclusive_mouse(self, exclusive):
-        super(Window, self).set_exclusive_mouse(exclusive)
-        self.exclusive = exclusive
+    def update(self, dt):
+        sector = sectorize(self.player.position)
+        if sector != self.sector:
+            self.model.change_sectors(self.sector, sector)
+            # When the world is loaded, show every visible sector.
+            if self.sector is None:
+                self.model.process_entire_queue()
+            self.sector = sector
 
-    def setup_game(self, show_fog = False):
+        self.model.content_update(dt)
+
+        m = 8
+        dt = min(dt, 0.2)
+        for _ in xrange(m):
+            self._update(dt / m)
+        if self.mouse_pressed:
+            vector = self.get_sight_vector()
+            block, previous = self.model.hit_test(self.player.position, vector)
+            if block:
+                if self.highlighted_block != block:
+                    self.set_highlighted_block(block)
+
+            if self.highlighted_block:
+                hit_block = self.model[self.highlighted_block]
+                if hit_block.hardness >= 0:
+                    self.block_damage += self.player.attack_power
+                    if self.block_damage >= hit_block.hardness:
+                        self.model.remove_block(self.highlighted_block)
+                        self.set_highlighted_block(None)
+                        if hit_block.drop_id is not None \
+                                and self.player.add_item(hit_block.drop_id):
+                            self.item_list.update_items()
+                            self.inventory_list.update_items()
+                else:
+                    self.set_highlighted_block(None)
+        self.update_time()
+
+    def setup(self, show_fog = False):
         self.show_fog = show_fog
             
         glClearColor(BACK_RED, BACK_GREEN, BACK_BLUE, 1)
@@ -626,43 +654,6 @@ class Window(pyglet.window.Window):
                 self.clock = 6
             else:
                 self.clock += 1
-
-    def update(self, dt):
-        sector = sectorize(self.player.position)
-        if sector != self.sector:
-            self.model.change_sectors(self.sector, sector)
-            # When the world is loaded, show every visible sector.
-            if self.sector is None:
-                self.model.process_entire_queue()
-            self.sector = sector
-
-        self.model.content_update(dt)
-
-        m = 8
-        dt = min(dt, 0.2)
-        for _ in xrange(m):
-            self._update(dt / m)
-        if self.mouse_pressed:
-            vector = self.get_sight_vector()
-            block, previous = self.model.hit_test(self.player.position, vector)
-            if block:
-                if self.highlighted_block != block:
-                    self.set_highlighted_block(block)
-
-            if self.highlighted_block:
-                hit_block = self.model[self.highlighted_block]
-                if hit_block.hardness >= 0:
-                    self.block_damage += self.player.attack_power
-                    if self.block_damage >= hit_block.hardness:
-                        self.model.remove_block(self.highlighted_block)
-                        self.set_highlighted_block(None)
-                        if hit_block.drop_id is not None \
-                                and self.player.add_item(hit_block.drop_id):
-                            self.item_list.update_items()
-                            self.inventory_list.update_items()
-                else:
-                    self.set_highlighted_block(None)
-        self.update_time()
 
     def _update(self, dt):
         # walking
@@ -790,7 +781,7 @@ class Window(pyglet.window.Window):
                     self.item_list.update_health()
                     self.item_list.update_items()
         else:
-            self.set_exclusive_mouse(True)
+            self.window.set_exclusive_mouse(True)
 
     def on_mouse_release(self, x, y, button, modifiers):
         self.set_highlighted_block(None)
@@ -837,10 +828,10 @@ class Window(pyglet.window.Window):
             if self.show_inventory:
                 self.inventory_list.toggle_active_frame_visibility()
                 self.show_inventory = not self.show_inventory
-                self.set_exclusive_mouse(not self.show_inventory)
+                self.window.set_exclusive_mouse(not self.show_inventory)
                 self.item_list.update_items()
             else:
-                self.set_exclusive_mouse(False)
+                self.window.set_exclusive_mouse(False)
         elif symbol == key.TAB:
             self.dy = 0
             self.player.flying = not self.player.flying
@@ -868,7 +859,7 @@ class Window(pyglet.window.Window):
             self.inventory_list.update_items()
             self.inventory_list.toggle_active_frame_visibility()
             self.show_inventory = not self.show_inventory
-            self.set_exclusive_mouse(not self.show_inventory)
+            self.window.set_exclusive_mouse(not self.show_inventory)
             self.item_list.update_items()
         elif symbol == key.ENTER:
             if self.show_inventory:
@@ -909,7 +900,7 @@ class Window(pyglet.window.Window):
     def on_resize(self, width, height):
         if self.reticle:
             self.reticle.delete()
-        x, y = self.width / 2, self.height / 2
+        x, y = width / 2, height / 2
         n = 10
         self.reticle = pyglet.graphics.vertex_list(
             4,
@@ -921,7 +912,7 @@ class Window(pyglet.window.Window):
             self.inventory_list.set_position(width, height)
 
     def set_2d(self):
-        width, height = self.get_size()
+        width, height = self.window.get_size()
         glDisable(GL_DEPTH_TEST)
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
@@ -934,7 +925,7 @@ class Window(pyglet.window.Window):
         glLoadIdentity()
 
     def set_3d(self):
-        width, height = self.get_size()
+        width, height = self.window.get_size()
         if self.show_fog:
             glFogfv(GL_FOG_COLOR, vec(BACK_RED, BACK_GREEN, BACK_BLUE, 1.0))
         glEnable(GL_DEPTH_TEST)
@@ -959,11 +950,10 @@ class Window(pyglet.window.Window):
         glMaterialfv(GL_FRONT, GL_AMBIENT, self.earth)
         glMaterialfv(GL_FRONT, GL_DIFFUSE, self.white)
         glMaterialfv(GL_FRONT, GL_SHININESS, self.polished)
-
+        
     def clear(self):
         glClearColor(BACK_RED, BACK_GREEN, BACK_BLUE, 1.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        super(Window, self).clear()
 
     def on_draw(self):
         self.clear()
@@ -1026,6 +1016,29 @@ class Window(pyglet.window.Window):
     def draw_reticle(self):
         glColor3d(0, 0, 0)
         self.reticle.draw(GL_LINES)
+        
+    def push_handlers(self):
+        self.setup()
+        self.window.push_handlers(self.camera)
+        self.window.push_handlers(self)
+        
+
+class Window(pyglet.window.Window):
+    def __init__(self, width, height, launch_fullscreen=False, show_gui=True, save=None, **kwargs):
+        super(Window, self).__init__(width, height, **kwargs)
+        self.controller = GameController(self, show_gui=show_gui, save=save)
+        self.controller.push_handlers()
+        self.set_exclusive_mouse(True)
+        if launch_fullscreen:
+            self.set_fullscreen()
+        pyglet.clock.schedule_interval(self.update, 1.0 / MAX_FPS)
+
+    def set_exclusive_mouse(self, exclusive):
+        super(Window, self).set_exclusive_mouse(exclusive)
+        self.controller.exclusive = exclusive
+
+    def update(self, dt):
+        self.controller.update(dt)
 
 
 def main(options):
@@ -1097,11 +1110,11 @@ def main(options):
     window = Window(options.width, options.height, launch_fullscreen=options.fullscreen,
         show_gui=options.show_gui, save=save_object, caption=APP_NAME, resizable=True, vsync=False)
 
-    window.setup_game(show_fog=config.getboolean('World', 'show_fog'))
+    #window.setup_game(show_fog=config.getboolean('World', 'show_fog'))
     pyglet.clock.set_fps_limit(MAX_FPS)
     pyglet.app.run()
     if options.disable_auto_save and options.disable_save:
-        window.save_to_file()
+        window.controller.save_to_file()
     if options.save_config:
         try:
             with open(config_file, 'wb') as handle:
