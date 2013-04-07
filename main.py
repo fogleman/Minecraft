@@ -15,10 +15,9 @@ pyglet.options['debug_gl'] = False
 from pyglet.gl import *
 from pyglet.window import key
 
-# import kytten #unused, future potential reference
+#import kytten
 from blocks import *
 from entity import *
-import globals
 from globals import *
 from gui import *
 from items import *
@@ -26,6 +25,7 @@ from inventory import *
 from nature import *
 from world import *
 from savingsystem import *
+from cameras import *
 
 SAVE_FILENAME = None
 
@@ -60,8 +60,6 @@ if not os.path.lexists(config_file):
     config.set('Controls', 'move_right', str(key.D))
     config.set('Controls', 'jump', str(key.SPACE))
     config.set('Controls', 'inventory', str(key.E))
-    config.set('Controls', 'sound_up', str(key.PAGEUP))
-    config.set('Controls', 'sound_down', str(key.PAGEDOWN))
 
     try:
         with open(config_file, 'wb') as handle:
@@ -80,38 +78,28 @@ def vec(*args):
 
 class Player(Entity):
     def __init__(self, position, rotation, flying=False, game_mode=0):
-        super(Player, self).__init__(position, rotation, health=7, attack_power=0.05)
+        super(Player, self).__init__(position, rotation, health=7, max_health=10, attack_power=0.05, attack_range=4)
         self.inventory = Inventory()
         self.quick_slots = Inventory(9)
         self.flying = flying
-        self.max_health = 10
         self.game_mode = game_mode
-        if self.game_mode == 1:
-
-            initial_items = [bookshelf_block, furnace_block, brick_block, torch_block,
-                             lamp_block, glass_block, chest_block,
-                             sandstone_block, melon_block]
-            for item in initial_items:
-                quantity = random.randint(1, 10)
-                if random.choice((True, False)):
-                    self.inventory.add_item(item.id, quantity)
-                else:
-                    self.quick_slots.add_item(item.id, quantity)
-
-        if self.game_mode == 0:
-            initial_items = [bookshelf_block, furnace_block, brick_block, torch_block,
-                             lamp_block, glass_block, chest_block, cobblefence_block,
-                             sandstone_block, melon_block, lamp_block, stonebrick_block,
-                             oakwoodplank_block, junglewoodplank_block, sprucewoodplank_block,
-                             oakwood_block, oakleaf_block, junglewood_block, jungleleaf_block,
-                             birchwood_block, birchleaf_block, stoneslab_block, clay_block,
-                             farm_block, gravel_block]
-            for item in initial_items:
-                quantity = 64
-                #if random.choice((True, False)):
+        self.strafe = [0, 0]
+        self.dy = 0
+        initial_items = [bookshelf_block, furnace_block, brick_block, torch_block,
+                         lamp_block, glass_block, chest_block,
+                         sandstone_block, melon_block]
+        for item in initial_items:
+            quantity = random.randint(1, 10)
+            if random.choice((True, False)):
                 self.inventory.add_item(item.id, quantity)
                 #else:
                 #    self.quick_slots.add_item(item.id, quantity)
+
+        self.key_move_forward = config.getint('Controls', 'move_forward')
+        self.key_move_backward = config.getint('Controls', 'move_backward')
+        self.key_move_left = config.getint('Controls', 'move_left')
+        self.key_move_right = config.getint('Controls', 'move_right')
+        self.key_jump = config.getint('Controls', 'jump')
 
     def add_item(self, item_id):
         if self.quick_slots.add_item(item_id):
@@ -122,22 +110,101 @@ class Player(Entity):
 
     def change_health(self, change):
         self.health += change
-        self.health = self.health if self.health < self.max_health else self.max_health
+        if self.health > self.max_health:
+            self.health = self.max_health
+
+    def on_key_release(self, symbol, modifiers):
+        if symbol == self.key_move_forward:
+            self.strafe[0] += 1
+        elif symbol == self.key_move_backward:
+            self.strafe[0] -= 1
+        elif symbol == self.key_move_left:
+            self.strafe[1] += 1
+        elif symbol == self.key_move_right:
+            self.strafe[1] -= 1
+        elif (symbol == self.key_jump or symbol == key.LSHIFT
+              or symbol == key.RSHIFT) and self.flying:
+            self.dy = 0
+
+    def on_key_press(self, symbol, modifiers):
+        if symbol == self.key_move_forward:
+            self.strafe[0] -= 1
+        elif symbol == self.key_move_backward:
+            self.strafe[0] += 1
+        elif symbol == self. key_move_left:
+            self.strafe[1] -= 1
+        elif symbol == self.key_move_right:
+            self.strafe[1] += 1
+        elif symbol == self.key_jump:
+            if self.flying:
+                self.dy = 0.045  # jump speed
+            elif self.dy == 0:
+                self.dy = 0.016  # jump speed
+        elif symbol == key.LSHIFT or symbol == key.RSHIFT:
+            if self.flying:
+                self.dy = -0.045  # inversed jump speed
+        elif symbol == key.TAB:
+            self.dy = 0
+            self.flying = not self.flying
+
+    def get_motion_vector(self):
+        if any(self.strafe):
+            x, y = self.rotation
+            y_r = radians(y)
+            x_r = radians(x)
+            strafe = atan2(*self.strafe)
+            if self.flying:
+                m = cos(y_r)
+                dy = sin(y_r)
+                if self.strafe[1]:
+                    dy = 0.0
+                    m = 1
+                if self.strafe[0] > 0:
+                    dy *= -1
+                x_r += strafe
+                dx = cos(x_r) * m
+                dz = sin(x_r) * m
+            else:
+                dy = 0.0
+                x_r += strafe
+                dx = cos(x_r)
+                dz = sin(x_r)
+        else:
+            dy = 0.0
+            dx = 0.0
+            dz = 0.0
+        return dx, dy, dz
+
+    def get_sight_vector(self):
+        x, y = self.rotation
+        y_r = radians(y)
+        x_r = radians(x)
+        m = cos(y_r)
+        dy = sin(y_r)
+        x_r -= HALF_PI
+        dx = cos(x_r) * m
+        dz = sin(x_r) * m
+        return dx, dy, dz
 
 
 ####
 
 class ItemSelector(object):
-    def __init__(self, width, height, player, model):
+    def __init__(self, parent, player, model):
         self.batch = pyglet.graphics.Batch()
         self.group = pyglet.graphics.OrderedGroup(1)
         self.labels_group = pyglet.graphics.OrderedGroup(2)
         self.amount_labels = []
+        self.parent = parent
         self.model = model
         self.player = player
         self.max_items = 9
         self.current_index = 1
         self.icon_size = self.model.group.texture.width / 8  # 4
+        self.visible = True
+        self.num_keys = [
+            key._1, key._2, key._3, key._4, key._5,
+            key._6, key._7, key._8, key._9, key._0]
 
         image = pyglet.image.load(os.path.join('resources', 'textures', 'slots.png'))
         heart_image = pyglet.image.load(os.path.join('resources', 'textures', 'heart.png'))
@@ -155,7 +222,6 @@ class ItemSelector(object):
                 batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
             self.hearts.append(heart)
         self.current_block_label = None
-        self.set_position(width, height)
 
     def change_index(self, change):
         self.set_index(self.current_index + change)
@@ -219,14 +285,6 @@ class ItemSelector(object):
                 group=self.labels_group)
         self.active.x = self.frame.x + (self.current_index * 35)
 
-    def set_position(self, width, height):
-        self.frame.x = (width - self.frame.width) / 2
-        self.frame.y = self.icon_size * 0.5
-        self.active.y = self.frame.y
-        self.update_health()
-        self.update_current()
-        self.update_items()
-
     def update_health(self):
         hearts_to_show = self.player.health
         showed_hearts = 0
@@ -268,8 +326,44 @@ class ItemSelector(object):
         self.player.quick_slots.remove_by_index(self.current_index, quantity=quantity)
         self.update_items()
 
-    def toggle_active_frame_visibility(self):
-        self.active.opacity = 0 if self.active.opacity == 255 else 255
+    def toggle(self):
+        self.visible = not self.visible
+        if self.visible:
+            self.update_items()
+
+    def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
+        if self.visible and self.parent.window.exclusive:
+            self.change_index(scroll_y * -1)
+            return pyglet.event.EVENT_HANDLED
+
+    def on_key_press(self, symbol, modifiers):
+        if self.visible:
+            if symbol in self.num_keys:
+                index = (symbol - self.num_keys[0])
+                self.set_index(index)
+                return pyglet.event.EVENT_HANDLED
+            elif symbol == key.ENTER:
+                current_block = self.get_current_block_item_and_amount()
+                if current_block:
+                    if not self.player.inventory.add_item(
+                            current_block[0].id, quantity=current_block[1]):
+                        self.player.quick_slots.add_item(
+                            current_block[0].id, quantity=current_block[1])
+                    self.update_items()
+                    return pyglet.event.EVENT_HANDLED
+
+    def on_resize(self, width, height):
+        self.frame.x = (width - self.frame.width) / 2
+        self.frame.y = self.icon_size * 0.5
+        self.active.y = self.frame.y
+        if self.visible:
+            self.update_health()
+            self.update_current()
+            self.update_items()
+
+    def draw(self):
+        if self.visible:
+            self.batch.draw()
 
 
 class Model(World):
@@ -332,7 +426,6 @@ class Model(World):
             stone_block, stone_block, stone_block, stone_block, stone_block,
             stone_block, stone_block, stone_block, stone_block, stone_block,
         )
-
 
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
@@ -455,17 +548,13 @@ class Model(World):
             block = grass_block
         self.add_block(position, block, sync=False, force=False)
 
-
-class Window(pyglet.window.Window):
-    def __init__(self, *args, **kwargs):
-        self.show_gui = kwargs.pop('show_gui', True)
-        self.save = kwargs.pop('save', None)
-        super(Window, self).__init__(*args, **kwargs)
-        self.exclusive = False
-        self.strafe = [0, 0]
+class GameController(object):
+    def __init__(self, window, show_gui=True, save=None):
+        self.window = window
+        self.show_gui = show_gui
+        self.save = save
         self.sector = None
         self.focus_block = Block(width=1.05, height=1.05)
-        self.reticle = None
         self.time_of_day = 0.0
         self.count = 0
         self.clock = 6
@@ -480,19 +569,11 @@ class Window(pyglet.window.Window):
         self.crack = None
         self.crack_batch = pyglet.graphics.Batch()
         self.mouse_pressed = False
-        self.dy = 0
         self.show_fog = False
         self.last_key = None
         self.sorted = False
         global config
-        self.key_move_forward = config.getint('Controls', 'move_forward')
-        self.key_move_backward = config.getint('Controls', 'move_backward')
-        self.key_move_left = config.getint('Controls', 'move_left')
-        self.key_move_right = config.getint('Controls', 'move_right')
-        self.key_jump = config.getint('Controls', 'jump')
         self.key_inventory = config.getint('Controls', 'inventory')
-        self.key_sound_up = config.getint('Controls', 'sound_up') if config.has_option('Controls', 'sound_up') else key.PAGEUP
-        self.key_sound_down = config.getint('Controls', 'sound_down') if config.has_option('Controls', 'sound_up') else key.PAGEDOWN
         save_len = -1 if self.save is None else len(self.save)
         if self.save is None or save_len < 2:  # model and model.sectors
             self.model = Model()
@@ -502,74 +583,82 @@ class Window(pyglet.window.Window):
             for item in self.save[0]:
                 self.model[item[0]] = item[1]
             self.model.sectors = self.save[1]
-            if save_len > 2 and isinstance(self.save[2], list) \
-                    and len(self.save[2]) == 2:
-                self.strafe = self.save[2]
-            if save_len > 3 and isinstance(self.save[3], Player):
-                self.player = self.save[3]
-            if save_len > 4 and isinstance(self.save[4], float):
-                self.time_of_day = self.save[4]
+            if save_len > 2 and isinstance(self.save[2], Player):
+                self.player = self.save[2]
+            if save_len > 3 and isinstance(self.save[3], float):
+                self.time_of_day = self.save[3]
         if self.player.game_mode == 0:
             print('Game mode: Creative')
         if self.player.game_mode == 1:
             print('Game mode: Survival')
-        self.item_list = ItemSelector(self.width, self.height, self.player,
-                                      self.model)
-        self.inventory_list = InventorySelector(self.width, self.height,
-                                                self.player, self.model)
-        self.num_keys = [
-            key._1, key._2, key._3, key._4, key._5,
-            key._6, key._7, key._8, key._9, key._0]
-        self.show_inventory = False
+        self.item_list = ItemSelector(self, self.player, self.model)
+        self.inventory_list = InventorySelector(self, self.player, self.model)
+        self.camera = Camera3D(target=self.player)
         if self.show_gui:
             self.label = pyglet.text.Label(
-                '', font_name='Arial', font_size=8, x=10, y=self.height - 10,
+                '', font_name='Arial', font_size=8, x=10, y=self.window.height - 10,
                 anchor_x='left', anchor_y='top', color=(255, 255, 255, 255))
-        pyglet.clock.schedule_interval(self.update, 1.0 / MAX_FPS)
         pyglet.clock.schedule_interval_soft(self.model.process_queue, 1.0 / MAX_FPS)
 
-    def set_exclusive_mouse(self, exclusive):
-        super(Window, self).set_exclusive_mouse(exclusive)
-        self.exclusive = exclusive
+    def update(self, dt):
+        sector = sectorize(self.player.position)
+        if sector != self.sector:
+            self.model.change_sectors(self.sector, sector)
+            # When the world is loaded, show every visible sector.
+            if self.sector is None:
+                self.model.process_entire_queue()
+            self.sector = sector
 
-    def get_sight_vector(self):
-        x, y = self.player.rotation
-        y_r = radians(y)
-        x_r = radians(x)
-        m = cos(y_r)
-        dy = sin(y_r)
-        x_r -= HALF_PI
-        dx = cos(x_r) * m
-        dz = sin(x_r) * m
-        return dx, dy, dz
+        self.model.content_update(dt)
 
-    def get_motion_vector(self):
-        if any(self.strafe):
-            x, y = self.player.rotation
-            y_r = radians(y)
-            x_r = radians(x)
-            strafe = atan2(*self.strafe)
-            if self.player.flying:
-                m = cos(y_r)
-                dy = sin(y_r)
-                if self.strafe[1]:
-                    dy = 0.0
-                    m = 1
-                if self.strafe[0] > 0:
-                    dy *= -1
-                x_r += strafe
-                dx = cos(x_r) * m
-                dz = sin(x_r) * m
-            else:
-                dy = 0.0
-                x_r += strafe
-                dx = cos(x_r)
-                dz = sin(x_r)
-        else:
-            dy = 0.0
-            dx = 0.0
-            dz = 0.0
-        return dx, dy, dz
+        m = 8
+        dt = min(dt, 0.2)
+        for _ in xrange(m):
+            self._update(dt / m)
+        if self.mouse_pressed:
+            vector = self.player.get_sight_vector()
+            block, previous = self.model.hit_test(self.player.position, vector)
+            if block:
+                if self.highlighted_block != block:
+                    self.set_highlighted_block(block)
+
+            if self.highlighted_block:
+                hit_block = self.model[self.highlighted_block]
+                if hit_block.hardness >= 0:
+                    self.block_damage += self.player.attack_power
+                    if self.block_damage >= hit_block.hardness:
+                        self.model.remove_block(self.highlighted_block)
+                        self.set_highlighted_block(None)
+                        if hit_block.drop_id is not None \
+                                and self.player.add_item(hit_block.drop_id):
+                            self.item_list.update_items()
+                            self.inventory_list.update_items()
+                else:
+                    self.set_highlighted_block(None)
+        self.update_time()
+        self.camera.update(dt)
+
+    def setup(self, show_fog = False):
+        self.show_fog = show_fog
+            
+        glClearColor(BACK_RED, BACK_GREEN, BACK_BLUE, 1)
+        glEnable(GL_LIGHTING)
+        glEnable(GL_LIGHT0)
+        glEnable(GL_LIGHT1)
+        glEnable(GL_LIGHT2)
+        glEnable(GL_CULL_FACE)
+        glEnable(GL_BLEND)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+
+        if self.show_fog:
+            glEnable(GL_FOG)
+            glFogfv(GL_FOG_COLOR, vec(BACK_RED, BACK_GREEN, BACK_BLUE, 1))
+            glHint(GL_FOG_HINT, GL_DONT_CARE)
+            glFogi(GL_FOG_MODE, GL_LINEAR)
+            glFogf(GL_FOG_DENSITY, 0.35)
+            glFogf(GL_FOG_START, 20.0)
+            glFogf(GL_FOG_END, DRAW_DISTANCE) # 80)
 
     def update_time(self):
         """
@@ -579,7 +668,7 @@ class Window(pyglet.window.Window):
         The time of day is converted to degrees and then to radians.
         """
 
-        if not self.exclusive:
+        if not self.window.exclusive:
             return
 
         time_of_day = self.time_of_day if self.time_of_day < 12.0 \
@@ -622,80 +711,26 @@ class Window(pyglet.window.Window):
             else:
                 self.clock += 1
 
-    def update(self, dt):
-        sector = sectorize(self.player.position)
-        if sector != self.sector:
-            self.model.change_sectors(self.sector, sector)
-            # When the world is loaded, show every visible sector.
-            if self.sector is None:
-                self.model.process_entire_queue()
-            self.sector = sector
-
-        self.model.content_update(dt)
-
-        m = 8
-        dt = min(dt, 0.2)
-        for _ in xrange(m):
-            self._update(dt / m)
-        if self.mouse_pressed:
-            vector = self.get_sight_vector()
-            block, previous = self.model.hit_test(self.player.position, vector)
-            if block:
-                if self.highlighted_block != block:
-                    self.set_highlighted_block(block)
-
-            if self.highlighted_block:
-                hit_block = self.model[self.highlighted_block]
-                if GAMEMODE == 1:
-                    if hit_block.hardness >= 0:
-                        self.block_damage += self.player.attack_power
-                        if self.block_damage >= hit_block.hardness:
-                            self.model.remove_block(self.highlighted_block)
-                            self.set_highlighted_block(None)
-                            if hit_block.drop_id is not None \
-                                    and self.player.add_item(hit_block.drop_id):
-                                self.item_list.update_items()
-                                self.inventory_list.update_items()
-                    else:
-                        self.set_highlighted_block(None)
-                if GAMEMODE == 0:
-                    self.model.remove_block(self.highlighted_block)
-                    self.set_highlighted_block(None)
-                    if hit_block.drop_id is not None \
-                            and self.player.add_item(hit_block.drop_id):
-                        self.item_list.update_items()
-                        self.inventory_list.update_items()
-                    else:
-                        self.set_highlighted_block(None)
-        self.update_time()
-
     def _update(self, dt):
         # walking
         speed = 15 if self.player.flying else 5
         d = dt * speed
-        dx, dy, dz = self.get_motion_vector()
+        dx, dy, dz = self.player.get_motion_vector()
         dx, dy, dz = dx * d, dy * d, dz * d
         # gravity
         if not self.player.flying:
-            self.dy -= dt * 0.022  # g force, should be = jump_speed * 0.5 /
+            self.player.dy -= dt * 0.022  # g force, should be = jump_speed * 0.5 /
             # max_jump_height
-            self.dy = max(self.dy, -0.5)  # terminal velocity
-            dy += self.dy
+            self.player.dy = max(self.player.dy, -0.5)  # terminal velocity
+            dy += self.player.dy
         else:
-            self.dy = max(self.dy, -0.5)  # terminal velocity
-            dy += self.dy
+            self.player.dy = max(self.player.dy, -0.5)  # terminal velocity
+            dy += self.player.dy
             # collisions
         x, y, z = self.player.position
         x, y, z = self.collide((x + dx, y + dy, z + dz), 2)
-      #  print(str(dy) + ' ' + str(self.dy)) 
+      #  print(str(dy) + ' ' + str(self.player.dy)) 
         self.player.position = (x, y, z)
-
-    def set_highlighted_block(self, block):
-        self.highlighted_block = block
-        self.block_damage = 0
-        if self.crack:
-            self.crack.delete()
-        self.crack = None
 
     def set_highlighted_block(self, block):
         self.highlighted_block = block
@@ -733,7 +768,7 @@ class Window(pyglet.window.Window):
                     if face == (0, -1, 0) or face == (0, 1, 0):
                         # jump damage
                         if not self.player.flying and self.player.game_mode is not 0:
-                            damage = self.dy * -1000.0
+                            damage = self.player.dy * -1000.0
                             damage = 3.0 * damage / 22.0
                             damage -= 2.0
                             if damage >= 0.0:
@@ -751,23 +786,13 @@ class Window(pyglet.window.Window):
                                 if health_change != 0:
                                     self.player.change_health(health_change)
                                     self.item_list.update_health()
-                        self.dy = 0
+                        self.player.dy = 0
                     break
         return tuple(p)
 
-    def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
-        if (self.exclusive or self.show_inventory) and scroll_y != 0:
-            if not self.show_inventory:
-                self.item_list.change_index(scroll_y * -1)
-            else:
-                self.inventory_list.change_index(scroll_y * -1)
-
     def on_mouse_press(self, x, y, button, modifiers):
-        if self.show_inventory:
-            self.inventory_list.on_mouse_press(x, y, button, modifiers)
-            return
-        if self.exclusive:
-            vector = self.get_sight_vector()
+        if self.window.exclusive:
+            vector = self.player.get_sight_vector()
             block, previous = self.model.hit_test(self.player.position, vector)
             if button == pyglet.window.mouse.LEFT:
                 if block:
@@ -794,70 +819,31 @@ class Window(pyglet.window.Window):
                     self.item_list.update_health()
                     self.item_list.update_items()
         else:
-            self.set_exclusive_mouse(True)
+            self.window.set_exclusive_mouse(True)
 
     def on_mouse_release(self, x, y, button, modifiers):
-        self.set_highlighted_block(None)
-        self.mouse_pressed = False
+        if self.window.exclusive:
+            self.set_highlighted_block(None)
+            self.mouse_pressed = False
 
     def on_mouse_motion(self, x, y, dx, dy):
-        if self.show_inventory:
-            self.inventory_list.on_mouse_motion(x, y, dx, dy)
-            return
-        if self.exclusive:
+        if self.window.exclusive:
             m = 0.15
             x, y = self.player.rotation
             x, y = x + dx * m, y + dy * m
             y = max(-90, min(90, y))
             self.player.rotation = (x, y)
+            self.camera.rotate(x, y)
 
     def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
         if button == pyglet.window.mouse.LEFT:
-            if self.show_inventory:
-                self.inventory_list.on_mouse_drag(x, y, dx, dy, button, modifiers)
-                return
-            if self.exclusive:
-                self.on_mouse_motion(x, y, dx, dy)
+            self.on_mouse_motion(x, y, dx, dy)
 
     def on_key_press(self, symbol, modifiers):
-        if symbol == self.key_move_forward:
-            self.strafe[0] -= 1
-        elif symbol == self.key_move_backward:
-            self.strafe[0] += 1
-        elif symbol == self. key_move_left:
-            self.strafe[1] -= 1
-        elif symbol == self.key_move_right:
-            self.strafe[1] += 1
-        elif symbol == self.key_jump:
-            if self.player.flying:
-                self.dy = 0.045  # jump speed
-            elif self.dy == 0:
-                self.dy = 0.016  # jump speed
-        elif symbol == key.LSHIFT or symbol == key.RSHIFT:
-            if self.player.flying:
-                self.dy = -0.045  # inversed jump speed
-        elif symbol == key.ESCAPE:
-            if self.show_inventory:
-                self.inventory_list.toggle_active_frame_visibility()
-                self.show_inventory = not self.show_inventory
-                self.set_exclusive_mouse(not self.show_inventory)
-                self.item_list.update_items()
-            else:
-                self.set_exclusive_mouse(False)
-        elif symbol == key.TAB:
-            if self.player.game_mode == 0:
-                self.dy = 0
-                self.player.flying = not self.player.flying
-        elif symbol == key.B or symbol == key.F3:
+        if symbol == key.B or symbol == key.F3:
             self.show_gui = not self.show_gui
-        elif symbol in self.num_keys:
-            index = (symbol - self.num_keys[0])
-            self.item_list.set_index(index)
         elif symbol == key.V:
             self.save_to_file()
-        elif symbol == key.Q:
-            if options.fullscreen == True:
-                pyglet.app.exit() # for fullscreen
         elif symbol == key.M:
             if self.last_key == symbol and not self.sorted:
                 self.player.quick_slots.sort()
@@ -869,68 +855,17 @@ class Window(pyglet.window.Window):
                 self.item_list.update_items()
                 self.inventory_list.update_items()
         elif symbol == self.key_inventory:
-            self.inventory_list.update_items()
-            self.inventory_list.toggle_active_frame_visibility()
-            self.show_inventory = not self.show_inventory
-            self.set_exclusive_mouse(not self.show_inventory)
-            self.item_list.update_items()
-        elif symbol == key.ENTER:
-            if self.show_inventory:
-                current_block = self.inventory_list\
-                    .get_current_block_item_and_amount()
-                if current_block:
-                    if not self.player.quick_slots.add_item(
-                            current_block[0].id,
-                            quantity=current_block[1]):
-                        self.player.inventory.add_item(current_block[0].id,
-                                                       quantity=current_block[
-                                                           1])
-            else:
-                current_block = self.item_list\
-                    .get_current_block_item_and_amount()
-                if current_block:
-                    if not self.player.inventory.add_item(
-                            current_block[0].id, quantity=current_block[1]):
-                        self.player.quick_slots.add_item(
-                            current_block[0].id, quantity=current_block[1])
-            self.item_list.update_items()
-            self.inventory_list.update_items()
-        elif symbol == self.key_sound_up:
-            globals.EFFECT_VOLUME = min(globals.EFFECT_VOLUME + .1, 1)
-        elif symbol == self.key_sound_down:
-            globals.EFFECT_VOLUME = max(globals.EFFECT_VOLUME - .1, 0)
-
+            self.set_highlighted_block(None)
+            self.mouse_pressed = False
+            self.inventory_list.toggle()
         self.last_key = symbol
 
-    def on_key_release(self, symbol, modifiers):
-        if symbol == self.key_move_forward:
-            self.strafe[0] += 1
-        elif symbol == self.key_move_backward:
-            self.strafe[0] -= 1
-        elif symbol == self.key_move_left:
-            self.strafe[1] += 1
-        elif symbol == self.key_move_right:
-            self.strafe[1] -= 1
-        elif (symbol == self.key_jump or symbol == key.LSHIFT
-              or symbol == key.RSHIFT) and self.player.flying:
-            self.dy = 0
-
     def on_resize(self, width, height):
-        if self.reticle:
-            self.reticle.delete()
-        x, y = self.width / 2, self.height / 2
-        n = 10
-        self.reticle = pyglet.graphics.vertex_list(
-            4,
-            ('v2i', (x - n, y, x + n, y, x, y - n, x, y + n))
-        )
         if self.show_gui:
             self.label.y = height - 10
-            self.item_list.set_position(width, height)
-            self.inventory_list.set_position(width, height)
 
     def set_2d(self):
-        width, height = self.get_size()
+        width, height = self.window.get_size()
         glDisable(GL_DEPTH_TEST)
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
@@ -943,7 +878,7 @@ class Window(pyglet.window.Window):
         glLoadIdentity()
 
     def set_3d(self):
-        width, height = self.get_size()
+        width, height = self.window.get_size()
         if self.show_fog:
             glFogfv(GL_FOG_COLOR, vec(BACK_RED, BACK_GREEN, BACK_BLUE, 1.0))
         glEnable(GL_DEPTH_TEST)
@@ -957,12 +892,7 @@ class Window(pyglet.window.Window):
             gluPerspective(FOV, 1, NEAR_CLIP_DISTANCE, FAR_CLIP_DISTANCE)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
-        x, y = self.player.rotation
-        glRotatef(x, 0, 1, 0)
-        x_r = radians(x)
-        glRotatef(-y, cos(x_r), 0, sin(x_r))
-        x, y, z = self.player.position
-        glTranslatef(-x, -y, -z)
+        self.camera.transform()
         glEnable(GL_LIGHTING)
         glLightfv(GL_LIGHT0, GL_DIFFUSE, vec(0.9, 0.9, 0.9, 1.0))
         glLightfv(GL_LIGHT0, GL_SPECULAR, vec(0.9, 0.9, 0.9, 1.0))
@@ -973,11 +903,10 @@ class Window(pyglet.window.Window):
         glMaterialfv(GL_FRONT, GL_AMBIENT, self.earth)
         glMaterialfv(GL_FRONT, GL_DIFFUSE, self.white)
         glMaterialfv(GL_FRONT, GL_SHININESS, self.polished)
-
+        
     def clear(self):
         glClearColor(BACK_RED, BACK_GREEN, BACK_BLUE, 1.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        super(Window, self).clear()
 
     def on_draw(self):
         self.clear()
@@ -989,22 +918,12 @@ class Window(pyglet.window.Window):
         self.set_2d()
         if self.show_gui:
             self.draw_label()
-            if not self.show_inventory:
-                self.item_list.batch.draw()
-            if self.show_inventory:
-                self.inventory_list.batch.draw()
-                if self.inventory_list.selected_item_icon:
-                    self.inventory_list.selected_item_icon.draw()
-                if self.inventory_list.crafting_outcome_icon:
-                    self.inventory_list.crafting_outcome_icon.draw()
-        if self.exclusive:
-            self.draw_reticle()
-
-        pyglet.clock.tick()
+            self.item_list.draw()
+            self.inventory_list.draw()
 
     def draw_focused_block(self):
         glDisable(GL_LIGHTING)
-        vector = self.get_sight_vector()
+        vector = self.player.get_sight_vector()
         position = self.model.hit_test(self.player.position, vector)[0]
         if position:
             hit_block = self.model[position]
@@ -1036,32 +955,57 @@ class Window(pyglet.window.Window):
                pyglet.clock.get_fps(), x, y, z,
                len(self.model._shown), len(self.model))
         self.label.draw()
+        
+    def push_handlers(self):
+        self.setup()
+        self.window.push_handlers(self.camera)
+        self.window.push_handlers(self.player)
+        self.window.push_handlers(self)
+        self.window.push_handlers(self.item_list)
+        self.window.push_handlers(self.inventory_list)
+        
 
-    def draw_reticle(self):
-        glColor3d(0, 0, 0)
-        self.reticle.draw(GL_LINES)
+class Window(pyglet.window.Window):
+    def __init__(self, width, height, launch_fullscreen=False, show_gui=True, save=None, **kwargs):
+        super(Window, self).__init__(width, height, **kwargs)
+        self.exclusive = False
+        self.reticle = None
+        self.controller = GameController(self, show_gui=show_gui, save=save)
+        self.controller.push_handlers()
+        if launch_fullscreen:
+            self.set_fullscreen()
+        self.set_exclusive_mouse(True)
+        pyglet.clock.schedule_interval(self.update, 1.0 / MAX_FPS)
 
+    def set_exclusive_mouse(self, exclusive):
+        super(Window, self).set_exclusive_mouse(exclusive)
+        self.exclusive = exclusive
 
-def setup_fog(window):
-    glEnable(GL_FOG)
-    glFogfv(GL_FOG_COLOR, vec(BACK_RED, BACK_GREEN, BACK_BLUE, 1))
-    glHint(GL_FOG_HINT, GL_DONT_CARE)
-    glFogi(GL_FOG_MODE, GL_LINEAR)
-    glFogf(GL_FOG_DENSITY, 0.35)
-    glFogf(GL_FOG_START, 20.0)
-    glFogf(GL_FOG_END, DRAW_DISTANCE) # 80)
-    window.show_fog = True
+    def update(self, dt):
+        self.controller.update(dt)
 
-def setup():
-    glClearColor(BACK_RED, BACK_GREEN, BACK_BLUE, 1)
-    glEnable(GL_LIGHTING)
-    glEnable(GL_LIGHT0)
-    glEnable(GL_LIGHT1)
-    glEnable(GL_LIGHT2)
-    glEnable(GL_CULL_FACE)
-    glEnable(GL_BLEND)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+    def on_key_press(self, symbol, modifiers):
+        if self.exclusive:
+            if symbol == key.ESCAPE and not self.fullscreen:
+                self.set_exclusive_mouse(False)
+            elif symbol == key.Q and self.fullscreen:
+                pyglet.app.exit() # for fullscreen
+
+    def on_draw(self):
+        if self.exclusive:
+            glColor3d(0, 0, 0)
+            self.reticle.draw(GL_LINES)
+        pyglet.clock.tick()
+
+    def on_resize(self, width, height):
+        if self.reticle:
+            self.reticle.delete()
+        x, y = width / 2, height / 2
+        n = 10
+        self.reticle = pyglet.graphics.vertex_list(
+            4,
+            ('v2i', (x - n, y, x + n, y, x, y - n, x, y + n))
+        )
 
 
 def main(options):
@@ -1126,24 +1070,18 @@ def main(options):
             'Seed used the %d %m %Y at %H:%M:%S\n'))
         seeds.write('%s\n\n' % seed)
 
+    # try:
+        # window_config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
+        # window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=window_config, save=save_object)
+    # except pyglet.window.NoSuchConfigException:
+    window = Window(options.width, options.height, launch_fullscreen=options.fullscreen,
+        show_gui=options.show_gui, save=save_object, caption=APP_NAME, resizable=True, vsync=False)
 
-    if options.fullscreen == True:
-        window = Window(
-        fullscreen=True, caption=APP_NAME,
-        resizable=True, save=save_object, vsync=False)
-    elif options.fullscreen == False:
-            window = Window(
-        width=options.width, height=options.height, caption=APP_NAME,
-        resizable=True, save=save_object, vsync=False)
-
-    window.set_exclusive_mouse(True)
-    setup()
-    if config.getboolean('World', 'show_fog'):
-        setup_fog(window)
+    #window.setup_game(show_fog=config.getboolean('World', 'show_fog'))
     pyglet.clock.set_fps_limit(MAX_FPS)
     pyglet.app.run()
     if options.disable_auto_save and options.disable_save:
-        window.save_to_file()
+        window.controller.save_to_file()
     if options.save_config:
         try:
             with open(config_file, 'wb') as handle:
