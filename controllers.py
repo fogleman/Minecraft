@@ -121,8 +121,6 @@ class GameController(object):
         glEnable(GL_LIGHT2)
         glEnable(GL_CULL_FACE)
         glEnable(GL_BLEND)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
         if self.show_fog:
             glEnable(GL_FOG)
