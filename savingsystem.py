@@ -13,7 +13,8 @@ COMPRESSED_SAVE_TYPE = 1
 
 SAVE_TYPES = [CLASSIC_SAVE_TYPE, COMPRESSED_SAVE_TYPE] # last is always the newest
 
-def save_world(window, game_dir, world="world", save_type=COMPRESSED_SAVE_TYPE):
+def save_world(window, game_dir, world=None, save_type=COMPRESSED_SAVE_TYPE):
+	if world is None: world = "world"
 	if not os.path.exists(os.path.join(game_dir, world)):
 		os.makedirs(os.path.join(game_dir, world))
 	#window.model.items(), window.model.sectors
@@ -24,10 +25,12 @@ def save_world(window, game_dir, world="world", save_type=COMPRESSED_SAVE_TYPE):
 	blocks_save = (3,window.model.items(), window.model.sectors)
 	pickle.dump(blocks_save, open(os.path.join(game_dir, world, "blocks.pkl"), "wb"))
 
-def world_exists(game_dir, world="world"):
+def world_exists(game_dir, world=None):
+	if world is None: world = "world"
 	return os.path.lexists(os.path.join(game_dir, world))
 
-def open_world(gamecontroller, game_dir, world="world"):
+def open_world(gamecontroller, game_dir, world=None):
+	if world is None: world = "world"
 	loaded_world = pickle.load(open(os.path.join(game_dir, world, "blocks.pkl"), "rb"))
 
 	gamecontroller.model = Model(initialize=False)
