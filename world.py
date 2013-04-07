@@ -126,7 +126,7 @@ class World(dict):
         if position in self:
             if not force:
                 return
-            self.remove_block(position, sync)
+            self.remove_block(None, position, sync)
         self[position] = block
         self.sectors[sectorize(position)].append(position)
         if sync:
@@ -134,9 +134,9 @@ class World(dict):
                 self.show_block(position)
             self.check_neighbors(position)
 
-    def remove_block(self, position, sync=True, sound=True):
+    def remove_block(self, player, position, sync=True, sound=True):
         if sound:
-            self[position].play_break_sound()
+            self[position].play_break_sound(player, position)
             # BLOCKS_DIR[block].play_break_sound()
         del self[position]
         self.sectors[sectorize(position)].remove(position)
@@ -322,5 +322,5 @@ class World(dict):
             self.spreading_time = 0.0
             position, block = random.choice(
                 self.spreading_mutable_blocks.items())
-            self.remove_block(position, sound=False)
+            self.remove_block(None, position, sound=False)
             self.add_block(position, grass_block, force=False)

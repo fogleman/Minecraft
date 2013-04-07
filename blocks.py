@@ -83,9 +83,9 @@ class Block(object):
             xp,ym,zm, xm,ym,zm, xm,yp,zm, xp,yp,zm,  # back
         ]
 
-    def play_break_sound(self):
+    def play_break_sound(self, player=None, position=None):
         if self.break_sound is not None:
-            sounds.play_sound(self.break_sound)
+            sounds.play_sound(self.break_sound, player=player, position=position)
 
 
 class AirBlock(Block):

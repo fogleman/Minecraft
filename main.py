@@ -632,7 +632,7 @@ class GameController(object):
                 if hit_block.hardness >= 0:
                     self.block_damage += self.player.attack_power
                     if self.block_damage >= hit_block.hardness:
-                        self.model.remove_block(self.highlighted_block)
+                        self.model.remove_block(self.player, self.highlighted_block)
                         self.set_highlighted_block(None)
                         if hit_block.drop_id is not None \
                                 and self.player.add_item(hit_block.drop_id):
