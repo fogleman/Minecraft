@@ -194,8 +194,7 @@ class Player(Entity):
         dx, dy, dz = dx * d, dy * d, dz * d
         # gravity
         if not self.flying:
-            self.dy -= dt * 0.022  # g force, should be = jump_speed * 0.5 /
-            # max_jump_height
+            self.dy -= dt * 0.022  # g force, should be = jump_speed * 0.5 / max_jump_height
             self.dy = max(self.dy, -0.5)  # terminal velocity
             dy += self.dy
         else:
@@ -204,7 +203,6 @@ class Player(Entity):
             # collisions
         x, y, z = self.position
         x, y, z = self.collide(parent, (x + dx, y + dy, z + dz), 2)
-      #  print(str(dy) + ' ' + str(self.player.dy)) 
         self.position = (x, y, z)
 
     def collide(self, parent, position, height):
@@ -677,9 +675,9 @@ class GameController(object):
         self.model.content_update(dt)
 
         m = 8
-        dt = min(dt, 0.2)
+        df = min(dt, 0.2)
         for _ in xrange(m):
-            self.player.update(dt / m, self)
+            self.player.update(df / m, self)
         if self.mouse_pressed:
             vector = self.player.get_sight_vector()
             block, previous = self.model.hit_test(self.player.position, vector)
