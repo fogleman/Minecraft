@@ -6,7 +6,10 @@ from globals import APP_NAME
 
 
 ext_modules = [
-    Extension("world", ["world.py"]),
+    Extension(name, [name + '.py']) for name in (
+        'blocks', 'cameras', 'crafting', 'entity', 'gui', 'inventory', 'items',
+        'manager', 'nature', 'savingsystem', 'sounds', 'terrain', 'world',
+    )
 ]
 
 setup(

@@ -65,7 +65,7 @@ cdef class World(dict):
 
     @cython.locals(x=float, y=float, z=float,
                    index=int, count=int,
-                   vertex_data=cython.list, texture_data=cython.list,
+                   vertex_data=list, texture_data=list,
                    dx=float, dy=float, dz=float,
                    i=int, j=int)
     cpdef object _show_block(self, tuple position, object block)
