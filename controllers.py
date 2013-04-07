@@ -52,21 +52,40 @@ class MainMenuController(Controller):
         self.group = pyglet.graphics.OrderedGroup(1)
         self.labels_group = pyglet.graphics.OrderedGroup(2)
 
+        self.show_gui = show_gui
+        self.save = save
+
         image = pyglet.image.load(os.path.join('resources', 'textures', 'frame.png'))
+        button_image = pyglet.image.load(os.path.join('resources', 'textures', 'button.png'))
         self.frame = pyglet.sprite.Sprite(image.get_region(0, 0, image.width, image.height), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
+        self.button = pyglet.sprite.Sprite(button_image.get_region(0, 0, button_image.width, button_image.height), batch=self.batch, group=self.group)
         self.label = Label(APP_NAME, font_name='Arial', font_size=30, x=window.width/2, y=window.height - 10,
             anchor_x='center', anchor_y='top', color=(0, 0, 0, 255), batch=self.batch,
+            group=self.labels_group)
+        self.button_label = Label("Start game", font_name='Arial', font_size=12, x=window.width/2, y=window.height - 10,
+            anchor_x='center', anchor_y='center', color=(255, 255, 255, 255), batch=self.batch,
             group=self.labels_group)
         
     def clear(self):
         glClearColor(0.0, 0.0, 0.0, 1.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        
+    def on_mouse_press(self, x, y, button, modifiers):
+        if x >= self.button.x and x <= self.button.x + self.button.width \
+            and y >= self.button.y and y <= self.button.y + self.button.height:
+            controller = GameController(self.window, show_gui=self.show_gui, save=self.save)
+            self.window.switch_controller(controller)
+            return pyglet.event.EVENT_HANDLED
 
     def on_resize(self, width, height):
         self.frame.x = (width - self.frame.width) / 2
         self.frame.y = (height - self.frame.height) / 2
         self.label.y = self.frame.y + self.frame.height
         self.label.x = width / 2
+        self.button.x = self.frame.x + (self.frame.width - self.button.width) / 2
+        self.button.y = self.frame.y + (self.frame.height - self.button.height) / 2
+        self.button_label.x = self.button.x + self.button.width / 2
+        self.button_label.y = self.button.y + self.button.height / 2
 
     def on_draw(self):
         self.clear()
@@ -74,6 +93,8 @@ class MainMenuController(Controller):
         self.set_2d()
         self.frame.draw()
         self.label.draw()
+        self.button.draw()
+        self.button_label.draw()
 
 
 class GameController(Controller):
@@ -188,6 +209,8 @@ class GameController(Controller):
             glFogf(GL_FOG_DENSITY, 0.35)
             glFogf(GL_FOG_START, 20.0)
             glFogf(GL_FOG_END, DRAW_DISTANCE) # 80)
+            
+        self.window.set_exclusive_mouse(True)
 
     def update_time(self):
         """
