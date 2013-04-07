@@ -90,10 +90,7 @@ class MainMenuController(Controller):
         self.clear()
         glColor3d(1, 1, 1)
         self.set_2d()
-        self.frame.draw()
-        self.label.draw()
-        self.start_game.draw()
-        self.exit_game.draw()
+        self.batch.draw()
 
 
 class GameController(Controller):
