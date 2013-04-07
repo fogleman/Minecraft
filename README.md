@@ -13,7 +13,7 @@
     cd Minecraft
     python main.py
 
-You may also need to install **AVBin library** (http://avbin.github.com/AVbin/Download.html), especially if you are on **Linux** machine.
+You may also need to install **AVBin library** (http://avbin.github.com/AVbin/Download.html), especially if you are on **Linux** machine. If you have **Windows** or **Linux** operating system, you will also need to install **OpenAL library** (http://connect.creativelabs.com/openal/default.aspx).
 
 ### Mac
 

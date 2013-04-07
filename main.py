@@ -65,11 +65,12 @@ class Window(pyglet.window.Window):
         super(Window, self).__init__(width, height, **kwargs)
         self.exclusive = False
         self.reticle = None
-        self.controller = GameController(self, show_gui=show_gui, save=save)
-        self.controller.push_handlers()
+        self.controller = None
+        #self.controller = GameController(self, show_gui=show_gui, save=save)
+        controller = MainMenuController(self, show_gui=show_gui, save=save)
+        self.switch_controller(controller)
         if launch_fullscreen:
             self.set_fullscreen()
-        self.set_exclusive_mouse(True)
         pyglet.clock.schedule_interval(self.update, 1.0 / MAX_FPS)
 
     def set_exclusive_mouse(self, exclusive):
@@ -78,6 +79,12 @@ class Window(pyglet.window.Window):
 
     def update(self, dt):
         self.controller.update(dt)
+        
+    def switch_controller(self, new_controller):
+        if self.controller:
+            self.controller.pop_handlers()
+        self.controller = new_controller
+        self.controller.push_handlers()
 
     def on_key_press(self, symbol, modifiers):
         if self.exclusive:
