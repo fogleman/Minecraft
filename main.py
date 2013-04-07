@@ -107,9 +107,6 @@ class Player(Entity):
         elif self.inventory.add_item(item_id):
             return True
         return False
-        
-    def set_parent(self, parent):
-        self.parent = parent
 
     def change_health(self, change):
         self.health += change
@@ -189,7 +186,7 @@ class Player(Entity):
         dz = sin(x_r) * m
         return dx, dy, dz
 
-    def update(self, dt):
+    def update(self, dt, parent):
         # walking
         speed = 15 if self.flying else 5
         d = dt * speed
@@ -206,11 +203,11 @@ class Player(Entity):
             dy += self.dy
             # collisions
         x, y, z = self.position
-        x, y, z = self.collide((x + dx, y + dy, z + dz), 2)
+        x, y, z = self.collide(parent, (x + dx, y + dy, z + dz), 2)
       #  print(str(dy) + ' ' + str(self.player.dy)) 
         self.position = (x, y, z)
 
-    def collide(self, position, height):
+    def collide(self, parent, position, height):
         pad = 0.25
         p = list(position)
         np = normalize(position)
@@ -226,7 +223,7 @@ class Player(Entity):
                     op[1] -= dy
                     op[i] += face[i]
                     op = tuple(op)
-                    if op not in self.parent.model:
+                    if op not in parent.model:
                         continue
                     p[i] -= (d - pad) * face[i]
                     if face == (0, -1, 0) or face == (0, 1, 0):
@@ -249,7 +246,7 @@ class Player(Entity):
                                     health_change = -3
                                 if health_change != 0:
                                     self.change_health(health_change)
-                                    self.parent.item_list.update_health()
+                                    parent.item_list.update_health()
                         self.dy = 0
                     break
         return tuple(p)
@@ -659,7 +656,6 @@ class GameController(object):
             print('Game mode: Creative')
         if self.player.game_mode == 1:
             print('Game mode: Survival')
-        self.player.set_parent(self)
         self.item_list = ItemSelector(self, self.player, self.model)
         self.inventory_list = InventorySelector(self, self.player, self.model)
         self.camera = Camera3D(target=self.player)
@@ -683,7 +679,7 @@ class GameController(object):
         m = 8
         dt = min(dt, 0.2)
         for _ in xrange(m):
-            self.player.update(dt / m)
+            self.player.update(dt / m, self)
         if self.mouse_pressed:
             vector = self.player.get_sight_vector()
             block, previous = self.model.hit_test(self.player.position, vector)
