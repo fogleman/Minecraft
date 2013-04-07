@@ -28,6 +28,14 @@ class Rectangle(object):
 
     def hit_test(self, x, y):
         return (x >= self.x and x <= self.x + self.width) and (y >= self.y and y <= self.y + self.height)
+	
+    @property
+    def min(self):
+        return (self.x, self.y)
+
+    @property
+    def max(self):
+        return (self.x + self.width, self.y + self.height)
 
 class Button(Rectangle):
     def __init__(self, x, y, width, height, image=None, caption=None, batch=None, group=None):
@@ -39,10 +47,10 @@ class Button(Rectangle):
         if image:
             self.sprite = Sprite(image.get_region(0, 0, self.width, self.height), batch=self.batch, group=self.group)
         if caption:
-            center = self.get_center()
-            self.label = Label(caption, font_name='Arial', font_size=12, x=center[0], y=center[1],
+            self.label = Label(caption, font_name='Arial', font_size=12,
                 anchor_x='center', anchor_y='center', color=(255, 255, 255, 255), batch=self.batch,
                 group=self.group)
+        self.set_position(x, y)
 	
     def set_position(self, x, y):
         super(Button, self).set_position(x, y)

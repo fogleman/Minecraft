@@ -55,9 +55,11 @@ class MainMenuController(Controller):
         self.show_gui = show_gui
 
         image = pyglet.image.load(os.path.join('resources', 'textures', 'frame.png'))
+        self.frame_rect = Rectangle(0, 0, image.width, image.height)
         self.frame = pyglet.sprite.Sprite(image.get_region(0, 0, image.width, image.height), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
         button_image = pyglet.image.load(os.path.join('resources', 'textures', 'button.png'))
-        self.button = Button(self.frame.x, self.frame.y, 160, 50, image=button_image, caption="Start game", batch=self.batch, group=self.group)
+        self.start_game = Button(0, 0, 160, 50, image=button_image, caption="Start game", batch=self.batch, group=self.group)
+        self.exit_game = Button(0, 0, 160, 50, image=button_image, caption="Exit game", batch=self.batch, group=self.group)
         self.label = Label(APP_NAME, font_name='Arial', font_size=30, x=window.width/2, y=window.height - 10,
             anchor_x='center', anchor_y='top', color=(0, 0, 0, 255), batch=self.batch,
             group=self.labels_group)
@@ -67,20 +69,22 @@ class MainMenuController(Controller):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         
     def on_mouse_press(self, x, y, button, modifiers):
-        if self.button.hit_test(x, y):
+        if self.start_game.hit_test(x, y):
             controller = GameController(self.window, show_gui=self.show_gui)
             self.window.switch_controller(controller)
             return pyglet.event.EVENT_HANDLED
+        elif self.exit_game.hit_test(x, y):
+            pyglet.app.exit()
+            return pyglet.event.EVENT_HANDLED
 
     def on_resize(self, width, height):
-        self.frame.x = (width - self.frame.width) / 2
-        self.frame.y = (height - self.frame.height) / 2
+        self.frame.x, self.frame.y = (width - self.frame.width) / 2, (height - self.frame.height) / 2
         self.label.y = self.frame.y + self.frame.height
         self.label.x = width / 2
-        self.button.set_position(self.frame.x + (self.frame.width - self.button.width) / 2,
-            self.frame.y + (self.frame.height - self.button.height) / 2)
-        #self.button_label.x = self.button.x + self.button.width / 2
-        #self.button_label.y = self.button.y + self.button.height / 2
+        button_x = self.frame.x + (self.frame.width - self.start_game.width) / 2
+        button_y = self.frame.y + (self.frame.height - self.start_game.height) / 2
+        self.start_game.set_position(button_x, button_y)
+        self.exit_game.set_position(button_x, button_y - self.start_game.height - 20)
 
     def on_draw(self):
         self.clear()
@@ -88,8 +92,8 @@ class MainMenuController(Controller):
         self.set_2d()
         self.frame.draw()
         self.label.draw()
-        self.button.draw()
-        #self.button_label.draw()
+        self.start_game.draw()
+        self.exit_game.draw()
 
 
 class GameController(Controller):
