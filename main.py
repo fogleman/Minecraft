@@ -15,7 +15,7 @@ pyglet.options['debug_gl'] = False
 from pyglet.gl import *
 from pyglet.window import key
 
-# import kytten #unused, future potential reference
+#import kytten
 from blocks import *
 from entity import *
 from globals import *
@@ -25,6 +25,7 @@ from inventory import *
 from nature import *
 from world import *
 from savingsystem import *
+from cameras import *
 
 SAVE_FILENAME = None
 
@@ -77,37 +78,21 @@ def vec(*args):
 
 class Player(Entity):
     def __init__(self, position, rotation, flying=False, game_mode=0):
-        super(Player, self).__init__(position, rotation, health=7, max_health=10, attack_power=0.05, attack_range=4)
+        super(Player, self).__init__(position, rotation, health=7, attack_power=0.05)
         self.inventory = Inventory()
         self.quick_slots = Inventory(9)
         self.flying = flying
+        self.max_health = 10
         self.game_mode = game_mode
-        if self.game_mode == 1:
-
-            initial_items = [bookshelf_block, furnace_block, brick_block, torch_block,
-                             lamp_block, glass_block, chest_block,
-                             sandstone_block, melon_block]
-            for item in initial_items:
-                quantity = random.randint(1, 10)
-                if random.choice((True, False)):
-                    self.inventory.add_item(item.id, quantity)
-                else:
-                    self.quick_slots.add_item(item.id, quantity)
-
-        if self.game_mode == 0:
-            initial_items = [bookshelf_block, furnace_block, brick_block, torch_block,
-                             lamp_block, glass_block, chest_block, cobblefence_block,
-                             sandstone_block, melon_block, lamp_block, stonebrick_block,
-                             oakwoodplank_block, junglewoodplank_block, sprucewoodplank_block,
-                             oakwood_block, oakleaf_block, junglewood_block, jungleleaf_block,
-                             birchwood_block, birchleaf_block, stoneslab_block, clay_block,
-                             farm_block, gravel_block]
-            for item in initial_items:
-                quantity = 64
-                #if random.choice((True, False)):
+        initial_items = [bookshelf_block, furnace_block, brick_block, torch_block,
+                         lamp_block, glass_block, chest_block,
+                         sandstone_block, melon_block]
+        for item in initial_items:
+            quantity = random.randint(1, 10)
+            if random.choice((True, False)):
                 self.inventory.add_item(item.id, quantity)
-                #else:
-                #    self.quick_slots.add_item(item.id, quantity)
+            else:
+                self.quick_slots.add_item(item.id, quantity)
 
     def add_item(self, item_id):
         if self.quick_slots.add_item(item_id):
@@ -453,10 +438,10 @@ class Model(World):
 
 
 class Window(pyglet.window.Window):
-    def __init__(self, *args, **kwargs):
-        self.show_gui = kwargs.pop('show_gui', True)
-        self.save = kwargs.pop('save', None)
-        super(Window, self).__init__(*args, **kwargs)
+    def __init__(self, width, height, launch_fullscreen=False, show_gui=True, save=None, **kwargs):
+        super(Window, self).__init__(width, height, **kwargs)
+        self.show_gui = show_gui
+        self.save = save
         self.exclusive = False
         self.strafe = [0, 0]
         self.sector = None
@@ -511,6 +496,7 @@ class Window(pyglet.window.Window):
                                       self.model)
         self.inventory_list = InventorySelector(self.width, self.height,
                                                 self.player, self.model)
+        self.camera = Camera3D(target=self.player)
         self.num_keys = [
             key._1, key._2, key._3, key._4, key._5,
             key._6, key._7, key._8, key._9, key._0]
@@ -519,12 +505,37 @@ class Window(pyglet.window.Window):
             self.label = pyglet.text.Label(
                 '', font_name='Arial', font_size=8, x=10, y=self.height - 10,
                 anchor_x='left', anchor_y='top', color=(255, 255, 255, 255))
+        self.set_exclusive_mouse(True)
+        if launch_fullscreen:
+            self.set_fullscreen()
         pyglet.clock.schedule_interval(self.update, 1.0 / MAX_FPS)
         pyglet.clock.schedule_interval_soft(self.model.process_queue, 1.0 / MAX_FPS)
 
     def set_exclusive_mouse(self, exclusive):
         super(Window, self).set_exclusive_mouse(exclusive)
         self.exclusive = exclusive
+
+    def setup_game(self, show_fog = False):
+        self.show_fog = show_fog
+
+        glClearColor(BACK_RED, BACK_GREEN, BACK_BLUE, 1)
+        glEnable(GL_LIGHTING)
+        glEnable(GL_LIGHT0)
+        glEnable(GL_LIGHT1)
+        glEnable(GL_LIGHT2)
+        glEnable(GL_CULL_FACE)
+        glEnable(GL_BLEND)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+
+        if self.show_fog:
+            glEnable(GL_FOG)
+            glFogfv(GL_FOG_COLOR, vec(BACK_RED, BACK_GREEN, BACK_BLUE, 1))
+            glHint(GL_FOG_HINT, GL_DONT_CARE)
+            glFogi(GL_FOG_MODE, GL_LINEAR)
+            glFogf(GL_FOG_DENSITY, 0.35)
+            glFogf(GL_FOG_START, 20.0)
+            glFogf(GL_FOG_END, DRAW_DISTANCE) # 80)
 
     def get_sight_vector(self):
         x, y = self.player.rotation
@@ -633,35 +644,24 @@ class Window(pyglet.window.Window):
             self._update(dt / m)
         if self.mouse_pressed:
             vector = self.get_sight_vector()
-            block, previous = self.model.hit_test(self.player.position, vector, self.player.attack_range)
+            block, previous = self.model.hit_test(self.player.position, vector)
             if block:
                 if self.highlighted_block != block:
                     self.set_highlighted_block(block)
 
             if self.highlighted_block:
                 hit_block = self.model[self.highlighted_block]
-                if GAMEMODE == 1:
-                    if hit_block.hardness >= 0:
-                        self.block_damage += self.player.attack_power
-                        if self.block_damage >= hit_block.hardness:
-                            self.model.remove_block(self.highlighted_block)
-                            self.set_highlighted_block(None)
-                            if hit_block.drop_id is not None \
-                                    and self.player.add_item(hit_block.drop_id):
-                                self.item_list.update_items()
-                                self.inventory_list.update_items()
-                    else:
-                        self.set_highlighted_block(None)
-                if GAMEMODE == 0:
-                    if hit_block.hardness >= 0:
+                if hit_block.hardness >= 0:
+                    self.block_damage += self.player.attack_power
+                    if self.block_damage >= hit_block.hardness:
                         self.model.remove_block(self.highlighted_block)
                         self.set_highlighted_block(None)
                         if hit_block.drop_id is not None \
                                 and self.player.add_item(hit_block.drop_id):
                             self.item_list.update_items()
                             self.inventory_list.update_items()
-                        else:
-                            self.set_highlighted_block(None)
+                else:
+                    self.set_highlighted_block(None)
         self.update_time()
 
     def _update(self, dt):
@@ -684,6 +684,7 @@ class Window(pyglet.window.Window):
         x, y, z = self.collide((x + dx, y + dy, z + dz), 2)
       #  print(str(dy) + ' ' + str(self.dy))
         self.player.position = (x, y, z)
+        self.camera.update()
 
     def set_highlighted_block(self, block):
         self.highlighted_block = block
@@ -763,7 +764,7 @@ class Window(pyglet.window.Window):
             return
         if self.exclusive:
             vector = self.get_sight_vector()
-            block, previous = self.model.hit_test(self.player.position, vector, self.player.attack_range)
+            block, previous = self.model.hit_test(self.player.position, vector)
             if button == pyglet.window.mouse.LEFT:
                 if block:
                     self.mouse_pressed = True
@@ -805,6 +806,7 @@ class Window(pyglet.window.Window):
             x, y = x + dx * m, y + dy * m
             y = max(-90, min(90, y))
             self.player.rotation = (x, y)
+            self.camera.rotate(x, y)
 
     def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
         if button == pyglet.window.mouse.LEFT:
@@ -840,9 +842,8 @@ class Window(pyglet.window.Window):
             else:
                 self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
-            if self.player.game_mode == 0:
-                self.dy = 0
-                self.player.flying = not self.player.flying
+            self.dy = 0
+            self.player.flying = not self.player.flying
         elif symbol == key.B or symbol == key.F3:
             self.show_gui = not self.show_gui
         elif symbol in self.num_keys:
@@ -947,12 +948,7 @@ class Window(pyglet.window.Window):
             gluPerspective(FOV, 1, NEAR_CLIP_DISTANCE, FAR_CLIP_DISTANCE)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
-        x, y = self.player.rotation
-        glRotatef(x, 0, 1, 0)
-        x_r = radians(x)
-        glRotatef(-y, cos(x_r), 0, sin(x_r))
-        x, y, z = self.player.position
-        glTranslatef(-x, -y, -z)
+        self.camera.transform()
         glEnable(GL_LIGHTING)
         glLightfv(GL_LIGHT0, GL_DIFFUSE, vec(0.9, 0.9, 0.9, 1.0))
         glLightfv(GL_LIGHT0, GL_SPECULAR, vec(0.9, 0.9, 0.9, 1.0))
@@ -995,7 +991,7 @@ class Window(pyglet.window.Window):
     def draw_focused_block(self):
         glDisable(GL_LIGHTING)
         vector = self.get_sight_vector()
-        position = self.model.hit_test(self.player.position, vector, self.player.attack_range)[0]
+        position = self.model.hit_test(self.player.position, vector)[0]
         if position:
             hit_block = self.model[position]
             if hit_block.density >= 1:
@@ -1030,28 +1026,6 @@ class Window(pyglet.window.Window):
     def draw_reticle(self):
         glColor3d(0, 0, 0)
         self.reticle.draw(GL_LINES)
-
-
-def setup_fog(window):
-    glEnable(GL_FOG)
-    glFogfv(GL_FOG_COLOR, vec(BACK_RED, BACK_GREEN, BACK_BLUE, 1))
-    glHint(GL_FOG_HINT, GL_DONT_CARE)
-    glFogi(GL_FOG_MODE, GL_LINEAR)
-    glFogf(GL_FOG_DENSITY, 0.35)
-    glFogf(GL_FOG_START, 20.0)
-    glFogf(GL_FOG_END, DRAW_DISTANCE) # 80)
-    window.show_fog = True
-
-def setup():
-    glClearColor(BACK_RED, BACK_GREEN, BACK_BLUE, 1)
-    glEnable(GL_LIGHTING)
-    glEnable(GL_LIGHT0)
-    glEnable(GL_LIGHT1)
-    glEnable(GL_LIGHT2)
-    glEnable(GL_CULL_FACE)
-    glEnable(GL_BLEND)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
 
 def main(options):
@@ -1116,20 +1090,14 @@ def main(options):
             'Seed used the %d %m %Y at %H:%M:%S\n'))
         seeds.write('%s\n\n' % seed)
 
+    # try:
+        # window_config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
+        # window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=window_config, save=save_object)
+    # except pyglet.window.NoSuchConfigException:
+    window = Window(options.width, options.height, launch_fullscreen=options.fullscreen,
+        show_gui=options.show_gui, save=save_object, caption=APP_NAME, resizable=True, vsync=False)
 
-    if options.fullscreen == True:
-        window = Window(
-        fullscreen=True, caption=APP_NAME,
-        resizable=True, save=save_object, vsync=False)
-    elif options.fullscreen == False:
-            window = Window(
-        width=options.width, height=options.height, caption=APP_NAME,
-        resizable=True, save=save_object, vsync=False)
-
-    window.set_exclusive_mouse(True)
-    setup()
-    if config.getboolean('World', 'show_fog'):
-        setup_fog(window)
+    window.setup_game(show_fog=config.getboolean('World', 'show_fog'))
     pyglet.clock.set_fps_limit(MAX_FPS)
     pyglet.app.run()
     if options.disable_auto_save and options.disable_save:
@@ -1145,7 +1113,25 @@ def main(options):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Play a Python made Minecraft clone.')
-
+    #parser.add_argument("-width", type=int, default=850, help = "Set the default Widht.")
+    #parser.add_argument("-height", type=int, default=480, help = "Set the default Height.")
+    #parser.add_argument("-terrain", choices=terrain_options.keys(), help = "Different terains. Choose grass, island, mountains,desert, plains")
+    #parser.add_argument("-hillheight", type=int, help = "How high the hills are.")
+    #parser.add_argument("-worldsize", type=int, help = "The width size of the world.")
+    #parser.add_argument("-maxtrees", type=int, help = "How many trees and cacti should be made.")
+    #parser.add_argument("-seed", default=None)
+    #parser.add_argument("--flat", action="store_true", default=False, help = "Generate a flat world.")
+    #parser.add_argument("--hide-fog", action="store_true", default=False, help ="Hides the fog, see the whole landscape.")
+    #parser.add_argument("--show-gui", action="store_true", default=True, help = "Enabled by default.")
+    #parser.add_argument("--disable-auto-save", action="store_false", default=True, help = "Do not save world on exit.")
+    #parser.add_argument("-draw-distance", choices=['short', 'medium', 'long'], default='short', help =" How far to draw the map. Choose short, medium or long.")
+    #parser.add_argument("-save", type=unicode, default=SAVE_FILENAME, help = "Type a name for the world to be saved as.")
+    #parser.add_argument("--disable-save", action="store_false", default=True, help = "Disables saving.")
+    #parser.add_argument("--fast", action="store_true", default=False, help = "Makes time progress faster then normal.")
+    #parser.add_argument("--save-config", action="store_true", default=False, help = "Saves the choices as the default config.")
+    #parser.add_argument("-fullscreen", action="store_true", default=False, help = "Runs the game in fullscreen. Press 'Q' to exit the game.")
+    #parser.add_argument("-nocompression", action="store_true", default=False, help = "Disables compression for a smaller save file.")
+    #parser.add_argument("-gamemode", type=int, default=0, help = "Set the Gamemode for player.  0 = Creative, 1 = Survival")
     display_group = parser.add_argument_group('Display options')
     display_group.add_argument("-width", type=int, default=850, help = "Set the window width.")
     display_group.add_argument("-height", type=int, default=480, help = "Set the window height.")
@@ -1161,7 +1147,8 @@ if __name__ == '__main__':
     game_group.add_argument("-maxtrees", type=int, help = "How many trees and cacti should be made.")
     game_group.add_argument("--flat", action="store_true", default=False, help = "Generate a flat world.")
     game_group.add_argument("--fast", action="store_true", default=False, help = "Makes time progress faster then normal.")
-    game_group.add_argument("-gamemode", type=int, default=1, help = "Set the Gamemode for player.  0 = Creative, 1 = Survival")
+    game_group.add_argument("-gamemode", type=int, default=0, help = "Set the Gamemode for player.  0 = Creative, 1 = Survival")
+    game_group.add_argument("-seed", default=None, help = "A seen number to be used for generating the game world.")
 
     save_group = parser.add_argument_group('Save options')
     save_group.add_argument("--disable-auto-save", action="store_false", default=True, help = "Do not save world on exit.")
@@ -1170,6 +1157,5 @@ if __name__ == '__main__':
     save_group.add_argument("--save-config", action="store_true", default=False, help = "Saves the choices as the default config.")
     save_group.add_argument("-nocompression", action="store_true", default=False, help = "Disables compression for a smaller save file.")
 
-    parser.add_argument("-seed", default=None)
     options = parser.parse_args()
     main(options)

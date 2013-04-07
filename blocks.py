@@ -196,6 +196,9 @@ class LampBlock(Block):
     id = 124
     name = "Lamp"
 
+    def play_break_sound(self):
+        sounds.glass_break.play()
+
 class GlassBlock(Block):
     top_texture = 0, 5
     bottom_texture = 0, 5
@@ -205,6 +208,9 @@ class GlassBlock(Block):
     amount_label_color = 0, 0, 0, 255
     id = 20
     name = "Glass"
+
+    def play_break_sound(self):
+        sounds.glass_break.play()
 
 class GravelBlock(Block):
     top_texture = 1, 5
