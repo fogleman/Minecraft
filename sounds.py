@@ -18,6 +18,7 @@ def play_sound(sound, player=None, position=None):
 	pyglet.options['audio'] = ('openal', 'directsound', 'alsa', 'silent')
 	sound_player = pyglet.media.ManagedSoundPlayer()
 	pyglet.media.listener.volume = globals.EFFECT_VOLUME
+	pyglet.media.listener.forward_orientation = player.get_sight_vector()
 	if position:
 		sound_player.position = position
 	if sound_player:
