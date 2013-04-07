@@ -18,6 +18,7 @@ from pyglet.window import key
 #import kytten
 from blocks import *
 from entity import *
+import globals
 from globals import *
 from gui import *
 from items import *
@@ -60,6 +61,8 @@ if not os.path.lexists(config_file):
     config.set('Controls', 'move_right', str(key.D))
     config.set('Controls', 'jump', str(key.SPACE))
     config.set('Controls', 'inventory', str(key.E))
+    config.set('Controls', 'sound_up', str(key.PAGEUP))
+    config.set('Controls', 'sound_down', str(key.PAGEDOWN))
 
     try:
         with open(config_file, 'wb') as handle:
@@ -637,6 +640,8 @@ class GameController(object):
         self.sorted = False
         global config
         self.key_inventory = config.getint('Controls', 'inventory')
+        self.key_sound_up = config.getint('Controls', 'sound_up')
+        self.key_sound_down = config.getint('Controls', 'sound_down')
         save_len = -1 if self.save is None else len(self.save)
         if self.save is None or save_len < 2:  # model and model.sectors
             self.model = Model()
@@ -690,7 +695,7 @@ class GameController(object):
                 if hit_block.hardness >= 0:
                     self.block_damage += self.player.attack_power
                     if self.block_damage >= hit_block.hardness:
-                        self.model.remove_block(self.highlighted_block)
+                        self.model.remove_block(self.player, self.highlighted_block)
                         self.set_highlighted_block(None)
                         if hit_block.drop_id is not None \
                                 and self.player.add_item(hit_block.drop_id):
@@ -856,6 +861,10 @@ class GameController(object):
             self.set_highlighted_block(None)
             self.mouse_pressed = False
             self.inventory_list.toggle()
+        elif symbol == self.key_sound_up:
+            globals.EFFECT_VOLUME = min(globals.EFFECT_VOLUME + .1, 1)
+        elif symbol == self.key_sound_down:
+            globals.EFFECT_VOLUME = max(globals.EFFECT_VOLUME - .1, 0)
         self.last_key = symbol
 
     def on_resize(self, width, height):

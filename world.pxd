@@ -28,7 +28,7 @@ cdef class World(dict):
     cpdef object add_block(self, tuple position, object block,
                            bint sync=?, bint force=?)
 
-    cpdef object remove_block(self, tuple position, bint sync=?, bint sound=?)
+    cpdef object remove_block(self, object player, tuple position, bint sync=?, bint sound=?)
 
     # Generators are not handled by Cython for the moment.
     # @cython.locals(x=float, y=float, z=float,
