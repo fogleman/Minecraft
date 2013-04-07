@@ -30,7 +30,7 @@ class Block(object):
     break_sound = sounds.wood_break
 
     # Physical attributes
-    hardness = 0    # hardness can be found on http://www.minecraftwiki.net/wiki/Digging#Blocks_by_hardness
+    hardness = 0  # hardness can be found on http://www.minecraftwiki.net/wiki/Digging#Blocks_by_hardness
     density = 1
     transparent = False
     regenerated_health = 0
@@ -38,7 +38,7 @@ class Block(object):
     # Inventory attributes
     max_stack_size = 64
     amount_label_color = 255, 255, 255, 255
-    name = "Block"  # Blocks that drop another item don't need a name
+    name = "Block"
 
     def __init__(self, width=None, height=None):
         self.drop_id = self.id
@@ -126,6 +126,7 @@ class GrassBlock(Block):
     hardness = 0.6
     id = 2
     break_sound = sounds.dirt_break
+    name = 'Grass'
 
     def __init__(self):
         super(GrassBlock, self).__init__()
@@ -159,7 +160,7 @@ class GoldOreBlock(HardBlock):
     side_texture = 3, 4
     hardness = 3
     id = 14
-    name = "Coal Ore"
+    name = "Gold Ore"
 
 
 class IronOreBlock(HardBlock):
@@ -208,6 +209,7 @@ class LampBlock(Block):
     name = "Lamp"
     break_sound = sounds.glass_break
 
+
 class GlassBlock(Block):
     top_texture = 0, 5
     bottom_texture = 0, 5
@@ -218,6 +220,7 @@ class GlassBlock(Block):
     id = 20
     name = "Glass"
     break_sound = sounds.glass_break
+
 
 class GravelBlock(Block):
     top_texture = 1, 5
@@ -382,13 +385,14 @@ class CactusBlock(Block):
     id = 81
     name = "Cactus"
 
+
 class TallCactusBlock(Block):
     top_texture = 7, 5
     bottom_texture = 7, 3
     side_texture = 7, 4
     width = 0.3
     hardness = 1
-    id = 81.1 # not a real MC block, so the last possible # i think.
+    id = 81.1  # not a real MC block, so the last possible # i think.
     name = "Thin Cactus"
 
 
@@ -442,6 +446,7 @@ class MelonBlock(Block):
     regenerated_health = 3
     break_sound = sounds.melon_break
 
+
 class PumpkinBlock(Block):
     top_texture = 2, 5
     bottom_texture = 2, 5
@@ -452,8 +457,9 @@ class PumpkinBlock(Block):
     name = "Pumpkin"
     break_sound = sounds.melon_break
 
+
 class TorchBlock(WoodBlock):
-    top_texture = 5,5
+    top_texture = 5, 5
     bottom_texture = 0, 1
     side_texture = 4, 5
     hardness = 1
@@ -498,6 +504,7 @@ class CobbleBlock(HardBlock):
     hardness = 2
     id = 4
     name = "Cobblestone"
+
 
 class CobbleFenceBlock(HardBlock):
     top_texture = 6, 3
