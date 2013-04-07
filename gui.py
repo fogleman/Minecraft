@@ -1,6 +1,8 @@
 from math import floor, ceil
 import os
 
+from pyglet.sprite import Sprite
+from pyglet.text import Label
 from pyglet.gl import *
 from pyglet.window import key
 
@@ -10,6 +12,50 @@ from globals import *
 from inventory import *
 from items import *
 
+class Rectangle(object):
+    def __init__(self, x, y, width, height):
+        self.x, self.y = x, y
+        self.width, self.height = width, height
+
+    def set_position(self, x, y):
+        self.x, self.y = x, y
+
+    def set_size(self, width, height):
+        self.width, self.height = width, height
+
+    def get_center(self):
+        return self.x + self.width / 2, self.y + self.height / 2
+
+    def hit_test(self, x, y):
+        return (x >= self.x and x <= self.x + self.width) and (y >= self.y and y <= self.y + self.height)
+
+class Button(Rectangle):
+    def __init__(self, x, y, width, height, image=None, caption=None, batch=None, group=None):
+        super(Button, self).__init__(x, y, width, height)
+        self.batch = batch
+        self.group = group
+        self.sprite = None
+        self.label = None
+        if image:
+            self.sprite = Sprite(image.get_region(0, 0, self.width, self.height), batch=self.batch, group=self.group)
+        if caption:
+            center = self.get_center()
+            self.label = Label(caption, font_name='Arial', font_size=12, x=center[0], y=center[1],
+                anchor_x='center', anchor_y='center', color=(255, 255, 255, 255), batch=self.batch,
+                group=self.group)
+	
+    def set_position(self, x, y):
+        super(Button, self).set_position(x, y)
+        if self.sprite:
+            self.sprite.x, self.sprite.y = x, y
+        if self.label:
+            self.label.x, self.label.y = self.get_center()
+
+    def draw(self):
+        if self.sprite:
+            self.sprite.draw()
+        if self.label:
+            self.label.draw()
 
 class ItemSelector(object):
     def __init__(self, parent, player, model):
