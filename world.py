@@ -319,10 +319,10 @@ class World(dict):
         # Updates spreading
         # TODO: This is too simple
         self.spreading_time += dt
-        if self.spreading_mutable_blocks \
-                and self.spreading_time >= SPREADING_MUTATION_DELAY:
+        if self.spreading_time >= SPREADING_MUTATION_DELAY:
             self.spreading_time = 0.0
-            position, block = random.choice(
-                self.spreading_mutable_blocks.items())
-            self.remove_block(None, position, sound=False)
-            self.add_block(position, grass_block, force=False)
+            if self.spreading_mutable_blocks:
+                position, block = random.choice(
+                    self.spreading_mutable_blocks.items())
+                self.remove_block(None, position, sound=False)
+                self.add_block(position, grass_block, force=False)
