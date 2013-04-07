@@ -61,13 +61,12 @@ else:
 ####
 
 class Window(pyglet.window.Window):
-    def __init__(self, width, height, launch_fullscreen=False, show_gui=True, save=None, **kwargs):
+    def __init__(self, width, height, launch_fullscreen=False, show_gui=True,**kwargs):
         super(Window, self).__init__(width, height, **kwargs)
         self.exclusive = False
         self.reticle = None
         self.controller = None
-        #self.controller = GameController(self, show_gui=show_gui, save=save)
-        controller = MainMenuController(self, show_gui=show_gui, save=save)
+        controller = MainMenuController(self, show_gui=show_gui)
         self.switch_controller(controller)
         if launch_fullscreen:
             self.set_fullscreen()
@@ -111,7 +110,6 @@ class Window(pyglet.window.Window):
 
 
 def main(options):
-    save_object = None
     global SAVE_FILENAME
     global DISABLE_SAVE
     global DRAW_DISTANCE
@@ -119,8 +117,6 @@ def main(options):
     GAMEMODE = options.gamemode
     SAVE_FILENAME = options.save
     DISABLE_SAVE = options.disable_save
-    if options.disable_save and world_exists(game_dir, SAVE_FILENAME):
-        save_object = open_world(game_dir, SAVE_FILENAME)
     if options.draw_distance == 'medium':
         DRAW_DISTANCE = 60.0 * 1.5
     elif options.draw_distance == 'long':
@@ -177,7 +173,7 @@ def main(options):
         # window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=window_config, save=save_object)
     # except pyglet.window.NoSuchConfigException:
     window = Window(options.width, options.height, launch_fullscreen=options.fullscreen,
-        show_gui=options.show_gui, save=save_object, caption=APP_NAME, resizable=True, vsync=False)
+        show_gui=options.show_gui, caption=APP_NAME, resizable=True, vsync=False)
 
     pyglet.clock.set_fps_limit(MAX_FPS)
     pyglet.app.run()

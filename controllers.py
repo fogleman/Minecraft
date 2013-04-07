@@ -46,14 +46,13 @@ class Controller(object):
         self.window.pop_handlers()
 
 class MainMenuController(Controller):
-    def __init__(self, window, show_gui=True, save=None):
+    def __init__(self, window, show_gui=True):
         super(MainMenuController, self).__init__(window)
         self.batch = pyglet.graphics.Batch()
         self.group = pyglet.graphics.OrderedGroup(1)
         self.labels_group = pyglet.graphics.OrderedGroup(2)
 
         self.show_gui = show_gui
-        self.save = save
 
         image = pyglet.image.load(os.path.join('resources', 'textures', 'frame.png'))
         button_image = pyglet.image.load(os.path.join('resources', 'textures', 'button.png'))
@@ -73,7 +72,7 @@ class MainMenuController(Controller):
     def on_mouse_press(self, x, y, button, modifiers):
         if x >= self.button.x and x <= self.button.x + self.button.width \
             and y >= self.button.y and y <= self.button.y + self.button.height:
-            controller = GameController(self.window, show_gui=self.show_gui, save=self.save)
+            controller = GameController(self.window, show_gui=self.show_gui)
             self.window.switch_controller(controller)
             return pyglet.event.EVENT_HANDLED
 
@@ -98,10 +97,9 @@ class MainMenuController(Controller):
 
 
 class GameController(Controller):
-    def __init__(self, window, show_gui=True, save=None):
+    def __init__(self, window, show_gui=True):
         super(GameController, self).__init__(window)
         self.show_gui = show_gui
-        self.save = save
         self.sector = None
         self.time_of_day = 0.0
         self.count = 0
@@ -187,19 +185,11 @@ class GameController(Controller):
         self.ambient = vec(1.0, 1.0, 1.0, 1.0)
         self.polished = GLfloat(100.0)
         self.crack_batch = pyglet.graphics.Batch()
-        save_len = -1 if self.save is None else len(self.save)
-        if self.save is None or save_len < 2:  # model and model.sectors
+        if DISABLE_SAVE and world_exists(game_dir, SAVE_FILENAME):
+            open_world(self, game_dir, SAVE_FILENAME)
+        else:
             self.model = Model()
             self.player = Player((0, 0, 0), (-20, 0), game_mode=GAMEMODE)
-        else:
-            self.model = Model(initialize=False)
-            for item in self.save[0]:
-                self.model[item[0]] = item[1]
-            self.model.sectors = self.save[1]
-            if save_len > 2 and isinstance(self.save[2], Player):
-                self.player = self.save[2]
-            if save_len > 3 and isinstance(self.save[3], float):
-                self.time_of_day = self.save[3]
         if self.player.game_mode == 0:
             print('Game mode: Creative')
         if self.player.game_mode == 1:

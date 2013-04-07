@@ -3,33 +3,39 @@ import cPickle as pickle
 import zlib
 import cStringIO as StringIO
 
-# Save types
+# Modules from this project
+from model import *
+from player import *
 
+# Save types
 CLASSIC_SAVE_TYPE = 0
 COMPRESSED_SAVE_TYPE = 1
 
 SAVE_TYPES = [CLASSIC_SAVE_TYPE, COMPRESSED_SAVE_TYPE] # last is always the newest
 
-def get_default_filename(game_dir):
-	return os.path.join(game_dir, 'save.dat')
+def save_world(window, game_dir, world="world", save_type=COMPRESSED_SAVE_TYPE):
+	if not os.path.exists(os.path.join(game_dir, world)):
+		os.makedirs(os.path.join(game_dir, world))
+	#window.model.items(), window.model.sectors
+	#Non block related data
+	save = (3,window.player, window.time_of_day)
+	pickle.dump(save, open(os.path.join(game_dir, world, "save.pkl"), "wb"))
 
-def save_world(window, game_dir, filename=None, save_type=COMPRESSED_SAVE_TYPE):
-	filename = os.path.join(game_dir, filename) if filename else get_default_filename(game_dir)
-	save = (window.model.items(), window.model.sectors, window.player, window.time_of_day)
-	if save_type == COMPRESSED_SAVE_TYPE:
-		save_string = zlib.compress(pickle.dumps(save), 9)
-		pickle.dump((COMPRESSED_SAVE_TYPE, save_string),
-	                        open(filename, "wb"))
-	elif save_type == CLASSIC_SAVE_TYPE:
-		pickle.dump(save, open(filename, "wb"))
+	blocks_save = (3,window.model.items(), window.model.sectors)
+	pickle.dump(blocks_save, open(os.path.join(game_dir, world, "blocks.pkl"), "wb"))
 
-def world_exists(game_dir, filename):
-	filename = filename or get_default_filename(game_dir)
-	return os.path.lexists(os.path.join(game_dir, filename))
+def world_exists(game_dir, world="world"):
+	return os.path.lexists(os.path.join(game_dir, world))
 
-def open_world(game_dir, filename=None):
-	filename = os.path.join(game_dir, filename) if filename else get_default_filename(game_dir)
-	loaded_world = pickle.load(open(filename, "rb"))
-	if loaded_world[0] == COMPRESSED_SAVE_TYPE:
-		loaded_world = pickle.load(StringIO.StringIO(zlib.decompress(loaded_world[1])))
-	return loaded_world
+def open_world(gamecontroller, game_dir, world="world"):
+	loaded_world = pickle.load(open(os.path.join(game_dir, world, "blocks.pkl"), "rb"))
+
+	gamecontroller.model = Model(initialize=False)
+	for item in loaded_world[0]:
+		gamecontroller.model[item[0]] = item[1]
+	gamecontroller.model.sectors = loaded_world[1]
+
+	loaded_save = pickle.load(open(os.path.join(game_dir, world, "save.pkl"), "rb"))
+	if loaded_save[0] == 3: #Version 3
+		if isinstance(loaded_save[1], Player): gamecontroller.player = loaded_save[1]
+		if isinstance(loaded_save[2], float):  gamecontroller.time_of_day = loaded_save[2]
