@@ -121,6 +121,7 @@ class GameController(object):
         glEnable(GL_LIGHT2)
         glEnable(GL_CULL_FACE)
         glEnable(GL_BLEND)
+        glEnable(GL_LINE_SMOOTH)
 
         if self.show_fog:
             glEnable(GL_FOG)
