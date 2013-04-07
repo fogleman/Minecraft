@@ -1,5 +1,6 @@
 from math import pi
-
+from pyglet.resource import get_settings_path
+import os
 
 APP_NAME = 'pyCraftr'  # should I stay or should I go?
 
@@ -24,3 +25,9 @@ TILESET_SIZE = 8  # The tileset therefore contains TILESET_SIZE ** 2 tiles.
 GAMEMODE = 0 #0 = creative (no damage), 1 = Survival (take Damage
 
 EFFECT_VOLUME = 1
+
+SAVE_FILENAME = None
+
+game_dir = get_settings_path(APP_NAME)
+if not os.path.exists(game_dir):
+    os.makedirs(game_dir)
