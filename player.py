@@ -4,9 +4,11 @@ from math import cos, sin, atan2, pi, fmod, radians
 from pyglet.window import key
 from inventory import *
 from items import *
+import globals
+from globals import *
 
 class Player(Entity):
-    def __init__(self, position, rotation, config, flying=False, game_mode=0):
+    def __init__(self, position, rotation, flying=False, game_mode=0):
         super(Player, self).__init__(position, rotation, health=7, max_health=10, attack_power=0.05, attack_range=4)
         self.inventory = Inventory()
         self.quick_slots = Inventory(9)

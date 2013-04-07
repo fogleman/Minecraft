@@ -1,19 +1,20 @@
 from world import *
 from nature import *
+import globals
+from globals import *
 
 class Model(World):
-    def __init__(self, config, initialize=True):
+    def __init__(self, initialize=True):
         super(Model, self).__init__()
-        self.config = config
         if initialize:
             self.initialize()
 
     def initialize(self):
-        world_size = self.config.getint('World', 'size')
-        world_type = self.config.getint('World', 'type')
-        hill_height = self.config.getint('World', 'hill_height')
-        flat_world = self.config.getboolean('World', 'flat')
-        self.max_trees = self.config.getint('World', 'max_trees')
+        world_size = config.getint('World', 'size')
+        world_type = config.getint('World', 'type')
+        hill_height = config.getint('World', 'hill_height')
+        flat_world = config.getboolean('World', 'flat')
+        self.max_trees = config.getint('World', 'max_trees')
         tree_chance = self.max_trees / float(world_size * (SECTOR_SIZE ** 3))
         n = world_size / 2  # 80
         s = 1

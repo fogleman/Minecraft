@@ -6,7 +6,6 @@ import os
 import cPickle as pickle
 import random
 import time
-from ConfigParser import ConfigParser
 
 import pyglet
 # Disable error checking for increased performance
@@ -29,7 +28,6 @@ terrain_options = {
     'snow': ('6', '4', '1500')
 }
 
-config = ConfigParser()
 config_file = os.path.join(game_dir, 'game.cfg')
 if not os.path.lexists(config_file):
     type, hill_height, max_trees = terrain_options['plains']
@@ -67,7 +65,7 @@ class Window(pyglet.window.Window):
         super(Window, self).__init__(width, height, **kwargs)
         self.exclusive = False
         self.reticle = None
-        self.controller = GameController(self, config, show_gui=show_gui, save=save)
+        self.controller = GameController(self, show_gui=show_gui, save=save)
         self.controller.push_handlers()
         if launch_fullscreen:
             self.set_fullscreen()

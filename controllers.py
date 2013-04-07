@@ -14,7 +14,7 @@ def vec(*args):
     return (GLfloat * len(args))(*args)
 
 class GameController(object):
-    def __init__(self, window, config, show_gui=True, save=None):
+    def __init__(self, window, show_gui=True, save=None):
         self.window = window
         self.show_gui = show_gui
         self.save = save
@@ -42,10 +42,10 @@ class GameController(object):
         self.key_sound_down = config.getint('Controls', 'sound_down')
         save_len = -1 if self.save is None else len(self.save)
         if self.save is None or save_len < 2:  # model and model.sectors
-            self.model = Model(config)
-            self.player = Player((0, 0, 0), (-20, 0), config, game_mode=GAMEMODE)
+            self.model = Model()
+            self.player = Player((0, 0, 0), (-20, 0), game_mode=GAMEMODE)
         else:
-            self.model = Model(config, initialize=False)
+            self.model = Model(initialize=False)
             for item in self.save[0]:
                 self.model[item[0]] = item[1]
             self.model.sectors = self.save[1]
