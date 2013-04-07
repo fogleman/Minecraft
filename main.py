@@ -462,7 +462,6 @@ class GameController(object):
         self.show_fog = False
         self.last_key = None
         self.sorted = False
-        global config
         self.key_inventory = config.getint('Controls', 'inventory')
         self.key_sound_up = config.getint('Controls', 'sound_up')
         self.key_sound_down = config.getint('Controls', 'sound_down')
@@ -509,7 +508,7 @@ class GameController(object):
             self.player.update(df / m, self)
         if self.mouse_pressed:
             vector = self.player.get_sight_vector()
-            block, previous = self.model.hit_test(self.player.position, vector)
+            block, previous = self.model.hit_test(self.player.position, vector, self.player.attack_range)
             if block:
                 if self.highlighted_block != block:
                     self.set_highlighted_block(block)
@@ -620,7 +619,7 @@ class GameController(object):
     def on_mouse_press(self, x, y, button, modifiers):
         if self.window.exclusive:
             vector = self.player.get_sight_vector()
-            block, previous = self.model.hit_test(self.player.position, vector)
+            block, previous = self.model.hit_test(self.player.position, vector, self.player.attack_range)
             if button == pyglet.window.mouse.LEFT:
                 if block:
                     self.mouse_pressed = True
@@ -755,7 +754,7 @@ class GameController(object):
     def draw_focused_block(self):
         glDisable(GL_LIGHTING)
         vector = self.player.get_sight_vector()
-        position = self.model.hit_test(self.player.position, vector)[0]
+        position = self.model.hit_test(self.player.position, vector, self.player.attack_range)[0]
         if position:
             hit_block = self.model[position]
             if hit_block.density >= 1:
