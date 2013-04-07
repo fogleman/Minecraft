@@ -103,7 +103,6 @@ class GameController(Controller):
         self.show_gui = show_gui
         self.save = save
         self.sector = None
-        self.focus_block = Block(width=1.05, height=1.05)
         self.time_of_day = 0.0
         self.count = 0
         self.clock = 6
@@ -113,14 +112,9 @@ class GameController(Controller):
         self.bg_green = 0.0
         self.bg_blue = 0.0
         self.hour_deg = 15.0
-        self.earth = vec(0.8, 0.8, 0.8, 1.0)
-        self.white = vec(1.0, 1.0, 1.0, 1.0)
-        self.ambient = vec(1.0, 1.0, 1.0, 1.0)
-        self.polished = GLfloat(100.0)
         self.highlighted_block = None
         self.block_damage = 0
         self.crack = None
-        self.crack_batch = pyglet.graphics.Batch()
         self.mouse_pressed = False
         self.show_fog = config.getboolean('World', 'show_fog')
         self.last_key = None
@@ -128,31 +122,6 @@ class GameController(Controller):
         self.key_inventory = config.getint('Controls', 'inventory')
         self.key_sound_up = config.getint('Controls', 'sound_up')
         self.key_sound_down = config.getint('Controls', 'sound_down')
-        save_len = -1 if self.save is None else len(self.save)
-        if self.save is None or save_len < 2:  # model and model.sectors
-            self.model = Model()
-            self.player = Player((0, 0, 0), (-20, 0), game_mode=GAMEMODE)
-        else:
-            self.model = Model(initialize=False)
-            for item in self.save[0]:
-                self.model[item[0]] = item[1]
-            self.model.sectors = self.save[1]
-            if save_len > 2 and isinstance(self.save[2], Player):
-                self.player = self.save[2]
-            if save_len > 3 and isinstance(self.save[3], float):
-                self.time_of_day = self.save[3]
-        if self.player.game_mode == 0:
-            print('Game mode: Creative')
-        if self.player.game_mode == 1:
-            print('Game mode: Survival')
-        self.item_list = ItemSelector(self, self.player, self.model)
-        self.inventory_list = InventorySelector(self, self.player, self.model)
-        self.camera = Camera3D(target=self.player)
-        if self.show_gui:
-            self.label = pyglet.text.Label(
-                '', font_name='Arial', font_size=8, x=10, y=self.window.height - 10,
-                anchor_x='left', anchor_y='top', color=(255, 255, 255, 255))
-        pyglet.clock.schedule_interval_soft(self.model.process_queue, 1.0 / MAX_FPS)
 
     def update(self, dt):
         sector = sectorize(self.player.position)
@@ -211,6 +180,39 @@ class GameController(Controller):
             glFogf(GL_FOG_END, DRAW_DISTANCE) # 80)
             
         self.window.set_exclusive_mouse(True)
+        self.focus_block = Block(width=1.05, height=1.05)
+        self.earth = vec(0.8, 0.8, 0.8, 1.0)
+        self.white = vec(1.0, 1.0, 1.0, 1.0)
+        self.ambient = vec(1.0, 1.0, 1.0, 1.0)
+        self.polished = GLfloat(100.0)
+        self.crack_batch = pyglet.graphics.Batch()
+        save_len = -1 if self.save is None else len(self.save)
+        if self.save is None or save_len < 2:  # model and model.sectors
+            self.model = Model()
+            self.player = Player((0, 0, 0), (-20, 0), game_mode=GAMEMODE)
+        else:
+            self.model = Model(initialize=False)
+            for item in self.save[0]:
+                self.model[item[0]] = item[1]
+            self.model.sectors = self.save[1]
+            if save_len > 2 and isinstance(self.save[2], Player):
+                self.player = self.save[2]
+            if save_len > 3 and isinstance(self.save[3], float):
+                self.time_of_day = self.save[3]
+        if self.player.game_mode == 0:
+            print('Game mode: Creative')
+        if self.player.game_mode == 1:
+            print('Game mode: Survival')
+        self.item_list = ItemSelector(self, self.player, self.model)
+        self.inventory_list = InventorySelector(self, self.player, self.model)
+        self.item_list.on_resize(self.window.width, self.window.height)
+        self.inventory_list.on_resize(self.window.width, self.window.height)
+        self.camera = Camera3D(target=self.player)
+        if self.show_gui:
+            self.label = pyglet.text.Label(
+                '', font_name='Arial', font_size=8, x=10, y=self.window.height - 10,
+                anchor_x='left', anchor_y='top', color=(255, 255, 255, 255))
+        pyglet.clock.schedule_interval_soft(self.model.process_queue, 1.0 / MAX_FPS)
 
     def update_time(self):
         """
