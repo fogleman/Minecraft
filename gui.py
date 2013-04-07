@@ -1,5 +1,6 @@
 import os
 from pyglet.gl import *
+from pyglet.window import key
 from math import floor, ceil
 from blocks import *
 from items import *
@@ -388,3 +389,18 @@ class InventorySelector(object):
         if self.visible and button == pyglet.window.mouse.LEFT:
             self.on_mouse_motion(x, y, dx, dy)
             return pyglet.event.EVENT_HANDLED
+
+    def on_key_press(self, symbol, modifiers):
+        if self.visible and symbol == key.ENTER:
+            return pyglet.event.EVENT_HANDLED
+
+    def on_resize(self, width, height):
+        self.set_position(width, height)
+
+    def draw(self):
+        if self.visible:
+            self.batch.draw()
+            if self.selected_item_icon:
+                self.selected_item_icon.draw()
+            if self.crafting_outcome_icon:
+                self.crafting_outcome_icon.draw()

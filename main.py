@@ -515,7 +515,6 @@ class GameController(object):
         self.save = save
         self.sector = None
         self.focus_block = Block(width=1.05, height=1.05)
-        self.reticle = None
         self.time_of_day = 0.0
         self.count = 0
         self.clock = 6
@@ -860,41 +859,20 @@ class GameController(object):
             self.window.set_exclusive_mouse(not self.inventory_list.visible)
             self.item_list.update_items()
         elif symbol == key.ENTER:
-            if self.inventory_list.visible:
-                current_block = self.inventory_list\
-                    .get_current_block_item_and_amount()
-                if current_block:
-                    if not self.player.quick_slots.add_item(
-                            current_block[0].id,
-                            quantity=current_block[1]):
-                        self.player.inventory.add_item(current_block[0].id,
-                                                       quantity=current_block[
-                                                           1])
-            else:
-                current_block = self.item_list\
-                    .get_current_block_item_and_amount()
-                if current_block:
-                    if not self.player.inventory.add_item(
-                            current_block[0].id, quantity=current_block[1]):
-                        self.player.quick_slots.add_item(
-                            current_block[0].id, quantity=current_block[1])
+            current_block = self.item_list\
+                .get_current_block_item_and_amount()
+            if current_block:
+                if not self.player.inventory.add_item(
+                        current_block[0].id, quantity=current_block[1]):
+                    self.player.quick_slots.add_item(
+                        current_block[0].id, quantity=current_block[1])
             self.item_list.update_items()
-            self.inventory_list.update_items()
         self.last_key = symbol
 
     def on_resize(self, width, height):
-        if self.reticle:
-            self.reticle.delete()
-        x, y = width / 2, height / 2
-        n = 10
-        self.reticle = pyglet.graphics.vertex_list(
-            4,
-            ('v2i', (x - n, y, x + n, y, x, y - n, x, y + n))
-        )
         if self.show_gui:
             self.label.y = height - 10
             self.item_list.set_position(width, height)
-            self.inventory_list.set_position(width, height)
 
     def set_2d(self):
         width, height = self.window.get_size()
@@ -952,16 +930,8 @@ class GameController(object):
             self.draw_label()
             if not self.inventory_list.visible:
                 self.item_list.batch.draw()
-            if self.inventory_list.visible:
-                self.inventory_list.batch.draw()
-                if self.inventory_list.selected_item_icon:
-                    self.inventory_list.selected_item_icon.draw()
-                if self.inventory_list.crafting_outcome_icon:
-                    self.inventory_list.crafting_outcome_icon.draw()
-        if self.window.exclusive:
-            self.draw_reticle()
-
-        pyglet.clock.tick()
+            else:
+                self.inventory_list.draw()
 
     def draw_focused_block(self):
         glDisable(GL_LIGHTING)
@@ -997,10 +967,6 @@ class GameController(object):
                pyglet.clock.get_fps(), x, y, z,
                len(self.model._shown), len(self.model))
         self.label.draw()
-
-    def draw_reticle(self):
-        glColor3d(0, 0, 0)
-        self.reticle.draw(GL_LINES)
         
     def push_handlers(self):
         self.setup()
@@ -1014,6 +980,7 @@ class Window(pyglet.window.Window):
     def __init__(self, width, height, launch_fullscreen=False, show_gui=True, save=None, **kwargs):
         super(Window, self).__init__(width, height, **kwargs)
         self.exclusive = False
+        self.reticle = None
         self.controller = GameController(self, show_gui=show_gui, save=save)
         self.controller.push_handlers()
         self.set_exclusive_mouse(True)
@@ -1031,6 +998,25 @@ class Window(pyglet.window.Window):
     def on_key_press(self, symbol, modifiers):
         if symbol == key.ESCAPE and self.exclusive:
             self.set_exclusive_mouse(False)
+
+    def on_draw(self):
+        if self.exclusive:
+            self.draw_reticle()
+        pyglet.clock.tick()
+
+    def draw_reticle(self):
+        glColor3d(0, 0, 0)
+        self.reticle.draw(GL_LINES)
+
+    def on_resize(self, width, height):
+        if self.reticle:
+            self.reticle.delete()
+        x, y = width / 2, height / 2
+        n = 10
+        self.reticle = pyglet.graphics.vertex_list(
+            4,
+            ('v2i', (x - n, y, x + n, y, x, y - n, x, y + n))
+        )
 
 
 def main(options):
