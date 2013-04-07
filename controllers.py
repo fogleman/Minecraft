@@ -1,17 +1,22 @@
-from gui import *
-from cameras import *
-from model import *
-from player import *
-from world import *
+# Python packages
 from math import cos, sin, atan2, pi, fmod, radians
+import operator
+# Third-party packages
 from pyglet.window import key
+# Modules from this project
+from cameras import *
 import globals
 from globals import *
+from gui import *
+from model import *
+from player import *
 from savingsystem import *
+
 
 # Define a simple function to create GLfloat arrays of floats:
 def vec(*args):
     return (GLfloat * len(args))(*args)
+
 
 class GameController(object):
     def __init__(self, window, show_gui=True, save=None):
@@ -116,8 +121,6 @@ class GameController(object):
         glEnable(GL_LIGHT2)
         glEnable(GL_CULL_FACE)
         glEnable(GL_BLEND)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
         if self.show_fog:
             glEnable(GL_FOG)
