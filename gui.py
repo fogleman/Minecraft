@@ -33,6 +33,7 @@ class InventorySelector(object):
         #self.active.opacity = 0
         self.frame.x = (width - self.frame.width) / 2
         self.frame.y = self.icon_size / 2 - 4
+        self.visible = False
 
     def change_index(self, change):
         self.set_index(self.current_index + change)
@@ -60,6 +61,7 @@ class InventorySelector(object):
         y = self.frame.y + inventory_y + inventory_height
         items = self.player.inventory.get_items()
         items = items[:self.max_items]
+        global TERRAINMAP_BLOCK_SIZE
         for i, item in enumerate(items):
             if not item:
                 x += (self.icon_size * 0.5) + 3
@@ -68,7 +70,6 @@ class InventorySelector(object):
                     y -= (self.icon_size * 0.5) + 3
                 continue
             block = BLOCKS_DIR[item.type]
-            global TERRAINMAP_BLOCK_SIZE
             block_icon = self.model.group.texture.get_region(
                 int(block.side_texture[0] * TERRAINMAP_BLOCK_SIZE) * self.icon_size,
                 int(block.side_texture[1] * TERRAINMAP_BLOCK_SIZE) * self.icon_size, self.icon_size,
@@ -97,7 +98,6 @@ class InventorySelector(object):
                 x += (self.icon_size * 0.5) + 3
                 continue
             block = BLOCKS_DIR[item.type]
-            global TERRAINMAP_BLOCK_SIZE
             block_icon = self.model.group.texture.get_region(
                 int(block.side_texture[0] * TERRAINMAP_BLOCK_SIZE) * self.icon_size,
                 int(block.side_texture[1] * TERRAINMAP_BLOCK_SIZE) * self.icon_size, self.icon_size,
@@ -136,7 +136,6 @@ class InventorySelector(object):
                     y -= (self.icon_size * 0.5) + 3
                 continue
             block = BLOCKS_DIR[item.type]
-            global TERRAINMAP_BLOCK_SIZE
             block_icon = self.model.group.texture.get_region(
                 int(block.side_texture[0] * TERRAINMAP_BLOCK_SIZE) * self.icon_size,
                 int(block.side_texture[1] * TERRAINMAP_BLOCK_SIZE) * self.icon_size, self.icon_size,
@@ -191,7 +190,8 @@ class InventorySelector(object):
         return False
 
     def toggle_active_frame_visibility(self):
-        '''self.active.opacity = 0 if self.active.opacity == 255 else 255'''
+        self.visible = not self.visible
+        # self.active.opacity = 0 if self.active.opacity == 255 else 255
 
     def mouse_coords_to_index(self, x, y):
         inventory_rows = floor(self.max_items / 9)
@@ -281,6 +281,8 @@ class InventorySelector(object):
         self.selected_item_icon = None
 
     def on_mouse_press(self, x, y, button, modifiers):
+        if not self.visible:
+            return False
         if x < 0.0 or y < 0.0:
             return False
         inventory, index = self.mouse_coords_to_index(x, y)
@@ -370,11 +372,15 @@ class InventorySelector(object):
         return True
 
     def on_mouse_motion(self, x, y, dx, dy):
+        if not self.visible:
+            return False
         if self.selected_item_icon:
             self.selected_item_icon.x = x - (self.selected_item_icon.width / 2)
             self.selected_item_icon.y = y - (self.selected_item_icon.height / 2)
             return
 
     def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
+        if not self.visible:
+            return False
         if self.selected_item_icon:
             self.on_mouse_motion(x, y, dx, dy)

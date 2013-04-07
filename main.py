@@ -560,7 +560,6 @@ class GameController(object):
         self.num_keys = [
             key._1, key._2, key._3, key._4, key._5,
             key._6, key._7, key._8, key._9, key._0]
-        self.show_inventory = False
         if self.show_gui:
             self.label = pyglet.text.Label(
                 '', font_name='Arial', font_size=8, x=10, y=self.window.height - 10,
@@ -776,14 +775,14 @@ class GameController(object):
         return tuple(p)
 
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
-        if (self.window.exclusive or self.show_inventory) and scroll_y != 0:
-            if not self.show_inventory:
+        if (self.window.exclusive or self.inventory_list.visible) and scroll_y != 0:
+            if not self.inventory_list.visible:
                 self.item_list.change_index(scroll_y * -1)
             else:
                 self.inventory_list.change_index(scroll_y * -1)
 
     def on_mouse_press(self, x, y, button, modifiers):
-        if self.show_inventory:
+        if self.inventory_list.visible:
             self.inventory_list.on_mouse_press(x, y, button, modifiers)
             return
         if self.window.exclusive:
@@ -821,7 +820,7 @@ class GameController(object):
         self.mouse_pressed = False
 
     def on_mouse_motion(self, x, y, dx, dy):
-        if self.show_inventory:
+        if self.inventory_list.visible:
             self.inventory_list.on_mouse_motion(x, y, dx, dy)
             return
         if self.window.exclusive:
@@ -834,7 +833,7 @@ class GameController(object):
 
     def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
         if button == pyglet.window.mouse.LEFT:
-            if self.show_inventory:
+            if self.inventory_list.visible:
                 self.inventory_list.on_mouse_drag(x, y, dx, dy, button, modifiers)
                 return
             if self.window.exclusive:
@@ -842,9 +841,8 @@ class GameController(object):
 
     def on_key_press(self, symbol, modifiers):
         if symbol == key.ESCAPE:
-            if self.show_inventory:
+            if self.inventory_list.visible:
                 self.inventory_list.toggle_active_frame_visibility()
-                self.show_inventory = False
                 self.window.set_exclusive_mouse(True)
                 self.item_list.update_items()
                 return pyglet.event.EVENT_HANDLED
@@ -871,11 +869,10 @@ class GameController(object):
         elif symbol == self.key_inventory:
             self.inventory_list.update_items()
             self.inventory_list.toggle_active_frame_visibility()
-            self.show_inventory = not self.show_inventory
-            self.window.set_exclusive_mouse(not self.show_inventory)
+            self.window.set_exclusive_mouse(not self.inventory_list.visible)
             self.item_list.update_items()
         elif symbol == key.ENTER:
-            if self.show_inventory:
+            if self.inventory_list.visible:
                 current_block = self.inventory_list\
                     .get_current_block_item_and_amount()
                 if current_block:
@@ -965,9 +962,9 @@ class GameController(object):
         self.set_2d()
         if self.show_gui:
             self.draw_label()
-            if not self.show_inventory:
+            if not self.inventory_list.visible:
                 self.item_list.batch.draw()
-            if self.show_inventory:
+            if self.inventory_list.visible:
                 self.inventory_list.batch.draw()
                 if self.inventory_list.selected_item_icon:
                     self.inventory_list.selected_item_icon.draw()
