@@ -125,3 +125,11 @@ For git:
       -nocompression        Disables compression for a smaller save file.
       -gamemode GAMEMODE    Set the Gamemode for player. 0 = Creative, 1 =
                             Survival
+
+## Better performance using Cython
+
+For optimal performance, you can compile the code to C using Cython.
+
+To do so, you have to install Cython (`sudo apt-get install cython` under
+Ubuntu), then run `python setup.py build_ext --inplace --force`.  You will have
+to run this last command each time you update the game.

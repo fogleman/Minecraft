@@ -78,11 +78,10 @@ def vec(*args):
 
 class Player(Entity):
     def __init__(self, position, rotation, flying=False, game_mode=0):
-        super(Player, self).__init__(position, rotation, health=7, attack_power=0.05)
+        super(Player, self).__init__(position, rotation, health=7, max_health=10, attack_power=0.05, attack_range=4)
         self.inventory = Inventory()
         self.quick_slots = Inventory(9)
         self.flying = flying
-        self.max_health = 10
         self.game_mode = game_mode
         self.strafe = [0, 0]
         self.dy = 0
@@ -93,8 +92,8 @@ class Player(Entity):
             quantity = random.randint(1, 10)
             if random.choice((True, False)):
                 self.inventory.add_item(item.id, quantity)
-            else:
-                self.quick_slots.add_item(item.id, quantity)
+                #else:
+                #    self.quick_slots.add_item(item.id, quantity)
 
         self.key_move_forward = config.getint('Controls', 'move_forward')
         self.key_move_backward = config.getint('Controls', 'move_backward')
@@ -428,7 +427,6 @@ class Model(World):
             stone_block, stone_block, stone_block, stone_block, stone_block,
         )
 
-
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
 
@@ -733,13 +731,6 @@ class GameController(object):
         x, y, z = self.collide((x + dx, y + dy, z + dz), 2)
       #  print(str(dy) + ' ' + str(self.player.dy)) 
         self.player.position = (x, y, z)
-
-    def set_highlighted_block(self, block):
-        self.highlighted_block = block
-        self.block_damage = 0
-        if self.crack:
-            self.crack.delete()
-        self.crack = None
 
     def set_highlighted_block(self, block):
         self.highlighted_block = block
@@ -1102,24 +1093,31 @@ def main(options):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Play a Python made Minecraft clone.')
-    parser.add_argument("-width", type=int, default=850, help = "Set the default Widht.")
-    parser.add_argument("-height", type=int, default=480, help = "Set the default Height.")
-    parser.add_argument("-terrain", choices=terrain_options.keys(), help = "Different terains. Choose grass, island, mountains,desert, plains")
-    parser.add_argument("-hillheight", type=int, help = "How high the hills are.")
-    parser.add_argument("-worldsize", type=int, help = "The width size of the world.")
-    parser.add_argument("-maxtrees", type=int, help = "How many trees and cacti should be made.")
+    
+    display_group = parser.add_argument_group('Display options')
+    display_group.add_argument("-width", type=int, default=850, help = "Set the window width.")
+    display_group.add_argument("-height", type=int, default=480, help = "Set the window height.")
+    display_group.add_argument("--show-gui", action="store_true", default=True, help = "Enabled by default.")
+    display_group.add_argument("--hide-fog", action="store_true", default=False, help ="Hides the fog, see the whole landscape.")
+    display_group.add_argument("-draw-distance", choices=['short', 'medium', 'long'], default='short', help =" How far to draw the map. Choose short, medium or long.")
+    display_group.add_argument("-fullscreen", action="store_true", default=False, help = "Runs the game in fullscreen. Press 'Q' to exit the game.")
+    
+    game_group = parser.add_argument_group('Game options')
+    game_group.add_argument("-terrain", choices=terrain_options.keys(), help = "Different terains. Choose grass, island, mountains,desert, plains")
+    game_group.add_argument("-hillheight", type=int, help = "How high the hills are.")
+    game_group.add_argument("-worldsize", type=int, help = "The width size of the world.")
+    game_group.add_argument("-maxtrees", type=int, help = "How many trees and cacti should be made.")
+    game_group.add_argument("--flat", action="store_true", default=False, help = "Generate a flat world.")
+    game_group.add_argument("--fast", action="store_true", default=False, help = "Makes time progress faster then normal.")
+    game_group.add_argument("-gamemode", type=int, default=1, help = "Set the Gamemode for player.  0 = Creative, 1 = Survival")
+    
+    save_group = parser.add_argument_group('Save options')
+    save_group.add_argument("--disable-auto-save", action="store_false", default=True, help = "Do not save world on exit.")
+    save_group.add_argument("-save", type=unicode, default=SAVE_FILENAME, help = "Type a name for the world to be saved as.")
+    save_group.add_argument("--disable-save", action="store_false", default=True, help = "Disables saving.")
+    save_group.add_argument("--save-config", action="store_true", default=False, help = "Saves the choices as the default config.")
+    save_group.add_argument("-nocompression", action="store_true", default=False, help = "Disables compression for a smaller save file.")
+    
     parser.add_argument("-seed", default=None)
-    parser.add_argument("--flat", action="store_true", default=False, help = "Generate a flat world.")
-    parser.add_argument("--hide-fog", action="store_true", default=False, help ="Hides the fog, see the whole landscape.")
-    parser.add_argument("--show-gui", action="store_true", default=True, help = "Enabled by default.")
-    parser.add_argument("--disable-auto-save", action="store_false", default=True, help = "Do not save world on exit.")
-    parser.add_argument("-draw-distance", choices=['short', 'medium', 'long'], default='short', help =" How far to draw the map. Choose short, medium or long.")
-    parser.add_argument("-save", type=unicode, default=SAVE_FILENAME, help = "Type a name for the world to be saved as.")
-    parser.add_argument("--disable-save", action="store_false", default=True, help = "Disables saving.")
-    parser.add_argument("--fast", action="store_true", default=False, help = "Makes time progress faster then normal.")
-    parser.add_argument("--save-config", action="store_true", default=False, help = "Saves the choices as the default config.")
-    parser.add_argument("-fullscreen", action="store_true", default=False, help = "Runs the game in fullscreen. Press 'Q' to exit the game.")
-    parser.add_argument("-nocompression", action="store_true", default=False, help = "Disables compression for a smaller save file.")
-    parser.add_argument("-gamemode", type=int, default=0, help = "Set the Gamemode for player.  0 = Creative, 1 = Survival")
     options = parser.parse_args()
     main(options)

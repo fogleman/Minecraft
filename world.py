@@ -185,7 +185,7 @@ class World(dict):
         x, y, z = position
         dx, dy, dz = vector
         dx, dy, dz = dx / m, dy / m, dz / m
-        previous = None
+        previous = ()
         for _ in xrange(max_distance * m):
             key = normalize((x, y, z))
             if key != previous and key in self:
