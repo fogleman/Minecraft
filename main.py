@@ -329,7 +329,6 @@ class Model(World):
             stone_block, stone_block, stone_block, stone_block, stone_block,
         )
 
-
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
 
@@ -683,13 +682,6 @@ class Window(pyglet.window.Window):
         x, y, z = self.collide((x + dx, y + dy, z + dz), 2)
       #  print(str(dy) + ' ' + str(self.dy)) 
         self.player.position = (x, y, z)
-
-    def set_highlighted_block(self, block):
-        self.highlighted_block = block
-        self.block_damage = 0
-        if self.crack:
-            self.crack.delete()
-        self.crack = None
 
     def set_highlighted_block(self, block):
         self.highlighted_block = block
