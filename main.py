@@ -553,8 +553,7 @@ class GameController(object):
             print('Game mode: Survival')
         self.item_list = ItemSelector(self.window.width, self.window.height, self.player,
                                       self.model)
-        self.inventory_list = InventorySelector(self.window.width, self.window.height,
-                                                self.player, self.model)
+        self.inventory_list = InventorySelector(self, self.player, self.model)
         self.camera = Camera3D(target=self.player)
         self.num_keys = [
             key._1, key._2, key._3, key._4, key._5,
@@ -826,13 +825,7 @@ class GameController(object):
             self.on_mouse_motion(x, y, dx, dy)
 
     def on_key_press(self, symbol, modifiers):
-        if symbol == key.ESCAPE:
-            if self.inventory_list.visible:
-                self.inventory_list.toggle_active_frame_visibility()
-                self.window.set_exclusive_mouse(True)
-                self.item_list.update_items()
-                return pyglet.event.EVENT_HANDLED
-        elif symbol == key.B or symbol == key.F3:
+        if symbol == key.B or symbol == key.F3:
             self.show_gui = not self.show_gui
         elif symbol in self.num_keys:
             index = (symbol - self.num_keys[0])
@@ -855,8 +848,7 @@ class GameController(object):
         elif symbol == self.key_inventory:
             self.set_highlighted_block(None)
             self.mouse_pressed = False
-            self.inventory_list.toggle_active_frame_visibility()
-            self.window.set_exclusive_mouse(not self.inventory_list.visible)
+            self.inventory_list.toggle()
             self.item_list.update_items()
         elif symbol == key.ENTER:
             current_block = self.item_list\

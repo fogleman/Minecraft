@@ -11,13 +11,14 @@ from globals import *
 #TERRAINMAP_BLOCK_SIZE = 16
 
 class InventorySelector(object):
-    def __init__(self, width, height, player, model):
+    def __init__(self, parent, player, model):
         global TERRAINMAP_BLOCK_SIZE
         TERRAINMAP_BLOCK_SIZE = 8
         self.batch = pyglet.graphics.Batch()
         self.group = pyglet.graphics.OrderedGroup(1)
         self.amount_labels_group = pyglet.graphics.OrderedGroup(2)
         self.amount_labels = []
+        self.parent = parent
         self.model = model
         self.player = player
         self.max_items = self.player.inventory.slot_count
@@ -32,7 +33,7 @@ class InventorySelector(object):
         self.crafting_outcome_icon = None
         #self.active = pyglet.sprite.Sprite(image.get_region(0, 0, image.height / 4, image.height / 4), batch=self.batch, group=pyglet.graphics.OrderedGroup(2))
         #self.active.opacity = 0
-        self.frame.x = (width - self.frame.width) / 2
+        self.frame.x = (parent.window.width - self.frame.width) / 2
         self.frame.y = self.icon_size / 2 - 4
         self.visible = False
 
@@ -190,11 +191,12 @@ class InventorySelector(object):
             return item, amount
         return False
 
-    def toggle_active_frame_visibility(self):
+    def toggle(self):
         if not self.visible:
             self.update_items()
+            self.parent.item_list.update_items()
+        self.parent.window.set_exclusive_mouse(self.visible)
         self.visible = not self.visible
-        # self.active.opacity = 0 if self.active.opacity == 255 else 255
 
     def mouse_coords_to_index(self, x, y):
         inventory_rows = floor(self.max_items / 9)
@@ -391,8 +393,12 @@ class InventorySelector(object):
             return pyglet.event.EVENT_HANDLED
 
     def on_key_press(self, symbol, modifiers):
-        if self.visible and symbol == key.ENTER:
-            return pyglet.event.EVENT_HANDLED
+        if self.visible:
+            if symbol == key.ESCAPE:
+                self.toggle()
+                return pyglet.event.EVENT_HANDLED
+            elif symbol == key.ENTER:
+                return pyglet.event.EVENT_HANDLED
 
     def on_resize(self, width, height):
         self.set_position(width, height)
