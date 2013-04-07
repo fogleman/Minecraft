@@ -28,6 +28,7 @@ class GameController(object):
         self.bg_red = 0.0
         self.bg_green = 0.0
         self.bg_blue = 0.0
+        self.hour_deg = 15.0
         self.earth = vec(0.8, 0.8, 0.8, 1.0)
         self.white = vec(1.0, 1.0, 1.0, 1.0)
         self.ambient = vec(1.0, 1.0, 1.0, 1.0)
@@ -155,8 +156,8 @@ class GameController(object):
 
         side = len(self.model.sectors) * 2.0
 
-        self.light_y = 2.0 * side * sin(time_of_day * HOUR_DEG * DEG_RAD)
-        self.light_z = 2.0 * side * cos(time_of_day * HOUR_DEG * DEG_RAD)
+        self.light_y = 2.0 * side * sin(time_of_day * self.hour_deg * DEG_RAD)
+        self.light_z = 2.0 * side * cos(time_of_day * self.hour_deg * DEG_RAD)
         if time_of_day <= 2.5:
             ambient_value = 1.0
         else:
