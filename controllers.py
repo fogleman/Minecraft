@@ -34,7 +34,7 @@ class GameController(object):
         self.crack = None
         self.crack_batch = pyglet.graphics.Batch()
         self.mouse_pressed = False
-        self.show_fog = False
+        self.show_fog = config.getboolean('World', 'show_fog')
         self.last_key = None
         self.sorted = False
         self.key_inventory = config.getint('Controls', 'inventory')
@@ -104,9 +104,7 @@ class GameController(object):
         self.update_time()
         self.camera.update(dt)
 
-    def setup(self, show_fog = False):
-        self.show_fog = show_fog
-            
+    def setup(self):            
         glClearColor(BACK_RED, BACK_GREEN, BACK_BLUE, 1)
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)

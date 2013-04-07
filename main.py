@@ -174,7 +174,6 @@ def main(options):
     window = Window(options.width, options.height, launch_fullscreen=options.fullscreen,
         show_gui=options.show_gui, save=save_object, caption=APP_NAME, resizable=True, vsync=False)
 
-    #window.setup_game(show_fog=config.getboolean('World', 'show_fog'))
     pyglet.clock.set_fps_limit(MAX_FPS)
     pyglet.app.run()
     if options.disable_auto_save and options.disable_save:
