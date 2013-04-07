@@ -513,7 +513,6 @@ class GameController(object):
         self.window = window
         self.show_gui = show_gui
         self.save = save
-        self.exclusive = False
         self.sector = None
         self.focus_block = Block(width=1.05, height=1.05)
         self.reticle = None
@@ -647,7 +646,7 @@ class GameController(object):
         The time of day is converted to degrees and then to radians.
         """
 
-        if not self.exclusive:
+        if not self.window.exclusive:
             return
 
         time_of_day = self.time_of_day if self.time_of_day < 12.0 \
@@ -777,7 +776,7 @@ class GameController(object):
         return tuple(p)
 
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
-        if (self.exclusive or self.show_inventory) and scroll_y != 0:
+        if (self.window.exclusive or self.show_inventory) and scroll_y != 0:
             if not self.show_inventory:
                 self.item_list.change_index(scroll_y * -1)
             else:
@@ -787,7 +786,7 @@ class GameController(object):
         if self.show_inventory:
             self.inventory_list.on_mouse_press(x, y, button, modifiers)
             return
-        if self.exclusive:
+        if self.window.exclusive:
             vector = self.get_sight_vector()
             block, previous = self.model.hit_test(self.player.position, vector)
             if button == pyglet.window.mouse.LEFT:
@@ -825,7 +824,7 @@ class GameController(object):
         if self.show_inventory:
             self.inventory_list.on_mouse_motion(x, y, dx, dy)
             return
-        if self.exclusive:
+        if self.window.exclusive:
             m = 0.15
             x, y = self.player.rotation
             x, y = x + dx * m, y + dy * m
@@ -838,7 +837,7 @@ class GameController(object):
             if self.show_inventory:
                 self.inventory_list.on_mouse_drag(x, y, dx, dy, button, modifiers)
                 return
-            if self.exclusive:
+            if self.window.exclusive:
                 self.on_mouse_motion(x, y, dx, dy)
 
     def on_key_press(self, symbol, modifiers):
@@ -974,7 +973,7 @@ class GameController(object):
                     self.inventory_list.selected_item_icon.draw()
                 if self.inventory_list.crafting_outcome_icon:
                     self.inventory_list.crafting_outcome_icon.draw()
-        if self.exclusive:
+        if self.window.exclusive:
             self.draw_reticle()
 
         pyglet.clock.tick()
@@ -1028,6 +1027,7 @@ class GameController(object):
 class Window(pyglet.window.Window):
     def __init__(self, width, height, launch_fullscreen=False, show_gui=True, save=None, **kwargs):
         super(Window, self).__init__(width, height, **kwargs)
+        self.exclusive = False
         self.controller = GameController(self, show_gui=show_gui, save=save)
         self.controller.push_handlers()
         self.set_exclusive_mouse(True)
@@ -1037,13 +1037,13 @@ class Window(pyglet.window.Window):
 
     def set_exclusive_mouse(self, exclusive):
         super(Window, self).set_exclusive_mouse(exclusive)
-        self.controller.exclusive = exclusive
+        self.exclusive = exclusive
 
     def update(self, dt):
         self.controller.update(dt)
 
     def on_key_press(self, symbol, modifiers):
-        if symbol == key.ESCAPE and self.controller.exclusive:
+        if symbol == key.ESCAPE and self.exclusive:
             self.set_exclusive_mouse(False)
 
 
