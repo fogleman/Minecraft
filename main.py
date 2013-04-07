@@ -95,14 +95,12 @@ class Player(Entity):
                 self.inventory.add_item(item.id, quantity)
             else:
                 self.quick_slots.add_item(item.id, quantity)
-                
-        global config
+
         self.key_move_forward = config.getint('Controls', 'move_forward')
         self.key_move_backward = config.getint('Controls', 'move_backward')
         self.key_move_left = config.getint('Controls', 'move_left')
         self.key_move_right = config.getint('Controls', 'move_right')
         self.key_jump = config.getint('Controls', 'jump')
-        self.key_inventory = config.getint('Controls', 'inventory')
 
     def add_item(self, item_id):
         if self.quick_slots.add_item(item_id):
@@ -113,7 +111,8 @@ class Player(Entity):
 
     def change_health(self, change):
         self.health += change
-        self.health = self.health if self.health < self.max_health else self.max_health
+        if self.health > self.max_health:
+            self.health = self.max_health
 
     def on_key_release(self, symbol, modifiers):
         if symbol == self.key_move_forward:
@@ -177,20 +176,36 @@ class Player(Entity):
             dz = 0.0
         return dx, dy, dz
 
+    def get_sight_vector(self):
+        x, y = self.rotation
+        y_r = radians(y)
+        x_r = radians(x)
+        m = cos(y_r)
+        dy = sin(y_r)
+        x_r -= HALF_PI
+        dx = cos(x_r) * m
+        dz = sin(x_r) * m
+        return dx, dy, dz
+
 
 ####
 
 class ItemSelector(object):
-    def __init__(self, width, height, player, model):
+    def __init__(self, parent, player, model):
         self.batch = pyglet.graphics.Batch()
         self.group = pyglet.graphics.OrderedGroup(1)
         self.labels_group = pyglet.graphics.OrderedGroup(2)
         self.amount_labels = []
+        self.parent = parent
         self.model = model
         self.player = player
         self.max_items = 9
         self.current_index = 1
         self.icon_size = self.model.group.texture.width / 8  # 4
+        self.visible = True
+        self.num_keys = [
+            key._1, key._2, key._3, key._4, key._5,
+            key._6, key._7, key._8, key._9, key._0]
 
         image = pyglet.image.load(os.path.join('resources', 'textures', 'slots.png'))
         heart_image = pyglet.image.load(os.path.join('resources', 'textures', 'heart.png'))
@@ -208,7 +223,6 @@ class ItemSelector(object):
                 batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
             self.hearts.append(heart)
         self.current_block_label = None
-        self.set_position(width, height)
 
     def change_index(self, change):
         self.set_index(self.current_index + change)
@@ -272,14 +286,6 @@ class ItemSelector(object):
                 group=self.labels_group)
         self.active.x = self.frame.x + (self.current_index * 35)
 
-    def set_position(self, width, height):
-        self.frame.x = (width - self.frame.width) / 2
-        self.frame.y = self.icon_size * 0.5
-        self.active.y = self.frame.y
-        self.update_health()
-        self.update_current()
-        self.update_items()
-
     def update_health(self):
         hearts_to_show = self.player.health
         showed_hearts = 0
@@ -321,8 +327,44 @@ class ItemSelector(object):
         self.player.quick_slots.remove_by_index(self.current_index, quantity=quantity)
         self.update_items()
 
-    def toggle_active_frame_visibility(self):
-        self.active.opacity = 0 if self.active.opacity == 255 else 255
+    def toggle(self):
+        self.visible = not self.visible
+        if self.visible:
+            self.update_items()
+
+    def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
+        if self.visible and self.parent.window.exclusive:
+            self.change_index(scroll_y * -1)
+            return pyglet.event.EVENT_HANDLED
+
+    def on_key_press(self, symbol, modifiers):
+        if self.visible:
+            if symbol in self.num_keys:
+                index = (symbol - self.num_keys[0])
+                self.set_index(index)
+                return pyglet.event.EVENT_HANDLED
+            elif symbol == key.ENTER:
+                current_block = self.get_current_block_item_and_amount()
+                if current_block:
+                    if not self.player.inventory.add_item(
+                            current_block[0].id, quantity=current_block[1]):
+                        self.player.quick_slots.add_item(
+                            current_block[0].id, quantity=current_block[1])
+                    self.update_items()
+                    return pyglet.event.EVENT_HANDLED
+
+    def on_resize(self, width, height):
+        self.frame.x = (width - self.frame.width) / 2
+        self.frame.y = self.icon_size * 0.5
+        self.active.y = self.frame.y
+        if self.visible:
+            self.update_health()
+            self.update_current()
+            self.update_items()
+
+    def draw(self):
+        if self.visible:
+            self.batch.draw()
 
 
 class Model(World):
@@ -551,13 +593,9 @@ class GameController(object):
             print('Game mode: Creative')
         if self.player.game_mode == 1:
             print('Game mode: Survival')
-        self.item_list = ItemSelector(self.window.width, self.window.height, self.player,
-                                      self.model)
+        self.item_list = ItemSelector(self, self.player, self.model)
         self.inventory_list = InventorySelector(self, self.player, self.model)
         self.camera = Camera3D(target=self.player)
-        self.num_keys = [
-            key._1, key._2, key._3, key._4, key._5,
-            key._6, key._7, key._8, key._9, key._0]
         if self.show_gui:
             self.label = pyglet.text.Label(
                 '', font_name='Arial', font_size=8, x=10, y=self.window.height - 10,
@@ -580,7 +618,7 @@ class GameController(object):
         for _ in xrange(m):
             self._update(dt / m)
         if self.mouse_pressed:
-            vector = self.get_sight_vector()
+            vector = self.player.get_sight_vector()
             block, previous = self.model.hit_test(self.player.position, vector)
             if block:
                 if self.highlighted_block != block:
@@ -623,17 +661,6 @@ class GameController(object):
             glFogf(GL_FOG_DENSITY, 0.35)
             glFogf(GL_FOG_START, 20.0)
             glFogf(GL_FOG_END, DRAW_DISTANCE) # 80)
-
-    def get_sight_vector(self):
-        x, y = self.player.rotation
-        y_r = radians(y)
-        x_r = radians(x)
-        m = cos(y_r)
-        dy = sin(y_r)
-        x_r -= HALF_PI
-        dx = cos(x_r) * m
-        dz = sin(x_r) * m
-        return dx, dy, dz
 
     def update_time(self):
         """
@@ -772,13 +799,9 @@ class GameController(object):
                     break
         return tuple(p)
 
-    def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
-        if self.window.exclusive:
-            self.item_list.change_index(scroll_y * -1)
-
     def on_mouse_press(self, x, y, button, modifiers):
         if self.window.exclusive:
-            vector = self.get_sight_vector()
+            vector = self.player.get_sight_vector()
             block, previous = self.model.hit_test(self.player.position, vector)
             if button == pyglet.window.mouse.LEFT:
                 if block:
@@ -808,8 +831,9 @@ class GameController(object):
             self.window.set_exclusive_mouse(True)
 
     def on_mouse_release(self, x, y, button, modifiers):
-        self.set_highlighted_block(None)
-        self.mouse_pressed = False
+        if self.window.exclusive:
+            self.set_highlighted_block(None)
+            self.mouse_pressed = False
 
     def on_mouse_motion(self, x, y, dx, dy):
         if self.window.exclusive:
@@ -827,14 +851,8 @@ class GameController(object):
     def on_key_press(self, symbol, modifiers):
         if symbol == key.B or symbol == key.F3:
             self.show_gui = not self.show_gui
-        elif symbol in self.num_keys:
-            index = (symbol - self.num_keys[0])
-            self.item_list.set_index(index)
         elif symbol == key.V:
             self.save_to_file()
-        elif symbol == key.Q:
-            if options.fullscreen == True:
-                pyglet.app.exit() # for fullscreen
         elif symbol == key.M:
             if self.last_key == symbol and not self.sorted:
                 self.player.quick_slots.sort()
@@ -849,22 +867,11 @@ class GameController(object):
             self.set_highlighted_block(None)
             self.mouse_pressed = False
             self.inventory_list.toggle()
-            self.item_list.update_items()
-        elif symbol == key.ENTER:
-            current_block = self.item_list\
-                .get_current_block_item_and_amount()
-            if current_block:
-                if not self.player.inventory.add_item(
-                        current_block[0].id, quantity=current_block[1]):
-                    self.player.quick_slots.add_item(
-                        current_block[0].id, quantity=current_block[1])
-            self.item_list.update_items()
         self.last_key = symbol
 
     def on_resize(self, width, height):
         if self.show_gui:
             self.label.y = height - 10
-            self.item_list.set_position(width, height)
 
     def set_2d(self):
         width, height = self.window.get_size()
@@ -920,14 +927,12 @@ class GameController(object):
         self.set_2d()
         if self.show_gui:
             self.draw_label()
-            if not self.inventory_list.visible:
-                self.item_list.batch.draw()
-            else:
-                self.inventory_list.draw()
+            self.item_list.draw()
+            self.inventory_list.draw()
 
     def draw_focused_block(self):
         glDisable(GL_LIGHTING)
-        vector = self.get_sight_vector()
+        vector = self.player.get_sight_vector()
         position = self.model.hit_test(self.player.position, vector)[0]
         if position:
             hit_block = self.model[position]
@@ -965,6 +970,7 @@ class GameController(object):
         self.window.push_handlers(self.camera)
         self.window.push_handlers(self.player)
         self.window.push_handlers(self)
+        self.window.push_handlers(self.item_list)
         self.window.push_handlers(self.inventory_list)
         
 
@@ -975,9 +981,9 @@ class Window(pyglet.window.Window):
         self.reticle = None
         self.controller = GameController(self, show_gui=show_gui, save=save)
         self.controller.push_handlers()
-        self.set_exclusive_mouse(True)
         if launch_fullscreen:
             self.set_fullscreen()
+        self.set_exclusive_mouse(True)
         pyglet.clock.schedule_interval(self.update, 1.0 / MAX_FPS)
 
     def set_exclusive_mouse(self, exclusive):
@@ -988,17 +994,17 @@ class Window(pyglet.window.Window):
         self.controller.update(dt)
 
     def on_key_press(self, symbol, modifiers):
-        if symbol == key.ESCAPE and self.exclusive:
-            self.set_exclusive_mouse(False)
+        if self.exclusive:
+            if symbol == key.ESCAPE and not self.fullscreen:
+                self.set_exclusive_mouse(False)
+            elif symbol == key.Q and self.fullscreen:
+                pyglet.app.exit() # for fullscreen
 
     def on_draw(self):
         if self.exclusive:
-            self.draw_reticle()
+            glColor3d(0, 0, 0)
+            self.reticle.draw(GL_LINES)
         pyglet.clock.tick()
-
-    def draw_reticle(self):
-        glColor3d(0, 0, 0)
-        self.reticle.draw(GL_LINES)
 
     def on_resize(self, width, height):
         if self.reticle:

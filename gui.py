@@ -177,12 +177,6 @@ class InventorySelector(object):
         '''self.active.x = self.frame.x + ((self.current_index % 9) * self.icon_size * 0.5) + (self.current_index % 9) * 3
         self.active.y = self.frame.y + floor(self.current_index / 9) * self.icon_size * 0.5 + floor(self.current_index / 9) * 6'''
 
-    def set_position(self, width, height):
-        self.frame.x = (width - self.frame.width) / 2
-        self.frame.y = self.icon_size / 2 - 4
-        self.update_current()
-        self.update_items()
-
     def get_current_block_item_and_amount(self):
         item = self.player.inventory.at(self.current_index)
         if item:
@@ -194,7 +188,7 @@ class InventorySelector(object):
     def toggle(self):
         if not self.visible:
             self.update_items()
-            self.parent.item_list.update_items()
+        self.parent.item_list.toggle()
         self.parent.window.set_exclusive_mouse(self.visible)
         self.visible = not self.visible
 
@@ -388,8 +382,9 @@ class InventorySelector(object):
             return pyglet.event.EVENT_HANDLED
 
     def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
-        if self.visible and button == pyglet.window.mouse.LEFT:
-            self.on_mouse_motion(x, y, dx, dy)
+        if self.visible:
+            if button == pyglet.window.mouse.LEFT:
+                self.on_mouse_motion(x, y, dx, dy)
             return pyglet.event.EVENT_HANDLED
 
     def on_key_press(self, symbol, modifiers):
@@ -401,7 +396,11 @@ class InventorySelector(object):
                 return pyglet.event.EVENT_HANDLED
 
     def on_resize(self, width, height):
-        self.set_position(width, height)
+        self.frame.x = (width - self.frame.width) / 2
+        self.frame.y = self.icon_size / 2 - 4
+        if self.visible:
+            self.update_current()
+            self.update_items()
 
     def draw(self):
         if self.visible:
