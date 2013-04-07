@@ -25,6 +25,9 @@ class GameController(object):
         self.clock = 6
         self.light_y = 1.0
         self.light_z = 1.0
+        self.bg_red = 0.0
+        self.bg_green = 0.0
+        self.bg_blue = 0.0
         self.earth = vec(0.8, 0.8, 0.8, 1.0)
         self.white = vec(1.0, 1.0, 1.0, 1.0)
         self.ambient = vec(1.0, 1.0, 1.0, 1.0)
@@ -105,7 +108,7 @@ class GameController(object):
         self.camera.update(dt)
 
     def setup(self):            
-        glClearColor(BACK_RED, BACK_GREEN, BACK_BLUE, 1)
+        glClearColor(self.bg_red, self.bg_green, self.bg_blue, 1)
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)
         glEnable(GL_LIGHT1)
@@ -117,7 +120,7 @@ class GameController(object):
 
         if self.show_fog:
             glEnable(GL_FOG)
-            glFogfv(GL_FOG_COLOR, vec(BACK_RED, BACK_GREEN, BACK_BLUE, 1))
+            glFogfv(GL_FOG_COLOR, vec(self.bg_red, self.bg_green, self.bg_blue, 1))
             glHint(GL_FOG_HINT, GL_DONT_CARE)
             glFogi(GL_FOG_MODE, GL_LINEAR)
             glFogf(GL_FOG_DENSITY, 0.35)
@@ -162,12 +165,9 @@ class GameController(object):
 
         # Calculate sky colour according to time of day.
         sin_t = sin(pi * time_of_day / 12.0)
-        global BACK_RED
-        global BACK_GREEN
-        global BACK_BLUE
-        BACK_RED = 0.1 * (1.0 - sin_t)
-        BACK_GREEN = 0.9 * sin_t
-        BACK_BLUE = min(sin_t + 0.4, 0.8)
+        self.bg_red = 0.1 * (1.0 - sin_t)
+        self.bg_green = 0.9 * sin_t
+        self.bg_blue = min(sin_t + 0.4, 0.8)
 
         if fmod(self.count / 2, TIME_RATE) == 0:
             if self.clock == 18:
@@ -283,7 +283,7 @@ class GameController(object):
     def set_3d(self):
         width, height = self.window.get_size()
         if self.show_fog:
-            glFogfv(GL_FOG_COLOR, vec(BACK_RED, BACK_GREEN, BACK_BLUE, 1.0))
+            glFogfv(GL_FOG_COLOR, vec(self.bg_red, self.bg_green, self.bg_blue, 1.0))
         glEnable(GL_DEPTH_TEST)
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
@@ -308,7 +308,7 @@ class GameController(object):
         glMaterialfv(GL_FRONT, GL_SHININESS, self.polished)
         
     def clear(self):
-        glClearColor(BACK_RED, BACK_GREEN, BACK_BLUE, 1.0)
+        glClearColor(self.bg_red, self.bg_green, self.bg_blue, 1.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
     def on_draw(self):
