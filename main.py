@@ -84,6 +84,8 @@ class Player(Entity):
         self.flying = flying
         self.max_health = 10
         self.game_mode = game_mode
+        self.strafe = [0, 0]
+        self.dy = 0
         initial_items = [bookshelf_block, furnace_block, brick_block, torch_block,
                          lamp_block, glass_block, chest_block,
                          sandstone_block, melon_block]
@@ -93,6 +95,14 @@ class Player(Entity):
                 self.inventory.add_item(item.id, quantity)
             else:
                 self.quick_slots.add_item(item.id, quantity)
+                
+        global config
+        self.key_move_forward = config.getint('Controls', 'move_forward')
+        self.key_move_backward = config.getint('Controls', 'move_backward')
+        self.key_move_left = config.getint('Controls', 'move_left')
+        self.key_move_right = config.getint('Controls', 'move_right')
+        self.key_jump = config.getint('Controls', 'jump')
+        self.key_inventory = config.getint('Controls', 'inventory')
 
     def add_item(self, item_id):
         if self.quick_slots.add_item(item_id):
@@ -104,6 +114,68 @@ class Player(Entity):
     def change_health(self, change):
         self.health += change
         self.health = self.health if self.health < self.max_health else self.max_health
+
+    def on_key_release(self, symbol, modifiers):
+        if symbol == self.key_move_forward:
+            self.strafe[0] += 1
+        elif symbol == self.key_move_backward:
+            self.strafe[0] -= 1
+        elif symbol == self.key_move_left:
+            self.strafe[1] += 1
+        elif symbol == self.key_move_right:
+            self.strafe[1] -= 1
+        elif (symbol == self.key_jump or symbol == key.LSHIFT
+              or symbol == key.RSHIFT) and self.flying:
+            self.dy = 0
+
+    def on_key_press(self, symbol, modifiers):
+        if symbol == self.key_move_forward:
+            self.strafe[0] -= 1
+        elif symbol == self.key_move_backward:
+            self.strafe[0] += 1
+        elif symbol == self. key_move_left:
+            self.strafe[1] -= 1
+        elif symbol == self.key_move_right:
+            self.strafe[1] += 1
+        elif symbol == self.key_jump:
+            if self.flying:
+                self.dy = 0.045  # jump speed
+            elif self.dy == 0:
+                self.dy = 0.016  # jump speed
+        elif symbol == key.LSHIFT or symbol == key.RSHIFT:
+            if self.flying:
+                self.dy = -0.045  # inversed jump speed
+        elif symbol == key.TAB:
+            self.dy = 0
+            self.flying = not self.flying
+
+    def get_motion_vector(self):
+        if any(self.strafe):
+            x, y = self.rotation
+            y_r = radians(y)
+            x_r = radians(x)
+            strafe = atan2(*self.strafe)
+            if self.flying:
+                m = cos(y_r)
+                dy = sin(y_r)
+                if self.strafe[1]:
+                    dy = 0.0
+                    m = 1
+                if self.strafe[0] > 0:
+                    dy *= -1
+                x_r += strafe
+                dx = cos(x_r) * m
+                dz = sin(x_r) * m
+            else:
+                dy = 0.0
+                x_r += strafe
+                dx = cos(x_r)
+                dz = sin(x_r)
+        else:
+            dy = 0.0
+            dx = 0.0
+            dz = 0.0
+        return dx, dy, dz
 
 
 ####
@@ -442,7 +514,6 @@ class GameController(object):
         self.show_gui = show_gui
         self.save = save
         self.exclusive = False
-        self.strafe = [0, 0]
         self.sector = None
         self.focus_block = Block(width=1.05, height=1.05)
         self.reticle = None
@@ -460,16 +531,10 @@ class GameController(object):
         self.crack = None
         self.crack_batch = pyglet.graphics.Batch()
         self.mouse_pressed = False
-        self.dy = 0
         self.show_fog = False
         self.last_key = None
         self.sorted = False
         global config
-        self.key_move_forward = config.getint('Controls', 'move_forward')
-        self.key_move_backward = config.getint('Controls', 'move_backward')
-        self.key_move_left = config.getint('Controls', 'move_left')
-        self.key_move_right = config.getint('Controls', 'move_right')
-        self.key_jump = config.getint('Controls', 'jump')
         self.key_inventory = config.getint('Controls', 'inventory')
         save_len = -1 if self.save is None else len(self.save)
         if self.save is None or save_len < 2:  # model and model.sectors
@@ -480,13 +545,10 @@ class GameController(object):
             for item in self.save[0]:
                 self.model[item[0]] = item[1]
             self.model.sectors = self.save[1]
-            if save_len > 2 and isinstance(self.save[2], list) \
-                    and len(self.save[2]) == 2:
-                self.strafe = self.save[2]
-            if save_len > 3 and isinstance(self.save[3], Player):
-                self.player = self.save[3]
-            if save_len > 4 and isinstance(self.save[4], float):
-                self.time_of_day = self.save[4]
+            if save_len > 2 and isinstance(self.save[2], Player):
+                self.player = self.save[2]
+            if save_len > 3 and isinstance(self.save[3], float):
+                self.time_of_day = self.save[3]
         if self.player.game_mode == 0:
             print('Game mode: Creative')
         if self.player.game_mode == 1:
@@ -542,6 +604,7 @@ class GameController(object):
                 else:
                     self.set_highlighted_block(None)
         self.update_time()
+        self.camera.update(dt)
 
     def setup(self, show_fog = False):
         self.show_fog = show_fog
@@ -574,34 +637,6 @@ class GameController(object):
         x_r -= HALF_PI
         dx = cos(x_r) * m
         dz = sin(x_r) * m
-        return dx, dy, dz
-
-    def get_motion_vector(self):
-        if any(self.strafe):
-            x, y = self.player.rotation
-            y_r = radians(y)
-            x_r = radians(x)
-            strafe = atan2(*self.strafe)
-            if self.player.flying:
-                m = cos(y_r)
-                dy = sin(y_r)
-                if self.strafe[1]:
-                    dy = 0.0
-                    m = 1
-                if self.strafe[0] > 0:
-                    dy *= -1
-                x_r += strafe
-                dx = cos(x_r) * m
-                dz = sin(x_r) * m
-            else:
-                dy = 0.0
-                x_r += strafe
-                dx = cos(x_r)
-                dz = sin(x_r)
-        else:
-            dy = 0.0
-            dx = 0.0
-            dz = 0.0
         return dx, dy, dz
 
     def update_time(self):
@@ -659,23 +694,22 @@ class GameController(object):
         # walking
         speed = 15 if self.player.flying else 5
         d = dt * speed
-        dx, dy, dz = self.get_motion_vector()
+        dx, dy, dz = self.player.get_motion_vector()
         dx, dy, dz = dx * d, dy * d, dz * d
         # gravity
         if not self.player.flying:
-            self.dy -= dt * 0.022  # g force, should be = jump_speed * 0.5 /
+            self.player.dy -= dt * 0.022  # g force, should be = jump_speed * 0.5 /
             # max_jump_height
-            self.dy = max(self.dy, -0.5)  # terminal velocity
-            dy += self.dy
+            self.player.dy = max(self.player.dy, -0.5)  # terminal velocity
+            dy += self.player.dy
         else:
-            self.dy = max(self.dy, -0.5)  # terminal velocity
-            dy += self.dy
+            self.player.dy = max(self.player.dy, -0.5)  # terminal velocity
+            dy += self.player.dy
             # collisions
         x, y, z = self.player.position
         x, y, z = self.collide((x + dx, y + dy, z + dz), 2)
-      #  print(str(dy) + ' ' + str(self.dy)) 
+      #  print(str(dy) + ' ' + str(self.player.dy)) 
         self.player.position = (x, y, z)
-        self.camera.update()
 
     def set_highlighted_block(self, block):
         self.highlighted_block = block
@@ -720,7 +754,7 @@ class GameController(object):
                     if face == (0, -1, 0) or face == (0, 1, 0):
                         # jump damage
                         if not self.player.flying and self.player.game_mode is not 0:
-                            damage = self.dy * -1000.0
+                            damage = self.player.dy * -1000.0
                             damage = 3.0 * damage / 22.0
                             damage -= 2.0
                             if damage >= 0.0:
@@ -738,7 +772,7 @@ class GameController(object):
                                 if health_change != 0:
                                     self.player.change_health(health_change)
                                     self.item_list.update_health()
-                        self.dy = 0
+                        self.player.dy = 0
                     break
         return tuple(p)
 
@@ -808,33 +842,13 @@ class GameController(object):
                 self.on_mouse_motion(x, y, dx, dy)
 
     def on_key_press(self, symbol, modifiers):
-        if symbol == self.key_move_forward:
-            self.strafe[0] -= 1
-        elif symbol == self.key_move_backward:
-            self.strafe[0] += 1
-        elif symbol == self. key_move_left:
-            self.strafe[1] -= 1
-        elif symbol == self.key_move_right:
-            self.strafe[1] += 1
-        elif symbol == self.key_jump:
-            if self.player.flying:
-                self.dy = 0.045  # jump speed
-            elif self.dy == 0:
-                self.dy = 0.016  # jump speed
-        elif symbol == key.LSHIFT or symbol == key.RSHIFT:
-            if self.player.flying:
-                self.dy = -0.045  # inversed jump speed
-        elif symbol == key.ESCAPE:
+        if symbol == key.ESCAPE:
             if self.show_inventory:
                 self.inventory_list.toggle_active_frame_visibility()
-                self.show_inventory = not self.show_inventory
-                self.window.set_exclusive_mouse(not self.show_inventory)
+                self.show_inventory = False
+                self.window.set_exclusive_mouse(True)
                 self.item_list.update_items()
-            else:
-                self.window.set_exclusive_mouse(False)
-        elif symbol == key.TAB:
-            self.dy = 0
-            self.player.flying = not self.player.flying
+                return pyglet.event.EVENT_HANDLED
         elif symbol == key.B or symbol == key.F3:
             self.show_gui = not self.show_gui
         elif symbol in self.num_keys:
@@ -883,19 +897,6 @@ class GameController(object):
             self.item_list.update_items()
             self.inventory_list.update_items()
         self.last_key = symbol
-
-    def on_key_release(self, symbol, modifiers):
-        if symbol == self.key_move_forward:
-            self.strafe[0] += 1
-        elif symbol == self.key_move_backward:
-            self.strafe[0] -= 1
-        elif symbol == self.key_move_left:
-            self.strafe[1] += 1
-        elif symbol == self.key_move_right:
-            self.strafe[1] -= 1
-        elif (symbol == self.key_jump or symbol == key.LSHIFT
-              or symbol == key.RSHIFT) and self.player.flying:
-            self.dy = 0
 
     def on_resize(self, width, height):
         if self.reticle:
@@ -1020,6 +1021,7 @@ class GameController(object):
     def push_handlers(self):
         self.setup()
         self.window.push_handlers(self.camera)
+        self.window.push_handlers(self.player)
         self.window.push_handlers(self)
         
 
@@ -1039,6 +1041,10 @@ class Window(pyglet.window.Window):
 
     def update(self, dt):
         self.controller.update(dt)
+
+    def on_key_press(self, symbol, modifiers):
+        if symbol == key.ESCAPE and self.controller.exclusive:
+            self.set_exclusive_mouse(False)
 
 
 def main(options):

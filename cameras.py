@@ -14,7 +14,7 @@ class Camera3D(object):
         self.x_rotation = x
         self.y_rotation = y
 
-    def update(self):
+    def update(self, dt):
         if self.target:
             self.x, self.y, self.z = self.target.position
 
