@@ -130,6 +130,7 @@ For git:
 
 For optimal performance, you can compile the code to C using Cython.
 
-To do so, you have to install Cython (`sudo apt-get install cython` under
-Ubuntu), then run `python setup.py build_ext --inplace --force`.  You will have
+To do so, you have to install Cython and Python dev files
+(`sudo apt-get install cython python-dev` under Ubuntu), then run
+`python setup.py build_ext --inplace --force`.  You will have
 to run this last command each time you update the game.

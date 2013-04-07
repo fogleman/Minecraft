@@ -11,6 +11,182 @@ from inventory import *
 from items import *
 
 
+class ItemSelector(object):
+    def __init__(self, parent, player, model):
+        self.batch = pyglet.graphics.Batch()
+        self.group = pyglet.graphics.OrderedGroup(1)
+        self.labels_group = pyglet.graphics.OrderedGroup(2)
+        self.amount_labels = []
+        self.parent = parent
+        self.model = model
+        self.player = player
+        self.max_items = 9
+        self.current_index = 1
+        self.icon_size = self.model.group.texture.width / TILESET_SIZE
+        self.visible = True
+        self.num_keys = [
+            key._1, key._2, key._3, key._4, key._5,
+            key._6, key._7, key._8, key._9, key._0]
+
+        image = pyglet.image.load(os.path.join('resources', 'textures', 'slots.png'))
+        heart_image = pyglet.image.load(os.path.join('resources', 'textures', 'heart.png'))
+        frame_size = image.height / 2
+        self.frame = pyglet.sprite.Sprite(
+            image.get_region(0, frame_size, image.width, frame_size),
+            batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
+        self.active = pyglet.sprite.Sprite(
+            image.get_region(0, 0, frame_size, frame_size), batch=self.batch,
+            group=pyglet.graphics.OrderedGroup(2))
+        self.hearts = []
+        for i in range(0, 10):
+            heart = pyglet.sprite.Sprite(
+                heart_image.get_region(0, 0, heart_image.width, heart_image.width),
+                batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
+            self.hearts.append(heart)
+        self.current_block_label = None
+
+    def change_index(self, change):
+        self.set_index(self.current_index + change)
+
+    def set_index(self, index):
+        index = int(index)
+        if self.current_index == index:
+            return
+        self.current_index = index
+        if self.current_index >= self.max_items:
+            self.current_index = 0
+        elif self.current_index < 0:
+            self.current_index = self.max_items - 1
+        self.update_current()
+
+    def update_items(self):
+        self.player.quick_slots.remove_unnecessary_stacks()
+        self.icons = []
+        for amount_label in self.amount_labels:
+            amount_label.delete()
+        self.amount_labels = []
+        x = self.frame.x + 3
+        items = self.player.quick_slots.get_items()
+        items = items[:self.max_items]
+        for item in items:
+            if not item:
+                x += (self.icon_size * 0.5) + 3
+                continue
+            block = BLOCKS_DIR[item.type]
+            block_icon = self.model.group.texture.get_region(
+                int(block.side_texture[0] * TILESET_SIZE) * self.icon_size,
+                int(block.side_texture[1] * TILESET_SIZE) * self.icon_size, self.icon_size,
+                self.icon_size)
+            icon = pyglet.sprite.Sprite(block_icon, batch=self.batch,
+                                        group=self.group)
+            icon.scale = 0.5
+            icon.x = x
+            icon.y = self.frame.y + 3
+            item.quickslots_x = icon.x
+            item.quickslots_y = icon.y
+            x += (self.icon_size * 0.5) + 3
+            amount_label = pyglet.text.Label(
+                str(item.amount), font_name='Arial', font_size=9,
+                x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
+                color=block.amount_label_color, batch=self.batch,
+                group=self.labels_group)
+            self.amount_labels.append(amount_label)
+            self.icons.append(icon)
+        self.update_current()
+
+    def update_current(self):
+        if self.current_block_label:
+            self.current_block_label.delete()
+        if hasattr(self.get_current_block_item(False), 'quickslots_x') and hasattr(self.get_current_block_item(False), 'quickslots_y'):
+            self.current_block_label = pyglet.text.Label(
+                self.get_current_block_item(False).name, font_name='Arial', font_size=9,
+                x=self.get_current_block_item(False).quickslots_x + 0.25 * self.icon_size, y=self.get_current_block_item(False).quickslots_y - 20,
+                anchor_x='center', anchor_y='bottom',
+                color=(255, 255, 255, 255), batch=self.batch,
+                group=self.labels_group)
+        self.active.x = self.frame.x + (self.current_index * 35)
+
+    def update_health(self):
+        hearts_to_show = self.player.health
+        showed_hearts = 0
+        for i, heart in enumerate(self.hearts):
+            heart.x = self.frame.x + i * (20 + 2) + (self.frame.width - hearts_to_show * (20 + 2)) / 2
+            heart.y = self.icon_size * 1.0 + 12
+            heart.opacity = 255
+            if showed_hearts >= hearts_to_show:
+                heart.opacity = 0
+            showed_hearts += 1
+
+    def get_current_block(self):
+        item = self.player.quick_slots.at(self.current_index)
+        if not item:
+            return
+        item_id = item.type
+        if item_id >= ITEM_ID_MIN:
+            return ITEMS_DIR[item_id]
+        return BLOCKS_DIR[item_id]
+
+    def get_current_block_item(self, remove=False):
+        item = self.player.quick_slots.at(self.current_index)
+        if remove:
+            self.player.quick_slots.remove_by_index(self.current_index,
+                                                        quantity=item.amount)
+        return item
+
+    def get_current_block_item_and_amount(self, remove=True):
+        item = self.player.quick_slots.at(self.current_index)
+        if item:
+            amount = item.amount
+            if remove:
+                self.player.quick_slots.remove_by_index(self.current_index,
+                                                        quantity=item.amount)
+            return item, amount
+        return False
+
+    def remove_current_block(self, quantity=1):
+        self.player.quick_slots.remove_by_index(self.current_index, quantity=quantity)
+        self.update_items()
+
+    def toggle(self):
+        self.visible = not self.visible
+        if self.visible:
+            self.update_items()
+
+    def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
+        if self.visible and self.parent.window.exclusive:
+            self.change_index(scroll_y * -1)
+            return pyglet.event.EVENT_HANDLED
+
+    def on_key_press(self, symbol, modifiers):
+        if self.visible:
+            if symbol in self.num_keys:
+                index = (symbol - self.num_keys[0])
+                self.set_index(index)
+                return pyglet.event.EVENT_HANDLED
+            elif symbol == key.ENTER:
+                current_block = self.get_current_block_item_and_amount()
+                if current_block:
+                    if not self.player.inventory.add_item(
+                            current_block[0].id, quantity=current_block[1]):
+                        self.player.quick_slots.add_item(
+                            current_block[0].id, quantity=current_block[1])
+                    self.update_items()
+                    return pyglet.event.EVENT_HANDLED
+
+    def on_resize(self, width, height):
+        self.frame.x = (width - self.frame.width) / 2
+        self.frame.y = self.icon_size * 0.5
+        self.active.y = self.frame.y
+        if self.visible:
+            self.update_health()
+            self.update_current()
+            self.update_items()
+
+    def draw(self):
+        if self.visible:
+            self.batch.draw()
+            
+
 class InventorySelector(object):
     def __init__(self, parent, player, model):
         self.batch = pyglet.graphics.Batch()
