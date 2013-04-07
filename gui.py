@@ -190,6 +190,8 @@ class InventorySelector(object):
         return False
 
     def toggle_active_frame_visibility(self):
+        if not self.visible:
+            self.update_items()
         self.visible = not self.visible
         # self.active.opacity = 0 if self.active.opacity == 255 else 255
 
@@ -280,11 +282,15 @@ class InventorySelector(object):
         self.selected_item = None
         self.selected_item_icon = None
 
+    def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
+        if self.visible:
+            return pyglet.event.EVENT_HANDLED
+
     def on_mouse_press(self, x, y, button, modifiers):
         if not self.visible:
             return False
         if x < 0.0 or y < 0.0:
-            return False
+            return pyglet.event.EVENT_HANDLED
         inventory, index = self.mouse_coords_to_index(x, y)
         if index == 256:    # 256 for crafting outcome
             if self.crafting_outcome:
@@ -306,14 +312,14 @@ class InventorySelector(object):
                         if ingre.amount <= 0:
                             self.remove_crafting_outcome()
                 self.crafting_panel.remove_unnecessary_stacks()
-                return True
+                return pyglet.event.EVENT_HANDLED
             else:   # nothing happens
-                return True
+                return pyglet.event.EVENT_HANDLED
         if self.selected_item:
             if index == -1:
                 # throw it
                 self.update_items()
-                return False
+                return pyglet.event.EVENT_HANDLED
             item = inventory.at(index)
             if (item and item.type == self.selected_item.type) or not item:
                 amount_to_change = 1
@@ -329,7 +335,7 @@ class InventorySelector(object):
                 else:
                     self.set_selected_item(None)
                 self.update_items()
-                return
+                return pyglet.event.EVENT_HANDLED
             inventory.slots[index] = self.selected_item
             self.set_selected_item(item)
             if self.selected_item_icon:
@@ -337,17 +343,17 @@ class InventorySelector(object):
                 self.selected_item_icon.y = y - (self.selected_item_icon.height / 2)
         else:
             if index == -1:
-                return False
+                return pyglet.event.EVENT_HANDLED
             item = inventory.at(index)
             if not item:
-                return False
+                return pyglet.event.EVENT_HANDLED
 
             if modifiers & pyglet.window.key.MOD_SHIFT:
                 add_to = self.player.quick_slots if inventory == self.player.inventory else self.player.inventory
                 add_to.add_item(item.type, item.amount)
                 inventory.remove_all_by_index(index)
                 self.update_items()
-                return True
+                return pyglet.event.EVENT_HANDLED
 
             new_stack = False
             if button == pyglet.window.mouse.RIGHT:
@@ -369,18 +375,16 @@ class InventorySelector(object):
 
         self.update_items()
         self.update_current()
-        return True
+        return pyglet.event.EVENT_HANDLED
 
     def on_mouse_motion(self, x, y, dx, dy):
-        if not self.visible:
-            return False
-        if self.selected_item_icon:
-            self.selected_item_icon.x = x - (self.selected_item_icon.width / 2)
-            self.selected_item_icon.y = y - (self.selected_item_icon.height / 2)
-            return
+        if self.visible:
+            if self.selected_item_icon:
+                self.selected_item_icon.x = x - (self.selected_item_icon.width / 2)
+                self.selected_item_icon.y = y - (self.selected_item_icon.height / 2)
+            return pyglet.event.EVENT_HANDLED
 
     def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
-        if not self.visible:
-            return False
-        if self.selected_item_icon:
+        if self.visible and button == pyglet.window.mouse.LEFT:
             self.on_mouse_motion(x, y, dx, dy)
+            return pyglet.event.EVENT_HANDLED

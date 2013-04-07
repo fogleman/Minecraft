@@ -775,16 +775,10 @@ class GameController(object):
         return tuple(p)
 
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
-        if (self.window.exclusive or self.inventory_list.visible) and scroll_y != 0:
-            if not self.inventory_list.visible:
-                self.item_list.change_index(scroll_y * -1)
-            else:
-                self.inventory_list.change_index(scroll_y * -1)
+        if self.window.exclusive:
+            self.item_list.change_index(scroll_y * -1)
 
     def on_mouse_press(self, x, y, button, modifiers):
-        if self.inventory_list.visible:
-            self.inventory_list.on_mouse_press(x, y, button, modifiers)
-            return
         if self.window.exclusive:
             vector = self.get_sight_vector()
             block, previous = self.model.hit_test(self.player.position, vector)
@@ -820,9 +814,6 @@ class GameController(object):
         self.mouse_pressed = False
 
     def on_mouse_motion(self, x, y, dx, dy):
-        if self.inventory_list.visible:
-            self.inventory_list.on_mouse_motion(x, y, dx, dy)
-            return
         if self.window.exclusive:
             m = 0.15
             x, y = self.player.rotation
@@ -833,11 +824,7 @@ class GameController(object):
 
     def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
         if button == pyglet.window.mouse.LEFT:
-            if self.inventory_list.visible:
-                self.inventory_list.on_mouse_drag(x, y, dx, dy, button, modifiers)
-                return
-            if self.window.exclusive:
-                self.on_mouse_motion(x, y, dx, dy)
+            self.on_mouse_motion(x, y, dx, dy)
 
     def on_key_press(self, symbol, modifiers):
         if symbol == key.ESCAPE:
@@ -867,7 +854,8 @@ class GameController(object):
                 self.item_list.update_items()
                 self.inventory_list.update_items()
         elif symbol == self.key_inventory:
-            self.inventory_list.update_items()
+            self.set_highlighted_block(None)
+            self.mouse_pressed = False
             self.inventory_list.toggle_active_frame_visibility()
             self.window.set_exclusive_mouse(not self.inventory_list.visible)
             self.item_list.update_items()
@@ -1019,6 +1007,7 @@ class GameController(object):
         self.window.push_handlers(self.camera)
         self.window.push_handlers(self.player)
         self.window.push_handlers(self)
+        self.window.push_handlers(self.inventory_list)
         
 
 class Window(pyglet.window.Window):
