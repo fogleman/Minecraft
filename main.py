@@ -146,7 +146,7 @@ class Player(Entity):
         elif symbol == key.LSHIFT or symbol == key.RSHIFT:
             if self.flying:
                 self.dy = -0.045  # inversed jump speed
-        elif symbol == key.TAB:
+        elif symbol == key.TAB and self.game_mode is 0:
             self.dy = 0
             self.flying = not self.flying
 
