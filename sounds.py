@@ -11,7 +11,8 @@ glass_break = pyglet.resource.media("glass_break.wav", streaming=False)
 dirt_break = pyglet.resource.media("dirt_break.wav", streaming=False)
 gravel_break = pyglet.resource.media("gravel_break.wav", streaming=False)
 stone_break = pyglet.resource.media("stone_break.wav", streaming=False)
-
+melon_break = pyglet.resource.media("melon_break.wav", streaming=False)
+sand_break = pyglet.resource.media("sand_break.wav", streaming=False)
 
 def play_sound(sound):
     player = pyglet.media.ManagedSoundPlayer()

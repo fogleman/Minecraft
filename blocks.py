@@ -27,7 +27,7 @@ class Block(object):
     side_texture = ()
 
     # Sounds
-    break_sound = None
+    break_sound = sounds.wood_break
 
     # Physical attributes
     hardness = 0    # hardness can be found on http://www.minecraftwiki.net/wiki/Digging#Blocks_by_hardness
@@ -98,6 +98,10 @@ class AirBlock(Block):
     name = "Air"
 
 
+class WoodBlock(Block):
+    break_sound = sounds.wood_break
+
+
 class HardBlock(Block):
     break_sound = sounds.stone_break
 
@@ -146,6 +150,7 @@ class SandBlock(Block):
     amount_label_color = 0, 0, 0, 255
     id = 12
     name = "Sand"
+    break_sound = sounds.sand_break
 
 
 class GoldOreBlock(HardBlock):
@@ -225,7 +230,7 @@ class GravelBlock(Block):
     break_sound = sounds.gravel_break
 
 
-class BedrockBlock(Block):
+class BedrockBlock(HardBlock):
     top_texture = 3, 0
     bottom_texture = 3, 0
     side_texture = 3, 0
@@ -243,12 +248,10 @@ class WaterBlock(Block):
     density = 0.5
     id = 8
     name = "Water"
-
-    def play_break_sound(self):
-        sounds.water_break.play()
+    break_sound = sounds.water_break
 
 
-class ChestBlock(Block):
+class ChestBlock(WoodBlock):
     top_texture = 1, 2
     bottom_texture = 1, 2
     side_texture = 1, 2
@@ -287,10 +290,6 @@ class StonebrickBlock(HardBlock):
     name = "Stone Bricks"
 
 
-class WoodBlock(Block):
-    break_sound = sounds.wood_break
-
-
 class OakWoodPlankBlock(WoodBlock):
     top_texture = 3, 3
     bottom_texture = 3, 3
@@ -326,6 +325,7 @@ class SnowGrassBlock(Block):
     side_texture = 4, 0
     hardness = 0.6
     id = 80
+    break_sound = sounds.dirt_break
 
     def __init__(self):
         super(SnowGrassBlock, self).__init__()
@@ -391,13 +391,13 @@ class TallCactusBlock(Block):
     id = 81.1 # not a real MC block, so the last possible # i think.
     name = "Thin Cactus"
 
+
 class LeafBlock(Block):
+    break_sound = sounds.leaves_break
+
     def __init__(self):
         super(LeafBlock, self).__init__()
         self.drop_id = None
-
-    def play_break_sound(self):
-        sounds.leaves_break.play()
 
 
 class OakLeafBlock(LeafBlock):
@@ -440,6 +440,7 @@ class MelonBlock(Block):
     id = 103
     name = "Melon"
     regenerated_health = 3
+    break_sound = sounds.melon_break
 
 class PumpkinBlock(Block):
     top_texture = 2, 5
@@ -449,8 +450,9 @@ class PumpkinBlock(Block):
     width = 0.8
     id = 86
     name = "Pumpkin"
+    break_sound = sounds.melon_break
 
-class TorchBlock(Block):
+class TorchBlock(WoodBlock):
     top_texture = 5,5
     bottom_texture = 0, 1
     side_texture = 4, 5
@@ -458,6 +460,7 @@ class TorchBlock(Block):
     width = 0.2
     id = 50
     name = "Torch"
+
 
 class YFlowersBlock(Block):
     top_texture = 6, 6
@@ -531,6 +534,7 @@ class FarmBlock(Block):
     hardness = 0.5
     id = 60
     name = "Farm Dirt"
+    break_sound = sounds.dirt_break
 
     def __init__(self):
         super(FarmBlock, self).__init__()
