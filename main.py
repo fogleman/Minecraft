@@ -65,7 +65,8 @@ class Window(pyglet.window.Window):
         super(Window, self).__init__(width, height, **kwargs)
         self.exclusive = False
         self.reticle = None
-        self.controller = GameController(self, show_gui=show_gui, save=save)
+        #self.controller = GameController(self, show_gui=show_gui, save=save)
+        self.controller = MainMenuController(self, show_gui=show_gui, save=save)
         self.controller.push_handlers()
         if launch_fullscreen:
             self.set_fullscreen()

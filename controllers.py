@@ -3,6 +3,7 @@ from math import cos, sin, atan2, pi, fmod, radians
 import operator
 # Third-party packages
 from pyglet.window import key
+from pyglet.text import Label
 # Modules from this project
 from cameras import *
 import globals
@@ -17,10 +18,67 @@ from savingsystem import *
 def vec(*args):
     return (GLfloat * len(args))(*args)
 
-
-class GameController(object):
-    def __init__(self, window, show_gui=True, save=None):
+class Controller(object):
+    def __init__(self, window): 
         self.window = window
+
+    def setup(self):            
+        pass
+        
+    def update(self, dt):
+        pass
+
+    def set_2d(self):
+        width, height = self.window.get_size()
+        glDisable(GL_DEPTH_TEST)
+        glViewport(0, 0, width, height)
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity()
+        glOrtho(0, width, 0, height, -1, 1)
+        glMatrixMode(GL_MODELVIEW)
+        glLoadIdentity()
+        
+    def push_handlers(self):
+        self.setup()
+        self.window.push_handlers(self)
+        
+    def pop_handlers(self):
+        self.window.pop_handlers()
+
+class MainMenuController(Controller):
+    def __init__(self, window, show_gui=True, save=None):
+        super(MainMenuController, self).__init__(window)
+        self.batch = pyglet.graphics.Batch()
+        self.group = pyglet.graphics.OrderedGroup(1)
+        self.labels_group = pyglet.graphics.OrderedGroup(2)
+
+        image = pyglet.image.load(os.path.join('resources', 'textures', 'frame.png'))
+        self.frame = pyglet.sprite.Sprite(image.get_region(0, 0, image.width, image.height), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
+        self.label = Label(APP_NAME, font_name='Arial', font_size=30, x=window.width/2, y=window.height - 10,
+            anchor_x='center', anchor_y='top', color=(0, 0, 0, 255), batch=self.batch,
+            group=self.labels_group)
+        
+    def clear(self):
+        glClearColor(0.0, 0.0, 0.0, 1.0)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+    def on_resize(self, width, height):
+        self.frame.x = (width - self.frame.width) / 2
+        self.frame.y = (height - self.frame.height) / 2
+        self.label.y = self.frame.y + self.frame.height
+        self.label.x = width / 2
+
+    def on_draw(self):
+        self.clear()
+        glColor3d(1, 1, 1)
+        self.set_2d()
+        self.frame.draw()
+        self.label.draw()
+
+
+class GameController(Controller):
+    def __init__(self, window, show_gui=True, save=None):
+        super(GameController, self).__init__(window)
         self.show_gui = show_gui
         self.save = save
         self.sector = None
@@ -271,19 +329,6 @@ class GameController(object):
         if self.show_gui:
             self.label.y = height - 10
 
-    def set_2d(self):
-        width, height = self.window.get_size()
-        glDisable(GL_DEPTH_TEST)
-        glViewport(0, 0, width, height)
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        if width != 0:
-            glOrtho(0, width, 0, height, -1, 1)
-        else:
-            glOrtho(0, 1, 0, 1, -1, 1)
-        glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
-
     def set_3d(self):
         width, height = self.window.get_size()
         if self.show_fog:
@@ -370,3 +415,10 @@ class GameController(object):
         self.window.push_handlers(self)
         self.window.push_handlers(self.item_list)
         self.window.push_handlers(self.inventory_list)
+        
+    def pop_handlers(self):
+        self.window.pop_handlers()
+        self.window.pop_handlers()
+        self.window.pop_handlers()
+        self.window.pop_handlers()
+        self.window.pop_handlers()
