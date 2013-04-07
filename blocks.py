@@ -2,7 +2,7 @@ from globals import *
 import sounds
 
 
-def get_texture_coordinates(x, y, tileset_size=TERRAINMAP_BLOCK_SIZE):
+def get_texture_coordinates(x, y, tileset_size=TILESET_SIZE):
     m = 1.0 / tileset_size
     dx = x * m
     dy = y * m
