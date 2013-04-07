@@ -20,7 +20,7 @@ BACK_GREEN = 0.0  # 0.81
 BACK_BLUE = 0.0  # 0.98
 HALF_PI = pi / 2.0  # 90 degrees
 SPREADING_MUTATION_DELAY = 10  # in seconds
-TERRAINMAP_BLOCK_SIZE = 8
+TILESET_SIZE = 8  # The tileset therefore contains TILESET_SIZE ** 2 tiles.
 GAMEMODE = 0 #0 = creative (no damage), 1 = Survival (take Damage
 
 EFFECT_VOLUME = 1

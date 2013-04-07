@@ -1,19 +1,18 @@
+from math import floor, ceil
 import os
+
 from pyglet.gl import *
 from pyglet.window import key
-from math import floor, ceil
+
 from blocks import *
-from items import *
 from crafting import *
-from inventory import *
 from globals import *
-#global TERRAINMAP_BLOCK_SIZE
-#TERRAINMAP_BLOCK_SIZE = 16
+from inventory import *
+from items import *
+
 
 class InventorySelector(object):
     def __init__(self, parent, player, model):
-        global TERRAINMAP_BLOCK_SIZE
-        TERRAINMAP_BLOCK_SIZE = 8
         self.batch = pyglet.graphics.Batch()
         self.group = pyglet.graphics.OrderedGroup(1)
         self.amount_labels_group = pyglet.graphics.OrderedGroup(2)
@@ -23,7 +22,7 @@ class InventorySelector(object):
         self.player = player
         self.max_items = self.player.inventory.slot_count
         self.current_index = 1
-        self.icon_size = self.model.group.texture.width / TERRAINMAP_BLOCK_SIZE #4
+        self.icon_size = self.model.group.texture.width / TILESET_SIZE
         self.selected_item = None
         self.selected_item_icon = None
         image = pyglet.image.load(os.path.join('resources', 'textures', 'inventory.png'))
@@ -63,7 +62,6 @@ class InventorySelector(object):
         y = self.frame.y + inventory_y + inventory_height
         items = self.player.inventory.get_items()
         items = items[:self.max_items]
-        global TERRAINMAP_BLOCK_SIZE
         for i, item in enumerate(items):
             if not item:
                 x += (self.icon_size * 0.5) + 3
@@ -73,8 +71,8 @@ class InventorySelector(object):
                 continue
             block = BLOCKS_DIR[item.type]
             block_icon = self.model.group.texture.get_region(
-                int(block.side_texture[0] * TERRAINMAP_BLOCK_SIZE) * self.icon_size,
-                int(block.side_texture[1] * TERRAINMAP_BLOCK_SIZE) * self.icon_size, self.icon_size,
+                int(block.side_texture[0] * TILESET_SIZE) * self.icon_size,
+                int(block.side_texture[1] * TILESET_SIZE) * self.icon_size, self.icon_size,
                 self.icon_size)
             icon = pyglet.sprite.Sprite(block_icon, batch=self.batch,
                                         group=self.group)
@@ -101,8 +99,8 @@ class InventorySelector(object):
                 continue
             block = BLOCKS_DIR[item.type]
             block_icon = self.model.group.texture.get_region(
-                int(block.side_texture[0] * TERRAINMAP_BLOCK_SIZE) * self.icon_size,
-                int(block.side_texture[1] * TERRAINMAP_BLOCK_SIZE) * self.icon_size, self.icon_size,
+                int(block.side_texture[0] * TILESET_SIZE) * self.icon_size,
+                int(block.side_texture[1] * TILESET_SIZE) * self.icon_size, self.icon_size,
                 self.icon_size)
             icon = pyglet.sprite.Sprite(block_icon, batch=self.batch,
                                         group=self.group)
@@ -139,8 +137,8 @@ class InventorySelector(object):
                 continue
             block = BLOCKS_DIR[item.type]
             block_icon = self.model.group.texture.get_region(
-                int(block.side_texture[0] * TERRAINMAP_BLOCK_SIZE) * self.icon_size,
-                int(block.side_texture[1] * TERRAINMAP_BLOCK_SIZE) * self.icon_size, self.icon_size,
+                int(block.side_texture[0] * TILESET_SIZE) * self.icon_size,
+                int(block.side_texture[1] * TILESET_SIZE) * self.icon_size, self.icon_size,
                 self.icon_size)
             icon = pyglet.sprite.Sprite(block_icon, batch=self.batch,
                                         group=self.group)
@@ -249,8 +247,7 @@ class InventorySelector(object):
         self.crafting_outcome = item
 
         block = BLOCKS_DIR[item.type]
-        global TERRAINMAP_BLOCK_SIZE
-        item_icon = self.model.group.texture.get_region(int(block.side_texture[0] * TERRAINMAP_BLOCK_SIZE) * self.icon_size, int(block.side_texture[1] * TERRAINMAP_BLOCK_SIZE) * self.icon_size, int(self.icon_size * 0.5), int(self.icon_size * 0.5))
+        item_icon = self.model.group.texture.get_region(int(block.side_texture[0] * TILESET_SIZE) * self.icon_size, int(block.side_texture[1] * TILESET_SIZE) * self.icon_size, int(self.icon_size * 0.5), int(self.icon_size * 0.5))
         self.crafting_outcome_icon = pyglet.sprite.Sprite(item_icon, batch=self.batch, group=self.group)
         inventory_rows = floor(self.max_items / 9)
         inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
@@ -270,8 +267,7 @@ class InventorySelector(object):
         self.selected_item = item
 
         block = BLOCKS_DIR[item.type]
-        global TERRAINMAP_BLOCK_SIZE
-        item_icon = self.model.group.texture.get_region(int(block.side_texture[0] * TERRAINMAP_BLOCK_SIZE) * self.icon_size, int(block.side_texture[1] * TERRAINMAP_BLOCK_SIZE) * self.icon_size, self.icon_size, self.icon_size)
+        item_icon = self.model.group.texture.get_region(int(block.side_texture[0] * TILESET_SIZE) * self.icon_size, int(block.side_texture[1] * TILESET_SIZE) * self.icon_size, self.icon_size, self.icon_size)
         self.selected_item_icon = pyglet.sprite.Sprite(item_icon, batch=self.batch, group=self.group)
         self.selected_item_icon.scale = 0.4
 

@@ -266,7 +266,7 @@ class ItemSelector(object):
         self.player = player
         self.max_items = 9
         self.current_index = 1
-        self.icon_size = self.model.group.texture.width / 8  # 4
+        self.icon_size = self.model.group.texture.width / TILESET_SIZE
         self.visible = True
         self.num_keys = [
             key._1, key._2, key._3, key._4, key._5,
@@ -317,10 +317,9 @@ class ItemSelector(object):
                 x += (self.icon_size * 0.5) + 3
                 continue
             block = BLOCKS_DIR[item.type]
-            global TERRAINMAP_BLOCK_SIZE
             block_icon = self.model.group.texture.get_region(
-                int(block.side_texture[0] * TERRAINMAP_BLOCK_SIZE) * self.icon_size,
-                int(block.side_texture[1] * TERRAINMAP_BLOCK_SIZE) * self.icon_size, self.icon_size,
+                int(block.side_texture[0] * TILESET_SIZE) * self.icon_size,
+                int(block.side_texture[1] * TILESET_SIZE) * self.icon_size, self.icon_size,
                 self.icon_size)
             icon = pyglet.sprite.Sprite(block_icon, batch=self.batch,
                                         group=self.group)
