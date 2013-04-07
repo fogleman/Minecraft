@@ -18,6 +18,7 @@ from pyglet.window import key
 # import kytten #unused, future potential reference
 from blocks import *
 from entity import *
+import globals
 from globals import *
 from gui import *
 from items import *
@@ -59,6 +60,8 @@ if not os.path.lexists(config_file):
     config.set('Controls', 'move_right', str(key.D))
     config.set('Controls', 'jump', str(key.SPACE))
     config.set('Controls', 'inventory', str(key.E))
+    config.set('Controls', 'sound_up', str(key.PAGEUP))
+    config.set('Controls', 'sound_down', str(key.PAGEDOWN))
 
     try:
         with open(config_file, 'wb') as handle:
@@ -488,6 +491,8 @@ class Window(pyglet.window.Window):
         self.key_move_right = config.getint('Controls', 'move_right')
         self.key_jump = config.getint('Controls', 'jump')
         self.key_inventory = config.getint('Controls', 'inventory')
+        self.key_sound_up = config.getint('Controls', 'sound_up') if config.has_option('Controls', 'sound_up') else key.PAGEUP
+        self.key_sound_down = config.getint('Controls', 'sound_down') if config.has_option('Controls', 'sound_up') else key.PAGEDOWN
         save_len = -1 if self.save is None else len(self.save)
         if self.save is None or save_len < 2:  # model and model.sectors
             self.model = Model()
@@ -890,6 +895,11 @@ class Window(pyglet.window.Window):
                             current_block[0].id, quantity=current_block[1])
             self.item_list.update_items()
             self.inventory_list.update_items()
+        elif symbol == self.key_sound_up:
+            globals.EFFECT_VOLUME = min(globals.EFFECT_VOLUME + .1, 1)
+        elif symbol == self.key_sound_down:
+            globals.EFFECT_VOLUME = max(globals.EFFECT_VOLUME - .1, 0)
+
         self.last_key = symbol
 
     def on_key_release(self, symbol, modifiers):

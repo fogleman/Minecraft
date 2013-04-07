@@ -85,7 +85,7 @@ class Block(object):
 
     def play_break_sound(self):
         if self.break_sound is not None:
-            self.break_sound.play()
+            sounds.play_sound(self.break_sound)
 
 
 class AirBlock(Block):
