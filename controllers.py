@@ -19,10 +19,9 @@ def vec(*args):
 
 
 class GameController(object):
-    def __init__(self, window, show_gui=True, save=None):
+    def __init__(self, window, show_gui=True):
         self.window = window
         self.show_gui = show_gui
-        self.save = save
         self.sector = None
         self.focus_block = Block(width=1.05, height=1.05)
         self.time_of_day = 0.0
@@ -49,19 +48,11 @@ class GameController(object):
         self.key_inventory = config.getint('Controls', 'inventory')
         self.key_sound_up = config.getint('Controls', 'sound_up')
         self.key_sound_down = config.getint('Controls', 'sound_down')
-        save_len = -1 if self.save is None else len(self.save)
-        if self.save is None or save_len < 2:  # model and model.sectors
+        if DISABLE_SAVE and world_exists(game_dir, SAVE_FILENAME):
+            open_world(self, game_dir, SAVE_FILENAME)
+        else:
             self.model = Model()
             self.player = Player((0, 0, 0), (-20, 0), game_mode=GAMEMODE)
-        else:
-            self.model = Model(initialize=False)
-            for item in self.save[0]:
-                self.model[item[0]] = item[1]
-            self.model.sectors = self.save[1]
-            if save_len > 2 and isinstance(self.save[2], Player):
-                self.player = self.save[2]
-            if save_len > 3 and isinstance(self.save[3], float):
-                self.time_of_day = self.save[3]
         if self.player.game_mode == 0:
             print('Game mode: Creative')
         if self.player.game_mode == 1:
