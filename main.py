@@ -107,6 +107,9 @@ class Player(Entity):
         elif self.inventory.add_item(item_id):
             return True
         return False
+        
+    def set_parent(self, parent):
+        self.parent = parent
 
     def change_health(self, change):
         self.health += change
@@ -185,6 +188,71 @@ class Player(Entity):
         dx = cos(x_r) * m
         dz = sin(x_r) * m
         return dx, dy, dz
+
+    def update(self, dt):
+        # walking
+        speed = 15 if self.flying else 5
+        d = dt * speed
+        dx, dy, dz = self.get_motion_vector()
+        dx, dy, dz = dx * d, dy * d, dz * d
+        # gravity
+        if not self.flying:
+            self.dy -= dt * 0.022  # g force, should be = jump_speed * 0.5 /
+            # max_jump_height
+            self.dy = max(self.dy, -0.5)  # terminal velocity
+            dy += self.dy
+        else:
+            self.dy = max(self.dy, -0.5)  # terminal velocity
+            dy += self.dy
+            # collisions
+        x, y, z = self.position
+        x, y, z = self.collide((x + dx, y + dy, z + dz), 2)
+      #  print(str(dy) + ' ' + str(self.player.dy)) 
+        self.position = (x, y, z)
+
+    def collide(self, position, height):
+        pad = 0.25
+        p = list(position)
+        np = normalize(position)
+        for face in FACES:  # check all surrounding blocks
+            for i in xrange(3):  # check each dimension independently
+                if not face[i]:
+                    continue
+                d = (p[i] - np[i]) * face[i]
+                if d < pad:
+                    continue
+                for dy in xrange(height):  # check each height
+                    op = list(np)
+                    op[1] -= dy
+                    op[i] += face[i]
+                    op = tuple(op)
+                    if op not in self.parent.model:
+                        continue
+                    p[i] -= (d - pad) * face[i]
+                    if face == (0, -1, 0) or face == (0, 1, 0):
+                        # jump damage
+                        if not self.flying and self.game_mode is not 0:
+                            damage = self.dy * -1000.0
+                            damage = 3.0 * damage / 22.0
+                            damage -= 2.0
+                            if damage >= 0.0:
+                                health_change = 0
+                                if damage <= 0.839:
+                                    health_change = 0
+                                elif damage <= 1.146:
+                                    health_change = -1
+                                elif damage <= 1.44:
+                                    health_change = -2
+                                elif damage <= 2.26:
+                                    health_change = -2
+                                else:
+                                    health_change = -3
+                                if health_change != 0:
+                                    self.change_health(health_change)
+                                    self.parent.item_list.update_health()
+                        self.dy = 0
+                    break
+        return tuple(p)
 
 
 ####
@@ -591,6 +659,7 @@ class GameController(object):
             print('Game mode: Creative')
         if self.player.game_mode == 1:
             print('Game mode: Survival')
+        self.player.set_parent(self)
         self.item_list = ItemSelector(self, self.player, self.model)
         self.inventory_list = InventorySelector(self, self.player, self.model)
         self.camera = Camera3D(target=self.player)
@@ -614,7 +683,7 @@ class GameController(object):
         m = 8
         dt = min(dt, 0.2)
         for _ in xrange(m):
-            self._update(dt / m)
+            self.player.update(dt / m)
         if self.mouse_pressed:
             vector = self.player.get_sight_vector()
             block, previous = self.model.hit_test(self.player.position, vector)
@@ -711,27 +780,6 @@ class GameController(object):
             else:
                 self.clock += 1
 
-    def _update(self, dt):
-        # walking
-        speed = 15 if self.player.flying else 5
-        d = dt * speed
-        dx, dy, dz = self.player.get_motion_vector()
-        dx, dy, dz = dx * d, dy * d, dz * d
-        # gravity
-        if not self.player.flying:
-            self.player.dy -= dt * 0.022  # g force, should be = jump_speed * 0.5 /
-            # max_jump_height
-            self.player.dy = max(self.player.dy, -0.5)  # terminal velocity
-            dy += self.player.dy
-        else:
-            self.player.dy = max(self.player.dy, -0.5)  # terminal velocity
-            dy += self.player.dy
-            # collisions
-        x, y, z = self.player.position
-        x, y, z = self.collide((x + dx, y + dy, z + dz), 2)
-      #  print(str(dy) + ' ' + str(self.player.dy)) 
-        self.player.position = (x, y, z)
-
     def set_highlighted_block(self, block):
         self.highlighted_block = block
         self.block_damage = 0
@@ -745,50 +793,6 @@ class GameController(object):
                 save_world(self, game_dir, SAVE_FILENAME)
             else:
                 save_world(self, game_dir, SAVE_FILENAME, CLASSIC_SAVE_TYPE)
-
-    def collide(self, position, height):
-        pad = 0.25
-        p = list(position)
-        np = normalize(position)
-        for face in FACES:  # check all surrounding blocks
-            for i in xrange(3):  # check each dimension independently
-                if not face[i]:
-                    continue
-                d = (p[i] - np[i]) * face[i]
-                if d < pad:
-                    continue
-                for dy in xrange(height):  # check each height
-                    op = list(np)
-                    op[1] -= dy
-                    op[i] += face[i]
-                    op = tuple(op)
-                    if op not in self.model:
-                        continue
-                    p[i] -= (d - pad) * face[i]
-                    if face == (0, -1, 0) or face == (0, 1, 0):
-                        # jump damage
-                        if not self.player.flying and self.player.game_mode is not 0:
-                            damage = self.player.dy * -1000.0
-                            damage = 3.0 * damage / 22.0
-                            damage -= 2.0
-                            if damage >= 0.0:
-                                health_change = 0
-                                if damage <= 0.839:
-                                    health_change = 0
-                                elif damage <= 1.146:
-                                    health_change = -1
-                                elif damage <= 1.44:
-                                    health_change = -2
-                                elif damage <= 2.26:
-                                    health_change = -2
-                                else:
-                                    health_change = -3
-                                if health_change != 0:
-                                    self.player.change_health(health_change)
-                                    self.item_list.update_health()
-                        self.player.dy = 0
-                    break
-        return tuple(p)
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.window.exclusive:
