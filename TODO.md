@@ -4,6 +4,7 @@
 * Implement sinking in blocks, based on their density
 * Add option to change world (for example from save) during program execution without closing Window
 * make water spread to surrounding empty areas
+* expose blocks below under water
 
 # Items
 

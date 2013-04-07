@@ -368,6 +368,8 @@ class GameController(Controller):
         glMaterialfv(GL_FRONT, GL_AMBIENT, self.earth)
         glMaterialfv(GL_FRONT, GL_DIFFUSE, self.white)
         glMaterialfv(GL_FRONT, GL_SHININESS, self.polished)
+        #glAlphaFunc(GL_GREATER, 0.5)
+        #glEnable(GL_ALPHA_TEST)
         
     def clear(self):
         glClearColor(self.bg_red, self.bg_green, self.bg_blue, 1.0)
