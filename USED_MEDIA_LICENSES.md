@@ -10,3 +10,4 @@
 - melon_break.wav http://www.freesound.org/people/lolamadeus/sounds/159669/;http://www.freesound.org/people/GagaMan/sounds/88511/ Creative Commons 1.0;Creative Commons Attribution 3.0
 - sand_break.wav http://www.freesound.org/people/crashoverride61088/sounds/146407/ Creative Commons 1.0
 - heart.png http://commons.wikimedia.org/wiki/File:Gnome-favorites.png GNU General Public License
+- Chunkfive.otf http://www.fontsquirrel.com/fonts/ChunkFive License in fonts folder

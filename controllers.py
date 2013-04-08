@@ -60,8 +60,10 @@ class MainMenuController(Controller):
         button_image = pyglet.image.load(os.path.join('resources', 'textures', 'button.png'))
         self.start_game = Button(0, 0, 160, 50, image=button_image, caption="Start game", batch=self.batch, group=self.group)
         self.exit_game = Button(0, 0, 160, 50, image=button_image, caption="Exit game", batch=self.batch, group=self.group)
-        self.label = Label(APP_NAME, font_name='Arial', font_size=30, x=window.width/2, y=window.height - 10,
-            anchor_x='center', anchor_y='top', color=(0, 0, 0, 255), batch=self.batch,
+        pyglet.font.add_file('resources/fonts/Chunkfive.ttf')
+        pyglet.font.load('ChunkFive Roman')
+        self.label = Label(APP_NAME, font_name='ChunkFive Roman', font_size=50, x=window.width/2, y=self.frame.y + self.frame.height,
+            anchor_x='center', anchor_y='top', color=(255, 255, 255, 255), batch=self.batch,
             group=self.labels_group)
         
     def clear(self):
@@ -79,7 +81,7 @@ class MainMenuController(Controller):
 
     def on_resize(self, width, height):
         self.frame.x, self.frame.y = (width - self.frame.width) / 2, (height - self.frame.height) / 2
-        self.label.y = self.frame.y + self.frame.height
+        self.label.y = self.frame.y + self.frame.height - 20
         self.label.x = width / 2
         button_x = self.frame.x + (self.frame.width - self.start_game.width) / 2
         button_y = self.frame.y + (self.frame.height - self.start_game.height) / 2
