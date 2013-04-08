@@ -380,6 +380,7 @@ class CactusBlock(Block):
     top_texture = 7, 5
     bottom_texture = 7, 3
     side_texture = 7, 4
+    transparent = True
     width = 0.8
     hardness = 2
     id = 81
@@ -390,6 +391,7 @@ class TallCactusBlock(Block):
     top_texture = 7, 5
     bottom_texture = 7, 3
     side_texture = 7, 4
+    transparent = True
     width = 0.3
     hardness = 1
     id = 81.1  # not a real MC block, so the last possible # i think.
@@ -439,6 +441,7 @@ class MelonBlock(Block):
     top_texture = 4, 3
     bottom_texture = 4, 3
     side_texture = 4, 2
+    transparent = True
     hardness = 1
     width = 0.8
     id = 103
@@ -451,6 +454,7 @@ class PumpkinBlock(Block):
     top_texture = 2, 5
     bottom_texture = 2, 5
     side_texture = 3, 5
+    transparent = True
     hardness = 1
     width = 0.8
     id = 86
@@ -470,7 +474,7 @@ class TorchBlock(WoodBlock):
 
 class YFlowersBlock(Block):
     top_texture = 6, 6
-    bottom_texture = 0, 1
+    bottom_texture = 1, 0
     side_texture = 6, 5
     hardness = 0.1
     transparent = True
@@ -510,6 +514,7 @@ class CobbleFenceBlock(HardBlock):
     top_texture = 6, 3
     bottom_texture = 6, 3
     side_texture = 6, 3
+    transparent = True
     hardness = 2
     width = 0.6
     id = 4

@@ -163,6 +163,7 @@ class GameController(Controller):
         glEnable(GL_LIGHT1)
         glEnable(GL_LIGHT2)
         glEnable(GL_CULL_FACE)
+        glEnable(GL_ALPHA_TEST)
         glEnable(GL_BLEND)
         glEnable(GL_LINE_SMOOTH)
 
@@ -378,6 +379,9 @@ class GameController(Controller):
         self.set_3d()
         glColor3d(1, 1, 1)
         self.model.batch.draw()
+        glDisable(GL_CULL_FACE)
+        self.model.transparency_batch.draw()
+        glEnable(GL_CULL_FACE)
         self.crack_batch.draw()
         self.draw_focused_block()
         self.set_2d()
@@ -400,9 +404,7 @@ class GameController(Controller):
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
                 pyglet.graphics.draw(24, GL_QUADS, ('v3f/static', vertex_data))
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
-                if self.block_damage == 0:
-                    pass
-                else:   # also show the cracks
+                if self.block_damage != 0:  # also show the cracks
                     crack_level = int(floor((self.block_damage / hit_block.hardness) * CRACK_LEVEL)) # range: [0, CRACK_LEVEL]
                     if crack_level > CRACK_LEVEL:
                         return

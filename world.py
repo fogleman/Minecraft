@@ -96,6 +96,7 @@ class World(dict):
     def __init__(self):
         super(World, self).__init__()
         self.batch = pyglet.graphics.Batch()
+        self.transparency_batch = pyglet.graphics.Batch()
         self.group = TextureGroup(os.path.join('resources', 'textures', 'texture.png'))
 
         self.exposed = {}
@@ -175,8 +176,8 @@ class World(dict):
     def is_exposed(self, position):
         if self.exposed.get(position, False):
             return True
-        for other_position in self.neighbors_iterator(position, FACES_WITH_DIAGONALS):
-            if other_position not in self:
+        for other_position in self.neighbors_iterator(position):
+            if other_position not in self or self[other_position].transparent:
                 self.exposed[position] = True
                 return True
         self.exposed[position] = False
@@ -238,9 +239,10 @@ class World(dict):
                 index += 1
 
         # create vertex list
-        self._shown[position] = self.batch.add(count, GL_QUADS, self.group,
-                                               ('v3f/static', vertex_data),
-                                               ('t2f/static', texture_data))
+        batch = self.transparency_batch if block.transparent else self.batch
+        self._shown[position] = batch.add(count, GL_QUADS, self.group,
+                                          ('v3f/static', vertex_data),
+                                          ('t2f/static', texture_data))
 
     def show_sector(self, sector, immediate=False):
         self.delete_opposite_task(self._hide_sector, sector)
