@@ -16,6 +16,7 @@ cpdef tuple sectorize(tuple position)
 @cython.locals(spreading_mutations=dict)
 cdef class World(dict):
     cdef public object batch
+    cdef public object transparency_batch
     cdef public object group
     cdef public dict exposed
     cdef public dict shown
@@ -67,7 +68,7 @@ cdef class World(dict):
                    index=int, count=int,
                    vertex_data=list, texture_data=list,
                    dx=float, dy=float, dz=float,
-                   i=int, j=int)
+                   i=int, j=int, batch=object)
     cpdef object _show_block(self, tuple position, object block)
 
     cpdef object show_sector(self, tuple sector, bint immediate=?)
