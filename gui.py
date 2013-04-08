@@ -79,7 +79,7 @@ class ItemSelector(object):
         self.model = model
         self.player = player
         self.max_items = 9
-        self.current_index = 1
+        self.current_index = 0
         self.icon_size = self.model.group.texture.width / TILESET_SIZE
         self.visible = True
         self.num_keys = [
