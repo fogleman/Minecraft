@@ -18,7 +18,6 @@ cdef class World(dict):
     cdef public object batch
     cdef public object transparency_batch
     cdef public object group
-    cdef public dict exposed
     cdef public dict shown
     cdef public dict _shown
     cdef public object sectors
@@ -60,9 +59,6 @@ cdef class World(dict):
     cpdef object hide_block(self, tuple position, bint immediate=?)
 
     cpdef object _hide_block(self, tuple position)
-
-    @cython.locals(position=tuple)
-    cpdef object show_blocks(self)
 
     @cython.locals(block=object)
     cpdef object show_block(self, tuple position, bint immediate=?)

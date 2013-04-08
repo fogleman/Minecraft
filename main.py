@@ -35,7 +35,7 @@ if not os.path.lexists(config_file):
     config.set('World', 'type', str(type))  # 0=plains,1=dirt,2=desert,3=islands,4=sand,5=stone,6=snow
     config.set('World', 'hill_height', str(hill_height))  # height of the hills
     config.set('World', 'flat', '0')  # dont make mountains,  make a flat world
-    config.set('World', 'size', '160')
+    config.set('World', 'size', '64')
     config.set('World', 'show_fog', '1')
     config.set('World', 'max_trees', str(max_trees))
 
@@ -96,8 +96,8 @@ class Window(pyglet.window.Window):
         if self.exclusive:
             self.reticle.draw(GL_LINES)
             if MOTION_BLUR:
-                glAccum(GL_MULT, 0.45)
-                glAccum(GL_ACCUM, 0.55)
+                glAccum(GL_MULT, 0.65)
+                glAccum(GL_ACCUM, 0.35)
                 glAccum(GL_RETURN, 1.0)
         pyglet.clock.tick()
 

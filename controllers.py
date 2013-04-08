@@ -58,26 +58,40 @@ class MainMenuController(Controller):
         self.frame_rect = Rectangle(0, 0, image.width, image.height)
         self.frame = pyglet.sprite.Sprite(image.get_region(0, 0, image.width, image.height), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
         button_image = pyglet.image.load(os.path.join('resources', 'textures', 'button.png'))
+<<<<<<< HEAD
         self.start_game = Button(0, 0, 160, 50, image=button_image, caption="Start game", batch=self.batch, group=self.group)
         self.exit_game = Button(0, 0, 160, 50, image=button_image, caption="Exit game", batch=self.batch, group=self.group)
         pyglet.font.add_file('resources/fonts/Chunkfive.ttf')
         pyglet.font.load('ChunkFive Roman')
         self.label = Label(APP_NAME, font_name='ChunkFive Roman', font_size=50, x=window.width/2, y=self.frame.y + self.frame.height,
             anchor_x='center', anchor_y='top', color=(255, 255, 255, 255), batch=self.batch,
+=======
+        self.start_game = Button(0, 0, 160, 50, image=button_image, caption="Start game", batch=self.batch, group=self.group, on_click=self.start_game_func)
+        self.exit_game = Button(0, 0, 160, 50, image=button_image, caption="Exit game", batch=self.batch, group=self.group, on_click=self.exit_game_func)
+        self.buttons = [self.start_game, self.exit_game]
+        self.label = Label(APP_NAME, font_name='Arial', font_size=30, x=window.width/2, y=window.height - 10,
+            anchor_x='center', anchor_y='top', color=(0, 0, 0, 255), batch=self.batch,
+>>>>>>> fbfe4ed8e0916eb4022e17013bee0f9f215cd2ec
             group=self.labels_group)
         
+    def start_game_func(self):
+        controller = GameController(self.window, show_gui=self.show_gui)
+        self.window.switch_controller(controller)
+        return pyglet.event.EVENT_HANDLED
+
+    def exit_game_func(self):
+        pyglet.app.exit()
+        return pyglet.event.EVENT_HANDLED
+
     def clear(self):
         glClearColor(0.0, 0.0, 0.0, 1.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         
     def on_mouse_press(self, x, y, button, modifiers):
-        if self.start_game.hit_test(x, y):
-            controller = GameController(self.window, show_gui=self.show_gui)
-            self.window.switch_controller(controller)
-            return pyglet.event.EVENT_HANDLED
-        elif self.exit_game.hit_test(x, y):
-            pyglet.app.exit()
-            return pyglet.event.EVENT_HANDLED
+        # maybe we can add a GUIManager to do the hit test automatically
+        for button in self.buttons:
+            if button.hit_test(x, y):
+                button.on_mouse_click()
 
     def on_resize(self, width, height):
         self.frame.x, self.frame.y = (width - self.frame.width) / 2, (height - self.frame.height) / 2

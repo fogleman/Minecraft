@@ -38,12 +38,13 @@ class Rectangle(object):
         return (self.x + self.width, self.y + self.height)
 
 class Button(Rectangle):
-    def __init__(self, x, y, width, height, image=None, caption=None, batch=None, group=None):
+    def __init__(self, x, y, width, height, image=None, caption=None, batch=None, group=None, on_click=None):
         super(Button, self).__init__(x, y, width, height)
         self.batch = batch
         self.group = group
         self.sprite = None
         self.label = None
+        self.on_click = on_click
         if image:
             self.sprite = Sprite(image.get_region(0, 0, self.width, self.height), batch=self.batch, group=self.group)
         if caption:
@@ -65,6 +66,9 @@ class Button(Rectangle):
         if self.label:
             self.label.draw()
 
+    def on_mouse_click(self):
+        self.on_click()
+
 class ItemSelector(object):
     def __init__(self, parent, player, model):
         self.batch = pyglet.graphics.Batch()
@@ -75,7 +79,7 @@ class ItemSelector(object):
         self.model = model
         self.player = player
         self.max_items = 9
-        self.current_index = 1
+        self.current_index = 0
         self.icon_size = self.model.group.texture.width / TILESET_SIZE
         self.visible = True
         self.num_keys = [

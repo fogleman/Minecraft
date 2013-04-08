@@ -145,6 +145,15 @@ class DirtBlock(Block):
     name = "Dirt"
     break_sound = sounds.dirt_break
 
+class SnowBlock(Block):
+    top_texture = 4, 1
+    bottom_texture = 4, 1
+    side_texture = 4, 1
+    hardness = 0.5
+    id = 80
+    name = "Snow"
+    amount_label_color = 0, 0, 0, 255
+    break_sound = sounds.dirt_break
 
 class SandBlock(Block):
     top_texture = 1, 1
@@ -637,6 +646,7 @@ pumpkin_block = PumpkinBlock()
 torch_block = TorchBlock()
 yflowers_block = YFlowersBlock()
 cobblefence_block = CobbleFenceBlock()
+snow_block = SnowBlock()
 
 
 
