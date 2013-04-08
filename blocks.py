@@ -18,6 +18,9 @@ class Block(object):
                # when creating a new "official" block.
     drop_id = None
 
+    id_main = None  # Whole number component of id
+    id_sub  = None  # Decimal component of id
+
     width = 1.0
     height = 1.0
 
@@ -42,6 +45,9 @@ class Block(object):
 
     def __init__(self, width=None, height=None):
         self.drop_id = self.id
+        if self.id is not None:
+            self.id_main = int(self.id)
+            self.id_sub = int(str(self.id % 1)[2:] or 0)
 
         if width is not None:
             self.width = width
