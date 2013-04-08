@@ -112,6 +112,17 @@ class ItemSelector(object):
         elif self.current_index < 0:
             self.current_index = self.max_items - 1
         self.update_current()
+        
+    def get_block_icon(self, block):
+        block_icon = None
+        if os.path.isfile(os.path.join('resources', 'textures', 'icons', str(block.id) + ".png")) == True:
+            block_icon = pyglet.image.load(os.path.join('resources', 'textures', 'icons', str(block.id) + ".png"))
+        else:
+            block_icon = self.model.group.texture.get_region(
+                int(block.side_texture[0] * TILESET_SIZE) * self.icon_size,
+                int(block.side_texture[1] * TILESET_SIZE) * self.icon_size, self.icon_size,
+                self.icon_size)
+        return block_icon
 
     def update_items(self):
         self.player.quick_slots.remove_unnecessary_stacks()
@@ -127,13 +138,7 @@ class ItemSelector(object):
                 x += (self.icon_size * 0.5) + 3
                 continue
             block = BLOCKS_DIR[item.type]
-            if os.path.isfile(os.path.join('resources', 'textures', 'icons', str(item.type) + ".png")) == True:
-                block_icon = pyglet.image.load(os.path.join('resources', 'textures', 'icons', str(item.type) + ".png"))
-            else:
-                block_icon = self.model.group.texture.get_region(
-                    int(block.side_texture[0] * TILESET_SIZE) * self.icon_size,
-                    int(block.side_texture[1] * TILESET_SIZE) * self.icon_size, self.icon_size,
-                    self.icon_size)
+            block_icon = self.get_block_icon(block)
             icon = pyglet.sprite.Sprite(block_icon, batch=self.batch,
                                         group=self.group)
             icon.scale = 0.5
@@ -282,6 +287,17 @@ class InventorySelector(object):
         elif self.current_index < 0:
             self.current_index = self.max_items - 1
         self.update_current()
+        
+    def get_block_icon(self, block):
+        block_icon = None
+        if os.path.isfile(os.path.join('resources', 'textures', 'icons', str(block.id) + ".png")) == True:
+            block_icon = pyglet.image.load(os.path.join('resources', 'textures', 'icons', str(block.id) + ".png"))
+        else:
+            block_icon = self.model.group.texture.get_region(
+                int(block.side_texture[0] * TILESET_SIZE) * self.icon_size,
+                int(block.side_texture[1] * TILESET_SIZE) * self.icon_size, self.icon_size,
+                self.icon_size)
+        return block_icon
 
     def update_items(self):
         rows = floor(self.max_items / 9)
@@ -303,13 +319,7 @@ class InventorySelector(object):
                     y -= (self.icon_size * 0.5) + 3
                 continue
             block = BLOCKS_DIR[item.type]
-            if os.path.isfile(os.path.join('resources', 'textures', 'icons', str(item.type) + ".png")) == True:
-                block_icon = pyglet.image.load(os.path.join('resources', 'textures', 'icons', str(item.type) + ".png"))
-            else:
-                block_icon = self.model.group.texture.get_region(
-                    int(block.side_texture[0] * TILESET_SIZE) * self.icon_size,
-                    int(block.side_texture[1] * TILESET_SIZE) * self.icon_size, self.icon_size,
-                    self.icon_size)
+            block_icon = self.get_block_icon(block)
             icon = pyglet.sprite.Sprite(block_icon, batch=self.batch,
                                         group=self.group)
             icon.scale = 0.5
@@ -334,13 +344,7 @@ class InventorySelector(object):
                 x += (self.icon_size * 0.5) + 3
                 continue
             block = BLOCKS_DIR[item.type]
-            if os.path.isfile(os.path.join('resources', 'textures', 'icons', str(item.type) + ".png")) == True:
-                block_icon = pyglet.image.load(os.path.join('resources', 'textures', 'icons', str(item.type) + ".png"))
-            else:
-                block_icon = self.model.group.texture.get_region(
-                    int(block.side_texture[0] * TILESET_SIZE) * self.icon_size,
-                    int(block.side_texture[1] * TILESET_SIZE) * self.icon_size, self.icon_size,
-                    self.icon_size)
+            block_icon = self.get_block_icon(block)
             icon = pyglet.sprite.Sprite(block_icon, batch=self.batch,
                                         group=self.group)
             icon.scale = 0.5
@@ -375,13 +379,7 @@ class InventorySelector(object):
                     y -= (self.icon_size * 0.5) + 3
                 continue
             block = BLOCKS_DIR[item.type]
-            if os.path.isfile(os.path.join('resources', 'textures', 'icons', str(item.type) + ".png")) == True:
-                block_icon = pyglet.image.load(os.path.join('resources', 'textures', 'icons', str(item.type) + ".png"))
-            else:
-                block_icon = self.model.group.texture.get_region(
-                    int(block.side_texture[0] * TILESET_SIZE) * self.icon_size,
-                    int(block.side_texture[1] * TILESET_SIZE) * self.icon_size, self.icon_size,
-                    self.icon_size)
+            block_icon = self.get_block_icon(block)
             icon = pyglet.sprite.Sprite(block_icon, batch=self.batch,
                                         group=self.group)
             icon.scale = 0.5
@@ -489,12 +487,13 @@ class InventorySelector(object):
         self.crafting_outcome = item
 
         block = BLOCKS_DIR[item.type]
-        item_icon = self.model.group.texture.get_region(int(block.side_texture[0] * TILESET_SIZE) * self.icon_size, int(block.side_texture[1] * TILESET_SIZE) * self.icon_size, int(self.icon_size * 0.5), int(self.icon_size * 0.5))
+        block_icon = self.get_block_icon(block)
         self.crafting_outcome_icon = pyglet.sprite.Sprite(item_icon, batch=self.batch, group=self.group)
         inventory_rows = floor(self.max_items / 9)
         inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
         quick_slots_y = self.frame.y + 4
         inventory_y = quick_slots_y + 42
+        self.crafting_outcome_icon.scale = 0.5
         self.crafting_outcome_icon.y = inventory_y + inventory_height + 60
         self.crafting_outcome_icon.x = self.frame.x + 270
 
@@ -509,13 +508,7 @@ class InventorySelector(object):
         self.selected_item = item
 
         block = BLOCKS_DIR[item.type]
-        if os.path.isfile(os.path.join('resources', 'textures', 'icons', str(item.type) + ".png")) == True:
-            block_icon = pyglet.image.load(os.path.join('resources', 'textures', 'icons', str(item.type) + ".png"))
-        else:
-            block_icon = self.model.group.texture.get_region(
-                int(block.side_texture[0] * TILESET_SIZE) * self.icon_size,
-                int(block.side_texture[1] * TILESET_SIZE) * self.icon_size, self.icon_size,
-                self.icon_size)
+        block_icon = self.get_block_icon(block)
         self.selected_item_icon = pyglet.sprite.Sprite(block_icon, batch=self.batch, group=self.group)
         self.selected_item_icon.scale = 0.4
 
