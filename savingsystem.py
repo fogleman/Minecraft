@@ -84,7 +84,7 @@ def open_world(gamecontroller, game_dir, world=None):
         with open(os.path.join(game_dir, world, "blocks.dat"), "rb") as f:
             for i in xrange(struct.unpack("Q",f.read(8))[0]):
                 bx, by, bz, blockid, dataid = structvecBB.unpack(f.read(8))
-                if dataid is not 0: blockid += (blockid / 10**math.ceil(math.log10(dataid)))
+                if dataid is not 0: blockid += (dataid / 10**math.ceil(math.log10(dataid)))
                 blocks[(bx,by,bz)] = BLOCKS_DIR[blockid]
     else:
         file = open(os.path.join(game_dir, world, "blocks.pkl"), "rb")
