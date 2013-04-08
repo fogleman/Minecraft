@@ -2,6 +2,7 @@ from math import pi
 from pyglet.resource import get_settings_path
 import os
 from ConfigParser import ConfigParser
+import argparse
 
 APP_NAME = 'pyCraftr'  # should I stay or should I go?
 
@@ -26,6 +27,7 @@ EFFECT_VOLUME = 1
 SAVE_FILENAME = None
 
 config = ConfigParser()
+LAUNCH_OPTIONS = argparse.Namespace()
 
 game_dir = get_settings_path(APP_NAME)
 if not os.path.exists(game_dir):

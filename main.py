@@ -114,9 +114,13 @@ def main(options):
     global DISABLE_SAVE
     global DRAW_DISTANCE
     global GAMEMODE
+    global LAUNCH_OPTIONS
     GAMEMODE = options.gamemode
     SAVE_FILENAME = options.save
     DISABLE_SAVE = options.disable_save
+    for name, val in options._get_kwargs():
+        setattr(LAUNCH_OPTIONS, name, val)
+
     if options.draw_distance == 'medium':
         DRAW_DISTANCE = 60.0 * 1.5
     elif options.draw_distance == 'long':
