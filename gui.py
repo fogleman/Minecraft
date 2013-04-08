@@ -38,12 +38,13 @@ class Rectangle(object):
         return (self.x + self.width, self.y + self.height)
 
 class Button(Rectangle):
-    def __init__(self, x, y, width, height, image=None, caption=None, batch=None, group=None):
+    def __init__(self, x, y, width, height, image=None, caption=None, batch=None, group=None, on_click=None):
         super(Button, self).__init__(x, y, width, height)
         self.batch = batch
         self.group = group
         self.sprite = None
         self.label = None
+        self.on_click = on_click
         if image:
             self.sprite = Sprite(image.get_region(0, 0, self.width, self.height), batch=self.batch, group=self.group)
         if caption:
@@ -64,6 +65,9 @@ class Button(Rectangle):
             self.sprite.draw()
         if self.label:
             self.label.draw()
+
+    def on_mouse_click(self):
+        self.on_click()
 
 class ItemSelector(object):
     def __init__(self, parent, player, model):
