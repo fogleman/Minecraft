@@ -19,7 +19,7 @@ MAX_FPS = 60  # Maximum frames per second.
 DEG_RAD = pi / 180.0
 HALF_PI = pi / 2.0  # 90 degrees
 SPREADING_MUTATION_DELAY = 10  # in seconds
-TILESET_SIZE = 8  # The tileset therefore contains TILESET_SIZE ** 2 tiles.
+TILESET_SIZE = 16  # The tileset therefore contains TILESET_SIZE ** 2 tiles.
 GAMEMODE = 0 #0 = creative (no damage), 1 = Survival (take Damage
 
 EFFECT_VOLUME = 1
