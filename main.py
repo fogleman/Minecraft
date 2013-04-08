@@ -186,8 +186,6 @@ def main(options):
 
     pyglet.clock.set_fps_limit(MAX_FPS)
     pyglet.app.run()
-    if options.disable_auto_save and options.disable_save:
-        window.controller.save_to_file()
     if options.save_config:
         try:
             with open(config_file, 'wb') as handle:

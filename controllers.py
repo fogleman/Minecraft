@@ -460,3 +460,6 @@ class GameController(Controller):
         self.window.pop_handlers()
         self.window.pop_handlers()
         self.window.pop_handlers()
+        
+    def on_close(self):
+        self.save_to_file()
