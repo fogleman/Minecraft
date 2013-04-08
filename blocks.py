@@ -244,8 +244,8 @@ class BedrockBlock(HardBlock):
 
 class WaterBlock(Block):
     top_texture = 0, 2
-    bottom_texture = 0, 2
-    side_texture = 0, 2
+    bottom_texture = 6, 7
+    side_texture = 6, 7
     transparent = True
     hardness = -1  # Unobtainable
     density = 0.5
