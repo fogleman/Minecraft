@@ -38,10 +38,11 @@ class Rectangle(object):
         return (self.x + self.width, self.y + self.height)
 
 class Button(Rectangle):
-    def __init__(self, x, y, width, height, image=None, caption=None, batch=None, group=None, on_click=None):
+    def __init__(self, x, y, width, height, image=None, caption=None, batch=None, group=None, label_group=None, on_click=None):
         super(Button, self).__init__(x, y, width, height)
         self.batch = batch
         self.group = group
+        self.label_group = label_group
         self.sprite = None
         self.label = None
         self.on_click = on_click
@@ -50,7 +51,7 @@ class Button(Rectangle):
         if caption:
             self.label = Label(caption, font_name='Arial', font_size=12,
                 anchor_x='center', anchor_y='center', color=(255, 255, 255, 255), batch=self.batch,
-                group=self.group)
+                group=self.label_group)
         self.set_position(x, y)
 	
     def set_position(self, x, y):
