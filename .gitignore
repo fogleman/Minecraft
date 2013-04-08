@@ -3,3 +3,8 @@
 *Thumbs.db
 *game.cfg
 *save.dat
+*.c
+*.h
+*.so
+*.pyd
+*.exp

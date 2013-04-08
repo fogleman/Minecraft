@@ -2,7 +2,7 @@ from globals import *
 import sounds
 
 
-def get_texture_coordinates(x, y, tileset_size=TERRAINMAP_BLOCK_SIZE):
+def get_texture_coordinates(x, y, tileset_size=TILESET_SIZE):
     m = 1.0 / tileset_size
     dx = x * m
     dy = y * m
@@ -27,10 +27,10 @@ class Block(object):
     side_texture = ()
 
     # Sounds
-    break_sound = None
+    break_sound = sounds.wood_break
 
     # Physical attributes
-    hardness = 0    # hardness can be found on http://www.minecraftwiki.net/wiki/Digging#Blocks_by_hardness
+    hardness = 0  # hardness can be found on http://www.minecraftwiki.net/wiki/Digging#Blocks_by_hardness
     density = 1
     transparent = False
     regenerated_health = 0
@@ -38,7 +38,7 @@ class Block(object):
     # Inventory attributes
     max_stack_size = 64
     amount_label_color = 255, 255, 255, 255
-    name = "Block"  # Blocks that drop another item don't need a name
+    name = "Block"
 
     def __init__(self, width=None, height=None):
         self.drop_id = self.id
@@ -83,9 +83,9 @@ class Block(object):
             xp,ym,zm, xm,ym,zm, xm,yp,zm, xp,yp,zm,  # back
         ]
 
-    def play_break_sound(self):
+    def play_break_sound(self, player=None, position=None):
         if self.break_sound is not None:
-            self.break_sound.play()
+            sounds.play_sound(self.break_sound, player=player, position=position)
 
 
 class AirBlock(Block):
@@ -98,7 +98,15 @@ class AirBlock(Block):
     name = "Air"
 
 
-class StoneBlock(Block):
+class WoodBlock(Block):
+    break_sound = sounds.wood_break
+
+
+class HardBlock(Block):
+    break_sound = sounds.stone_break
+
+
+class StoneBlock(HardBlock):
     top_texture = 2, 1
     bottom_texture = 2, 1
     side_texture = 2, 1
@@ -117,6 +125,8 @@ class GrassBlock(Block):
     side_texture = 0, 0
     hardness = 0.6
     id = 2
+    break_sound = sounds.dirt_break
+    name = 'Grass'
 
     def __init__(self):
         super(GrassBlock, self).__init__()
@@ -130,6 +140,7 @@ class DirtBlock(Block):
     hardness = 0.5
     id = 3
     name = "Dirt"
+    break_sound = sounds.dirt_break
 
 
 class SandBlock(Block):
@@ -140,18 +151,19 @@ class SandBlock(Block):
     amount_label_color = 0, 0, 0, 255
     id = 12
     name = "Sand"
+    break_sound = sounds.sand_break
 
 
-class GoldOreBlock(Block):
+class GoldOreBlock(HardBlock):
     top_texture = 3, 4
     bottom_texture = 3, 4
     side_texture = 3, 4
     hardness = 3
     id = 14
-    name = "Coal Ore"
+    name = "Gold Ore"
 
 
-class IronOreBlock(Block):
+class IronOreBlock(HardBlock):
     top_texture = 1, 4
     bottom_texture = 1, 4
     side_texture = 1, 4
@@ -160,7 +172,7 @@ class IronOreBlock(Block):
     name = "Iron Ore"
 
 
-class DiamondOreBlock(Block):
+class DiamondOreBlock(HardBlock):
     top_texture = 2, 4
     bottom_texture = 2, 4
     side_texture = 2, 4
@@ -169,7 +181,7 @@ class DiamondOreBlock(Block):
     name = "Diamond Ore"
 
 
-class CoalOreBlock(Block):
+class CoalOreBlock(HardBlock):
     top_texture = 0, 4
     bottom_texture = 0, 4
     side_texture = 0, 4
@@ -178,7 +190,7 @@ class CoalOreBlock(Block):
     name = "Coal Ore"
 
 
-class BrickBlock(Block):
+class BrickBlock(HardBlock):
     top_texture = 2, 0
     bottom_texture = 2, 0
     side_texture = 2, 0
@@ -195,9 +207,8 @@ class LampBlock(Block):
     amount_label_color = 0, 0, 0, 255
     id = 124
     name = "Lamp"
+    break_sound = sounds.glass_break
 
-    def play_break_sound(self):
-        sounds.glass_break.play()
 
 class GlassBlock(Block):
     top_texture = 0, 5
@@ -208,9 +219,8 @@ class GlassBlock(Block):
     amount_label_color = 0, 0, 0, 255
     id = 20
     name = "Glass"
+    break_sound = sounds.glass_break
 
-    def play_break_sound(self):
-        sounds.glass_break.play()
 
 class GravelBlock(Block):
     top_texture = 1, 5
@@ -220,9 +230,10 @@ class GravelBlock(Block):
     amount_label_color = 0, 0, 0, 255
     id = 13
     name = "Gravel"
+    break_sound = sounds.gravel_break
 
 
-class BedrockBlock(Block):
+class BedrockBlock(HardBlock):
     top_texture = 3, 0
     bottom_texture = 3, 0
     side_texture = 3, 0
@@ -240,12 +251,10 @@ class WaterBlock(Block):
     density = 0.5
     id = 8
     name = "Water"
-
-    def play_break_sound(self):
-        sounds.water_break.play()
+    break_sound = sounds.water_break
 
 
-class ChestBlock(Block):
+class ChestBlock(WoodBlock):
     top_texture = 1, 2
     bottom_texture = 1, 2
     side_texture = 1, 2
@@ -254,7 +263,7 @@ class ChestBlock(Block):
     name = "Chest"
 
 
-class SandstoneBlock(Block):
+class SandstoneBlock(HardBlock):
     top_texture = 2, 2
     bottom_texture = 2, 2
     side_texture = 2, 2
@@ -266,7 +275,7 @@ class SandstoneBlock(Block):
 
 # FIXME: This texture is not in the original Minecraft.  Or is it quartz?
 # from ronmurphy .. this is taken, as all images are, from the sphax purebd craft. it is marble, from the tekkit pack.
-class MarbleBlock(Block):
+class MarbleBlock(HardBlock):
     top_texture = 3, 2
     bottom_texture = 3, 2
     side_texture = 3, 2
@@ -275,17 +284,13 @@ class MarbleBlock(Block):
     amount_label_color = 0, 0, 0, 255
 
 
-class StonebrickBlock(Block):
+class StonebrickBlock(HardBlock):
     top_texture = 0, 3
     bottom_texture = 0, 3
     side_texture = 0, 3
     hardness = 1.5
     id = 98
     name = "Stone Bricks"
-
-
-class WoodBlock(Block):
-    break_sound = sounds.wood_break
 
 
 class OakWoodPlankBlock(WoodBlock):
@@ -296,9 +301,6 @@ class OakWoodPlankBlock(WoodBlock):
     id = 5.0
     name = "Oak Wood Planks"
 
-    def play_break_sound(self):
-        sounds.wood_break.play()
-
 
 class SpruceWoodPlankBlock(WoodBlock):
     top_texture = 1, 3
@@ -307,9 +309,6 @@ class SpruceWoodPlankBlock(WoodBlock):
     hardness = 2
     id = 5.1
     name = "Spruce Wood Planks"
-
-    def play_break_sound(self):
-        sounds.wood_break.play()
 
 
 class JungleWoodPlankBlock(WoodBlock):
@@ -320,9 +319,6 @@ class JungleWoodPlankBlock(WoodBlock):
     id = 5.3
     name = "Jungle Wood Planks"
 
-    def play_break_sound(self):
-        sounds.wood_break.play()
-
 
 # FIXME: Can't find its specific id on minecraftwiki.
 # from ronmurphy: This is just the snowy side grass from the above texture pack.  MC has one like this also.
@@ -332,6 +328,7 @@ class SnowGrassBlock(Block):
     side_texture = 4, 0
     hardness = 0.6
     id = 80
+    break_sound = sounds.dirt_break
 
     def __init__(self):
         super(SnowGrassBlock, self).__init__()
@@ -346,11 +343,8 @@ class OakWoodBlock(WoodBlock):
     id = 17.0
     name = "Oak wood"
 
-    def play_break_sound(self):
-        sounds.wood_break.play()
 
-
-class OakBranchBlock(Block):
+class OakBranchBlock(WoodBlock):
     top_texture = 7, 0
     bottom_texture = 7, 0
     side_texture = 7, 0
@@ -362,11 +356,8 @@ class OakBranchBlock(Block):
         super(OakBranchBlock, self).__init__()
         self.drop_id = OakWoodBlock.id
 
-    def play_break_sound(self):
-        sounds.wood_break.play()
 
-
-class JungleWoodBlock(Block):
+class JungleWoodBlock(WoodBlock):
     top_texture = 6, 1
     bottom_texture = 6, 1
     side_texture = 6, 0
@@ -374,11 +365,8 @@ class JungleWoodBlock(Block):
     id = 17.1
     name = "Jungle wood"
 
-    def play_break_sound(self):
-        sounds.wood_break.play()
 
-
-class BirchWoodBlock(Block):
+class BirchWoodBlock(WoodBlock):
     top_texture = 5, 1
     bottom_texture = 5, 1
     side_texture = 5, 0
@@ -386,9 +374,6 @@ class BirchWoodBlock(Block):
     id = 17.2
     amount_label_color = 0, 0, 0, 255
     name = "Birch wood"
-
-    def play_break_sound(self):
-        sounds.wood_break.play()
 
 
 class CactusBlock(Block):
@@ -400,22 +385,23 @@ class CactusBlock(Block):
     id = 81
     name = "Cactus"
 
+
 class TallCactusBlock(Block):
     top_texture = 7, 5
     bottom_texture = 7, 3
     side_texture = 7, 4
     width = 0.3
     hardness = 1
-    id = 81.1 # not a real MC block, so the last possible # i think.
+    id = 81.1  # not a real MC block, so the last possible # i think.
     name = "Thin Cactus"
 
+
 class LeafBlock(Block):
+    break_sound = sounds.leaves_break
+
     def __init__(self):
         super(LeafBlock, self).__init__()
         self.drop_id = None
-
-    def play_break_sound(self):
-        sounds.leaves_break.play()
 
 
 class OakLeafBlock(LeafBlock):
@@ -458,6 +444,9 @@ class MelonBlock(Block):
     id = 103
     name = "Melon"
     regenerated_health = 3
+    break_sound = sounds.melon_break
+
+
 
 class PumpkinBlock(Block):
     top_texture = 2, 5
@@ -467,9 +456,11 @@ class PumpkinBlock(Block):
     width = 0.8
     id = 86
     name = "Pumpkin"
+    regenerated_health = 1
+    break_sound = sounds.melon_break
 
-class TorchBlock(Block):
-    top_texture = 5,5
+class TorchBlock(WoodBlock):
+    top_texture = 5, 5
     bottom_texture = 0, 1
     side_texture = 4, 5
     hardness = 1
@@ -487,8 +478,7 @@ class YFlowersBlock(Block):
     id = 37
     name = "Dandelion"
 
-
-class StoneSlabBlock(Block):
+class StoneSlabBlock(HardBlock):
     top_texture = 4, 4
     bottom_texture = 4, 4
     side_texture = 4, 4
@@ -497,7 +487,7 @@ class StoneSlabBlock(Block):
     name = "Full Stone Slab"
 
 
-class ClayBlock(Block):
+class ClayBlock(HardBlock):
     top_texture = 6, 4
     bottom_texture = 6, 4
     side_texture = 6, 4
@@ -506,7 +496,7 @@ class ClayBlock(Block):
     name = "Clay Block"
 
 
-class CobbleBlock(Block):
+class CobbleBlock(HardBlock):
     top_texture = 6, 3
     bottom_texture = 6, 3
     side_texture = 6, 3
@@ -514,7 +504,8 @@ class CobbleBlock(Block):
     id = 4
     name = "Cobblestone"
 
-class CobbleFenceBlock(Block):
+
+class CobbleFenceBlock(HardBlock):
     top_texture = 6, 3
     bottom_texture = 6, 3
     side_texture = 6, 3
@@ -524,7 +515,7 @@ class CobbleFenceBlock(Block):
     name = "Cobblestone Fence Post"
 
 
-class BookshelfBlock(Block):
+class BookshelfBlock(WoodBlock):
     top_texture = 1, 2
     bottom_texture = 0, 2
     side_texture = 5, 4
@@ -533,7 +524,7 @@ class BookshelfBlock(Block):
     name = "Bookshelf"
 
 
-class FurnaceBlock(Block):
+class FurnaceBlock(HardBlock):
     top_texture = 7, 7
     bottom_texture = 6, 3
     side_texture = 7, 6
@@ -549,6 +540,7 @@ class FarmBlock(Block):
     hardness = 0.5
     id = 60
     name = "Farm Dirt"
+    break_sound = sounds.dirt_break
 
     def __init__(self):
         super(FarmBlock, self).__init__()

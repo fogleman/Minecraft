@@ -1,5 +1,7 @@
 from math import pi
-
+from pyglet.resource import get_settings_path
+import os
+from ConfigParser import ConfigParser
 
 APP_NAME = 'pyCraftr'  # should I stay or should I go?
 
@@ -14,11 +16,17 @@ DISABLE_SAVE = True
 TIME_RATE = 240 * 10  # Rate of change (steps per hour).
 MAX_FPS = 60  # Maximum frames per second.
 DEG_RAD = pi / 180.0
-HOUR_DEG = 15.0
-BACK_RED = 0.0  # 0.53
-BACK_GREEN = 0.0  # 0.81
-BACK_BLUE = 0.0  # 0.98
 HALF_PI = pi / 2.0  # 90 degrees
 SPREADING_MUTATION_DELAY = 10  # in seconds
-TERRAINMAP_BLOCK_SIZE = 8
+TILESET_SIZE = 16  # The tileset therefore contains TILESET_SIZE ** 2 tiles.
 GAMEMODE = 0 #0 = creative (no damage), 1 = Survival (take Damage
+
+EFFECT_VOLUME = 1
+
+SAVE_FILENAME = None
+
+config = ConfigParser()
+
+game_dir = get_settings_path(APP_NAME)
+if not os.path.exists(game_dir):
+    os.makedirs(game_dir)
