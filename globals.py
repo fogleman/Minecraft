@@ -23,6 +23,7 @@ TILESET_SIZE = 16  # The tileset therefore contains TILESET_SIZE ** 2 tiles.
 GAMEMODE = 0 #0 = creative (no damage), 1 = Survival (take Damage
 
 EFFECT_VOLUME = 1
+MOTION_BLUR = False
 
 SAVE_FILENAME = None
 

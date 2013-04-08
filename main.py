@@ -94,8 +94,11 @@ class Window(pyglet.window.Window):
 
     def on_draw(self):
         if self.exclusive:
-            glColor3d(0, 0, 0)
             self.reticle.draw(GL_LINES)
+            if MOTION_BLUR:
+                glAccum(GL_MULT, 0.45)
+                glAccum(GL_ACCUM, 0.55)
+                glAccum(GL_RETURN, 1.0)
         pyglet.clock.tick()
 
     def on_resize(self, width, height):
@@ -115,8 +118,10 @@ def main(options):
     global DRAW_DISTANCE
     global GAMEMODE
     global LAUNCH_OPTIONS
+    global MOTION_BLUR
     GAMEMODE = options.gamemode
     SAVE_FILENAME = options.save
+    MOTION_BLUR = options.motion_blur
     DISABLE_SAVE = options.disable_save
     for name, val in options._get_kwargs():
         setattr(LAUNCH_OPTIONS, name, val)
@@ -220,5 +225,6 @@ if __name__ == '__main__':
     save_group.add_argument("-save-mode", type=int, default=2, help = "0 = Uncompressed Pickle, 1 = Compressed Pickle, 2 = Flatfile Struct (smallest, fastest)")
     
     parser.add_argument("-seed", default=None)
+    parser.add_argument("--motion-blur", action="store_true", default=False)
     options = parser.parse_args()
     main(options)
