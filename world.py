@@ -99,7 +99,6 @@ class World(dict):
         self.transparency_batch = pyglet.graphics.Batch()
         self.group = TextureGroup(os.path.join('resources', 'textures', 'texture.png'))
 
-        self.exposed = {}
         self.shown = {}
         self._shown = {}
         self.sectors = defaultdict(list)
@@ -151,8 +150,9 @@ class World(dict):
         for other_position in self.neighbors_iterator(position):
             if other_position not in self:
                 continue
-            self.check_spreading_mutable(other_position, self[other_position])
-            if self.is_exposed(position):
+            if self.is_exposed(other_position):
+                self.check_spreading_mutable(other_position,
+                                             self[other_position])
                 if other_position not in self.shown:
                     self.show_block(other_position)
             else:
@@ -184,13 +184,9 @@ class World(dict):
         return False
 
     def is_exposed(self, position):
-        if self.exposed.get(position, False):
-            return True
         for other_position in self.neighbors_iterator(position):
             if other_position not in self or self[other_position].transparent:
-                self.exposed[position] = True
                 return True
-        self.exposed[position] = False
         return False
 
     def hit_test(self, position, vector, max_distance=8):
@@ -216,11 +212,6 @@ class World(dict):
 
     def _hide_block(self, position):
         self._shown.pop(position).delete()
-
-    def show_blocks(self):
-        for position in self:
-            if self.is_exposed(position) and position not in self.shown:
-                self.show_block(position)
 
     def show_block(self, position, immediate=True):
         block = self[position]
