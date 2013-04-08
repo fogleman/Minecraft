@@ -135,7 +135,8 @@ class GameController(Controller):
             self.player.update(df / m, self)
         if self.mouse_pressed:
             vector = self.player.get_sight_vector()
-            block, previous = self.model.hit_test(self.player.position, vector, self.player.attack_range)
+            block, previous = self.model.hit_test(self.player.position, vector,
+                                                  self.player.attack_range)
             if block:
                 if self.highlighted_block != block:
                     self.set_highlighted_block(block)
@@ -143,9 +144,10 @@ class GameController(Controller):
             if self.highlighted_block:
                 hit_block = self.model[self.highlighted_block]
                 if hit_block.hardness >= 0:
-                    self.block_damage += self.player.attack_power
+                    self.block_damage += self.player.attack_power * dt
                     if self.block_damage >= hit_block.hardness:
-                        self.model.remove_block(self.player, self.highlighted_block)
+                        self.model.remove_block(self.player,
+                                                self.highlighted_block)
                         self.set_highlighted_block(None)
                         if hit_block.drop_id is not None \
                                 and self.player.add_item(hit_block.drop_id):

@@ -9,7 +9,9 @@ from globals import *
 
 class Player(Entity):
     def __init__(self, position, rotation, flying=False, game_mode=0):
-        super(Player, self).__init__(position, rotation, health=7, max_health=10, attack_power=0.05, attack_range=4)
+        super(Player, self).__init__(position, rotation, health=7,
+                                     max_health=10, attack_power=2.0 / 3,
+                                     attack_range=4)
         self.inventory = Inventory()
         self.quick_slots = Inventory(9)
         self.flying = flying

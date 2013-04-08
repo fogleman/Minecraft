@@ -19,7 +19,7 @@ class Block(object):
     drop_id = None
 
     id_main = None  # Whole number component of id
-    id_sub  = None  # Decimal component of id
+    id_sub = None  # Decimal component of id
 
     width = 1.0
     height = 1.0
@@ -33,7 +33,7 @@ class Block(object):
     break_sound = sounds.wood_break
 
     # Physical attributes
-    hardness = 0  # hardness can be found on http://www.minecraftwiki.net/wiki/Digging#Blocks_by_hardness
+    hardness = 0.0  # hardness can be found on http://www.minecraftwiki.net/wiki/Digging#Blocks_by_hardness
     density = 1
     transparent = False
     regenerated_health = 0
@@ -65,11 +65,8 @@ class Block(object):
         BLOCKS_DIR[self.id] = self
 
     def get_texture_data(self):
-        result = []
-        result.extend(self.top_texture)
-        result.extend(self.bottom_texture)
-        result.extend(self.side_texture * 4)
-        return result
+        return list(self.top_texture + self.bottom_texture
+                    + self.side_texture * 4)
 
     def get_vertices(self, x, y, z):
         w = self.width / 2.0
@@ -593,9 +590,7 @@ class CrackTextureBlock(object):
         self.texture_data = []
         for i in range(self.crack_level):
             texture_coords = get_texture_coordinates(i, 7)
-            tmp = []
-            tmp.extend(texture_coords * 6)
-            self.texture_data.append(tmp)
+            self.texture_data.append(texture_coords * 6)
 
 crack_textures = CrackTextureBlock()
 
