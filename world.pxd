@@ -23,7 +23,7 @@ cdef class World(dict):
     cdef public dict _shown
     cdef public object sectors
     cdef public object urgent_queue, lazy_queue
-    cdef public tuple spreading_mutation_classes
+    cdef public object spreading_mutation_blocks
     cdef public double spreading_time
 
     cpdef object add_block(self, tuple position, object block,
@@ -40,9 +40,12 @@ cdef class World(dict):
     @cython.locals(other_position=tuple)
     cpdef object check_neighbors(self, tuple position)
 
-    @cython.locals(faces=tuple, other_position=tuple)
+    @cython.locals(other_position=tuple)
     cpdef bint has_neighbors(self, tuple position,
-                             object type=?,bint diagonals=?)
+                             tuple is_in=?,bint diagonals=?, tuple faces=?)
+
+    @cython.locals(x=float, y=float, z=float, above_position=tuple)
+    cpdef object check_spreading_mutable(self, tuple position, object block)
 
     @cython.locals(other_position=tuple)
     cpdef bint is_exposed(self, tuple position)
@@ -94,5 +97,5 @@ cdef class World(dict):
 
     cpdef object process_entire_queue(self)
 
-    @cython.locals(position=tuple, block=object)
+    @cython.locals(position=tuple)
     cpdef object content_update(self, double dt)

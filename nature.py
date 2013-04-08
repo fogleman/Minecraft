@@ -28,9 +28,6 @@ class Tree(object):
 
     @classmethod
     def add_to_world(cls, world, position):
-        trunk_class = cls.trunk_block.__class__
-        leaf_class = cls.leaf_block.__class__
-
         trunk = Trunk(position, block=cls.trunk_block,
                       height_range=cls.trunk_height_range)
 
@@ -52,7 +49,8 @@ class Tree(object):
                         continue
                     # Avoids orphaned leaves
                     if not world.has_neighbors((xl, yl, zl),
-                                               (trunk_class, leaf_class)):
+                                               (cls.trunk_block,
+                                                cls.leaf_block)):
                         continue
                     dz = abs(zl - z)
                     # The farther we are (horizontally) from the trunk,
@@ -156,4 +154,4 @@ TREES = (
     YFlowers,
 )
 
-TREE_BLOCKS = tuple(tree.trunk_block.__class__ for tree in TREES)
+TREE_BLOCKS = tuple(tree.trunk_block for tree in TREES)

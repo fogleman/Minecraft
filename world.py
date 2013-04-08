@@ -90,7 +90,7 @@ class TextureGroup(pyglet.graphics.Group):
 
 class World(dict):
     spreading_mutations = {
-        DirtBlock: GrassBlock,
+        dirt_block: grass_block,
     }
 
     def __init__(self):
@@ -106,30 +106,25 @@ class World(dict):
         self.urgent_queue = deque()
         self.lazy_queue = deque()
 
-        self.spreading_mutation_classes = tuple(self.spreading_mutations)
-        self.spreading_mutable_blocks = {}
+        self.spreading_mutable_blocks = deque()
         self.spreading_time = 0.0
 
     def __setitem__(self, position, block):
         super(World, self).__setitem__(position, block)
 
-        if block.__class__ in self.spreading_mutation_classes \
-            and self.has_neighbors(
-                position,
-                type=self.spreading_mutations[block.__class__]):
-            self.spreading_mutable_blocks[position] = block
+        self.check_spreading_mutable(position, block)
 
     def __delitem__(self, position):
         super(World, self).__delitem__(position)
 
         if position in self.spreading_mutable_blocks:
-            del self.spreading_mutable_blocks[position]
+            self.spreading_mutable_blocks.remove(position)
 
     def add_block(self, position, block, sync=True, force=True):
         if position in self:
             if not force:
                 return
-            self.remove_block(None, position, sync)
+            self.remove_block(None, position, sync=sync)
         self[position] = block
         self.sectors[sectorize(position)].append(position)
         if sync:
@@ -138,9 +133,8 @@ class World(dict):
             self.check_neighbors(position)
 
     def remove_block(self, player, position, sync=True, sound=True):
-        if sound:
+        if sound and player is not None:
             self[position].play_break_sound(player, position)
-            # BLOCKS_DIR[block].play_break_sound()
         del self[position]
         self.sectors[sectorize(position)].remove(position)
         if sync:
@@ -157,6 +151,7 @@ class World(dict):
         for other_position in self.neighbors_iterator(position):
             if other_position not in self:
                 continue
+            self.check_spreading_mutable(other_position, self[other_position])
             if self.is_exposed(position):
                 if other_position not in self.shown:
                     self.show_block(other_position)
@@ -164,12 +159,27 @@ class World(dict):
                 if other_position in self.shown:
                     self.hide_block(other_position)
 
-    def has_neighbors(self, position, type=None, diagonals=False):
-        faces = FACES_WITH_DIAGONALS if diagonals else FACES
+    def check_spreading_mutable(self, position, block):
+        x, y, z = position
+        above_position = x, y + 1, z
+        if above_position in self \
+                or position in self.spreading_mutable_blocks \
+                or not self.is_exposed(position):
+            return
+        if block in self.spreading_mutations and self.has_neighbors(
+                position,
+                is_in=(self.spreading_mutations[block],),
+                diagonals=True):
+            self.spreading_mutable_blocks.appendleft(position)
+
+    def has_neighbors(self, position, is_in=None, diagonals=False,
+                      faces=None):
+        if faces is None:
+            faces = FACES_WITH_DIAGONALS if diagonals else FACES
         for other_position in self.neighbors_iterator(
                 position, relative_neighbors_positions=faces):
             if other_position in self:
-                if type is None or isinstance(self[other_position], type):
+                if is_in is None or self[other_position] in is_in:
                     return True
         return False
 
@@ -324,7 +334,6 @@ class World(dict):
         if self.spreading_time >= SPREADING_MUTATION_DELAY:
             self.spreading_time = 0.0
             if self.spreading_mutable_blocks:
-                position, block = random.choice(
-                    self.spreading_mutable_blocks.items())
-                self.remove_block(None, position, sound=False)
-                self.add_block(position, grass_block, force=False)
+                position = self.spreading_mutable_blocks.pop()
+                self.add_block(position,
+                               self.spreading_mutations[self[position]])

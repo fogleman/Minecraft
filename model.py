@@ -3,11 +3,20 @@ from nature import *
 import globals
 from globals import *
 
+
 class Model(World):
     def __init__(self, initialize=True):
         super(Model, self).__init__()
         if initialize:
             self.initialize()
+
+        # Convert dirt to grass if no block or a transparent one is above.
+        for position, block in ((p, b) for p, b in self.items()
+                                if b is dirt_block):
+            x, y, z = position
+            above_position = x, y + 1, z
+            if above_position not in self or self[above_position].transparent:
+                self[position] = grass_block
 
     def initialize(self):
         world_size = config.getint('World', 'size')
@@ -21,12 +30,12 @@ class Model(World):
         y = 0
 
         worldtypes_grounds = (
-            grass_block,
+            dirt_block,
             dirt_block,
             (sand_block,) * 15 + (sandstone_block,) * 4,
             (water_block,) * 30 + (clay_block,) * 4,
-            grass_block,
-            (grass_block,) * 15 + (dirt_block,) * 3 + (stone_block,),
+            dirt_block,
+            (dirt_block,) * 15 + (dirt_block,) * 3 + (stone_block,),
             snowgrass_block,
         )
 
@@ -105,11 +114,11 @@ class Model(World):
         o = n - 10 + hill_height - 6
 
         world_type_blocks = (
-            grass_block,
+            dirt_block,
             (dirt_block, sandstone_block),
             sand_block,
-            (grass_block, sand_block),
-            (grass_block, sand_block, dirt_block),
+            (dirt_block, sand_block),
+            (dirt_block,) * 2 + (sand_block,),
             stone_block,
             snowgrass_block,
         )
@@ -151,7 +160,6 @@ class Model(World):
 
                         #self.init_block((x, y, z), block)
 
-
                         # Perhaps a tree
                         if self.max_trees > 0:
                             showtree = random.random()
@@ -167,7 +175,8 @@ class Model(World):
         x, y, z = position
 
         # Avoids a tree from touching another.
-        if self.has_neighbors((x, y + 1, z), TREE_BLOCKS, diagonals=True):
+        if self.has_neighbors((x, y + 1, z), is_in=TREE_BLOCKS,
+                              diagonals=True):
             return
 
         # A tree can't grow on anything.
@@ -179,8 +188,4 @@ class Model(World):
         self.max_trees -= 1
 
     def init_block(self, position, block):
-        # FIXME: This should be more complex than that, and use
-        # self.spreading_mutations.
-        if block == dirt_block:
-            block = grass_block
         self.add_block(position, block, sync=False, force=False)
