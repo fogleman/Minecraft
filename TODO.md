@@ -13,7 +13,7 @@
 
 * show player model in the inventory
 * add gear slots/handling
-* add furnance and inventory GUI
+* add furnance and Crafting table UI
 
 # Graphics
 
