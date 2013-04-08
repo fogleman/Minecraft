@@ -258,12 +258,9 @@ class GameController(Controller):
             self.crack.delete()
         self.crack = None
 
-    def save_to_file(self, compression=False):
+    def save_to_file(self):
         if DISABLE_SAVE:
-            if compression:
-                save_world(self, game_dir, SAVE_FILENAME)
-            else:
-                save_world(self, game_dir, SAVE_FILENAME, CLASSIC_SAVE_TYPE)
+            save_world(self, game_dir, SAVE_FILENAME)
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.window.exclusive:

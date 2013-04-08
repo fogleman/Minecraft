@@ -114,9 +114,13 @@ def main(options):
     global DISABLE_SAVE
     global DRAW_DISTANCE
     global GAMEMODE
+    global LAUNCH_OPTIONS
     GAMEMODE = options.gamemode
     SAVE_FILENAME = options.save
     DISABLE_SAVE = options.disable_save
+    for name, val in options._get_kwargs():
+        setattr(LAUNCH_OPTIONS, name, val)
+
     if options.draw_distance == 'medium':
         DRAW_DISTANCE = 60.0 * 1.5
     elif options.draw_distance == 'long':
@@ -178,7 +182,7 @@ def main(options):
     pyglet.clock.set_fps_limit(MAX_FPS)
     pyglet.app.run()
     if options.disable_auto_save and options.disable_save:
-        window.controller.save_to_file(compression=not options.nocompression)
+        window.controller.save_to_file()
     if options.save_config:
         try:
             with open(config_file, 'wb') as handle:
@@ -213,7 +217,7 @@ if __name__ == '__main__':
     save_group.add_argument("-save", type=unicode, default=SAVE_FILENAME, help = "Type a name for the world to be saved as.")
     save_group.add_argument("--disable-save", action="store_false", default=True, help = "Disables saving.")
     save_group.add_argument("--save-config", action="store_true", default=False, help = "Saves the choices as the default config.")
-    save_group.add_argument("-nocompression", action="store_true", default=False, help = "Disables compression for a smaller save file.")
+    save_group.add_argument("-save-mode", type=int, default=2, help = "0 = Uncompressed Pickle, 1 = Compressed Pickle, 2 = Flatfile Struct (smallest, fastest)")
     
     parser.add_argument("-seed", default=None)
     options = parser.parse_args()
