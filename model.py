@@ -36,7 +36,7 @@ class Model(World):
             (water_block,) * 30 + (clay_block,) * 4,
             dirt_block,
             (dirt_block,) * 15 + (dirt_block,) * 3 + (stone_block,),
-            snowgrass_block,
+            (snowgrass_block,) * 10 + (snow_block,) * 4,
         )
 
         world_type_trees = (
@@ -72,6 +72,10 @@ class Model(World):
             stone_block, stone_block, stone_block, stone_block, stone_block,
             stone_block, stone_block, stone_block, stone_block, stone_block,
         )
+
+        #ore_type_blocks = (
+            #(stone_block,) * 50 + (gravel_block,) * 10 + (coalore_block,) * 5 + (ironore_block,) * 4 + (goldore_block,) * 3 + (diamondore_block,) + (stone_block,) * 15,
+        #)
 
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
