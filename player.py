@@ -18,15 +18,28 @@ class Player(Entity):
         self.game_mode = game_mode
         self.strafe = [0, 0]
         self.dy = 0
-        initial_items = [bookshelf_block, furnace_block, brick_block, torch_block,
+        print self.game_mode
+        #  Survival gameplay, so random items.
+        if self.game_mode == 1:  # survival
+
+            initial_items = [bookshelf_block, furnace_block, brick_block, torch_block,
+                             lamp_block, glass_block, chest_block,
+                             sandstone_block, melon_block]
+            for item in initial_items:
+                quantity = random.randint(2, 10)
+                if random.choice((True, False)):
+                    self.inventory.add_item(item.id, quantity)
+                #else:
+                #    self.quick_slots.add_item(item.id, quantity)
+
+
+        # creative gameplay, have all of the blocks, and 1 stack of each
+        if self.game_mode == 0:  # creative
+                initial_items = [bookshelf_block, furnace_block, brick_block, torch_block,
                          lamp_block, glass_block, chest_block,
                          sandstone_block, melon_block]
         for item in initial_items:
-            quantity = random.randint(1, 10)
-            if random.choice((True, False)):
-                self.inventory.add_item(item.id, quantity)
-                #else:
-                #    self.quick_slots.add_item(item.id, quantity)
+                self.inventory.add_item(item.id, 64)
 
         self.key_move_forward = config.getint('Controls', 'move_forward')
         self.key_move_backward = config.getint('Controls', 'move_backward')

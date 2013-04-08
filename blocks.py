@@ -267,12 +267,20 @@ class WaterBlock(Block):
 
 
 class ChestBlock(WoodBlock):
-    top_texture = 1, 2
-    bottom_texture = 1, 2
-    side_texture = 1, 2
+    top_texture = 8, 1
+    bottom_texture = 1, 1
+    side_texture = 8, 0
     hardness = 2.5
     id = 54
     name = "Chest"
+
+class MetaBlock(WoodBlock): # this is a experimental block.
+    top_texture = 9, 0
+    bottom_texture = 9, 0
+    side_texture = 9, 0
+    hardness = 2.5
+    id = 0.1
+    name = "Action"
 
 
 class SandstoneBlock(HardBlock):
@@ -647,7 +655,7 @@ torch_block = TorchBlock()
 yflowers_block = YFlowersBlock()
 cobblefence_block = CobbleFenceBlock()
 snow_block = SnowBlock()
-
+meta_block = MetaBlock()
 
 
 
