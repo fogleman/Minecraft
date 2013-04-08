@@ -58,8 +58,9 @@ class MainMenuController(Controller):
         self.frame_rect = Rectangle(0, 0, image.width, image.height)
         self.frame = pyglet.sprite.Sprite(image.get_region(0, 0, image.width, image.height), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
         button_image = pyglet.image.load(os.path.join('resources', 'textures', 'button.png'))
-        self.start_game = Button(0, 0, 160, 50, image=button_image, caption="Start game", batch=self.batch, group=self.group)
-        self.exit_game = Button(0, 0, 160, 50, image=button_image, caption="Exit game", batch=self.batch, group=self.group)
+        self.start_game = Button(0, 0, 160, 50, image=button_image, caption="Start game", batch=self.batch, group=self.group, on_click=self.start_game_func)
+        self.exit_game = Button(0, 0, 160, 50, image=button_image, caption="Exit game", batch=self.batch, group=self.group, on_click=self.exit_game_func)
+        self.buttons = [self.start_game, self.exit_game]
         pyglet.font.add_file('resources/fonts/Chunkfive.ttf')
         pyglet.font.load('ChunkFive Roman')
         self.label = Label(APP_NAME, font_name='ChunkFive Roman', font_size=50, x=window.width/2, y=self.frame.y + self.frame.height,
