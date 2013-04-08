@@ -49,14 +49,18 @@ class MainMenuController(Controller):
     def __init__(self, window, show_gui=True):
         super(MainMenuController, self).__init__(window)
         self.batch = pyglet.graphics.Batch()
-        self.group = pyglet.graphics.OrderedGroup(1)
-        self.labels_group = pyglet.graphics.OrderedGroup(2)
+        self.background_group = pyglet.graphics.OrderedGroup(0)
+        self.group = pyglet.graphics.OrderedGroup(2)
+        self.labels_group = pyglet.graphics.OrderedGroup(3)
 
         self.show_gui = show_gui
 
+        background = pyglet.image.load(os.path.join('resources', 'textures', 'main_menu_background.png'))
         image = pyglet.image.load(os.path.join('resources', 'textures', 'frame.png'))
         self.frame_rect = Rectangle(0, 0, image.width, image.height)
-        self.frame = pyglet.sprite.Sprite(image.get_region(0, 0, image.width, image.height), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
+        self.background = pyglet.sprite.Sprite(background.get_region(0, 0, background.width, background.height), batch=self.batch, group=self.background_group)
+        self.background.scale = max(float(window.get_size()[0]) / self.background.width, float(window.get_size()[1]) / self.background.height)
+        self.frame = pyglet.sprite.Sprite(image.get_region(0, 0, image.width, image.height), batch=self.batch, group=pyglet.graphics.OrderedGroup(1))
         button_image = pyglet.image.load(os.path.join('resources', 'textures', 'button.png'))
         self.start_game = Button(0, 0, 160, 50, image=button_image, caption="Start game", batch=self.batch, group=self.group, on_click=self.start_game_func)
         self.exit_game = Button(0, 0, 160, 50, image=button_image, caption="Exit game", batch=self.batch, group=self.group, on_click=self.exit_game_func)
@@ -87,6 +91,10 @@ class MainMenuController(Controller):
                 button.on_mouse_click()
 
     def on_resize(self, width, height):
+        self.background.scale = 1.0
+        self.background.scale = max(float(width) / self.background.width, float(height) / self.background.height)
+        self.background.x = 0
+        self.background.y = 0
         self.frame.x, self.frame.y = (width - self.frame.width) / 2, (height - self.frame.height) / 2
         self.label.y = self.frame.y + self.frame.height - 20
         self.label.x = width / 2
