@@ -89,6 +89,13 @@ class MainMenuController(Controller):
         for button in self.buttons:
             if button.hit_test(x, y):
                 button.on_mouse_click()
+            
+    def on_mouse_motion(self, x, y, dx, dy):
+        cursor = None
+        for button in self.buttons:
+            if button.hit_test(x, y):
+                cursor = self.window.get_system_mouse_cursor(pyglet.window.Window.CURSOR_HAND)
+        self.window.set_mouse_cursor(cursor)
 
     def on_resize(self, width, height):
         self.background.scale = 1.0
