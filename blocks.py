@@ -520,7 +520,7 @@ class CobbleFenceBlock(HardBlock):
     transparent = True
     hardness = 2
     width = 0.6
-    id = 4
+    id = 4.1
     name = "Cobblestone Fence Post"
 
 
