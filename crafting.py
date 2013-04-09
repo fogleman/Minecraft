@@ -127,3 +127,5 @@ recipes.add_recipe(["#"], {'#': oakwood_block},
                    ItemStack(oakwoodplank_block.id, amount=4))
 recipes.add_recipe(["#"], {'#': junglewood_block},
                    ItemStack(junglewoodplank_block.id, amount=4))
+recipes.add_recipe(["#", "@"], {'#': coal_item, '@': stick_item},
+                   ItemStack(torch_block.id, amount=4))

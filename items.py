@@ -85,6 +85,11 @@ class DiamondItem(Item):
     max_stack_size = 64
     name = "Diamond"
 
+class StickItem(Item):
+    id = 280
+    max_stack_size = 64
+    name = "Stick"
+
 class Tool(Item):
     material = None
     multiplier = 0
@@ -166,6 +171,7 @@ class GoldenPickaxe(Tool):
 
 coal_item = CoalItem()
 diamond_item = DiamondItem()
+stick_item = StickItem()
 wood_axe = WoodAxe()
 stone_axe = StoneAxe()
 iron_axe = IronAxe()
