@@ -123,6 +123,8 @@ smelting = SmeltingRecipes()
 #  stone items
 recipes.add_recipe(["##", "##"], {'#': stone_block},
                    ItemStack(stonebrick_block.id, amount=4))
+recipes.add_recipe(["##", "##"], {'#': cobble_block},
+                   ItemStack(furnace_block.id, amount=1))
 
 # wood items
 recipes.add_recipe(["#"], {'#': oakwood_block},
@@ -143,6 +145,10 @@ recipes.add_recipe(["##", "##"], {'#': sprucewoodplank_block},
                    ItemStack(chest_block.id, amount=1))
 recipes.add_recipe(["##", "##"], {'#': junglewoodplank_block},
                    ItemStack(chest_block.id, amount=1))
+
+#sand items
+recipes.add_recipe(["##", "##"], {'#': sand_block},
+                   ItemStack(sandstone_block.id, amount=1))
 
 #dye items
 recipes.add_recipe(["#"], {'#': yflowers_block},
