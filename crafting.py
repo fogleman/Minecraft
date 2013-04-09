@@ -120,12 +120,35 @@ class SmeltingRecipes(object):
 
 recipes = Recipes()
 smelting = SmeltingRecipes()
-
+#  stone items
 recipes.add_recipe(["##", "##"], {'#': stone_block},
                    ItemStack(stonebrick_block.id, amount=4))
+
+# wood items
 recipes.add_recipe(["#"], {'#': oakwood_block},
                    ItemStack(oakwoodplank_block.id, amount=4))
 recipes.add_recipe(["#"], {'#': junglewood_block},
                    ItemStack(junglewoodplank_block.id, amount=4))
+recipes.add_recipe(["#"], {'#': oakwoodplank_block},
+                   ItemStack(stick_item.id, amount=4))
+recipes.add_recipe(["#"], {'#': junglewoodplank_block},
+                   ItemStack(stick_item.id, amount=4))
+recipes.add_recipe(["#"], {'#': oakwoodplank_block},
+                   ItemStack(stick_item.id, amount=4))
+recipes.add_recipe(["#"], {'#': sprucewoodplank_block},
+                   ItemStack(stick_item.id, amount=4))
+recipes.add_recipe(["##", "##"], {'#': oakwoodplank_block},
+                   ItemStack(chest_block.id, amount=1))
+recipes.add_recipe(["##", "##"], {'#': sprucewoodplank_block},
+                   ItemStack(chest_block.id, amount=1))
+recipes.add_recipe(["##", "##"], {'#': junglewoodplank_block},
+                   ItemStack(chest_block.id, amount=1))
+
+#dye items
+recipes.add_recipe(["#"], {'#': yflowers_block},
+                   ItemStack(yellowdye_item.id, amount=4))
+
+
+#  combined items
 recipes.add_recipe(["#", "@"], {'#': coal_item, '@': stick_item},
                    ItemStack(torch_block.id, amount=4))

@@ -4,8 +4,8 @@ from blocks import *
 ITEM_ID_MIN = 256
 
 # From MinecraftWiki
-# Items are objects which do not exist outside of the player's inventory and hands 
-# i.e., they cannot be placed in the game world. 
+# Items are objects which do not exist outside of the player's inventory and hands
+# i.e., they cannot be placed in the game world.
 # Some items simply place blocks or entities into the game world when used.
 # Type
 # * Materials: iron ingot, gold ingot, etc.
@@ -89,6 +89,11 @@ class StickItem(Item):
     id = 280
     max_stack_size = 64
     name = "Stick"
+
+class YellowDyeItem(Item):
+    id = 351
+    max_stack_size = 64
+    name = "Dye"
 
 class Tool(Item):
     material = None
@@ -182,3 +187,4 @@ stone_pickaxe = StonePickaxe()
 iron_pickaxe = IronPickaxe()
 diamond_pickaxe = DiamondPickaxe()
 golden_pickaxe = GoldenPickaxe()
+yellowdye_item = YellowDyeItem()
