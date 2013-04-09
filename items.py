@@ -74,8 +74,16 @@ class ItemStack(object):
             return ITEMS_DIR[self.id]
         else:
             return BLOCKS_DIR[self.id]
-        
 
+class CoalItem(Item):
+    id = 263
+    max_stack_size = 64
+    name = "Coal"
+
+class DiamondItem(Item):
+    id = 264
+    max_stack_size = 64
+    name = "Diamond"
 
 class Tool(Item):
     material = None
@@ -83,78 +91,81 @@ class Tool(Item):
     tool_type = None
 
     def __init__(self):
-        multiplier = 2 * (material + 1)
+        super(Tool, self).__init__()
+        self.multiplier = 2 * (self.material + 1)
 
-class WoodAxe(Item):
+class WoodAxe(Tool):
     material = WOODEN_TOOL
     tool_type = AXE
     max_stack_size = 1
     id = 271
     name = "Wooden Axe"
 
-class StoneAxe(Item):
+class StoneAxe(Tool):
     material = STONE_TOOL
     tool_type = AXE
     max_stack_size = 1
     id = 275
     name = "Stone Axe"
 
-class IronAxe(Item):
+class IronAxe(Tool):
     material = IRON_TOOL
     tool_type = AXE
     max_stack_size = 1
     id = 258
     name = "Iron Axe"
 
-class DiamondAxe(Item):
+class DiamondAxe(Tool):
     material = DIAMOND_TOOL
     tool_type = AXE
     max_stack_size = 1
     id = 279
     name = "Diamond Axe"
 
-class GoldenAxe(Item):
+class GoldenAxe(Tool):
     material = GOLDEN_TOOL
     tool_type = AXE
     max_stack_size = 1
     id = 286
     name = "Golden Axe"
 
-class WoodPickaxe(Item):
+class WoodPickaxe(Tool):
     material = WOODEN_TOOL
     tool_type = PICKAXE
     max_stack_size = 1
     id = 270
     name = "Wooden Pickaxe"
 
-class StonePickaxe(Item):
+class StonePickaxe(Tool):
     material = STONE_TOOL
     tool_type = PICKAXE
     max_stack_size = 1
     id = 274
     name = "Stone Pickaxe"
 
-class IronPickaxe(Item):
+class IronPickaxe(Tool):
     material = IRON_TOOL
     tool_type = PICKAXE
     max_stack_size = 1
     id = 257
     name = "Iron Pickaxe"
 
-class DiamondPickaxe(Item):
+class DiamondPickaxe(Tool):
     material = DIAMOND_TOOL
     tool_type = PICKAXE
     max_stack_size = 1
     id = 278
     name = "Diamond Pickaxe"
 
-class GoldenPickaxe(Item):
+class GoldenPickaxe(Tool):
     material = GOLDEN_TOOL
     tool_type = PICKAXE
     max_stack_size = 1
     id = 285
     name = "Golden Pickaxe"
 
+coal_item = CoalItem()
+diamond_item = DiamondItem()
 wood_axe = WoodAxe()
 stone_axe = StoneAxe()
 iron_axe = IronAxe()
