@@ -270,6 +270,9 @@ class InventorySelector(object):
         self.crafting_panel = Inventory(4)
         self.crafting_outcome = None  # should be an item stack
         self.crafting_outcome_icon = None
+        self.crafting_table_panel = Inventory(9)
+        self.crafting_table_outcome = None  # should be an item stack
+        self.crafting_table_outcome_icon = None
         #self.active = pyglet.sprite.Sprite(image.get_region(0, 0, image.height / 4, image.height / 4), batch=self.batch, group=pyglet.graphics.OrderedGroup(2))
         #self.active.opacity = 0
         self.visible = False
@@ -371,20 +374,20 @@ class InventorySelector(object):
             self.icons.append(icon)
         self.update_current()
 
-        crafting_y = inventory_y + inventory_height + 42
-        crafting_rows = 2
+        crafting_y = inventory_y + inventory_height + (42 if self.mode == 0 else 11)
+        crafting_rows = (2 if self.mode == 0 else 3)
         crafting_height = (crafting_rows * (self.icon_size * 0.5)) + (crafting_rows * 3)
-        x = self.frame.x + 165
+        x = self.frame.x + (165 if self.mode == 0 else 69)
         y = self.frame.y + crafting_y + crafting_height
-        items = self.crafting_panel.get_items()
-        items = items[:self.crafting_panel.slot_count]
+        items = self.crafting_panel.get_items() if self.mode == 0 else self.crafting_table_panel.get_items()
+        items = items[:self.crafting_panel.slot_count] if self.mode == 0 else items[:self.crafting_table_panel.slot_count]
         # NOTE: each line in the crafting panel should be a sub-list in the crafting ingredient list
-        crafting_ingredients = [[], []]
+        crafting_ingredients = [[], []] if self.mode == 0 else [[], [], []]
         for i, item in enumerate(items):
             if not item:
                 x += (self.icon_size * 0.5) + 3
-                if x >= (self.frame.x + 165) + 67:
-                    x = self.frame.x + 165
+                if x >= (self.frame.x + (165 if self.mode == 0 else 69)) + 35 * ((2 if self.mode == 0 else 3)):
+                    x = self.frame.x + (165 if self.mode == 0 else 69)
                     y -= (self.icon_size * 0.5) + 3
                 continue
             block = item.get_object()
@@ -397,8 +400,8 @@ class InventorySelector(object):
             item.quickslots_x = icon.x
             item.quickslots_y = icon.y
             x += (self.icon_size * 0.5) + 3
-            if x >= (self.frame.x + 165) + 67:
-                x = self.frame.x + 165
+            if x >= (self.frame.x + (165 if self.mode == 0 else 69)) + 35 * ((2 if self.mode == 0 else 3)):
+                x = self.frame.x + (165 if self.mode == 0 else 69)
                 y -= (self.icon_size * 0.5) + 3
             amount_label = pyglet.text.Label(
                 str(item.amount), font_name='Arial', font_size=9,
@@ -408,9 +411,9 @@ class InventorySelector(object):
             self.amount_labels.append(amount_label)
             self.icons.append(icon)
             if block.id > 0:
-                crafting_ingredients[int(floor(i / 2))].append(block)
+                crafting_ingredients[int(floor(i / (2 if self.mode == 0 else 3)))].append(block)
 
-        if len(crafting_ingredients) > 0:
+        if len(crafting_ingredients) > 0 and self.mode == 0:
             outcome = recipes.craft(crafting_ingredients)
             if outcome:
                 self.set_crafting_outcome(outcome)
@@ -468,15 +471,22 @@ class InventorySelector(object):
         elif y <= inventory_y + inventory_height and y >= inventory_y:
             y_offset = (y - (inventory_y + inventory_height)) * -1
             row = floor(y_offset // (self.icon_size * 0.5 + 3))
-            self.crafting_panel.remove_unnecessary_stacks()
+            if self.mode == 0:
+                self.crafting_panel.remove_unnecessary_stacks()
+            elif self.mode == 1:
+                self.crafting_table_panel.remove_unnecessary_stacks()
             inventory = self.player.inventory
             items_per_row = 9
         elif crafting_y <= y <= crafting_y + crafting_height and x >= crafting_x \
             and x <= crafting_x + crafting_width:
             y_offset = (y - (crafting_y + crafting_height)) * -1
             row = floor(y_offset // (self.icon_size * 0.5 + 3))
-            self.crafting_panel.remove_unnecessary_stacks()
-            inventory = self.crafting_panel
+            if self.mode == 0:
+                self.crafting_panel.remove_unnecessary_stacks()
+                inventory = self.crafting_panel
+            elif self.mode == 1:
+                self.crafting_table_panel.remove_unnecessary_stacks()
+                inventory = self.crafting_table_panel
             x_offset = x - crafting_x
             items_per_row = crafting_items_per_row
         elif crafting_outcome_y <= y <= crafting_outcome_y + crafting_outcome_height and \
@@ -504,10 +514,10 @@ class InventorySelector(object):
         inventory_rows = floor(self.max_items / 9)
         inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
         quick_slots_y = self.frame.y + 4
-        inventory_y = quick_slots_y + 42
+        inventory_y = quick_slots_y + (42 if self.mode == 0 else 11)
         self.crafting_outcome_icon.scale = 0.5
-        self.crafting_outcome_icon.y = inventory_y + inventory_height + 60
-        self.crafting_outcome_icon.x = self.frame.x + 270
+        self.crafting_outcome_icon.y = inventory_y + inventory_height + (60 if self.mode == 0 else 42)
+        self.crafting_outcome_icon.x = self.frame.x + (270 if self.mode == 0 else 222)
 
     def remove_crafting_outcome(self):
         self.crafting_outcome = None
@@ -547,17 +557,18 @@ class InventorySelector(object):
                 inventory_rows = floor(self.max_items / 9)
                 inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
                 quick_slots_y = self.frame.y + 4
-                inventory_y = quick_slots_y + 42
-                self.selected_item_icon.y = inventory_y + inventory_height + 60
-                self.selected_item_icon.x = self.frame.x + 270
+                inventory_y = quick_slots_y + (42 if self.mode == 0 else 11)
+                self.selected_item_icon.y = inventory_y + inventory_height + (60 if self.mode == 0 else 42)
+                self.selected_item_icon.x = self.frame.x + (270 if self.mode == 0 else 222)
                 # cost
-                for ingre in self.crafting_panel.slots:
+                current_panel = self.crafting_panel if self.mode == 0 else self.crafting_table_panel
+                for ingre in current_panel.slots:
                     if ingre :
                         ingre.change_amount(-1)
                         # ingredient has been used up
                         if ingre.amount <= 0:
                             self.remove_crafting_outcome()
-                self.crafting_panel.remove_unnecessary_stacks()
+                current_panel.remove_unnecessary_stacks()
                 return pyglet.event.EVENT_HANDLED
             else:   # nothing happens
                 return pyglet.event.EVENT_HANDLED
