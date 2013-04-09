@@ -15,15 +15,16 @@ cpdef tuple sectorize(tuple position)
 
 @cython.locals(spreading_mutations=dict)
 cdef class World(dict):
-    cdef public object batch
-    cdef public object transparency_batch
-    cdef public object group
-    cdef public dict shown
-    cdef public dict _shown
-    cdef public object sectors
-    cdef public object urgent_queue, lazy_queue
-    cdef public object spreading_mutation_blocks
-    cdef public double spreading_time
+    cdef public:
+        batch
+        transparency_batch
+        group
+        dict shown
+        dict _shown
+        sectors
+        urgent_queue, lazy_queue
+        spreading_mutable_blocks
+        double spreading_time
 
     cpdef object add_block(self, tuple position, object block,
                            bint sync=?, bint force=?)
