@@ -265,19 +265,26 @@ class InventorySelector(object):
         self.icon_size = self.model.group.texture.width / TILESET_SIZE
         self.selected_item = None
         self.selected_item_icon = None
-        image = pyglet.image.load(os.path.join('resources', 'textures', 'inventory.png'))
-        self.frame = pyglet.sprite.Sprite(image.get_region(0, 0, image.width, image.height), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
+        self.mode = 0 # 0 - Normal inventory, 1 - Crafting Table
+        self.change_image()
         self.crafting_panel = Inventory(4)
         self.crafting_outcome = None  # should be an item stack
         self.crafting_outcome_icon = None
         #self.active = pyglet.sprite.Sprite(image.get_region(0, 0, image.height / 4, image.height / 4), batch=self.batch, group=pyglet.graphics.OrderedGroup(2))
         #self.active.opacity = 0
-        self.frame.x = (parent.window.width - self.frame.width) / 2
-        self.frame.y = self.icon_size / 2 - 4
         self.visible = False
 
     def change_index(self, change):
         self.set_index(self.current_index + change)
+
+    def change_image(self):
+        if self.mode == 0:
+            image = pyglet.image.load(os.path.join('resources', 'textures', 'inventory.png'))
+        elif self.mode == 1:
+            image = pyglet.image.load(os.path.join('resources', 'textures', 'inventory_when_crafting_table.png'))
+        self.frame = pyglet.sprite.Sprite(image.get_region(0, 0, image.width, image.height), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
+        self.frame.x = (self.parent.window.width - self.frame.width) / 2
+        self.frame.y = self.icon_size / 2 - 4
 
     def set_index(self, index):
         index = int(index)
@@ -434,18 +441,18 @@ class InventorySelector(object):
 
     def mouse_coords_to_index(self, x, y):
         inventory_rows = floor(self.max_items / 9)
-        crafting_rows = 2
+        crafting_rows = (2 if self.mode == 0 else 3)
         quick_slots_y = self.frame.y + 4
         inventory_y = quick_slots_y + 42
         inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
-        crafting_items_per_row = 2
-        crafting_y = inventory_y + inventory_height + 42
-        crafting_x = self.frame.x + 165
+        crafting_items_per_row = (2 if self.mode == 0 else 3)
+        crafting_y = inventory_y + inventory_height + (42 if self.mode == 0 else 11)
+        crafting_x = self.frame.x + (165 if self.mode == 0 else 69)
         crafting_height = (crafting_rows * (self.icon_size * 0.5)) + (crafting_rows * 3)
         crafting_width = (crafting_items_per_row * (self.icon_size * 0.5)) + (crafting_items_per_row-1) * 3
 
-        crafting_outcome_y = inventory_y + inventory_height + 60
-        crafting_outcome_x = self.frame.x + 270
+        crafting_outcome_y = inventory_y + inventory_height + (60 if self.mode == 0 else 42)
+        crafting_outcome_x = self.frame.x + (270 if self.mode == 0 else 222)
         crafting_outcome_width = crafting_outcome_height = self.icon_size * 0.5
         # out of bound
 
@@ -474,12 +481,15 @@ class InventorySelector(object):
             items_per_row = crafting_items_per_row
         elif crafting_outcome_y <= y <= crafting_outcome_y + crafting_outcome_height and \
             crafting_outcome_x <= x <= crafting_outcome_x + crafting_outcome_width:
+            #print('Crafting outcome!')
             return 0, 256   # 256 for crafting outcome
         else:
             return -1, -1
 
         col = x_offset // (self.icon_size * 0.5 + 3)
 
+        #print(row)
+        #print(col)
         return inventory, int(row * items_per_row + col)
 
     def set_crafting_outcome(self, item):
@@ -490,7 +500,7 @@ class InventorySelector(object):
 
         block = item.get_object()
         block_icon = self.get_block_icon(block)
-        self.crafting_outcome_icon = pyglet.sprite.Sprite(item_icon, batch=self.batch, group=self.group)
+        self.crafting_outcome_icon = pyglet.sprite.Sprite(block_icon, batch=self.batch, group=self.group)
         inventory_rows = floor(self.max_items / 9)
         inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
         quick_slots_y = self.frame.y + 4
