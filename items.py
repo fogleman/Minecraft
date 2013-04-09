@@ -93,16 +93,12 @@ class StickItem(Item):
 class YellowDyeItem(Item):
     id = 351
     max_stack_size = 64
-<<<<<<< HEAD
     name = "Dandelion Yellow Dye"
 
 class CactusGreenDyeItem(Item):
     id = 351.2
     max_stack_size = 64
     name = "Cactus Green Dye"
-=======
-    name = "Dye"
->>>>>>> 71d084814d3f7620c3bc23309ba4eb088184c0d3
 
 class Tool(Item):
     material = None
