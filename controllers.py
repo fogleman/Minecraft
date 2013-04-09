@@ -168,7 +168,15 @@ class GameController(Controller):
             if self.highlighted_block:
                 hit_block = self.model[self.highlighted_block]
                 if hit_block.hardness >= 0:
-                    self.block_damage += self.player.attack_power * dt
+
+                    multiplier = 1
+                    current_item = self.item_list.get_current_block()
+                    if current_item is not None:
+                        if isinstance(current_item, Tool):  # tool
+                            if current_item.tool_type == hit_block.digging_tool:
+                                multiplier = current_item.multiplier
+
+                    self.block_damage += self.player.attack_power * dt * multiplier
                     if self.block_damage >= hit_block.hardness:
                         self.model.remove_block(self.player,
                                                 self.highlighted_block)

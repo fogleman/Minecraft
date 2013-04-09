@@ -37,7 +37,7 @@ class Player(Entity):
         if self.game_mode == 0:  # creative
                 initial_items = [bookshelf_block, furnace_block, brick_block, torch_block,
                          lamp_block, glass_block, chest_block,
-                         wood_axe, melon_block]
+                         wood_axe, melon_block, iron_pickaxe]
         for item in initial_items:
                 self.inventory.add_item(item.id, item.max_stack_size)
 
