@@ -1,6 +1,6 @@
 # Python packages
 from math import cos, sin, atan2, pi, fmod, radians
-import operator
+import os, operator
 # Third-party packages
 from pyglet.window import key
 from pyglet.text import Label
@@ -222,6 +222,10 @@ class GameController(Controller):
         self.inventory_list = InventorySelector(self, self.player, self.model)
         self.item_list.on_resize(self.window.width, self.window.height)
         self.inventory_list.on_resize(self.window.width, self.window.height)
+        self.text_input = TextWidget(self, 'this is a test', 0, self.window.height, 100,
+                                     visible=False,
+                                     callback=self.text_input_callback,
+                                     anchor_style=ANCHOR_LEFT|ANCHOR_RIGHT|ANCHOR_BOTTOM)
         self.camera = Camera3D(target=self.player)
         if self.show_gui:
             self.label = pyglet.text.Label(
@@ -360,11 +364,14 @@ class GameController(Controller):
             globals.EFFECT_VOLUME = min(globals.EFFECT_VOLUME + .1, 1)
         elif symbol == self.key_sound_down:
             globals.EFFECT_VOLUME = max(globals.EFFECT_VOLUME - .1, 0)
+        elif symbol == key.T:
+            self.toggle_text_input()
         self.last_key = symbol
 
     def on_resize(self, width, height):
         if self.show_gui:
             self.label.y = height - 10
+        self.text_input._on_resize()
 
     def set_3d(self):
         width, height = self.window.get_size()
@@ -412,6 +419,7 @@ class GameController(Controller):
             self.draw_label()
             self.item_list.draw()
             self.inventory_list.draw()
+        self.text_input.draw()
 
     def draw_focused_block(self):
         glDisable(GL_LIGHTING)
@@ -445,7 +453,26 @@ class GameController(Controller):
                pyglet.clock.get_fps(), x, y, z,
                len(self.model._shown), len(self.model))
         self.label.draw()
-        
+
+    def text_input_callback(self, text_input, symbol, modifier):
+        if symbol == key.ENTER:
+            txt = text_input.text.replace(os.linesep, '')
+            print(txt)
+            # TODO: Parse input (user commands, chat, etc.)
+            self.toggle_text_input()
+            return pyglet.event.EVENT_HANDLED
+
+    def toggle_text_input(self):
+        # TODO: Don't overwrite existing text
+        self.text_input.toggle()
+        if self.text_input.visible:
+            self.player.velocity = 0
+            self.player.strafe = [0, 0]
+            self.window.push_handlers(self.text_input)
+            self.text_input.focus()
+        else:
+            self.window.remove_handlers(self.text_input)
+
     def push_handlers(self):
         self.setup()
         self.window.push_handlers(self.camera)
