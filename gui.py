@@ -413,7 +413,7 @@ class InventorySelector(object):
             if block.id > 0:
                 crafting_ingredients[int(floor(i / (2 if self.mode == 0 else 3)))].append(block)
 
-        if len(crafting_ingredients) > 0 and self.mode == 0:
+        if len(crafting_ingredients) > 0:
             outcome = recipes.craft(crafting_ingredients)
             if outcome:
                 self.set_crafting_outcome(outcome)
@@ -510,7 +510,10 @@ class InventorySelector(object):
 
         block = item.get_object()
         block_icon = self.get_block_icon(block)
-        self.crafting_outcome_icon = pyglet.sprite.Sprite(block_icon, batch=self.batch, group=self.group)
+        if self.mode == 0:
+            self.crafting_outcome_icon = pyglet.sprite.Sprite(block_icon, batch=self.batch, group=self.group)
+        elif self.mode == 1:
+            self.crafting_table_outcome_icon = pyglet.sprite.Sprite(block_icon, batch=self.batch, group=self.group)            
         inventory_rows = floor(self.max_items / 9)
         inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
         quick_slots_y = self.frame.y + 4
@@ -520,9 +523,12 @@ class InventorySelector(object):
         self.crafting_outcome_icon.x = self.frame.x + (270 if self.mode == 0 else 222)
 
     def remove_crafting_outcome(self):
-        self.crafting_outcome = None
-        self.crafting_outcome_icon = None
-
+        if self.mode == 0:
+            self.crafting_outcome = None
+            self.crafting_outcome_icon = None
+        elif self.mode == 1:
+            self.crafting_table_outcome = None
+            self.crafting_table_outcome_icon = None
     def set_selected_item(self, item):
         if not item:
             self.remove_selected_item()
