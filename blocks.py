@@ -199,6 +199,9 @@ class DiamondOreBlock(HardBlock):
     hardness = 3
     id = 56
     digging_tool = PICKAXE
+    def __init__(self):
+        super(DiamondOreBlock, self).__init__()
+        self.drop_id = 264
     name = "Diamond Ore"
 
 
@@ -209,6 +212,9 @@ class CoalOreBlock(HardBlock):
     hardness = 3
     id = 16
     digging_tool = PICKAXE
+    def __init__(self):
+        super(CoalOreBlock, self).__init__()
+        self.drop_id = 263
     name = "Coal Ore"
 
 

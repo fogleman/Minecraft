@@ -75,6 +75,16 @@ class ItemStack(object):
         else:
             return BLOCKS_DIR[self.id]
 
+class CoalItem(Item):
+    id = 263
+    max_stack_size = 64
+    name = "Coal"
+
+class DiamondItem(Item):
+    id = 264
+    max_stack_size = 64
+    name = "Diamond"
+
 class Tool(Item):
     material = None
     multiplier = 0
@@ -154,6 +164,8 @@ class GoldenPickaxe(Tool):
     id = 285
     name = "Golden Pickaxe"
 
+coal_item = CoalItem()
+diamond_item = DiamondItem()
 wood_axe = WoodAxe()
 stone_axe = StoneAxe()
 iron_axe = IronAxe()
