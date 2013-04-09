@@ -39,7 +39,7 @@ class Player(Entity):
                          lamp_block, glass_block, chest_block,
                          wood_axe, melon_block]
         for item in initial_items:
-                self.inventory.add_item(item.id, 64)
+                self.inventory.add_item(item.id, item.max_stack_size)
 
         self.key_move_forward = config.getint('Controls', 'move_forward')
         self.key_move_backward = config.getint('Controls', 'move_backward')
