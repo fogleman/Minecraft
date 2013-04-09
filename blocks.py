@@ -501,6 +501,7 @@ class YFlowersBlock(Block):
     width = 0.5
     id = 37
     name = "Dandelion"
+    break_sound = sounds.leaves_break
 
 
 class StoneSlabBlock(HardBlock):
