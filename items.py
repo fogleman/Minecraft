@@ -1,13 +1,30 @@
 from blocks import *
 # items and blocks share a common id table
 # ids of items should be >= ITEM_ID_MIN
-ITEM_ID_MIN = 512 #256
+ITEM_ID_MIN = 256
+
+# From MinecraftWiki
+# Items are objects which do not exist outside of the player's inventory and hands 
+# i.e., they cannot be placed in the game world. 
+# Some items simply place blocks or entities into the game world when used.
+# Type
+# * Materials: iron ingot, gold ingot, etc.
+# * Food: found or crafted by the player and eaten to regain hunger points
+# * Poitions
+# * Tools
+# * Informative items: map, compass and clock
+# * Weapons
+# * Armor
 
 ITEMS_DIR = {}
 
 class Item(object):
-    def __init__(self, max_stack_size):
-        self.max_stack_size = max_stack_size
+    id = None
+    max_stack_size = 0
+    amount_label_color = 255, 255, 255, 255
+    name = "Item"
+
+    def __init__(self):
         ITEMS_DIR[self.id] = self
 
     def on_right_click(self):
@@ -50,5 +67,14 @@ class ItemStack(object):
     # compatible with blocks
     @property
     def name(self):
-        return BLOCKS_DIR[self.id].name
+        if self.id >= ITEM_ID_MIN:
+            return ITEMS_DIR[self.id].name
+        else:
+            return BLOCKS_DIR[self.id].name
 
+class WoodAxe(Item):
+    max_stack_size = 1
+    id = 271
+    name = "Wooden Axe"
+
+wood_axe = WoodAxe()

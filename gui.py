@@ -142,7 +142,10 @@ class ItemSelector(object):
             if not item:
                 x += (self.icon_size * 0.5) + 3
                 continue
-            block = BLOCKS_DIR[item.type]
+            if item.type >= ITEM_ID_MIN:
+                block = ITEMS_DIR[item.type]
+            else:
+                block = BLOCKS_DIR[item.type]
             block_icon = self.get_block_icon(block)
             icon = pyglet.sprite.Sprite(block_icon, batch=self.batch,
                                         group=self.group)
@@ -323,7 +326,10 @@ class InventorySelector(object):
                     x = self.frame.x + 7
                     y -= (self.icon_size * 0.5) + 3
                 continue
-            block = BLOCKS_DIR[item.type]
+            if item.type >= ITEM_ID_MIN:
+                block = ITEMS_DIR[item.type]
+            else:
+                block = BLOCKS_DIR[item.type]
             block_icon = self.get_block_icon(block)
             icon = pyglet.sprite.Sprite(block_icon, batch=self.batch,
                                         group=self.group)
@@ -348,7 +354,10 @@ class InventorySelector(object):
             if not item:
                 x += (self.icon_size * 0.5) + 3
                 continue
-            block = BLOCKS_DIR[item.type]
+            if item.type >= ITEM_ID_MIN:
+                block = ITEMS_DIR[item.type]
+            else:
+                block = BLOCKS_DIR[item.type]
             block_icon = self.get_block_icon(block)
             icon = pyglet.sprite.Sprite(block_icon, batch=self.batch,
                                         group=self.group)
@@ -383,7 +392,10 @@ class InventorySelector(object):
                     x = self.frame.x + 165
                     y -= (self.icon_size * 0.5) + 3
                 continue
-            block = BLOCKS_DIR[item.type]
+            if item.type >= ITEM_ID_MIN:
+                block = ITEMS_DIR[item.type]
+            else:
+                block = BLOCKS_DIR[item.type]
             block_icon = self.get_block_icon(block)
             icon = pyglet.sprite.Sprite(block_icon, batch=self.batch,
                                         group=self.group)
@@ -491,7 +503,10 @@ class InventorySelector(object):
             return
         self.crafting_outcome = item
 
-        block = BLOCKS_DIR[item.type]
+        if item.type >= ITEM_ID_MIN:
+            block = ITEMS_DIR[item.type]
+        else:
+            block = BLOCKS_DIR[item.type]
         block_icon = self.get_block_icon(block)
         self.crafting_outcome_icon = pyglet.sprite.Sprite(item_icon, batch=self.batch, group=self.group)
         inventory_rows = floor(self.max_items / 9)
@@ -512,7 +527,10 @@ class InventorySelector(object):
             return
         self.selected_item = item
 
-        block = BLOCKS_DIR[item.type]
+        if item.type >= ITEM_ID_MIN:
+            block = ITEMS_DIR[item.type]
+        else:
+            block = BLOCKS_DIR[item.type]
         block_icon = self.get_block_icon(block)
         self.selected_item_icon = pyglet.sprite.Sprite(block_icon, batch=self.batch, group=self.group)
         self.selected_item_icon.scale = 0.4
