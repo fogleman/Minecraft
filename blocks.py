@@ -1,3 +1,6 @@
+# coding: utf-8
+
+from __future__ import unicode_literals
 from globals import *
 import sounds
 
@@ -43,6 +46,8 @@ class Block(object):
     amount_label_color = 255, 255, 255, 255
     name = "Block"
 
+    digging_tool = -1
+
     def __init__(self, width=None, height=None):
         self.drop_id = self.id
         if self.id is not None:
@@ -63,6 +68,9 @@ class Block(object):
         self.texture_data = self.get_texture_data()
 
         BLOCKS_DIR[self.id] = self
+
+    def __str__(self):
+        return self.name
 
     def get_texture_data(self):
         return list(self.top_texture + self.bottom_texture
@@ -103,18 +111,11 @@ class AirBlock(Block):
 
 class WoodBlock(Block):
     break_sound = sounds.wood_break
+    digging_tool = AXE
 
 
 class HardBlock(Block):
     break_sound = sounds.stone_break
-
-class WoodAxe(HardBlock):
-    top_texture = 9, 0
-    bottom_texture = 9, 0
-    side_texture = 9, 0
-    hardness = 1.5
-    id = 271
-    name = "Wooden Axe"
 
 class StoneBlock(HardBlock):
     top_texture = 2, 1
@@ -123,6 +124,7 @@ class StoneBlock(HardBlock):
     hardness = 1.5
     id = 1
     name = "Stone"
+    digging_tool = PICKAXE
 
     def __init__(self):
         super(StoneBlock, self).__init__()
@@ -137,6 +139,7 @@ class GrassBlock(Block):
     id = 2
     break_sound = sounds.dirt_break
     name = 'Grass'
+    digging_tool = SHOVEL
 
     def __init__(self):
         super(GrassBlock, self).__init__()
@@ -150,6 +153,7 @@ class DirtBlock(Block):
     hardness = 0.5
     id = 3
     name = "Dirt"
+    digging_tool = SHOVEL
     break_sound = sounds.dirt_break
 
 class SnowBlock(Block):
@@ -170,6 +174,7 @@ class SandBlock(Block):
     amount_label_color = 0, 0, 0, 255
     id = 12
     name = "Sand"
+    digging_tool = SHOVEL
     break_sound = sounds.sand_break
 
 
@@ -179,6 +184,7 @@ class GoldOreBlock(HardBlock):
     side_texture = 3, 4
     hardness = 3
     id = 14
+    digging_tool = PICKAXE
     name = "Gold Ore"
 
 
@@ -188,6 +194,7 @@ class IronOreBlock(HardBlock):
     side_texture = 1, 4
     hardness = 3
     id = 15
+    digging_tool = PICKAXE
     name = "Iron Ore"
 
 
@@ -197,6 +204,10 @@ class DiamondOreBlock(HardBlock):
     side_texture = 2, 4
     hardness = 3
     id = 56
+    digging_tool = PICKAXE
+    def __init__(self):
+        super(DiamondOreBlock, self).__init__()
+        self.drop_id = 264
     name = "Diamond Ore"
 
 
@@ -206,6 +217,10 @@ class CoalOreBlock(HardBlock):
     side_texture = 0, 4
     hardness = 3
     id = 16
+    digging_tool = PICKAXE
+    def __init__(self):
+        super(CoalOreBlock, self).__init__()
+        self.drop_id = 263
     name = "Coal Ore"
 
 
@@ -215,6 +230,7 @@ class BrickBlock(HardBlock):
     side_texture = 2, 0
     hardness = 2
     id = 45
+    digging_tool = PICKAXE
     name = "Bricks"
 
 
@@ -249,6 +265,7 @@ class GravelBlock(Block):
     amount_label_color = 0, 0, 0, 255
     id = 13
     name = "Gravel"
+    digging_tool = SHOVEL
     break_sound = sounds.gravel_break
 
 
@@ -606,12 +623,13 @@ class FarmBlock(Block):
         #super(BirchBranchBlock, self).__init__()
         #self.drop_id = BirchWoodBlock.id
 
-CRACK_LEVEL = 6
+CRACK_LEVELS = 6
+
 
 # not a real block, used to store crack texture data
 class CrackTextureBlock(object):
     def __init__(self):
-        self.crack_level = CRACK_LEVEL
+        self.crack_level = CRACK_LEVELS
         self.texture_data = []
         for i in range(self.crack_level):
             texture_coords = get_texture_coordinates(i, 7)
@@ -664,7 +682,6 @@ yflowers_block = YFlowersBlock()
 cobblefence_block = CobbleFenceBlock()
 snow_block = SnowBlock()
 meta_block = MetaBlock()
-wood_axe = WoodAxe()
 
 
 

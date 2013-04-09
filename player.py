@@ -37,9 +37,9 @@ class Player(Entity):
         if self.game_mode == 0:  # creative
                 initial_items = [bookshelf_block, furnace_block, brick_block, torch_block,
                          lamp_block, glass_block, chest_block,
-                         wood_axe, melon_block]
+                         wood_axe, melon_block, iron_pickaxe, stick_item]
         for item in initial_items:
-                self.inventory.add_item(item.id, 64)
+                self.inventory.add_item(item.id, item.max_stack_size)
 
         self.key_move_forward = config.getint('Controls', 'move_forward')
         self.key_move_backward = config.getint('Controls', 'move_backward')
