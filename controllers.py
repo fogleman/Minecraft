@@ -421,6 +421,19 @@ class GameController(Controller):
             self.item_list.draw()
             self.inventory_list.draw()
 
+    def show_cracks(self, hit_block, vertex_data):
+        if self.block_damage:  # also show the cracks
+            crack_level = int(CRACK_LEVELS * self.block_damage
+                              / hit_block.hardness)  # range: [0, CRACK_LEVELS[
+            if crack_level >= CRACK_LEVELS:
+                return
+            texture_data = crack_textures.texture_data[crack_level]
+            if self.crack:
+                self.crack.delete()
+            self.crack = self.crack_batch.add(24, GL_QUADS, self.model.group,
+                                              ('v3f/static', vertex_data),
+                                              ('t2f/static', texture_data))
+
     def draw_focused_block(self):
         glDisable(GL_LIGHTING)
         vector = self.player.get_sight_vector()
@@ -431,19 +444,13 @@ class GameController(Controller):
                 self.focus_block.width = hit_block.width * 1.05
                 self.focus_block.height = hit_block.height * 1.05
                 vertex_data = self.focus_block.get_vertices(*position)
+
+                self.show_cracks(hit_block, vertex_data)
+
                 glColor3d(0, 0, 0)
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
                 pyglet.graphics.draw(24, GL_QUADS, ('v3f/static', vertex_data))
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
-                if self.block_damage != 0:  # also show the cracks
-                    crack_level = int(floor((self.block_damage / hit_block.hardness) * CRACK_LEVEL)) # range: [0, CRACK_LEVEL]
-                    if crack_level > CRACK_LEVEL:
-                        return
-                    texture_data = crack_textures.texture_data[crack_level]
-                    if self.crack:
-                        self.crack.delete()
-                    self.crack = self.crack_batch.add(24, GL_QUADS, self.model.group, ('v3f/static', vertex_data) ,
-                                                                            ('t2f/static', texture_data))
 
     def draw_label(self):
         x, y, z = self.player.position

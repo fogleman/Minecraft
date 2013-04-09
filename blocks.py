@@ -1,3 +1,6 @@
+# coding: utf-8
+
+from __future__ import unicode_literals
 from globals import *
 import sounds
 
@@ -65,6 +68,9 @@ class Block(object):
         self.texture_data = self.get_texture_data()
 
         BLOCKS_DIR[self.id] = self
+
+    def __str__(self):
+        return self.name
 
     def get_texture_data(self):
         return list(self.top_texture + self.bottom_texture
@@ -617,12 +623,13 @@ class FarmBlock(Block):
         #super(BirchBranchBlock, self).__init__()
         #self.drop_id = BirchWoodBlock.id
 
-CRACK_LEVEL = 6
+CRACK_LEVELS = 6
+
 
 # not a real block, used to store crack texture data
 class CrackTextureBlock(object):
     def __init__(self):
-        self.crack_level = CRACK_LEVEL
+        self.crack_level = CRACK_LEVELS
         self.texture_data = []
         for i in range(self.crack_level):
             texture_coords = get_texture_coordinates(i, 7)
