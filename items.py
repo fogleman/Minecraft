@@ -67,10 +67,14 @@ class ItemStack(object):
     # compatible with blocks
     @property
     def name(self):
+        return self.get_object().name
+
+    def get_object(self):
         if self.id >= ITEM_ID_MIN:
-            return ITEMS_DIR[self.id].name
+            return ITEMS_DIR[self.id]
         else:
-            return BLOCKS_DIR[self.id].name
+            return BLOCKS_DIR[self.id]
+        
 
 
 class Tool(Item):
