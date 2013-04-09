@@ -108,6 +108,13 @@ class WoodBlock(Block):
 class HardBlock(Block):
     break_sound = sounds.stone_break
 
+class WoodAxe(HardBlock):
+    top_texture = 9, 0
+    bottom_texture = 9, 0
+    side_texture = 9, 0
+    hardness = 1.5
+    id = 271
+    name = "Wooden Axe"
 
 class StoneBlock(HardBlock):
     top_texture = 2, 1
@@ -501,6 +508,7 @@ class YFlowersBlock(Block):
     width = 0.5
     id = 37
     name = "Dandelion"
+    break_sound = sounds.leaves_break
 
 
 class StoneSlabBlock(HardBlock):
@@ -656,6 +664,7 @@ yflowers_block = YFlowersBlock()
 cobblefence_block = CobbleFenceBlock()
 snow_block = SnowBlock()
 meta_block = MetaBlock()
+wood_axe = WoodAxe()
 
 
 

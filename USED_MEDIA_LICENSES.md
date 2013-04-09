@@ -2,7 +2,7 @@
 
 - wood_break.wav http://soundbible.com/1442-Cupboard-Door-Close.html Creative Commons Attribution 3.0
 - water_break.wav http://www.freesound.org/people/Quistard/sounds/166824/ Creative Commons Attribution 3.0
-- leaves_break.wav http://www.freesound.org/people/bsumusictech/sounds/84768/ Creative Commons 0 License
+- leaves_break.wav http://www.freesound.org/people/davilca/sounds/159496/ Creative Commons Attribution 3.0
 - glass_break.wav http://www.freesound.org/people/cmusounddesign/sounds/85168/ Creative Commons Attribution 3.0
 - dirt_break.wav http://www.freesound.org/people/Ohrwurm/sounds/64416/ Creative Commons Attribution 3.0
 - gravel_break.wav http://www.freesound.org/people/Ohrwurm/sounds/64416/ Creative Commons Attribution 3.0

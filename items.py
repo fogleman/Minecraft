@@ -1,7 +1,7 @@
 from blocks import *
 # items and blocks share a common id table
 # ids of items should be >= ITEM_ID_MIN
-ITEM_ID_MIN = 256
+ITEM_ID_MIN = 512 #256
 
 ITEMS_DIR = {}
 

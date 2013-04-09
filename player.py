@@ -24,7 +24,7 @@ class Player(Entity):
 
             initial_items = [bookshelf_block, furnace_block, brick_block, torch_block,
                              lamp_block, glass_block, chest_block,
-                             sandstone_block, melon_block]
+                             wood_axe, melon_block]
             for item in initial_items:
                 quantity = random.randint(2, 10)
                 if random.choice((True, False)):
@@ -37,7 +37,7 @@ class Player(Entity):
         if self.game_mode == 0:  # creative
                 initial_items = [bookshelf_block, furnace_block, brick_block, torch_block,
                          lamp_block, glass_block, chest_block,
-                         sandstone_block, melon_block]
+                         wood_axe, melon_block]
         for item in initial_items:
                 self.inventory.add_item(item.id, 64)
 

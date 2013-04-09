@@ -8,3 +8,4 @@
 *.so
 *.pyd
 *.exp
+*.obj
