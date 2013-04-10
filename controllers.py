@@ -62,11 +62,11 @@ class MainMenuController(Controller):
         self.background.scale = max(float(window.get_size()[0]) / self.background.width, float(window.get_size()[1]) / self.background.height)
         self.frame = pyglet.sprite.Sprite(image.get_region(0, 0, image.width, image.height), batch=self.batch, group=pyglet.graphics.OrderedGroup(1))
         button_image = pyglet.image.load(os.path.join('resources', 'textures', 'button.png'))
-        self.start_game = Button(0, 0, 160, 50, image=button_image, caption="Start game", batch=self.batch, group=self.group, label_group=self.labels_group, on_click=self.start_game_func)
-        self.exit_game = Button(0, 0, 160, 50, image=button_image, caption="Exit game", batch=self.batch, group=self.group, label_group=self.labels_group, on_click=self.exit_game_func)
-        self.buttons = [self.start_game, self.exit_game]
         pyglet.font.add_file('resources/fonts/Chunkfive.ttf')
         pyglet.font.load('ChunkFive Roman')
+        self.start_game = Button(0, 0, 160, 50, image=button_image, caption="Start game", batch=self.batch, group=self.group, label_group=self.labels_group, on_click=self.start_game_func, font_name='ChunkFive Roman')
+        self.exit_game = Button(0, 0, 160, 50, image=button_image, caption="Exit game", batch=self.batch, group=self.group, label_group=self.labels_group, on_click=self.exit_game_func, font_name='ChunkFive Roman')
+        self.buttons = [self.start_game, self.exit_game]
         self.label = Label(APP_NAME, font_name='ChunkFive Roman', font_size=50, x=window.width/2, y=self.frame.y + self.frame.height,
             anchor_x='center', anchor_y='top', color=(255, 255, 255, 255), batch=self.batch,
             group=self.labels_group)
@@ -103,12 +103,12 @@ class MainMenuController(Controller):
         self.background.x = 0
         self.background.y = 0
         self.frame.x, self.frame.y = (width - self.frame.width) / 2, (height - self.frame.height) / 2
-        self.label.y = self.frame.y + self.frame.height - 20
+        self.label.y = self.frame.y + self.frame.height - 55
         self.label.x = width / 2
         button_x = self.frame.x + (self.frame.width - self.start_game.width) / 2
         button_y = self.frame.y + (self.frame.height - self.start_game.height) / 2
-        self.start_game.set_position(button_x, button_y)
-        self.exit_game.set_position(button_x, button_y - self.start_game.height - 20)
+        self.start_game.set_position(button_x, button_y - 10)
+        self.exit_game.set_position(button_x, button_y - self.start_game.height - 30)
 
     def on_draw(self):
         self.clear()
@@ -168,7 +168,15 @@ class GameController(Controller):
             if self.highlighted_block:
                 hit_block = self.model[self.highlighted_block]
                 if hit_block.hardness >= 0:
-                    self.block_damage += self.player.attack_power * dt
+
+                    multiplier = 1
+                    current_item = self.item_list.get_current_block()
+                    if current_item is not None:
+                        if isinstance(current_item, Tool):  # tool
+                            if current_item.tool_type == hit_block.digging_tool:
+                                multiplier = current_item.multiplier
+
+                    self.block_damage += self.player.attack_power * dt * multiplier
                     if self.block_damage >= hit_block.hardness:
                         self.model.remove_block(self.player,
                                                 self.highlighted_block)
@@ -421,6 +429,19 @@ class GameController(Controller):
             self.inventory_list.draw()
         self.text_input.draw()
 
+    def show_cracks(self, hit_block, vertex_data):
+        if self.block_damage:  # also show the cracks
+            crack_level = int(CRACK_LEVELS * self.block_damage
+                              / hit_block.hardness)  # range: [0, CRACK_LEVELS[
+            if crack_level >= CRACK_LEVELS:
+                return
+            texture_data = crack_textures.texture_data[crack_level]
+            if self.crack:
+                self.crack.delete()
+            self.crack = self.crack_batch.add(24, GL_QUADS, self.model.group,
+                                              ('v3f/static', vertex_data),
+                                              ('t2f/static', texture_data))
+
     def draw_focused_block(self):
         glDisable(GL_LIGHTING)
         vector = self.player.get_sight_vector()
@@ -431,19 +452,13 @@ class GameController(Controller):
                 self.focus_block.width = hit_block.width * 1.05
                 self.focus_block.height = hit_block.height * 1.05
                 vertex_data = self.focus_block.get_vertices(*position)
+
+                self.show_cracks(hit_block, vertex_data)
+
                 glColor3d(0, 0, 0)
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
                 pyglet.graphics.draw(24, GL_QUADS, ('v3f/static', vertex_data))
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
-                if self.block_damage != 0:  # also show the cracks
-                    crack_level = int(floor((self.block_damage / hit_block.hardness) * CRACK_LEVEL)) # range: [0, CRACK_LEVEL]
-                    if crack_level > CRACK_LEVEL:
-                        return
-                    texture_data = crack_textures.texture_data[crack_level]
-                    if self.crack:
-                        self.crack.delete()
-                    self.crack = self.crack_batch.add(24, GL_QUADS, self.model.group, ('v3f/static', vertex_data) ,
-                                                                            ('t2f/static', texture_data))
 
     def draw_label(self):
         x, y, z = self.player.position
