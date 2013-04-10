@@ -510,6 +510,7 @@ class TorchBlock(WoodBlock):
     bottom_texture = 0, 1
     side_texture = 4, 5
     hardness = 1
+    transparent = True
     width = 0.2
     id = 50
     name = "Torch"
