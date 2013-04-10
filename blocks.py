@@ -295,7 +295,7 @@ class CraftTableBlock(WoodBlock):
     bottom_texture = 1, 1
     side_texture = 8, 0
     hardness = 2.5
-    id = 54
+    id = 58
     name = "Crafting Table"
 
 class MetaBlock(WoodBlock): # this is a experimental block.

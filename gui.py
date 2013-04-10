@@ -430,6 +430,8 @@ class InventorySelector(Control):
         crafting_ingredients = [[], []] if self.mode == 0 else [[], [], []]
         for i, item in enumerate(items):
             if not item:
+                # placeholder
+                crafting_ingredients[int(floor(i / (2 if self.mode == 0 else 3)))].append(air_block)
                 x += (self.icon_size * 0.5) + 3
                 if x >= (self.frame.x + (165 if self.mode == 0 else 69)) + 35 * ((2 if self.mode == 0 else 3)):
                     x = self.frame.x + (165 if self.mode == 0 else 69)
@@ -479,10 +481,13 @@ class InventorySelector(Control):
             return item, amount
         return False
 
-    def toggle(self):
+    def toggle(self, reset_mode=True):
         if not self.visible:
             self.update_items()
-        self.parent.item_list.toggle()
+        if reset_mode:
+            self.mode = 0
+        self.change_image()
+        self.parent.item_list.toggle()        
         self.parent.window.set_exclusive_mouse(self.visible)
         self.visible = not self.visible
 
@@ -562,9 +567,14 @@ class InventorySelector(Control):
         inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
         quick_slots_y = self.frame.y + 4
         inventory_y = quick_slots_y + (42 if self.mode == 0 else 11)
-        self.crafting_outcome_icon.scale = 0.5
-        self.crafting_outcome_icon.y = inventory_y + inventory_height + (60 if self.mode == 0 else 42)
-        self.crafting_outcome_icon.x = self.frame.x + (270 if self.mode == 0 else 222)
+        if self.mode == 0:
+            self.crafting_outcome_icon.scale = 0.5
+            self.crafting_outcome_icon.y = inventory_y + inventory_height + 60
+            self.crafting_outcome_icon.x = self.frame.x + 270
+        elif self.mode == 1:
+            self.crafting_table_outcome_icon.scale = 0.5
+            self.crafting_table_outcome_icon.y = inventory_y + inventory_height + 72
+            self.crafting_table_outcome_icon.x = self.frame.x + 222
 
     def remove_crafting_outcome(self):
         if self.mode == 0:
