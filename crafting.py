@@ -24,6 +24,8 @@ class Recipes(object):
 
         for i in (0, -1):
             line = ingre_list[i]
+            if len(line) == 0:
+                continue
             sum = 0
             for id in line:
                 sum = sum + id
@@ -34,9 +36,13 @@ class Recipes(object):
         for i in (0, -1):
             sum = 0
             for line in ingre_list:
+                if len(line) == 0:
+                    continue
                 sum = sum + line[i]
             if sum == 0:
                 for line in ingre_list:
+                    if len(line) == 0:
+                        continue
                     line.pop(i)
 
     def parse_recipe(self, shape, ingre):
@@ -123,7 +129,7 @@ smelting = SmeltingRecipes()
 #  stone items
 recipes.add_recipe(["##", "##"], {'#': stone_block},
                    ItemStack(stonebrick_block.id, amount=4))
-recipes.add_recipe(["##", "##"], {'#': cobble_block},
+recipes.add_recipe(["###", "# #", "###"], {'#': cobble_block},
                    ItemStack(furnace_block.id, amount=1))
 
 # wood items
@@ -131,20 +137,27 @@ recipes.add_recipe(["#"], {'#': oakwood_block},
                    ItemStack(oakwoodplank_block.id, amount=4))
 recipes.add_recipe(["#"], {'#': junglewood_block},
                    ItemStack(junglewoodplank_block.id, amount=4))
-recipes.add_recipe(["#"], {'#': oakwoodplank_block},
+recipes.add_recipe(["#", "#"], {'#': oakwoodplank_block},
                    ItemStack(stick_item.id, amount=4))
-recipes.add_recipe(["#"], {'#': junglewoodplank_block},
+recipes.add_recipe(["#", "#"], {'#': junglewoodplank_block},
                    ItemStack(stick_item.id, amount=4))
-recipes.add_recipe(["#"], {'#': oakwoodplank_block},
+recipes.add_recipe(["#", "#"], {'#': oakwoodplank_block},
                    ItemStack(stick_item.id, amount=4))
-recipes.add_recipe(["#"], {'#': sprucewoodplank_block},
+recipes.add_recipe(["#", "#"], {'#': sprucewoodplank_block},
                    ItemStack(stick_item.id, amount=4))
+recipes.add_recipe(["###", "# #", "###"], {'#': oakwoodplank_block},
+                   ItemStack(chest_block.id, amount=1))
+recipes.add_recipe(["###", "# #", "###"], {'#': sprucewoodplank_block},
+                   ItemStack(chest_block.id, amount=1))
+recipes.add_recipe(["###", "# #", "###"], {'#': junglewoodplank_block},
+                   ItemStack(chest_block.id, amount=1))
+
 recipes.add_recipe(["##", "##"], {'#': oakwoodplank_block},
-                   ItemStack(chest_block.id, amount=1))
+                   ItemStack(craft_block.id, amount=1))
 recipes.add_recipe(["##", "##"], {'#': sprucewoodplank_block},
-                   ItemStack(chest_block.id, amount=1))
+                   ItemStack(craft_block.id, amount=1))
 recipes.add_recipe(["##", "##"], {'#': junglewoodplank_block},
-                   ItemStack(chest_block.id, amount=1))
+                   ItemStack(craft_block.id, amount=1))
 
 #sand items
 recipes.add_recipe(["##", "##"], {'#': sand_block},

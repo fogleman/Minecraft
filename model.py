@@ -36,17 +36,17 @@ class Model(World):
             (water_block,) * 30 + (clay_block,) * 4,
             dirt_block,
             (dirt_block,) * 15 + (dirt_block,) * 3 + (stone_block,),
-            (snowgrass_block,) * 10 + (snow_block,) * 4,
+            (snowgrass_block,) * 10 + (snow_block,) * 4 + (ice_block,) * 8,
         )
 
         world_type_trees = (
-            (OakTree, BirchTree, WaterMelon, Pumpkin, YFlowers),
-            (OakTree, WaterMelon, YFlowers),
-            (Cactus, TallCactus,),
-            (OakTree, JungleTree, BirchTree, Cactus, TallCactus, WaterMelon, YFlowers),
-            (Cactus, BirchTree, TallCactus, YFlowers),
-            (OakTree, BirchTree, Pumpkin, YFlowers),
-            (OakTree, BirchTree, WaterMelon, YFlowers),
+            (OakTree, BirchTree, WaterMelon, Pumpkin, YFlowers, Potato),
+            (OakTree, WaterMelon, YFlowers, Rose, Carrot),
+            (Cactus, TallCactus, Rose),
+            (OakTree, JungleTree, BirchTree, Cactus, TallCactus, WaterMelon, YFlowers, Reed),
+            (Cactus, BirchTree, TallCactus, YFlowers, Reed, Carrot),
+            (OakTree, BirchTree, Pumpkin, YFlowers, Potato, Carrot),
+            (OakTree, BirchTree, WaterMelon, YFlowers, Potato, Rose,),
         )
 
         ore_type_blocks = (

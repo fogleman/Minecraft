@@ -28,6 +28,12 @@ class Rectangle(object):
 
     def hit_test(self, x, y):
         return (x >= self.x and x <= self.x + self.width) and (y >= self.y and y <= self.y + self.height)
+
+    def vertex_list(self):
+        return [self.x, self.y,
+                self.x + self.width, self.y,
+                self.x + self.width, self.y + self.height,
+                self.x, self.y + self.height]
 	
     @property
     def min(self):
@@ -70,8 +76,48 @@ class Button(Rectangle):
     def on_mouse_click(self):
         self.on_click()
 
-class ItemSelector(object):
-    def __init__(self, parent, player, model):
+ANCHOR_NONE   = 0
+ANCHOR_LEFT   = 1
+ANCHOR_TOP    = 1 << 1
+ANCHOR_RIGHT  = 1 << 2
+ANCHOR_BOTTOM = 1 << 3
+
+
+class Control(object):
+    def __init__(self, parent, anchor_style=ANCHOR_NONE, visible=True, *args, **kwargs):
+        self.parent = parent
+        self.visible = visible
+        self.anchor_style = anchor_style
+        self._anchor_points = (None,) * 4
+
+    def toggle(self):
+        self.visible = not self.visible
+        self._on_toggled()
+
+    def draw(self):
+        if self.visible:
+            self._on_draw()
+
+    def _on_resize(self):
+        pw, ph = self.parent.window.get_size()
+        al, at, ar, ab = None, None, None, None
+        if (self.anchor_style & ANCHOR_RIGHT) == ANCHOR_RIGHT:
+            ar = pw
+        if (self.anchor_style & ANCHOR_BOTTOM) == ANCHOR_BOTTOM:
+            ab = 0
+        # TODO: Implement ANCHOR_LEFT and ANCHOR_TOP
+        self._anchor_points = (al, at, ar, ab)
+
+    def _on_toggled(self):
+        pass
+
+    def _on_draw(self):
+        pass
+
+
+class ItemSelector(Control):
+    def __init__(self, parent, player, model, *args, **kwargs):
+        super(ItemSelector, self).__init__(parent, *args, **kwargs)
         self.batch = pyglet.graphics.Batch()
         self.group = pyglet.graphics.OrderedGroup(1)
         self.labels_group = pyglet.graphics.OrderedGroup(2)
@@ -211,8 +257,7 @@ class ItemSelector(object):
         self.player.quick_slots.remove_by_index(self.current_index, quantity=quantity)
         self.update_items()
 
-    def toggle(self):
-        self.visible = not self.visible
+    def _on_toggled(self):
         if self.visible:
             self.update_items()
 
@@ -246,13 +291,13 @@ class ItemSelector(object):
             self.update_current()
             self.update_items()
 
-    def draw(self):
-        if self.visible:
-            self.batch.draw()
+    def _on_draw(self):
+        self.batch.draw()
             
 
-class InventorySelector(object):
-    def __init__(self, parent, player, model):
+class InventorySelector(Control):
+    def __init__(self, parent, player, model, *args, **kwargs):
+        super(InventorySelector, self).__init__(parent, *args, **kwargs)
         self.batch = pyglet.graphics.Batch()
         self.group = pyglet.graphics.OrderedGroup(1)
         self.amount_labels_group = pyglet.graphics.OrderedGroup(2)
@@ -374,10 +419,10 @@ class InventorySelector(object):
             self.icons.append(icon)
         self.update_current()
 
-        crafting_y = inventory_y + inventory_height + (42 if self.mode == 0 else 11)
+        crafting_y = inventory_y + inventory_height + (42 if self.mode == 0 else 14)
         crafting_rows = (2 if self.mode == 0 else 3)
         crafting_height = (crafting_rows * (self.icon_size * 0.5)) + (crafting_rows * 3)
-        x = self.frame.x + (165 if self.mode == 0 else 69)
+        x = self.frame.x + (165 if self.mode == 0 else 72)
         y = self.frame.y + crafting_y + crafting_height
         items = self.crafting_panel.get_items() if self.mode == 0 else self.crafting_table_panel.get_items()
         items = items[:self.crafting_panel.slot_count] if self.mode == 0 else items[:self.crafting_table_panel.slot_count]
@@ -385,9 +430,11 @@ class InventorySelector(object):
         crafting_ingredients = [[], []] if self.mode == 0 else [[], [], []]
         for i, item in enumerate(items):
             if not item:
+                # placeholder
+                crafting_ingredients[int(floor(i / (2 if self.mode == 0 else 3)))].append(air_block)
                 x += (self.icon_size * 0.5) + 3
-                if x >= (self.frame.x + (165 if self.mode == 0 else 69)) + 35 * ((2 if self.mode == 0 else 3)):
-                    x = self.frame.x + (165 if self.mode == 0 else 69)
+                if x >= (self.frame.x + (165 if self.mode == 0 else 72)) + 35 * ((2 if self.mode == 0 else 3)):
+                    x = self.frame.x + (165 if self.mode == 0 else 72)
                     y -= (self.icon_size * 0.5) + 3
                 continue
             block = item.get_object()
@@ -400,8 +447,8 @@ class InventorySelector(object):
             item.quickslots_x = icon.x
             item.quickslots_y = icon.y
             x += (self.icon_size * 0.5) + 3
-            if x >= (self.frame.x + (165 if self.mode == 0 else 69)) + 35 * ((2 if self.mode == 0 else 3)):
-                x = self.frame.x + (165 if self.mode == 0 else 69)
+            if x >= (self.frame.x + (165 if self.mode == 0 else 72)) + 35 * ((2 if self.mode == 0 else 3)):
+                x = self.frame.x + (165 if self.mode == 0 else 72)
                 y -= (self.icon_size * 0.5) + 3
             amount_label = pyglet.text.Label(
                 str(item.amount), font_name='Arial', font_size=9,
@@ -422,7 +469,6 @@ class InventorySelector(object):
 
         self.update_current()
 
-
     def update_current(self):
         '''self.active.x = self.frame.x + ((self.current_index % 9) * self.icon_size * 0.5) + (self.current_index % 9) * 3
         self.active.y = self.frame.y + floor(self.current_index / 9) * self.icon_size * 0.5 + floor(self.current_index / 9) * 6'''
@@ -435,10 +481,13 @@ class InventorySelector(object):
             return item, amount
         return False
 
-    def toggle(self):
+    def toggle(self, reset_mode=True):
         if not self.visible:
             self.update_items()
-        self.parent.item_list.toggle()
+        if reset_mode:
+            self.mode = 0
+        self.change_image()
+        self.parent.item_list.toggle()        
         self.parent.window.set_exclusive_mouse(self.visible)
         self.visible = not self.visible
 
@@ -449,8 +498,8 @@ class InventorySelector(object):
         inventory_y = quick_slots_y + 42
         inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
         crafting_items_per_row = (2 if self.mode == 0 else 3)
-        crafting_y = inventory_y + inventory_height + (42 if self.mode == 0 else 11)
-        crafting_x = self.frame.x + (165 if self.mode == 0 else 69)
+        crafting_y = inventory_y + inventory_height + (42 if self.mode == 0 else 14)
+        crafting_x = self.frame.x + (165 if self.mode == 0 else 72)
         crafting_height = (crafting_rows * (self.icon_size * 0.5)) + (crafting_rows * 3)
         crafting_width = (crafting_items_per_row * (self.icon_size * 0.5)) + (crafting_items_per_row-1) * 3
 
@@ -517,10 +566,15 @@ class InventorySelector(object):
         inventory_rows = floor(self.max_items / 9)
         inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
         quick_slots_y = self.frame.y + 4
-        inventory_y = quick_slots_y + (42 if self.mode == 0 else 11)
-        self.crafting_outcome_icon.scale = 0.5
-        self.crafting_outcome_icon.y = inventory_y + inventory_height + (60 if self.mode == 0 else 42)
-        self.crafting_outcome_icon.x = self.frame.x + (270 if self.mode == 0 else 222)
+        inventory_y = quick_slots_y + (42 if self.mode == 0 else 14)
+        if self.mode == 0:
+            self.crafting_outcome_icon.scale = 0.5
+            self.crafting_outcome_icon.y = inventory_y + inventory_height + 60
+            self.crafting_outcome_icon.x = self.frame.x + 270
+        elif self.mode == 1:
+            self.crafting_table_outcome_icon.scale = 0.5
+            self.crafting_table_outcome_icon.y = inventory_y + inventory_height + 80
+            self.crafting_table_outcome_icon.x = self.frame.x + 225
 
     def remove_crafting_outcome(self):
         if self.mode == 0:
@@ -563,7 +617,7 @@ class InventorySelector(object):
                 inventory_rows = floor(self.max_items / 9)
                 inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
                 quick_slots_y = self.frame.y + 4
-                inventory_y = quick_slots_y + (42 if self.mode == 0 else 11)
+                inventory_y = quick_slots_y + (42 if self.mode == 0 else 14)
                 self.selected_item_icon.y = inventory_y + inventory_height + (60 if self.mode == 0 else 42)
                 self.selected_item_icon.x = self.frame.x + (270 if self.mode == 0 else 222)
                 # cost
@@ -668,10 +722,116 @@ class InventorySelector(object):
             self.update_current()
             self.update_items()
 
-    def draw(self):
+    def _on_draw(self):
+        self.batch.draw()
+        if self.selected_item_icon:
+            self.selected_item_icon.draw()
+        if self.crafting_outcome_icon:
+            self.crafting_outcome_icon.draw()
+
+
+class TextWidget(Control):
+    """
+    Variation of this example: http://www.pyglet.org/doc/programming_guide/text_input.py
+    """
+    def __init__(self, parent, text, x, y, width, key_released=None, *args, **kwargs):
+        super(TextWidget, self).__init__(parent, *args, **kwargs)
+        self.batch = pyglet.graphics.Batch()
+        self.vertex_list = None
+        self.document = pyglet.text.document.UnformattedDocument(text)
+        self.document.set_style(0, len(self.document.text),
+                                dict(color=(0, 0, 0, 255))
+        )
+        font = self.document.get_font()
+        self.padding = 10
+        self.height = (font.ascent - font.descent) + self.padding
+        self.x, self.y, self.width = x, y + self.height, width
+
+        self.layout = pyglet.text.layout.IncrementalTextLayout(
+            self.document, self.width, self.height, multiline=False, batch=self.batch)
+        self.caret = pyglet.text.caret.Caret(self.layout)
+
+        self.layout.x = x
+        self.layout.y = y
+        self._on_resize()
+        self._key_released = key_released
+
+    def focus(self):
+        self.caret.visible = True
+        self.caret.mark = 0
+        self.caret.position = len(self.document.text)
+
+    def hit_test(self, x, y):
+        return (0 < x - self.layout.x < self.layout.width and
+                0 < y - self.layout.y < self.layout.height)
+
+    @property
+    def text(self):
+        return self.document.text
+
+    @text.setter
+    def text(self, text):
+        self.document.text = text
+
+    def _on_resize(self):
+        super(TextWidget, self)._on_resize()
+        # Check if anchor points have been set
+        if any(self._anchor_points):
+            al, at, ar, ab = self._anchor_points
+            self.width = ar
+            self.y = ab
+        # Recreate the bounding box
+        self.rectangle = Rectangle(self.x - self.padding, self.y - self.padding,
+                                   self.width + self.padding, self.height + self.padding)
+        # And reposition the text layout
+        self.layout.x = self.x + self.padding
+        self.layout.y = (self.rectangle.y + (self.rectangle.height/2) - (self.height/2))
+        self.layout.width = self.rectangle.width - self.padding
+        self.layout.height = self.rectangle.height - self.padding
+        if self.vertex_list:
+            self.vertex_list.delete()
+        self.vertex_list = self.batch.add(4, pyglet.gl.GL_QUADS, None,
+                                          ('v2i', self.rectangle.vertex_list()),
+                                          ('c4B', [200, 200, 200, 128] * 4)
+        )
+
+    def _on_draw(self):
+        self.batch.draw()
+
+    def _on_toggled(self):
+        self.parent.window.set_exclusive_mouse(not self.visible)
+
+    def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         if self.visible:
-            self.batch.draw()
-            if self.selected_item_icon:
-                self.selected_item_icon.draw()
-            if self.crafting_outcome_icon:
-                self.crafting_outcome_icon.draw()
+            self.caret.on_mouse_drag(x, y, dx, dy, buttons, modifiers)
+            return pyglet.event.EVENT_HANDLED
+
+    def on_text(self, text):
+        if self.visible:
+            self.caret.on_text(text)
+            return pyglet.event.EVENT_HANDLED
+
+    def on_text_motion(self, motion):
+        if self.visible:
+            self.caret.on_text_motion(motion)
+            return pyglet.event.EVENT_HANDLED
+
+    def on_text_motion_select(self, motion):
+        if self.visible:
+            self.caret.on_text_motion_select(motion)
+            return pyglet.event.EVENT_HANDLED
+
+    def on_key_press(self, symbol, modifier):
+        if self.visible:
+            return pyglet.event.EVENT_HANDLED
+
+    def on_key_release(self, symbol, modifier):
+        if self.visible:
+            if symbol == key.ESCAPE:
+                self.toggle()
+                self.parent.window.pop_handlers()
+            if self._key_released:
+                ret = self._key_released(self, symbol, modifier)
+                if ret:
+                    return ret
+            return pyglet.event.EVENT_HANDLED
