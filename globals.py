@@ -27,6 +27,10 @@ MOTION_BLUR = False
 
 SAVE_FILENAME = None
 
+# Tool type
+WOODEN_TOOL, STONE_TOOL, IRON_TOOL, DIAMOND_TOOL, GOLDEN_TOOL = range(5)
+PICKAXE, AXE, SHOVEL, HOE, SWORD = range(5)
+
 config = ConfigParser()
 LAUNCH_OPTIONS = argparse.Namespace()
 

@@ -2,6 +2,7 @@ from collections import deque, defaultdict
 import random
 import time
 import os
+import warnings
 
 import pyglet
 from pyglet.gl import *
@@ -117,7 +118,12 @@ class World(dict):
         super(World, self).__delitem__(position)
 
         if position in self.spreading_mutable_blocks:
-            self.spreading_mutable_blocks.remove(position)
+            try:
+                self.spreading_mutable_blocks.remove(position)
+            except ValueError:
+                warnings.warn('Block %s was unexpectedly not found in the '
+                              'spreading mutations; your save is probably '
+                              'corrupted' % repr(position))
 
     def add_block(self, position, block, sync=True, force=True):
         if position in self:
@@ -135,7 +141,13 @@ class World(dict):
         if sound and player is not None:
             self[position].play_break_sound(player, position)
         del self[position]
-        self.sectors[sectorize(position)].remove(position)
+        sector_position = sectorize(position)
+        try:
+            self.sectors[sector_position].remove(position)
+        except ValueError:
+            warnings.warn('Block %s was unexpectedly not found in sector %s;'
+                          'your save is probably corrupted'
+                          % (position, sector_position))
         if sync:
             if position in self.shown:
                 self.hide_block(position)
