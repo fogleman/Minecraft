@@ -1,6 +1,6 @@
 # Python packages
 from math import cos, sin, atan2, pi, fmod, radians
-import operator
+import os, operator
 # Third-party packages
 from pyglet.window import key
 from pyglet.text import Label
@@ -12,6 +12,7 @@ from gui import *
 from model import *
 from player import *
 from savingsystem import *
+from commands import CommandParser, UnknownCommandException
 
 
 # Define a simple function to create GLfloat arrays of floats:
@@ -230,6 +231,11 @@ class GameController(Controller):
         self.inventory_list = InventorySelector(self, self.player, self.model)
         self.item_list.on_resize(self.window.width, self.window.height)
         self.inventory_list.on_resize(self.window.width, self.window.height)
+        self.text_input = TextWidget(self, '', 0, self.window.height, 100,
+                                     visible=False,
+                                     key_released=self.text_input_callback,
+                                     anchor_style=ANCHOR_LEFT|ANCHOR_RIGHT|ANCHOR_BOTTOM)
+        self.command_parser = CommandParser()
         self.camera = Camera3D(target=self.player)
         if self.show_gui:
             self.label = pyglet.text.Label(
@@ -370,9 +376,15 @@ class GameController(Controller):
             globals.EFFECT_VOLUME = max(globals.EFFECT_VOLUME - .1, 0)
         self.last_key = symbol
 
+    def on_key_release(self, symbol, modifiers):
+        if symbol == key.T:
+            self.toggle_text_input()
+            return pyglet.event.EVENT_HANDLED
+
     def on_resize(self, width, height):
         if self.show_gui:
             self.label.y = height - 10
+        self.text_input._on_resize()
 
     def set_3d(self):
         width, height = self.window.get_size()
@@ -420,6 +432,7 @@ class GameController(Controller):
             self.draw_label()
             self.item_list.draw()
             self.inventory_list.draw()
+        self.text_input.draw()
 
     def show_cracks(self, hit_block, vertex_data):
         if self.block_damage:  # also show the cracks
@@ -460,7 +473,27 @@ class GameController(Controller):
                pyglet.clock.get_fps(), x, y, z,
                len(self.model._shown), len(self.model))
         self.label.draw()
-        
+
+    def text_input_callback(self, text_input, symbol, modifier):
+        if symbol == key.ENTER:
+            txt = text_input.text.replace(os.linesep, '')
+            try:
+                self.command_parser.execute(txt, controller=self, user=self.player, world=self.model)
+                self.toggle_text_input()
+            except UnknownCommandException, e:
+                print ("Unrecognized command: %s [%s]" % (txt, e))
+            return pyglet.event.EVENT_HANDLED
+
+    def toggle_text_input(self):
+        self.text_input.toggle()
+        if self.text_input.visible:
+            self.player.velocity = 0
+            self.player.strafe = [0, 0]
+            self.window.push_handlers(self.text_input)
+            self.text_input.focus()
+        else:
+            self.window.remove_handlers(self.text_input)
+
     def push_handlers(self):
         self.setup()
         self.window.push_handlers(self.camera)
