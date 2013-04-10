@@ -419,10 +419,10 @@ class InventorySelector(Control):
             self.icons.append(icon)
         self.update_current()
 
-        crafting_y = inventory_y + inventory_height + (42 if self.mode == 0 else 11)
+        crafting_y = inventory_y + inventory_height + (42 if self.mode == 0 else 14)
         crafting_rows = (2 if self.mode == 0 else 3)
         crafting_height = (crafting_rows * (self.icon_size * 0.5)) + (crafting_rows * 3)
-        x = self.frame.x + (165 if self.mode == 0 else 69)
+        x = self.frame.x + (165 if self.mode == 0 else 72)
         y = self.frame.y + crafting_y + crafting_height
         items = self.crafting_panel.get_items() if self.mode == 0 else self.crafting_table_panel.get_items()
         items = items[:self.crafting_panel.slot_count] if self.mode == 0 else items[:self.crafting_table_panel.slot_count]
@@ -433,8 +433,8 @@ class InventorySelector(Control):
                 # placeholder
                 crafting_ingredients[int(floor(i / (2 if self.mode == 0 else 3)))].append(air_block)
                 x += (self.icon_size * 0.5) + 3
-                if x >= (self.frame.x + (165 if self.mode == 0 else 69)) + 35 * ((2 if self.mode == 0 else 3)):
-                    x = self.frame.x + (165 if self.mode == 0 else 69)
+                if x >= (self.frame.x + (165 if self.mode == 0 else 72)) + 35 * ((2 if self.mode == 0 else 3)):
+                    x = self.frame.x + (165 if self.mode == 0 else 72)
                     y -= (self.icon_size * 0.5) + 3
                 continue
             block = item.get_object()
@@ -447,8 +447,8 @@ class InventorySelector(Control):
             item.quickslots_x = icon.x
             item.quickslots_y = icon.y
             x += (self.icon_size * 0.5) + 3
-            if x >= (self.frame.x + (165 if self.mode == 0 else 69)) + 35 * ((2 if self.mode == 0 else 3)):
-                x = self.frame.x + (165 if self.mode == 0 else 69)
+            if x >= (self.frame.x + (165 if self.mode == 0 else 72)) + 35 * ((2 if self.mode == 0 else 3)):
+                x = self.frame.x + (165 if self.mode == 0 else 72)
                 y -= (self.icon_size * 0.5) + 3
             amount_label = pyglet.text.Label(
                 str(item.amount), font_name='Arial', font_size=9,
@@ -498,8 +498,8 @@ class InventorySelector(Control):
         inventory_y = quick_slots_y + 42
         inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
         crafting_items_per_row = (2 if self.mode == 0 else 3)
-        crafting_y = inventory_y + inventory_height + (42 if self.mode == 0 else 11)
-        crafting_x = self.frame.x + (165 if self.mode == 0 else 69)
+        crafting_y = inventory_y + inventory_height + (42 if self.mode == 0 else 14)
+        crafting_x = self.frame.x + (165 if self.mode == 0 else 72)
         crafting_height = (crafting_rows * (self.icon_size * 0.5)) + (crafting_rows * 3)
         crafting_width = (crafting_items_per_row * (self.icon_size * 0.5)) + (crafting_items_per_row-1) * 3
 
@@ -566,15 +566,15 @@ class InventorySelector(Control):
         inventory_rows = floor(self.max_items / 9)
         inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
         quick_slots_y = self.frame.y + 4
-        inventory_y = quick_slots_y + (42 if self.mode == 0 else 11)
+        inventory_y = quick_slots_y + (42 if self.mode == 0 else 14)
         if self.mode == 0:
             self.crafting_outcome_icon.scale = 0.5
             self.crafting_outcome_icon.y = inventory_y + inventory_height + 60
             self.crafting_outcome_icon.x = self.frame.x + 270
         elif self.mode == 1:
             self.crafting_table_outcome_icon.scale = 0.5
-            self.crafting_table_outcome_icon.y = inventory_y + inventory_height + 84
-            self.crafting_table_outcome_icon.x = self.frame.x + 222
+            self.crafting_table_outcome_icon.y = inventory_y + inventory_height + 80
+            self.crafting_table_outcome_icon.x = self.frame.x + 225
 
     def remove_crafting_outcome(self):
         if self.mode == 0:
@@ -617,7 +617,7 @@ class InventorySelector(Control):
                 inventory_rows = floor(self.max_items / 9)
                 inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
                 quick_slots_y = self.frame.y + 4
-                inventory_y = quick_slots_y + (42 if self.mode == 0 else 11)
+                inventory_y = quick_slots_y + (42 if self.mode == 0 else 14)
                 self.selected_item_icon.y = inventory_y + inventory_height + (60 if self.mode == 0 else 42)
                 self.selected_item_icon.x = self.frame.x + (270 if self.mode == 0 else 222)
                 # cost
