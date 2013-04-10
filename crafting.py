@@ -126,48 +126,34 @@ class SmeltingRecipes(object):
 
 recipes = Recipes()
 smelting = SmeltingRecipes()
-#  stone items
+# stone items
 recipes.add_recipe(["##", "##"], {'#': stone_block},
                    ItemStack(stonebrick_block.id, amount=4))
 recipes.add_recipe(["###", "# #", "###"], {'#': cobble_block},
                    ItemStack(furnace_block.id, amount=1))
 
 # wood items
-recipes.add_recipe(["#"], {'#': oakwood_block},
-                   ItemStack(oakwoodplank_block.id, amount=4))
-recipes.add_recipe(["#"], {'#': junglewood_block},
-                   ItemStack(junglewoodplank_block.id, amount=4))
-recipes.add_recipe(["#", "#"], {'#': oakwoodplank_block},
-                   ItemStack(stick_item.id, amount=4))
-recipes.add_recipe(["#", "#"], {'#': junglewoodplank_block},
-                   ItemStack(stick_item.id, amount=4))
-recipes.add_recipe(["#", "#"], {'#': oakwoodplank_block},
-                   ItemStack(stick_item.id, amount=4))
-recipes.add_recipe(["#", "#"], {'#': sprucewoodplank_block},
-                   ItemStack(stick_item.id, amount=4))
-recipes.add_recipe(["###", "# #", "###"], {'#': oakwoodplank_block},
-                   ItemStack(chest_block.id, amount=1))
-recipes.add_recipe(["###", "# #", "###"], {'#': sprucewoodplank_block},
-                   ItemStack(chest_block.id, amount=1))
-recipes.add_recipe(["###", "# #", "###"], {'#': junglewoodplank_block},
-                   ItemStack(chest_block.id, amount=1))
+recipes.add_shapeless_recipe((oakwood_block,), 
+                    ItemStack(oakwoodplank_block.id, amount=4))
+recipes.add_shapeless_recipe((junglewood_block,), 
+                    ItemStack(junglewoodplank_block.id, amount=4))
+for wood in (oakwoodplank_block, junglewoodplank_block, sprucewoodplank_block):
+    recipes.add_recipe(["#", "#"], {'#': wood}, 
+                        ItemStack(stick_item.id, amount=4))
+    recipes.add_recipe(["###", "# #", "###"], {'#': wood},
+                        ItemStack(chest_block.id, amount=1))
+    recipes.add_recipe(["##", "##"], {'#': wood},
+                        ItemStack(craft_block.id, amount=1))
 
-recipes.add_recipe(["##", "##"], {'#': oakwoodplank_block},
-                   ItemStack(craft_block.id, amount=1))
-recipes.add_recipe(["##", "##"], {'#': sprucewoodplank_block},
-                   ItemStack(craft_block.id, amount=1))
-recipes.add_recipe(["##", "##"], {'#': junglewoodplank_block},
-                   ItemStack(craft_block.id, amount=1))
-
-#sand items
+# sand items
 recipes.add_recipe(["##", "##"], {'#': sand_block},
                    ItemStack(sandstone_block.id, amount=1))
 
-#dye items
+# dye items
 recipes.add_recipe(["#"], {'#': yflowers_block},
                    ItemStack(yellowdye_item.id, amount=4))
 
 
-#  combined items
+# combined items
 recipes.add_recipe(["#", "@"], {'#': coal_item, '@': stick_item},
                    ItemStack(torch_block.id, amount=4))
