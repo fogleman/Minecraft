@@ -163,7 +163,7 @@ class ItemSelector(Control):
         elif self.current_index < 0:
             self.current_index = self.max_items - 1
         self.update_current()
-        
+
     def get_block_icon(self, block):
         block_icon = None
         if os.path.isfile(os.path.join('resources', 'textures', 'icons', str(block.id) + ".png")) == True:
@@ -293,7 +293,7 @@ class ItemSelector(Control):
 
     def _on_draw(self):
         self.batch.draw()
-            
+
 
 class InventorySelector(Control):
     def __init__(self, parent, player, model, *args, **kwargs):
@@ -343,7 +343,7 @@ class InventorySelector(Control):
         elif self.current_index < 0:
             self.current_index = self.max_items - 1
         self.update_current()
-        
+
     def get_block_icon(self, block):
         block_icon = None
         if os.path.isfile(os.path.join('resources', 'textures', 'icons', str(block.id) + ".png")) == True:
@@ -486,7 +486,7 @@ class InventorySelector(Control):
         if reset_mode:
             self.mode = 0
         self.change_image()
-        self.parent.item_list.toggle()        
+        self.parent.item_list.toggle()
         self.parent.window.set_exclusive_mouse(self.visible)
         self.visible = not self.visible
 
@@ -558,7 +558,7 @@ class InventorySelector(Control):
 
         block = item.get_object()
         block_icon = self.get_block_icon(block)
-        self.crafting_outcome_icon = pyglet.sprite.Sprite(block_icon, batch=self.batch, group=self.group)            
+        self.crafting_outcome_icon = pyglet.sprite.Sprite(block_icon, batch=self.batch, group=self.group)
         inventory_rows = floor(self.max_items / 9)
         inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
         quick_slots_y = self.frame.y + 4
