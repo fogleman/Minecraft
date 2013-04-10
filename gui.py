@@ -720,7 +720,6 @@ class InventorySelector(Control):
         self.frame.y = self.icon_size / 2 - 4
         if self.visible:
             self.update_current()
-            self.update_health()
             self.update_items()
 
     def _on_draw(self):
