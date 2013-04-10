@@ -316,8 +316,6 @@ class InventorySelector(Control):
         self.crafting_outcome = None  # should be an item stack
         self.crafting_outcome_icon = None
         self.crafting_table_panel = Inventory(9)
-        self.crafting_table_outcome = None  # should be an item stack
-        self.crafting_table_outcome_icon = None
         #self.active = pyglet.sprite.Sprite(image.get_region(0, 0, image.height / 4, image.height / 4), batch=self.batch, group=pyglet.graphics.OrderedGroup(2))
         #self.active.opacity = 0
         self.visible = False
@@ -559,30 +557,23 @@ class InventorySelector(Control):
 
         block = item.get_object()
         block_icon = self.get_block_icon(block)
-        if self.mode == 0:
-            self.crafting_outcome_icon = pyglet.sprite.Sprite(block_icon, batch=self.batch, group=self.group)
-        elif self.mode == 1:
-            self.crafting_table_outcome_icon = pyglet.sprite.Sprite(block_icon, batch=self.batch, group=self.group)            
+        self.crafting_outcome_icon = pyglet.sprite.Sprite(block_icon, batch=self.batch, group=self.group)            
         inventory_rows = floor(self.max_items / 9)
         inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
         quick_slots_y = self.frame.y + 4
         inventory_y = quick_slots_y + (42 if self.mode == 0 else 14)
         if self.mode == 0:
             self.crafting_outcome_icon.scale = 0.5
-            self.crafting_outcome_icon.y = inventory_y + inventory_height + 60
+            self.crafting_outcome_icon.y = inventory_y + inventory_height + 62
             self.crafting_outcome_icon.x = self.frame.x + 270
         elif self.mode == 1:
-            self.crafting_table_outcome_icon.scale = 0.5
-            self.crafting_table_outcome_icon.y = inventory_y + inventory_height + 80
-            self.crafting_table_outcome_icon.x = self.frame.x + 225
+            self.crafting_outcome_icon.scale = 0.5
+            self.crafting_outcome_icon.y = inventory_y + inventory_height + 80
+            self.crafting_outcome_icon.x = self.frame.x + 225
 
     def remove_crafting_outcome(self):
-        if self.mode == 0:
-            self.crafting_outcome = None
-            self.crafting_outcome_icon = None
-        elif self.mode == 1:
-            self.crafting_table_outcome = None
-            self.crafting_table_outcome_icon = None
+        self.crafting_outcome = None
+        self.crafting_outcome_icon = None
     def set_selected_item(self, item):
         if not item:
             self.remove_selected_item()
