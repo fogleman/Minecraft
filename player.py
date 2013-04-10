@@ -19,37 +19,19 @@ class Player(Entity):
         self.strafe = [0, 0]
         self.dy = 0
         print self.game_mode
-        #  Survival gameplay, so random items.
-        if self.game_mode == 1:  # survival
 
-            initial_items = [brick_block, lamp_block, glass_block, chest_block,
-                         wood_axe, iron_pickaxe]
+
+        initial_items = [torch_item, stick_item]
 
 
 
-            for item in initial_items:
-                quantity = random.randint(2, 10)
-                if random.choice((True, False)):
-                    self.inventory.add_item(item.id, quantity)
-                #else:
-                #    self.quick_slots.add_item(item.id, quantity)
-
-
-        # creative gameplay, have all of the blocks, and 1 stack of each
-        if self.game_mode == 0:  # creative
-                initial_items = [brick_block, lamp_block, glass_block, chest_block,
-                         wood_axe, iron_pickaxe]
         for item in initial_items:
-                self.inventory.add_item(item.id, item.max_stack_size)
+            quantity = random.randint(2, 10)
+            if random.choice((True, False)):
+                self.inventory.add_item(item.id, quantity)
+            #else:
+            #    self.quick_slots.add_item(item.id, quantity)
 
-        #initial_wool_items = [blackwool_block, redwool_block, greenwool_block,
-        #brownwool_block, bluewool_block, purplewool_block, cyanwool_block,
-        #lightgreywool_block, greywool_block, pinkwool_block, limewool_block,
-        #yellowwool_block, lightbluewool_block , magentawool_block, orangewool_block, whitewool_block,
-        #craft_block]
-
-        #for item in initial_wool_items:
-                #self.inventory.add_item(item.id, item.max_stack_size)
 
         self.key_move_forward = config.getint('Controls', 'move_forward')
         self.key_move_backward = config.getint('Controls', 'move_backward')

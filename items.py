@@ -80,6 +80,11 @@ class CoalItem(Item):
     max_stack_size = 64
     name = "Coal"
 
+class LadderItem(Item):
+    id = 16
+    max_stack_size = 64
+    name = "Ladder"
+
 class DiamondItem(Item):
     id = 264
     max_stack_size = 64
@@ -193,3 +198,4 @@ iron_pickaxe = IronPickaxe()
 diamond_pickaxe = DiamondPickaxe()
 golden_pickaxe = GoldenPickaxe()
 yellowdye_item = YellowDyeItem()
+ladder_item = LadderItem()
