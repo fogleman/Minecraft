@@ -290,13 +290,13 @@ class WaterBlock(Block):
     break_sound = sounds.water_break
 
 
-class ChestBlock(WoodBlock):
+class CraftTableBlock(WoodBlock):
     top_texture = 8, 1
     bottom_texture = 1, 1
     side_texture = 8, 0
     hardness = 2.5
     id = 54
-    name = "Chest"
+    name = "Crafting Table"
 
 class MetaBlock(WoodBlock): # this is a experimental block.
     top_texture = 9, 0
@@ -424,7 +424,6 @@ class CactusBlock(Block):
     top_texture = 7, 5
     bottom_texture = 7, 3
     side_texture = 7, 4
-    transparent = True
     width = 0.8
     hardness = 2
     id = 81
@@ -597,31 +596,157 @@ class FarmBlock(Block):
         super(FarmBlock, self).__init__()
         self.drop_id = DirtBlock.id
 
-## These two branches currently not used, so that OAK is a 'bigger tree'
+class ChestBlock(Block):
+    top_texture = 8, 4
+    bottom_texture = 8, 2
+    side_texture = 8, 3
+    hardness = 2
+    id = 54
+    name = "Chest"
 
-#class JungleBranchBlock(Block):
-    #top_texture = 6, 0
-    #bottom_texture = 6, 0
-    #side_texture = 6, 0
-    #hardness = 1
-    #id = 17.1
-    #name = "Jungle wood"
 
-    #def __init__(self):
-        #super(JungleBranchBlock, self).__init__()
-        #self.drop_id = JungleWoodBlock.id
+class CactusBlock(Block):
+    top_texture = 7, 5
+    bottom_texture = 7, 3
+    side_texture = 7, 4
+    transparent = True
+    width = 0.8
+    hardness = 2
+    id = 81
+    name = "Cactus"
 
-#class BirchBranchBlock(Block):
-    #top_texture = 5, 0
-    #bottom_texture = 5, 0
-    #side_texture = 5, 0
-    #hardness = 1
-    #id = 17.2
-    #name = "Birch wood"
+# Wool blocks
 
-    #def __init__(self):
-        #super(BirchBranchBlock, self).__init__()
-        #self.drop_id = BirchWoodBlock.id
+class BlackWoolBlock(Block):
+    top_texture = 15, 0
+    bottom_texture = 15, 0
+    side_texture = 15, 0
+    hardness = 1
+    id =35.15
+    name = "Black Wool"
+
+class RedWoolBlock(Block):
+    top_texture = 15, 1
+    bottom_texture = 15, 1
+    side_texture = 15, 1
+    hardness = 1
+    id =35.14
+    name = "Red Wool"
+
+class GreenWoolBlock(Block):
+    top_texture = 15, 2
+    bottom_texture = 15, 2
+    side_texture = 15, 2
+    hardness = 1
+    id =35.13
+    name = "Green Wool"
+
+class BrownWoolBlock(Block):
+    top_texture = 15, 3
+    bottom_texture = 15, 3
+    side_texture = 15, 3
+    hardness = 1
+    id =35.12
+    name = "Brown Wool"
+
+class BlueWoolBlock(Block):
+    top_texture = 15, 4
+    bottom_texture = 15, 4
+    side_texture = 15, 4
+    hardness = 1
+    id =35.11
+    name = "Blue Wool"
+
+class PurpleWoolBlock(Block):
+    top_texture = 15, 5
+    bottom_texture = 15, 5
+    side_texture = 15, 5
+    hardness = 1
+    id =35.10
+    name = "Purple Wool"
+
+class CyanWoolBlock(Block):
+    top_texture = 15, 6
+    bottom_texture = 15, 6
+    side_texture = 15, 6
+    hardness = 1
+    id =35.9
+    name = "Cyan Wool"
+
+class LightGreyWoolBlock(Block):
+    top_texture = 15, 7
+    bottom_texture = 15, 7
+    side_texture = 15, 7
+    hardness = 1
+    id =35.8
+    name = "Light Grey Wool"
+
+class GreyWoolBlock(Block):
+    top_texture = 15, 8
+    bottom_texture = 15, 8
+    side_texture = 15, 8
+    hardness = 1
+    id =35.7
+    name = "Grey Wool"
+
+class PinkWoolBlock(Block):
+    top_texture = 15, 9
+    bottom_texture = 15, 9
+    side_texture = 15, 9
+    hardness = 1
+    id =35.6
+    name = "Pink Wool"
+
+class LimeWoolBlock(Block):
+    top_texture = 15, 10
+    bottom_texture = 15, 10
+    side_texture = 15, 10
+    width = 0.8
+    hardness = 1
+    id =35.5
+    name = "Lime Wool"
+
+class YellowWoolBlock(Block):
+    top_texture = 15, 11
+    bottom_texture = 15, 11
+    side_texture = 15, 11
+    hardness = 1
+    id =35.4
+    name = "Yellow Wool"
+
+class LightBlueWoolBlock(Block):
+    top_texture = 15, 12
+    bottom_texture = 15, 12
+    side_texture = 15, 12
+    hardness = 1
+    id =35.3
+    name = "Light Blue Wool"
+
+class MagentaWoolBlock(Block):
+    top_texture = 15, 13
+    bottom_texture = 15, 13
+    side_texture = 15, 13
+    hardness = 1
+    id =35.2
+    name = "Magenta Wool"
+
+class OrangeWoolBlock(Block):
+    top_texture = 15, 14
+    bottom_texture = 15, 14
+    side_texture = 15, 14
+    hardness = 1
+    id =35.1
+    name = "Orange Wool"
+
+class WhiteWoolBlock(Block):
+    top_texture = 15, 15
+    bottom_texture = 15, 15
+    side_texture = 15, 15
+    hardness = 1
+    id =35.0
+    name = "White Wool"
+amount_label_color = 0, 0, 0, 255
+
 
 CRACK_LEVELS = 6
 
@@ -646,7 +771,7 @@ dirt_block = DirtBlock()
 lamp_block = LampBlock()
 bed_block = BedrockBlock()
 water_block = WaterBlock()
-chest_block = ChestBlock()
+craft_block = CraftTableBlock()
 sandstone_block = SandstoneBlock()
 marble_block = MarbleBlock()
 stonebrick_block = StonebrickBlock()
@@ -682,6 +807,23 @@ yflowers_block = YFlowersBlock()
 cobblefence_block = CobbleFenceBlock()
 snow_block = SnowBlock()
 meta_block = MetaBlock()
-
+chest_block = ChestBlock()
+# wool
+blackwool_block = BlackWoolBlock()
+redwool_block = RedWoolBlock()
+greenwool_block = GreenWoolBlock()
+brownwool_block = BrownWoolBlock()
+bluewool_block = BlueWoolBlock()
+purplewool_block = PurpleWoolBlock()
+cyanwool_block = CyanWoolBlock()
+lightgreywool_block = LightGreyWoolBlock()
+greywool_block = GreyWoolBlock()
+pinkwool_block = PinkWoolBlock()
+limewool_block = LimeWoolBlock()
+yellowwool_block = YellowWoolBlock()
+lightbluewool_block = LightBlueWoolBlock()
+magentawool_block = MagentaWoolBlock()
+orangewool_block = OrangeWoolBlock()
+whitewool_block = WhiteWoolBlock()
 
 

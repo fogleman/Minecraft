@@ -93,7 +93,12 @@ class StickItem(Item):
 class YellowDyeItem(Item):
     id = 351
     max_stack_size = 64
-    name = "Dye"
+    name = "Dandelion Yellow Dye"
+
+class CactusGreenDyeItem(Item):
+    id = 351.2
+    max_stack_size = 64
+    name = "Cactus Green Dye"
 
 class Tool(Item):
     material = None
