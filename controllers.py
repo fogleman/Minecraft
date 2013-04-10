@@ -12,6 +12,7 @@ from gui import *
 from model import *
 from player import *
 from savingsystem import *
+from commands import CommandParser, UnknownCommandException
 
 
 # Define a simple function to create GLfloat arrays of floats:
@@ -230,10 +231,11 @@ class GameController(Controller):
         self.inventory_list = InventorySelector(self, self.player, self.model)
         self.item_list.on_resize(self.window.width, self.window.height)
         self.inventory_list.on_resize(self.window.width, self.window.height)
-        self.text_input = TextWidget(self, 'this is a test', 0, self.window.height, 100,
+        self.text_input = TextWidget(self, '', 0, self.window.height, 100,
                                      visible=False,
-                                     callback=self.text_input_callback,
+                                     key_released=self.text_input_callback,
                                      anchor_style=ANCHOR_LEFT|ANCHOR_RIGHT|ANCHOR_BOTTOM)
+        self.command_parser = CommandParser()
         self.camera = Camera3D(target=self.player)
         if self.show_gui:
             self.label = pyglet.text.Label(
@@ -372,9 +374,12 @@ class GameController(Controller):
             globals.EFFECT_VOLUME = min(globals.EFFECT_VOLUME + .1, 1)
         elif symbol == self.key_sound_down:
             globals.EFFECT_VOLUME = max(globals.EFFECT_VOLUME - .1, 0)
-        elif symbol == key.T:
-            self.toggle_text_input()
         self.last_key = symbol
+
+    def on_key_release(self, symbol, modifiers):
+        if symbol == key.T:
+            self.toggle_text_input()
+            return pyglet.event.EVENT_HANDLED
 
     def on_resize(self, width, height):
         if self.show_gui:
@@ -472,13 +477,14 @@ class GameController(Controller):
     def text_input_callback(self, text_input, symbol, modifier):
         if symbol == key.ENTER:
             txt = text_input.text.replace(os.linesep, '')
-            print(txt)
-            # TODO: Parse input (user commands, chat, etc.)
-            self.toggle_text_input()
+            try:
+                self.command_parser.execute(txt, controller=self, user=self.player, world=self.model)
+                self.toggle_text_input()
+            except UnknownCommandException, e:
+                print ("Unrecognized command: %s [%s]" % (txt, e))
             return pyglet.event.EVENT_HANDLED
 
     def toggle_text_input(self):
-        # TODO: Don't overwrite existing text
         self.text_input.toggle()
         if self.text_input.visible:
             self.player.velocity = 0

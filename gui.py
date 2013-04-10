@@ -724,7 +724,7 @@ class TextWidget(Control):
     """
     Variation of this example: http://www.pyglet.org/doc/programming_guide/text_input.py
     """
-    def __init__(self, parent, text, x, y, width, callback=None, *args, **kwargs):
+    def __init__(self, parent, text, x, y, width, key_released=None, *args, **kwargs):
         super(TextWidget, self).__init__(parent, *args, **kwargs)
         self.batch = pyglet.graphics.Batch()
         self.vertex_list = None
@@ -744,7 +744,7 @@ class TextWidget(Control):
         self.layout.x = x
         self.layout.y = y
         self._on_resize()
-        self._callback = callback
+        self._key_released = key_released
 
     def focus(self):
         self.caret.visible = True
@@ -820,8 +820,8 @@ class TextWidget(Control):
             if symbol == key.ESCAPE:
                 self.toggle()
                 self.parent.window.pop_handlers()
-            if self._callback:
-                ret = self._callback(self, symbol, modifier)
+            if self._key_released:
+                ret = self._key_released(self, symbol, modifier)
                 if ret:
                     return ret
             return pyglet.event.EVENT_HANDLED
