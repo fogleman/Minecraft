@@ -77,7 +77,9 @@ class GiveBlockCommand(Command):
     help_text = "give <block_id> [amount]: Give a specified amount (default of 1) of the item to the player"
 
     def execute(self, block_id, amount=1, *args, **kwargs):
-        self.user.inventory.add_item(int(block_id), quantity=int(amount))
+        #self.user.inventory.add_item(int(block_id), quantity=int(amount))
+        # not all block ID's are solid integers'
+        self.user.inventory.add_item(block_id, quantity=int(amount))
 
 
 class SetTimeCommand(Command):

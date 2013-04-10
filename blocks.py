@@ -317,15 +317,16 @@ class SandstoneBlock(HardBlock):
     name = "Sandstone"
 
 
-# FIXME: This texture is not in the original Minecraft.  Or is it quartz?
-# from ronmurphy .. this is taken, as all images are, from the sphax purebd craft. it is marble, from the tekkit pack.
-class MarbleBlock(HardBlock):
+# Changed Marble to Quartz -- It seems that Quartz is MC's answer to Tekkit's MArble.
+class QuartzBlock(HardBlock):
     top_texture = 3, 2
-    bottom_texture = 3, 2
+    bottom_texture = 9, 4
     side_texture = 3, 2
-    id = 0
-    name = "Marble"
+    id = 155.0
+    hardness = 2
+    name = "Quartz"
     amount_label_color = 0, 0, 0, 255
+    digging_tool = PICKAXE
 
 
 class StonebrickBlock(HardBlock):
@@ -747,6 +748,159 @@ class WhiteWoolBlock(Block):
     name = "White Wool"
 amount_label_color = 0, 0, 0, 255
 
+# moreplants
+class RoseBlock(Block):
+    top_texture = 0, -15
+    bottom_texture = 10, 0
+    side_texture = 10, 0
+    hardness = .08
+    id =38
+    name = "Rose"
+amount_label_color = 0, 0, 0, 255
+
+class ReedBlock(Block):
+    top_texture = 0, -15
+    bottom_texture = 10, 1
+    side_texture = 10, 1
+    hardness = 0.8
+    transparent = True
+    id =83
+    name = "Reed"
+    max_stack_size = 16
+    amount_label_color = 0, 0, 0, 255
+    def __init__(self):
+        super(ReedBlock, self).__init__()
+        self.drop_id = 338
+
+class PotatoBlock(Block):
+    top_texture = 0, -15
+    bottom_texture = 10, 3
+    side_texture = 10, 3
+    hardness = 0.8
+    transparent = True
+    id =142
+    name = "Potato"
+    max_stack_size = 16
+    amount_label_color = 0, 0, 0, 255
+    def __init__(self):
+        super(PotatoBlock, self).__init__()
+        self.drop_id = 392
+
+class CarrotBlock(Block):
+    top_texture = 0, -15
+    bottom_texture = 10, 2
+    side_texture = 10, 2
+    hardness = 0.8
+    transparent = True
+    id =141
+    name = "Carrot"
+    max_stack_size = 16
+    amount_label_color = 0, 0, 0, 255
+    def __init__(self):
+        super(CarrotBlock, self).__init__()
+        self.drop_id = 391
+
+class DiamondBlock(HardBlock):
+    top_texture = 11, 0
+    bottom_texture = 11, 0
+    side_texture = 11, 0
+    hardness = 5
+    id = 57
+    digging_tool = PICKAXE
+    name = "Diamond Block"
+
+class GoldBlock(HardBlock):
+    top_texture = 11, 1
+    bottom_texture = 11, 1
+    side_texture = 11, 1
+    hardness = 4
+    id = 41
+    digging_tool = PICKAXE
+    name = "Gold Block"
+
+class IronBlock(HardBlock):
+    top_texture = 11, 2
+    bottom_texture = 11, 2
+    side_texture = 11, 2
+    hardness = 4
+    id = 42
+    digging_tool = PICKAXE
+    name = "Iron Block"
+
+class StonebrickBlock(HardBlock):
+    top_texture = 0, 3
+    bottom_texture = 0, 3
+    side_texture = 0, 3
+    hardness = 1.5
+    id = 98.0
+    name = "Stone Bricks"
+
+class CrackedStonebrickBlock(HardBlock):
+    top_texture = 9, 2
+    bottom_texture = 9, 2
+    side_texture = 9, 2
+    hardness = 1.5
+    id = 98.1
+    name = "Cracked Stone Bricks"
+
+class MossyStonebrickBlock(HardBlock):
+    top_texture = 9, 1
+    bottom_texture = 9, 1
+    side_texture = 9, 1
+    hardness = 1.5
+    id = 98.2
+    name = "Mossy Stone Bricks"
+
+# Changed Marble to Quartz -- It seems that Quartz is MC's answer to Tekkit's MArble.
+class QuartzBlock(HardBlock):
+    top_texture = 3, 2
+    bottom_texture = 9, 4
+    side_texture = 3, 2
+    id = 155.0
+    hardness = 2
+    name = "Quartz"
+    amount_label_color = 0, 0, 0, 255
+    digging_tool = PICKAXE
+
+class ColumnQuartzBlock(HardBlock):
+    top_texture = 3, 2
+    bottom_texture = 9, 4
+    side_texture = 9, 5
+    id = 155.2
+    hardness = 2
+    name = "Column Quartz"
+    amount_label_color = 0, 0, 0, 255
+    digging_tool = PICKAXE
+
+class ChisledQuartzBlock(HardBlock):
+    top_texture = 3, 2
+    bottom_texture = 9, 4
+    side_texture = 9, 6
+    id = 155.1
+    hardness = 2
+    name = "Chisled Quartz"
+    amount_label_color = 0, 0, 0, 255
+    digging_tool = PICKAXE
+
+class IceBlock(Block):
+    top_texture = 8, 7
+    bottom_texture = 8, 7
+    side_texture = 8, 7
+    id = 79
+    hardness = 0.5
+    transparent = True
+    name = "Ice"
+    amount_label_color = 0, 0, 0, 255
+
+class MossyStoneBlock(HardBlock):
+    top_texture = 9, 3
+    bottom_texture = 9, 3
+    side_texture = 9, 3
+    hardness = 1.5
+    id = 48
+    name = "Mossy Stone"
+    digging_tool = PICKAXE
+    max_stack_size = 64
 
 CRACK_LEVELS = 10
 
@@ -773,7 +927,7 @@ bed_block = BedrockBlock()
 water_block = WaterBlock()
 craft_block = CraftTableBlock()
 sandstone_block = SandstoneBlock()
-marble_block = MarbleBlock()
+quartz_block = QuartzBlock()
 stonebrick_block = StonebrickBlock()
 oakwoodplank_block = OakWoodPlankBlock()
 junglewoodplank_block = JungleWoodPlankBlock()
@@ -825,5 +979,18 @@ lightbluewool_block = LightBlueWoolBlock()
 magentawool_block = MagentaWoolBlock()
 orangewool_block = OrangeWoolBlock()
 whitewool_block = WhiteWoolBlock()
+
+rose_block = RoseBlock()
+reed_block = ReedBlock()
+potato_block = PotatoBlock()
+carrot_block = CarrotBlock()
+diamond_block = DiamondBlock()
+gold_block = GoldBlock()
+iron_block = IronBlock()
+stonebrickcracked_block = CrackedStonebrickBlock()
+stonebrickmossy_block = MossyStonebrickBlock()
+quartzcolumn_block = ColumnQuartzBlock()
+quartzchisled_block = ChisledQuartzBlock()
+ice_block = IceBlock()
 
 

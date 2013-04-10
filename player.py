@@ -42,14 +42,14 @@ class Player(Entity):
         for item in initial_items:
                 self.inventory.add_item(item.id, item.max_stack_size)
 
-        initial_wool_items = [blackwool_block, redwool_block, greenwool_block,
-        brownwool_block, bluewool_block, purplewool_block, cyanwool_block,
-        lightgreywool_block, greywool_block, pinkwool_block, limewool_block,
-        yellowwool_block, lightbluewool_block , magentawool_block, orangewool_block, whitewool_block,
-        craft_block]
+        #initial_wool_items = [blackwool_block, redwool_block, greenwool_block,
+        #brownwool_block, bluewool_block, purplewool_block, cyanwool_block,
+        #lightgreywool_block, greywool_block, pinkwool_block, limewool_block,
+        #yellowwool_block, lightbluewool_block , magentawool_block, orangewool_block, whitewool_block,
+        #craft_block]
 
-        for item in initial_wool_items:
-                self.inventory.add_item(item.id, item.max_stack_size)
+        #for item in initial_wool_items:
+                #self.inventory.add_item(item.id, item.max_stack_size)
 
         self.key_move_forward = config.getint('Controls', 'move_forward')
         self.key_move_backward = config.getint('Controls', 'move_backward')
