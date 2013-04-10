@@ -315,6 +315,7 @@ class InventorySelector(Control):
         self.crafting_panel = Inventory(4)
         self.crafting_outcome = None  # should be an item stack
         self.crafting_outcome_icon = None
+        self.crafting_outcome_label = None
         self.crafting_table_panel = Inventory(9)
         #self.active = pyglet.sprite.Sprite(image.get_region(0, 0, image.height / 4, image.height / 4), batch=self.batch, group=pyglet.graphics.OrderedGroup(2))
         #self.active.opacity = 0
@@ -570,10 +571,16 @@ class InventorySelector(Control):
             self.crafting_outcome_icon.scale = 0.5
             self.crafting_outcome_icon.y = inventory_y + inventory_height + 80
             self.crafting_outcome_icon.x = self.frame.x + 225
+        self.crafting_outcome_label = pyglet.text.Label(
+            str(item.amount), font_name='Arial', font_size=9,
+            x= self.crafting_outcome_icon.x + 3, y= self.crafting_outcome_icon.y, anchor_x='left', anchor_y='bottom',
+            color=block.amount_label_color,
+            group=self.group)
 
     def remove_crafting_outcome(self):
         self.crafting_outcome = None
         self.crafting_outcome_icon = None
+        if self.crafting_outcome_label: self.crafting_outcome_label.delete()
     def set_selected_item(self, item):
         if not item:
             self.remove_selected_item()
@@ -719,6 +726,8 @@ class InventorySelector(Control):
             self.selected_item_icon.draw()
         if self.crafting_outcome_icon:
             self.crafting_outcome_icon.draw()
+        if self.crafting_outcome_label:
+            self.crafting_outcome_label.draw()
 
 
 class TextWidget(Control):
