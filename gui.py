@@ -627,6 +627,7 @@ class InventorySelector(Control):
                         if ingre.amount <= 0:
                             self.remove_crafting_outcome()
                 current_panel.remove_unnecessary_stacks()
+                self.update_items()
                 return pyglet.event.EVENT_HANDLED
             else:   # nothing happens
                 return pyglet.event.EVENT_HANDLED
