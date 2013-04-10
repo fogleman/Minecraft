@@ -748,7 +748,7 @@ class WhiteWoolBlock(Block):
 amount_label_color = 0, 0, 0, 255
 
 
-CRACK_LEVELS = 6
+CRACK_LEVELS = 10
 
 
 # not a real block, used to store crack texture data
@@ -757,7 +757,7 @@ class CrackTextureBlock(object):
         self.crack_level = CRACK_LEVELS
         self.texture_data = []
         for i in range(self.crack_level):
-            texture_coords = get_texture_coordinates(i, 7)
+            texture_coords = get_texture_coordinates(i, 8)
             self.texture_data.append(texture_coords * 6)
 
 crack_textures = CrackTextureBlock()
