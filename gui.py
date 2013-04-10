@@ -573,7 +573,7 @@ class InventorySelector(Control):
             self.crafting_outcome_icon.x = self.frame.x + 270
         elif self.mode == 1:
             self.crafting_table_outcome_icon.scale = 0.5
-            self.crafting_table_outcome_icon.y = inventory_y + inventory_height + 72
+            self.crafting_table_outcome_icon.y = inventory_y + inventory_height + 84
             self.crafting_table_outcome_icon.x = self.frame.x + 222
 
     def remove_crafting_outcome(self):
