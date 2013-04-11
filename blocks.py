@@ -419,19 +419,21 @@ class QuartzBlock(HardBlock):
     top_texture = 3, 2
     bottom_texture = 9, 4
     side_texture = 3, 2
+    texture_name = "quartzblock_top","quartzblock_bottom","quartzblock_side"
     id = 155.0
     hardness = 2
     name = "Quartz"
     amount_label_color = 0, 0, 0, 255
     digging_tool = globals.PICKAXE
 
-class ChisledQuartzBlock(HardBlock):
+class ChiseledQuartzBlock(HardBlock):
     top_texture = 3, 2
     bottom_texture = 9, 4
     side_texture = 9, 6
+    texture_name = "quartzblock_chiseled_top","quartzblock_chiseled_top","quartzblock_chiseled"
     id = 155.1
     hardness = 2
-    name = "Chisled Quartz"
+    name = "Chiseled Quartz"
     amount_label_color = 0, 0, 0, 255
     digging_tool = globals.PICKAXE
 
@@ -439,6 +441,7 @@ class ColumnQuartzBlock(HardBlock):
     top_texture = 3, 2
     bottom_texture = 9, 4
     side_texture = 9, 5
+    texture_name = "quartzblock_lines_top","quartzblock_lines_top","quartzblock_lines"
     id = 155.2
     hardness = 2
     name = "Column Quartz"
@@ -454,7 +457,6 @@ class QuartzBrickBlock(HardBlock):
     name = "Quartz Brick"
     amount_label_color = 0, 0, 0, 255
     digging_tool = globals.PICKAXE
-
 
 class StonebrickBlock(HardBlock):
     top_texture = 0, 3
@@ -675,6 +677,7 @@ class StoneSlabBlock(HardBlock):
     top_texture = 4, 4
     bottom_texture = 4, 4
     side_texture = 4, 4
+    texture_name = "stoneslab_top","stoneslab_top","stoneslab_side",
     hardness = 2
     id = 43
     name = "Full Stone Slab"
@@ -684,6 +687,7 @@ class ClayBlock(HardBlock):
     top_texture = 6, 4
     bottom_texture = 6, 4
     side_texture = 6, 4
+    texture_name = "clay",
     hardness = 0.6
     id = 82
     name = "Clay Block"
@@ -937,7 +941,7 @@ class CarrotBlock(Block):
     side_texture = 10, 2
     hardness = 0.0
     transparent = True
-    id =141
+    id = 141
     name = "Carrot"
     max_stack_size = 16
     amount_label_color = 0, 0, 0, 255
@@ -946,6 +950,7 @@ class DiamondBlock(HardBlock):
     top_texture = 11, 0
     bottom_texture = 11, 0
     side_texture = 11, 0
+    texture_name = "blockDiamond",
     hardness = 5
     id = 57
     digging_tool = globals.PICKAXE
@@ -955,6 +960,7 @@ class GoldBlock(HardBlock):
     top_texture = 11, 1
     bottom_texture = 11, 1
     side_texture = 11, 1
+    texture_name = "blockGold",
     hardness = 4
     id = 41
     digging_tool = globals.PICKAXE
@@ -964,6 +970,7 @@ class IronBlock(HardBlock):
     top_texture = 11, 2
     bottom_texture = 11, 2
     side_texture = 11, 2
+    texture_name = "blockIron",
     hardness = 4
     id = 42
     digging_tool = globals.PICKAXE
@@ -973,6 +980,7 @@ class StonebrickBlock(HardBlock):
     top_texture = 0, 3
     bottom_texture = 0, 3
     side_texture = 0, 3
+    texture_name = "stonebricksmooth",
     hardness = 1.5
     id = 98.0
     name = "Stone Bricks"
@@ -981,6 +989,7 @@ class CrackedStonebrickBlock(HardBlock):
     top_texture = 9, 2
     bottom_texture = 9, 2
     side_texture = 9, 2
+    texture_name = "stonebricksmooth_cracked",
     hardness = 1.5
     id = 98.1
     name = "Cracked Stone Bricks"
@@ -989,6 +998,7 @@ class MossyStonebrickBlock(HardBlock):
     top_texture = 9, 1
     bottom_texture = 9, 1
     side_texture = 9, 1
+    texture_name = "stonebricksmooth_mossy",
     hardness = 1.5
     id = 98.2
     name = "Mossy Stone Bricks"
@@ -997,19 +1007,21 @@ class IceBlock(Block):
     top_texture = 8, 7
     bottom_texture = 8, 7
     side_texture = 8, 7
+    texture_name = "ice",
     id = 79
     hardness = 0.5
     transparent = True
     name = "Ice"
     amount_label_color = 0, 0, 0, 255
 
-class MossyStoneBlock(HardBlock):
+class MossyCobbleBlock(HardBlock):
     top_texture = 9, 3
     bottom_texture = 9, 3
     side_texture = 9, 3
+    texture_name = "stoneMoss",
     hardness = 1.5
     id = 48
-    name = "Mossy Stone"
+    name = "Mossy Cobblestone"
     digging_tool = globals.PICKAXE
     max_stack_size = 64
 
@@ -1060,6 +1072,7 @@ melon_block = MelonBlock()
 stoneslab_block = StoneSlabBlock()
 clay_block = ClayBlock()
 cobble_block = CobbleBlock()
+mossycobble_block = MossyCobbleBlock()
 bookshelf_block = BookshelfBlock()
 furnace_block = FurnaceBlock()
 farm_block = FarmBlock()
@@ -1100,7 +1113,7 @@ iron_block = IronBlock()
 stonebrickcracked_block = CrackedStonebrickBlock()
 stonebrickmossy_block = MossyStonebrickBlock()
 quartzcolumn_block = ColumnQuartzBlock()
-quartzchisled_block = ChisledQuartzBlock()
+quartzchiseled_block = ChiseledQuartzBlock()
 quartzbrick_block = QuartzBrickBlock()
 ice_block = IceBlock()
 emeraldore_block = EmeraldOreBlock()
