@@ -4,10 +4,10 @@ import os, operator
 # Third-party packages
 from pyglet.window import key
 from pyglet.text import Label
+from pyglet.gl import *
 # Modules from this project
 from cameras import *
 import globals
-from globals import *
 from gui import *
 from model import *
 from player import *
@@ -68,7 +68,7 @@ class MainMenuController(Controller):
         self.start_game = Button(0, 0, 160, 50, image=button_image, caption="Start game", batch=self.batch, group=self.group, label_group=self.labels_group, on_click=self.start_game_func, font_name='ChunkFive Roman')
         self.exit_game = Button(0, 0, 160, 50, image=button_image, caption="Exit game", batch=self.batch, group=self.group, label_group=self.labels_group, on_click=self.exit_game_func, font_name='ChunkFive Roman')
         self.buttons = [self.start_game, self.exit_game]
-        self.label = Label(APP_NAME, font_name='ChunkFive Roman', font_size=50, x=window.width/2, y=self.frame.y + self.frame.height,
+        self.label = Label(globals.APP_NAME, font_name='ChunkFive Roman', font_size=50, x=window.width/2, y=self.frame.y + self.frame.height,
             anchor_x='center', anchor_y='top', color=(255, 255, 255, 255), batch=self.batch,
             group=self.labels_group)
         
@@ -136,12 +136,12 @@ class GameController(Controller):
         self.block_damage = 0
         self.crack = None
         self.mouse_pressed = False
-        self.show_fog = config.getboolean('World', 'show_fog')
+        self.show_fog = globals.config.getboolean('World', 'show_fog')
         self.last_key = None
         self.sorted = False
-        self.key_inventory = config.getint('Controls', 'inventory')
-        self.key_sound_up = config.getint('Controls', 'sound_up')
-        self.key_sound_down = config.getint('Controls', 'sound_down')
+        self.key_inventory = globals.config.getint('Controls', 'inventory')
+        self.key_sound_up = globals.config.getint('Controls', 'sound_up')
+        self.key_sound_down = globals.config.getint('Controls', 'sound_down')
 
     def update(self, dt):
         sector = sectorize(self.player.position)
@@ -209,7 +209,7 @@ class GameController(Controller):
             glFogi(GL_FOG_MODE, GL_LINEAR)
             glFogf(GL_FOG_DENSITY, 0.35)
             glFogf(GL_FOG_START, 20.0)
-            glFogf(GL_FOG_END, DRAW_DISTANCE) # 80)
+            glFogf(GL_FOG_END, globals.DRAW_DISTANCE)  # 80)
             
         self.window.set_exclusive_mouse(True)
         self.focus_block = Block(width=1.05, height=1.05)
@@ -218,15 +218,14 @@ class GameController(Controller):
         self.ambient = vec(1.0, 1.0, 1.0, 1.0)
         self.polished = GLfloat(100.0)
         self.crack_batch = pyglet.graphics.Batch()
-        if DISABLE_SAVE and world_exists(game_dir, SAVE_FILENAME):
-            open_world(self, game_dir, SAVE_FILENAME)
+        if globals.DISABLE_SAVE \
+                and world_exists(globals.game_dir, globals.SAVE_FILENAME):
+            open_world(self, globals.game_dir, globals.SAVE_FILENAME)
         else:
             self.model = Model()
-            self.player = Player((0, 0, 0), (-20, 0), game_mode=GAMEMODE)
-        if self.player.game_mode == 0:
-            print('Game mode: Creative')
-        if self.player.game_mode == 1:
-            print('Game mode: Survival')
+            self.player = Player((0, 0, 0), (-20, 0),
+                                 game_mode=globals.GAME_MODE)
+        print('Game mode: ' + self.player.game_mode)
         self.item_list = ItemSelector(self, self.player, self.model)
         self.inventory_list = InventorySelector(self, self.player, self.model)
         self.item_list.on_resize(self.window.width, self.window.height)
@@ -241,7 +240,8 @@ class GameController(Controller):
             self.label = pyglet.text.Label(
                 '', font_name='Arial', font_size=8, x=10, y=self.window.height - 10,
                 anchor_x='left', anchor_y='top', color=(255, 255, 255, 255))
-        pyglet.clock.schedule_interval_soft(self.model.process_queue, 1.0 / MAX_FPS)
+        pyglet.clock.schedule_interval_soft(self.model.process_queue,
+                                            1.0 / globals.MAX_FPS)
 
     def update_time(self):
         """
@@ -258,12 +258,12 @@ class GameController(Controller):
             else 24.0 - self.time_of_day
 
         if time_of_day <= 2.5:
-            self.time_of_day += 1.0 / TIME_RATE
-            time_of_day += 1.0 / TIME_RATE
+            self.time_of_day += 1.0 / globals.TIME_RATE
+            time_of_day += 1.0 / globals.TIME_RATE
             self.count += 1
         else:
-            self.time_of_day += 20.0 / TIME_RATE
-            time_of_day += 20.0 / TIME_RATE
+            self.time_of_day += 20.0 / globals.TIME_RATE
+            time_of_day += 20.0 / globals.TIME_RATE
             self.count += 1.0 / 20.0
         if self.time_of_day > 24.0:
             self.time_of_day = 0.0
@@ -271,8 +271,10 @@ class GameController(Controller):
 
         side = len(self.model.sectors) * 2.0
 
-        self.light_y = 2.0 * side * sin(time_of_day * self.hour_deg * DEG_RAD)
-        self.light_z = 2.0 * side * cos(time_of_day * self.hour_deg * DEG_RAD)
+        self.light_y = 2.0 * side * sin(time_of_day * self.hour_deg
+                                        * globals.DEG_RAD)
+        self.light_z = 2.0 * side * cos(time_of_day * self.hour_deg
+                                        * globals.DEG_RAD)
         if time_of_day <= 2.5:
             ambient_value = 1.0
         else:
@@ -285,7 +287,7 @@ class GameController(Controller):
         self.bg_green = 0.9 * sin_t
         self.bg_blue = min(sin_t + 0.4, 0.8)
 
-        if fmod(self.count / 2, TIME_RATE) == 0:
+        if fmod(self.count / 2, globals.TIME_RATE) == 0:
             if self.clock == 18:
                 self.clock = 6
             else:
@@ -299,8 +301,8 @@ class GameController(Controller):
         self.crack = None
 
     def save_to_file(self):
-        if DISABLE_SAVE:
-            save_world(self, game_dir, SAVE_FILENAME)
+        if globals.DISABLE_SAVE:
+            save_world(self, globals.game_dir, globals.SAVE_FILENAME)
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.window.exclusive:
@@ -401,11 +403,9 @@ class GameController(Controller):
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        if width != float(height):
-            gluPerspective(FOV, width / float(height), NEAR_CLIP_DISTANCE,
-                           FAR_CLIP_DISTANCE)
-        else:
-            gluPerspective(FOV, 1, NEAR_CLIP_DISTANCE, FAR_CLIP_DISTANCE)
+        gluPerspective(globals.FOV, width / float(height),
+                       globals.NEAR_CLIP_DISTANCE,
+                       globals.FAR_CLIP_DISTANCE)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         self.camera.transform()

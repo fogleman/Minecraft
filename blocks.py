@@ -1,13 +1,18 @@
 # coding: utf-8
 
+# Future imports
 from __future__ import unicode_literals
-from globals import *
-import sounds
+# Python packages
+import os
+# Third-party packages
 from pyglet.gl import *
 from pyglet.image.atlas import TextureAtlas
+# Modules from this project
+import globals
+import sounds
 
 
-def get_texture_coordinates(x, y, tileset_size=TILESET_SIZE):
+def get_texture_coordinates(x, y, tileset_size=globals.TILESET_SIZE):
     if x == -1 and y == -1:
         return ()
     m = 1.0 / tileset_size
@@ -153,7 +158,7 @@ class AirBlock(Block):
 
 class WoodBlock(Block):
     break_sound = sounds.wood_break
-    digging_tool = AXE
+    digging_tool = globals.AXE
 
 
 class HardBlock(Block):
@@ -167,7 +172,7 @@ class StoneBlock(HardBlock):
     hardness = 1.5
     id = 1
     name = "Stone"
-    digging_tool = PICKAXE
+    digging_tool = globals.PICKAXE
 
     def __init__(self):
         super(StoneBlock, self).__init__()
@@ -183,7 +188,7 @@ class GrassBlock(Block):
     id = 2
     break_sound = sounds.dirt_break
     name = 'Grass'
-    digging_tool = SHOVEL
+    digging_tool = globals.SHOVEL
 
     def __init__(self):
         super(GrassBlock, self).__init__()
@@ -198,7 +203,7 @@ class DirtBlock(Block):
     hardness = 0.5
     id = 3
     name = "Dirt"
-    digging_tool = SHOVEL
+    digging_tool = globals.SHOVEL
     break_sound = sounds.dirt_break
 
 class SnowBlock(Block):
@@ -221,7 +226,7 @@ class SandBlock(Block):
     amount_label_color = 0, 0, 0, 255
     id = 12
     name = "Sand"
-    digging_tool = SHOVEL
+    digging_tool = globals.SHOVEL
     break_sound = sounds.sand_break
 
 
@@ -232,7 +237,7 @@ class GoldOreBlock(HardBlock):
     texture_name = "oreGold",
     hardness = 3
     id = 14
-    digging_tool = PICKAXE
+    digging_tool = globals.PICKAXE
     name = "Gold Ore"
 
 
@@ -243,7 +248,7 @@ class IronOreBlock(HardBlock):
     texture_name = "oreIron",
     hardness = 3
     id = 15
-    digging_tool = PICKAXE
+    digging_tool = globals.PICKAXE
     name = "Iron Ore"
 
 
@@ -254,7 +259,7 @@ class DiamondOreBlock(HardBlock):
     texture_name = "oreDiamond",
     hardness = 3
     id = 56
-    digging_tool = PICKAXE
+    digging_tool = globals.PICKAXE
     def __init__(self):
         super(DiamondOreBlock, self).__init__()
         self.drop_id = 264
@@ -268,7 +273,7 @@ class CoalOreBlock(HardBlock):
     texture_name = "oreCoal",
     hardness = 3
     id = 16
-    digging_tool = PICKAXE
+    digging_tool = globals.PICKAXE
     def __init__(self):
         super(CoalOreBlock, self).__init__()
         self.drop_id = 263
@@ -282,7 +287,7 @@ class BrickBlock(HardBlock):
     texture_name = "brick",
     hardness = 2
     id = 45
-    digging_tool = PICKAXE
+    digging_tool = globals.PICKAXE
     name = "Bricks"
 
 
@@ -319,7 +324,7 @@ class GravelBlock(Block):
     amount_label_color = 0, 0, 0, 255
     id = 13
     name = "Gravel"
-    digging_tool = SHOVEL
+    digging_tool = globals.SHOVEL
     break_sound = sounds.gravel_break
 
 
@@ -402,7 +407,7 @@ class QuartzBlock(HardBlock):
     hardness = 2
     name = "Quartz"
     amount_label_color = 0, 0, 0, 255
-    digging_tool = PICKAXE
+    digging_tool = globals.PICKAXE
 
 
 class StonebrickBlock(HardBlock):
@@ -898,7 +903,7 @@ class DiamondBlock(HardBlock):
     side_texture = 11, 0
     hardness = 5
     id = 57
-    digging_tool = PICKAXE
+    digging_tool = globals.PICKAXE
     name = "Diamond Block"
 
 class GoldBlock(HardBlock):
@@ -907,7 +912,7 @@ class GoldBlock(HardBlock):
     side_texture = 11, 1
     hardness = 4
     id = 41
-    digging_tool = PICKAXE
+    digging_tool = globals.PICKAXE
     name = "Gold Block"
 
 class IronBlock(HardBlock):
@@ -916,7 +921,7 @@ class IronBlock(HardBlock):
     side_texture = 11, 2
     hardness = 4
     id = 42
-    digging_tool = PICKAXE
+    digging_tool = globals.PICKAXE
     name = "Iron Block"
 
 class StonebrickBlock(HardBlock):
@@ -952,7 +957,7 @@ class QuartzBlock(HardBlock):
     hardness = 2
     name = "Quartz"
     amount_label_color = 0, 0, 0, 255
-    digging_tool = PICKAXE
+    digging_tool = globals.PICKAXE
 
 class ColumnQuartzBlock(HardBlock):
     top_texture = 3, 2
@@ -962,7 +967,7 @@ class ColumnQuartzBlock(HardBlock):
     hardness = 2
     name = "Column Quartz"
     amount_label_color = 0, 0, 0, 255
-    digging_tool = PICKAXE
+    digging_tool = globals.PICKAXE
 
 class ChisledQuartzBlock(HardBlock):
     top_texture = 3, 2
@@ -972,7 +977,7 @@ class ChisledQuartzBlock(HardBlock):
     hardness = 2
     name = "Chisled Quartz"
     amount_label_color = 0, 0, 0, 255
-    digging_tool = PICKAXE
+    digging_tool = globals.PICKAXE
 
 class IceBlock(Block):
     top_texture = 8, 7
@@ -991,7 +996,7 @@ class MossyStoneBlock(HardBlock):
     hardness = 1.5
     id = 48
     name = "Mossy Stone"
-    digging_tool = PICKAXE
+    digging_tool = globals.PICKAXE
     max_stack_size = 64
 
 CRACK_LEVELS = 10

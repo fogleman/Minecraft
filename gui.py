@@ -8,7 +8,7 @@ from pyglet.window import key
 
 from blocks import *
 from crafting import *
-from globals import *
+import globals
 from inventory import *
 from items import *
 
@@ -127,7 +127,7 @@ class ItemSelector(Control):
         self.player = player
         self.max_items = 9
         self.current_index = 0
-        self.icon_size = self.model.group.texture.width / TILESET_SIZE
+        self.icon_size = self.model.group.texture.width / globals.TILESET_SIZE
         self.visible = True
         self.num_keys = [
             key._1, key._2, key._3, key._4, key._5,
@@ -170,8 +170,8 @@ class ItemSelector(Control):
             block_icon = pyglet.image.load(os.path.join('resources', 'textures', 'icons', str(block.id) + ".png"))
         else:
             block_icon = self.model.group.texture.get_region(
-                int(block.side_texture[0] * TILESET_SIZE) * self.icon_size,
-                int(block.side_texture[1] * TILESET_SIZE) * self.icon_size, self.icon_size,
+                int(block.side_texture[0] * globals.TILESET_SIZE) * self.icon_size,
+                int(block.side_texture[1] * globals.TILESET_SIZE) * self.icon_size, self.icon_size,
                 self.icon_size)
         return block_icon
 
@@ -307,7 +307,7 @@ class InventorySelector(Control):
         self.player = player
         self.max_items = self.player.inventory.slot_count
         self.current_index = 1
-        self.icon_size = self.model.group.texture.width / TILESET_SIZE
+        self.icon_size = self.model.group.texture.width / globals.TILESET_SIZE
         self.selected_item = None
         self.selected_item_icon = None
         self.mode = 0 # 0 - Normal inventory, 1 - Crafting Table
@@ -345,13 +345,12 @@ class InventorySelector(Control):
         self.update_current()
 
     def get_block_icon(self, block):
-        block_icon = None
         if os.path.isfile(os.path.join('resources', 'textures', 'icons', str(block.id) + ".png")) == True:
             block_icon = pyglet.image.load(os.path.join('resources', 'textures', 'icons', str(block.id) + ".png"))
         else:
             block_icon = self.model.group.texture.get_region(
-                int(block.side_texture[0] * TILESET_SIZE) * self.icon_size,
-                int(block.side_texture[1] * TILESET_SIZE) * self.icon_size, self.icon_size,
+                int(block.side_texture[0] * globals.TILESET_SIZE) * self.icon_size,
+                int(block.side_texture[1] * globals.TILESET_SIZE) * self.icon_size, self.icon_size,
                 self.icon_size)
         return block_icon
 
