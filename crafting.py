@@ -172,6 +172,18 @@ for material, toolset in [(diamond_item, [diamond_pickaxe, diamond_axe, diamond_
     recipes.add_recipe([" # ", " @ ", " @ "], {'#': material, '@': stick_item},
                     ItemStack(toolset[-1].id, amount=1))
 
+# armors
+for material, armors in [(iron_ingot_item, [iron_helmet, iron_chestplate, iron_leggings, iron_boots])]:
+
+    recipes.add_recipe(["###", "# #"], {'#': material},
+                   ItemStack(armors[0].id, amount=1))
+    recipes.add_recipe(["# #", "###", "###"], {'#': material},
+                   ItemStack(armors[1].id, amount=1))
+    recipes.add_recipe(["###", "# #", "# #"], {'#': material},
+                    ItemStack(armors[2].id, amount=1))
+    recipes.add_recipe(["# #", "# #"], {'#': material},
+                    ItemStack(armors[-1].id, amount=1))
+
 #sand items
 
 recipes.add_shapeless_recipe((oakwood_block,),

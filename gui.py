@@ -417,7 +417,7 @@ class InventorySelector(Control):
             self.amount_labels.append(amount_label)
             self.icons.append(icon)
 
-        items = self.player.armors.get_items()
+        items = self.player.armor.get_items()
         items = items[:4]
         x = self.frame.x + 7
         y = inventory_y + inventory_height + 10 + 4 * self.icon_size * 0.5 + 9
@@ -525,17 +525,17 @@ class InventorySelector(Control):
         crafting_height = (crafting_rows * (self.icon_size * 0.5)) + (crafting_rows * 3)
         crafting_width = (crafting_items_per_row * (self.icon_size * 0.5)) + (crafting_items_per_row-1) * 3
 
-        armors_y = inventory_y + inventory_height + 10
-        armors_x = self.frame.x + 7
-        armors_height = 4 * (self.icon_size * 0.5 + 3)
-        armors_width = self.icon_size * 0.5
+        armor_y = inventory_y + inventory_height + 10
+        armor_x = self.frame.x + 7
+        armor_height = 4 * (self.icon_size * 0.5 + 3)
+        armor_width = self.icon_size * 0.5
 
         crafting_outcome_y = inventory_y + inventory_height + (60 if self.mode == 0 else 42)
         crafting_outcome_x = self.frame.x + (270 if self.mode == 0 else 222)
         crafting_outcome_width = crafting_outcome_height = self.icon_size * 0.5
         # out of bound
 
-        if (x <= self.frame.x + 7) or (x >= (self.frame.x + self.frame.width) - 7) or (y <= quick_slots_y) or y >= (armors_y + armors_height):
+        if (x <= self.frame.x + 7) or (x >= (self.frame.x + self.frame.width) - 7) or (y <= quick_slots_y) or y >= (armor_y + armor_height):
             return -1, -1
 
         x_offset = x - (self.frame.x + 7)
@@ -569,12 +569,12 @@ class InventorySelector(Control):
             crafting_outcome_x <= x <= crafting_outcome_x + crafting_outcome_width:
             #print('Crafting outcome!')
             return 0, 256   # 256 for crafting outcome
-        elif armors_y <= y <= armors_y + armors_height and \
-            armors_x <= x <= armors_x + armors_width:
+        elif armor_y <= y <= armor_y + armor_height and \
+            armor_x <= x <= armor_x + armor_width:
             items_per_row = 1
-            row = floor((armors_y + armors_height - y) // (self.icon_size * 0.5))
+            row = floor((armor_y + armor_height - y) // (self.icon_size * 0.5))
             x_offset = 0
-            inventory = self.player.armors
+            inventory = self.player.armor
         else:
             return -1, -1
 

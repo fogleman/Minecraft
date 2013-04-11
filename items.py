@@ -229,6 +229,42 @@ class GoldenShovel(Tool):
     id = 284
     name = "Golden Shovel"
 
+class Armor(Item):
+    material = None
+    defense_point = 0
+    armor_type = None
+
+    def __init__(self):
+        super(Armor, self).__init__()
+
+class IronHelmet(Armor):
+    material = IRON_TOOL
+    defense_point = 1
+    armor_type = HELMET
+    id = 306
+    name = "Iron Helmet"
+
+class IronChestplate(Armor):
+    material = IRON_TOOL
+    defense_point = 3
+    armor_type = CHESTPLATE
+    id = 307
+    name = "Iron Chestplate"
+
+class IronLeggings(Armor):
+    material = IRON_TOOL
+    defense_point = 2.5
+    armor_type = LEGGINGS
+    id = 308
+    name = "Iron Leggings"
+
+class IronBoots(Armor):
+    material = IRON_TOOL
+    defense_point = 1
+    armor_type = BOOTS
+    id = 309
+    name = "Iron Boots"
+
 coal_item = CoalItem()
 diamond_item = DiamondItem()
 stick_item = StickItem()
@@ -249,5 +285,9 @@ stone_shovel = StoneShovel()
 iron_shovel = IronShovel()
 diamond_shovel = DiamondShovel()
 golden_shovel = GoldenShovel()
+iron_helmet = IronHelmet()
+iron_chestplate = IronChestplate()
+iron_leggings = IronLeggings()
+iron_boots = IronBoots()
 yellowdye_item = YellowDyeItem()
 ladder_item = LadderItem()
