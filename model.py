@@ -19,7 +19,7 @@ class Model(World):
 
     def initialize(self):
         world_size = globals.config.getint('World', 'size')
-        world_type = globals.config.getint('World', 'type')
+        world_type = globals.config.get('World', 'type')
         hill_height = globals.config.getint('World', 'hill_height')
         flat_world = globals.config.getboolean('World', 'flat')
         self.max_trees = globals.config.getint('World', 'max_trees')
@@ -29,58 +29,28 @@ class Model(World):
         s = 1
         y = 0
 
-        worldtypes_grounds = (
-            dirt_block,
-            dirt_block,
-            (sand_block,) * 15 + (sandstone_block,) * 4,
-            (water_block,) * 30 + (clay_block,) * 4,
-            dirt_block,
-            (dirt_block,) * 15 + (dirt_block,) * 3 + (stone_block,),
-            (snowgrass_block,) * 10 + (snow_block,) * 4 + (ice_block,) * 8,
-        )
+        worldtypes_grounds = {
+            'plains': dirt_block,
+            'desert': (sand_block,) * 15 + (sandstone_block,) * 4,
+            'island': (water_block,) * 30 + (clay_block,) * 4,
+            'mountains': (dirt_block,) * 15 + (dirt_block,) * 3 + (stone_block,),
+            'snow': (snowgrass_block,) * 10 + (snow_block,) * 4 + (ice_block,) * 8,
+        }
 
-        world_type_trees = (
-            (OakTree, BirchTree, WaterMelon, Pumpkin, YFlowers, Potato),
-            (OakTree, WaterMelon, YFlowers, Rose, Carrot),
-            (Cactus, TallCactus, Rose),
-            (OakTree, JungleTree, BirchTree, Cactus, TallCactus, WaterMelon, YFlowers, Reed),
-            (Cactus, BirchTree, TallCactus, YFlowers, Reed, Carrot),
-            (OakTree, BirchTree, Pumpkin, YFlowers, Potato, Carrot),
-            (OakTree, BirchTree, WaterMelon, YFlowers, Potato, Rose,),
-        )
+        world_type_trees = {
+            'plains': (OakTree, BirchTree, WaterMelon, Pumpkin, YFlowers, Potato),
+            'desert': (Cactus, TallCactus, Rose),
+            'island': (OakTree, JungleTree, BirchTree, Cactus, TallCactus, WaterMelon, YFlowers, Reed),
+            'mountains': (OakTree, BirchTree, Pumpkin, YFlowers, Potato, Carrot),
+            'snow': (OakTree, BirchTree, WaterMelon, YFlowers, Potato, Rose,),
+        }
 
-        ore_type_blocks = (
-            stone_block, stone_block, stone_block, stone_block, stone_block,
-            stone_block, stone_block, stone_block, stone_block, stone_block,
-            stone_block, stone_block, stone_block, stone_block, stone_block,
-            stone_block, stone_block, stone_block, stone_block, stone_block,
-            stone_block, stone_block, stone_block, stone_block, stone_block,
-            stone_block, stone_block, stone_block, stone_block, stone_block,
-            stone_block, stone_block, stone_block, stone_block, stone_block,
-            stone_block, stone_block, stone_block, stone_block, stone_block,
-            stone_block, stone_block, stone_block, stone_block, stone_block,
-            stone_block, stone_block, stone_block, stone_block, stone_block,
-            stone_block, stone_block, stone_block, stone_block, stone_block,
-            stone_block, stone_block, stone_block, stone_block, stone_block,
-            gravel_block, gravel_block, gravel_block, gravel_block, gravel_block,
-            gravel_block, gravel_block, gravel_block, gravel_block, gravel_block,
-            coalore_block, coalore_block, coalore_block, coalore_block, coalore_block,
-            ironore_block, ironore_block, ironore_block, ironore_block,
-            goldore_block, goldore_block, goldore_block,
-            diamondore_block, diamondore_block,
-            emeraldore_block, emeraldore_block,
-            rubyore_block, rubyore_block,
-            sapphireore_block, sapphireore_block,
-            lapisore_block, lapisore_block,
-            quartz_block, quartz_block, quartz_block,
-            stone_block, stone_block, stone_block, stone_block, stone_block,
-            stone_block, stone_block, stone_block, stone_block, stone_block,
-            stone_block, stone_block, stone_block, stone_block, stone_block,
-        )
-
-        #ore_type_blocks = (
-            #(stone_block,) * 50 + (gravel_block,) * 10 + (coalore_block,) * 5 + (ironore_block,) * 4 + (goldore_block,) * 3 + (diamondore_block,) + (stone_block,) * 15,
-        #)
+        ore_type_blocks = (stone_block,) * 75 + (gravel_block,) * 10 \
+            + (coalore_block,) * 5 + (ironore_block,) * 5 \
+            + (goldore_block,) * 3 + (diamondore_block,) * 2 \
+            + (emeraldore_block,) * 2 + (rubyore_block,) * 2 \
+            + (sapphireore_block,) * 2 + (lapisore_block,) * 8 \
+            + (quartz_block,) * 3
 
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
@@ -90,8 +60,6 @@ class Model(World):
                     for dy in xrange(-16, 10):  # was -2 ,6
                         self.init_block((x, y + dy, z), stone_block)
                     continue
-
-
 
                 # Generation of the ground
 
@@ -122,15 +90,13 @@ class Model(World):
 
         o = n - 10 + hill_height - 6
 
-        world_type_blocks = (
-            dirt_block,
-            (dirt_block, sandstone_block),
-            sand_block,
-            (dirt_block, sand_block),
-            (dirt_block,) * 2 + (sand_block,),
-            stone_block,
-            snowgrass_block,
-        )
+        world_type_blocks = {
+            'plains': dirt_block,
+            'desert': sand_block,
+            'island': (dirt_block, sand_block),
+            'mountains': stone_block,
+            'snow': snowgrass_block,
+        }
 
         # Hills generation
         # FIXME: This generation in two phases (ground then hills), leads to

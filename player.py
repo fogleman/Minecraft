@@ -77,7 +77,7 @@ class Player(Entity):
         elif symbol == key.LSHIFT or symbol == key.RSHIFT:
             if self.flying:
                 self.dy = -0.045  # inversed jump speed
-        elif symbol == key.TAB and self.game_mode == 'creative':
+        elif symbol == key.TAB and self.game_mode == globals.CREATIVE_MODE:
             self.dy = 0
             self.flying = not self.flying
 
@@ -160,7 +160,7 @@ class Player(Entity):
                     p[i] -= (d - pad) * face[i]
                     if face == (0, -1, 0) or face == (0, 1, 0):
                         # jump damage
-                        if self.game_mode == 'survival':
+                        if self.game_mode == globals.SURVIVAL_MODE:
                             damage = self.dy * -1000.0
                             damage = 3.0 * damage / 22.0
                             damage -= 2.0

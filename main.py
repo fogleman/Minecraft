@@ -19,24 +19,20 @@ import globals
 from savingsystem import *
 from controllers import *
 
-terrain_options = {
-    'plains': ('0', '2', '700'),  # type, hill_height, max_trees
-    'mountains': ('5', '12', '4000'),
-    'desert': ('2', '5', '50'),
-    'island': ('3', '8', '700'),
-    'snow': ('6', '4', '1500')
-}
 
 config_file = os.path.join(globals.game_dir, 'game.cfg')
 if not os.path.lexists(config_file):
-    type, hill_height, max_trees = terrain_options['plains']
     globals.config.add_section('World')
-    globals.config.set('World', 'type', str(type))  # 0=plains,1=dirt,2=desert,3=islands,4=sand,5=stone,6=snow
-    globals.config.set('World', 'hill_height', str(hill_height))  # height of the hills
+
+    world_type = globals.DEFAULT_TERRAIN_CHOICE  # FIXME: Unify names!
+    globals.config.set('World', 'type', world_type)
+    terrain = globals.TERRAIN_CHOICES[world_type]
+    for k, v in terrain.items():
+        globals.config.set('World', k, v)
+
     globals.config.set('World', 'flat', 'false')  # dont make mountains, make a flat world
     globals.config.set('World', 'size', '64')
     globals.config.set('World', 'show_fog', 'true')
-    globals.config.set('World', 'max_trees', str(max_trees))
 
     globals.config.add_section('Controls')
     globals.config.set('Controls', 'move_forward', str(key.W))
@@ -119,16 +115,15 @@ def main(options):
     for name, val in options._get_kwargs():
         setattr(globals.LAUNCH_OPTIONS, name, val)
 
-    if options.draw_distance == 'medium':
-        globals.DRAW_DISTANCE = 60.0 * 1.5
-    elif options.draw_distance == 'long':
-        globals.DRAW_DISTANCE = 60.0 * 2.0
+    if options.draw_distance:
+        globals.DRAW_DISTANCE = globals.DRAW_DISTANCE_CHOICES[options.draw_distance]
 
     if options.terrain:
-        type, hill_height, max_trees = terrain_options[options.terrain]
-        globals.config.set('World', 'type', type)
-        globals.config.set('World', 'hill_height', hill_height)
-        globals.config.set('World', 'max_trees', max_trees)
+        world_type = options.terrain  # FIXME: Unify names!
+        globals.config.set('World', 'type', world_type)
+        terrain = globals.TERRAIN_CHOICES[world_type]
+        for k, v in terrain.items():
+            globals.config.set('World', k, v)
 
     if options.flat:
         globals.config.set('World', 'flat', 'true')
@@ -177,26 +172,26 @@ def main(options):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Play a Python made Minecraft clone.')
-    
+
     display_group = parser.add_argument_group('Display options')
-    display_group.add_argument("--width", type=int, default=850, help="Set the window width.")
-    display_group.add_argument("--height", type=int, default=480, help="Set the window height.")
+    display_group.add_argument("--width", type=int, default=globals.WINDOW_WIDTH, help="Set the window width.")
+    display_group.add_argument("--height", type=int, default=globals.WINDOW_HEIGHT, help="Set the window height.")
     display_group.add_argument("--show-gui", action="store_true", default=True, help="Enabled by default.")
-    display_group.add_argument("--draw-distance", choices=['short', 'medium', 'long'], default='short', help=" How far to draw the map. Choose short, medium or long.")
+    display_group.add_argument("--draw-distance", choices=globals.DRAW_DISTANCE_CHOICES, default=globals.DEFAULT_DRAW_DISTANCE_CHOICE, help="How far to draw the map.")
     display_group.add_argument("--fullscreen", action="store_true", default=False, help="Runs the game in fullscreen. Press 'Q' to exit the game.")
     
     game_group = parser.add_argument_group('Game options')
-    game_group.add_argument("--terrain", choices=terrain_options.keys(), help="Different terrains. Choose grass, island, mountains,desert, plains")
+    game_group.add_argument("--terrain", choices=globals.TERRAIN_CHOICES, default=globals.DEFAULT_TERRAIN_CHOICE)
     game_group.add_argument("--flat", action="store_true", default=False, help="Generate a flat world.")
     game_group.add_argument("--fast", action="store_true", default=False, help="Makes time progress faster then normal.")
-    game_group.add_argument("--game-mode", choices=('survival', 'creative'), default=globals.GAME_MODE, help="Sets the game mode.")
+    game_group.add_argument("--game-mode", choices=globals.GAME_MODE_CHOICES, default=globals.GAME_MODE)
 
     save_group = parser.add_argument_group('Save options')
     save_group.add_argument("--disable-auto-save", action="store_false", default=True, help="Do not save world on exit.")
-    save_group.add_argument("--save", type=unicode, default=globals.SAVE_FILENAME, help="Type a name for the world to be saved as.")
+    save_group.add_argument("--save", default=globals.SAVE_FILENAME, help="Type a name for the world to be saved as.")
     save_group.add_argument("--disable-save", action="store_false", default=True, help="Disables saving.")
     save_group.add_argument("--save-config", action="store_true", default=False, help="Saves the choices as the default config.")
-    save_group.add_argument("--save-mode", type=int, default=2, help="0 = Uncompressed Pickle, 1 = Compressed Pickle, 2 = Flatfile Struct (smallest, fastest)")
+    save_group.add_argument("--save-mode", choices=globals.SAVE_MODES, default=globals.SAVE_MODE, help="Flatfile Struct (flatfile) is the smallest and fastest")
 
     parser.add_argument("--seed", default=None)
     parser.add_argument("--motion-blur", action="store_true", default=False)

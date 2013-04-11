@@ -10,11 +10,6 @@ from model import *
 from player import *
 import globals
 
-# Save types
-CLASSIC_SAVE_TYPE = 0
-COMPRESSED_SAVE_TYPE = 1
-FLATFILE_STRUCT_SAVE_TYPE = 2
-SAVE_TYPES = [CLASSIC_SAVE_TYPE, COMPRESSED_SAVE_TYPE, FLATFILE_STRUCT_SAVE_TYPE] # last is always the newest
 
 structvec = struct.Struct("hhh")
 structushort = struct.Struct("H")
@@ -31,7 +26,7 @@ def save_world(window, game_dir, world=None):
     pickle.dump(save, open(os.path.join(game_dir, world, "save.pkl"), "wb"))
 
     #blocks and sectors (window.model and window.model.sectors)
-    if globals.LAUNCH_OPTIONS.save_mode == FLATFILE_STRUCT_SAVE_TYPE:
+    if globals.LAUNCH_OPTIONS.save_mode == globals.FLATFILE_SAVE_MODE:
         blocks = window.model
         with open(os.path.join(game_dir, world, "blocks.dat"), "wb", 1024*1024) as f:
             f.write(struct.pack("Q",len(blocks)))
@@ -44,14 +39,14 @@ def save_world(window, game_dir, world=None):
                 f.write(structvec.pack(*secpos) + structushort.pack(len(sectors[secpos])))
                 for blockpos in sectors[secpos]:
                     f.write(structvec.pack(*blockpos))
-    elif globals.LAUNCH_OPTIONS.save_mode == COMPRESSED_SAVE_TYPE:
+    elif globals.LAUNCH_OPTIONS.save_mode == globals.PICKLE_COMPRESSED_SAVE_MODE:
         worldsave = (window.model.items(), window.model.sectors)
         save_string = zlib.compress(pickle.dumps(worldsave), 9)
         file = open(os.path.join(game_dir, world, "blocks.pkl"), "wb")
         file.write(struct.pack("B", 1)) #Save Version
         file.write(save_string)
         file.close()
-    elif globals.LAUNCH_OPTIONS.save_mode == CLASSIC_SAVE_TYPE:
+    elif globals.LAUNCH_OPTIONS.save_mode == globals.PICKLE_SAVE_MODE:
         worldsave = (window.model.items(), window.model.sectors)
         save_string = pickle.dumps(worldsave)
         file = open(os.path.join(game_dir, world, "blocks.pkl"), "wb")
@@ -73,7 +68,7 @@ def open_world(gamecontroller, game_dir, world=None):
         if isinstance(loaded_save[1], Player): gamecontroller.player = loaded_save[1]
         if isinstance(loaded_save[2], float): gamecontroller.time_of_day = loaded_save[2]
     #blocks and sectors (window.model and window.model.sectors)
-    if globals.LAUNCH_OPTIONS.save_mode == FLATFILE_STRUCT_SAVE_TYPE:
+    if globals.LAUNCH_OPTIONS.save_mode == globals.FLATFILE_SAVE_MODE:
         sectors = gamecontroller.model.sectors
         with open(os.path.join(game_dir, world, "sectors.dat"), "rb") as f:
             for i in xrange(struct.unpack("Q",f.read(8))[0]):
@@ -89,12 +84,12 @@ def open_world(gamecontroller, game_dir, world=None):
     else:
         file = open(os.path.join(game_dir, world, "blocks.pkl"), "rb")
         fileversion = struct.unpack("B",file.read(1))[0]
-        if fileversion == COMPRESSED_SAVE_TYPE:
+        if fileversion == globals.PICKLE_COMPRESSED_SAVE_MODE:
             loaded_world = pickle.load(StringIO.StringIO(zlib.decompress(file.read())))
             for item in loaded_world[0]:
                 gamecontroller.model[item[0]] = item[1]
             gamecontroller.model.sectors = loaded_world[1]
-        elif fileversion == CLASSIC_SAVE_TYPE:
+        elif fileversion == globals.PICKLE_SAVE_MODE:
             loaded_world = pickle.load(file)
             for item in loaded_world[0]:
                 gamecontroller.model[item[0]] = item[1]
