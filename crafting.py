@@ -131,6 +131,8 @@ recipes.add_recipe(["##", "##"], {'#': stone_block},
                    ItemStack(stonebrick_block.id, amount=4))
 recipes.add_recipe(["###", "# #", "###"], {'#': cobble_block},
                    ItemStack(furnace_block.id, amount=1))
+recipes.add_recipe(["##", "##"], {'#': quartz_block},
+                   ItemStack(quartzbrick_block.id, amount=1))
 
 # wood items
 
@@ -164,6 +166,8 @@ for material, toolset in [(diamond_item, [diamond_pickaxe, diamond_axe, diamond_
                             (cobble_block, [stone_pickaxe, stone_axe, stone_shovel]),
                             (iron_ingot_item, [iron_pickaxe, iron_axe, iron_shovel]),
                             (emeraldore_block, [emerald_pickaxe, emerald_axe, emerald_shovel]),
+                            (rubyore_block, [ruby_pickaxe, ruby_axe, ruby_shovel]),
+                            (sapphireore_block, [sapphire_pickaxe, sapphire_axe, sapphire_shovel]),
                             (gold_ingot_item, [golden_pickaxe, golden_axe, golden_shovel])]:
 
     recipes.add_recipe(["###", " @ ", " @ "], {'#': material, '@': stick_item},

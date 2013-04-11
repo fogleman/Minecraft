@@ -387,6 +387,22 @@ class LapisOreBlock(HardBlock):
     id = 21
     name = "Lapis Ore"
 
+class RubyOreBlock(HardBlock):
+    top_texture = 12, 0
+    bottom_texture = 12, 0
+    side_texture = 12, 0
+    hardness = 2
+    id = 129.1 # not in MC, just 1 +0.1 value
+    name = "Ruby Ore"
+
+class SapphireOreBlock(HardBlock):
+    top_texture = 12, 2
+    bottom_texture = 12, 2
+    side_texture = 12, 2
+    hardness = 2
+    id = 129.2 # not in MC, just 1 +0.2 value
+    name = "Ruby Ore"
+
 # Changed Marble to Quartz -- It seems that Quartz is MC's answer to Tekkit's MArble.
 class QuartzBlock(HardBlock):
     top_texture = 3, 2
@@ -395,6 +411,16 @@ class QuartzBlock(HardBlock):
     id = 155.0
     hardness = 2
     name = "Quartz"
+    amount_label_color = 0, 0, 0, 255
+    digging_tool = PICKAXE
+
+class QuartzBrickBlock(HardBlock):
+    top_texture = 13, 0
+    bottom_texture = 13, 0
+    side_texture = 13, 0
+    id = 155.3
+    hardness = 2
+    name = "Quartz Brick"
     amount_label_color = 0, 0, 0, 255
     digging_tool = PICKAXE
 
@@ -1076,6 +1102,9 @@ stonebrickcracked_block = CrackedStonebrickBlock()
 stonebrickmossy_block = MossyStonebrickBlock()
 quartzcolumn_block = ColumnQuartzBlock()
 quartzchisled_block = ChisledQuartzBlock()
+quartzbrick_block = QuartzBrickBlock()
 ice_block = IceBlock()
 emeraldore_block = EmeraldOreBlock()
 lapisore_block = LapisOreBlock()
+rubyore_block = RubyOreBlock()
+sapphireore_block = SapphireOreBlock()

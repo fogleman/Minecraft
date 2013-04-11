@@ -152,6 +152,20 @@ class EmeraldAxe(Tool):
     id = 258.1
     name = "Emerald Axe"
 
+class RubyAxe(Tool):
+    material = IRON_TOOL
+    tool_type = AXE
+    max_stack_size = 1
+    id = 258.2
+    name = "Ruby Axe"
+
+class SapphireAxe(Tool):
+    material = IRON_TOOL
+    tool_type = AXE
+    max_stack_size = 1
+    id = 258.3
+    name = "Sapphire Axe"
+
 class DiamondAxe(Tool):
     material = DIAMOND_TOOL
     tool_type = AXE
@@ -194,6 +208,20 @@ class EmeraldPickaxe(Tool):
     id = 257.1
     name = "Emerald Pickaxe"
 
+class RubyPickaxe(Tool):
+    material = IRON_TOOL
+    tool_type = PICKAXE
+    max_stack_size = 1
+    id = 257.2
+    name = "Ruby Pickaxe"
+
+class SapphirePickaxe(Tool):
+    material = IRON_TOOL
+    tool_type = PICKAXE
+    max_stack_size = 1
+    id = 257.3
+    name = "Sapphire Pickaxe"
+
 class DiamondPickaxe(Tool):
     material = DIAMOND_TOOL
     tool_type = PICKAXE
@@ -235,6 +263,20 @@ class EmeraldShovel(Tool):
     max_stack_size = 1
     id = 256.1
     name = "Emerald Shovel"
+
+class RubyShovel(Tool):
+    material = IRON_TOOL
+    tool_type = SHOVEL
+    max_stack_size = 1
+    id = 256.2
+    name = "Ruby Shovel"
+
+class SapphireShovel(Tool):
+    material = IRON_TOOL
+    tool_type = SHOVEL
+    max_stack_size = 1
+    id = 256.3
+    name = "Sapphire Shovel"
 
 class DiamondShovel(Tool):
     material = DIAMOND_TOOL
@@ -349,3 +391,9 @@ iron_boots = IronBoots()
 #emerald_boots = EmeraldBoots()
 yellowdye_item = YellowDyeItem()
 ladder_item = LadderItem()
+ruby_pickaxe = RubyPickaxe()
+ruby_shovel = RubyShovel()
+ruby_axe = RubyAxe()
+sapphire_pickaxe = SapphirePickaxe()
+sapphire_shovel = SapphireShovel()
+sapphire_axe = SapphireAxe()
