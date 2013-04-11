@@ -470,9 +470,6 @@ class GameController(Controller):
 
                 glColor3d(0, 0, 0)
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
-                count = len(vertex_data) / 2
-                print count
-                print "====="
                 pyglet.graphics.draw(24, GL_QUADS, ('v3f/static', vertex_data))
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
 

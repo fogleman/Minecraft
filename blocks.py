@@ -864,7 +864,7 @@ class ReedBlock(Block):
     top_texture = -1, -1
     bottom_texture = -1, -1
     side_texture = 10, 1
-    hardness = 0.8
+    hardness = 0.0
     transparent = True
     id =83
     name = "Reed"
@@ -875,7 +875,7 @@ class PotatoBlock(Block):
     top_texture = -1, -1
     bottom_texture = -1, -1
     side_texture = 10, 3
-    hardness = 0.8
+    hardness = 0.0
     transparent = True
     id =142
     name = "Potato"
@@ -886,7 +886,7 @@ class CarrotBlock(Block):
     top_texture = -1, -1
     bottom_texture = -1, -1
     side_texture = 10, 2
-    hardness = 0.8
+    hardness = 0.0
     transparent = True
     id =141
     name = "Carrot"
