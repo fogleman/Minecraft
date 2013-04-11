@@ -90,6 +90,16 @@ class DiamondItem(Item):
     max_stack_size = 64
     name = "Diamond"
 
+class IronIngotItem(Item):
+    id = 265
+    max_stack_size = 64
+    name = "Iron Ingot"
+
+class GoldIngotItem(Item):
+    id = 266
+    max_stack_size = 64
+    name = "Gold Ingot"
+
 class StickItem(Item):
     id = 280
     max_stack_size = 64
@@ -184,9 +194,46 @@ class GoldenPickaxe(Tool):
     id = 285
     name = "Golden Pickaxe"
 
+class WoodShovel(Tool):
+    material = WOODEN_TOOL
+    tool_type = SHOVEL
+    max_stack_size = 1
+    id = 269
+    name = "Wooden Shovel"
+
+class StoneShovel(Tool):
+    material = STONE_TOOL
+    tool_type = SHOVEL
+    max_stack_size = 1
+    id = 273
+    name = "Stone Shovel"
+
+class IronShovel(Tool):
+    material = IRON_TOOL
+    tool_type = SHOVEL
+    max_stack_size = 1
+    id = 256
+    name = "Iron Shovel"
+
+class DiamondShovel(Tool):
+    material = DIAMOND_TOOL
+    tool_type = SHOVEL
+    max_stack_size = 1
+    id = 277
+    name = "Diamond Shovel"
+
+class GoldenShovel(Tool):
+    material = GOLDEN_TOOL
+    tool_type = SHOVEL
+    max_stack_size = 1
+    id = 284
+    name = "Golden Shovel"
+
 coal_item = CoalItem()
 diamond_item = DiamondItem()
 stick_item = StickItem()
+iron_ingot_item = IronIngotItem()
+gold_ingot_item = GoldIngotItem()
 wood_axe = WoodAxe()
 stone_axe = StoneAxe()
 iron_axe = IronAxe()
@@ -197,5 +244,10 @@ stone_pickaxe = StonePickaxe()
 iron_pickaxe = IronPickaxe()
 diamond_pickaxe = DiamondPickaxe()
 golden_pickaxe = GoldenPickaxe()
+wood_shovel = WoodShovel()
+stone_shovel = StoneShovel()
+iron_shovel = IronShovel()
+diamond_shovel = DiamondShovel()
+golden_shovel = GoldenShovel()
 yellowdye_item = YellowDyeItem()
 ladder_item = LadderItem()

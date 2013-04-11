@@ -160,16 +160,17 @@ recipes.add_recipe(["##", "##"], {'#': sprucewoodplank_block},
 recipes.add_recipe(["##", "##"], {'#': junglewoodplank_block},
                    ItemStack(craft_block.id, amount=1))
 
-#  diamond tools
-recipes.add_recipe(["###", " @ ", " @ "], {'#': diamond_item, '@': stick_item},
-                   ItemStack(diamond_pickaxe.id, amount=4))
-recipes.add_recipe(["## ", "#@ ", " @ "], {'#': diamond_item, '@': stick_item},
-                   ItemStack(diamond_axe.id, amount=4))
-# stone tools
-recipes.add_recipe(["## ", "#@ ", " @ "], {'#': cobble_block, '@': stick_item},
-                   ItemStack(stone_axe.id, amount=4))
-recipes.add_recipe(["###", "#@ ", " @ "], {'#': cobble_block, '@': stick_item},
-                   ItemStack(stone_pickaxe.id, amount=4))
+for material, toolset in [(diamond_item, [diamond_pickaxe, diamond_axe, diamond_shovel]),
+                            (cobble_block, [stone_pickaxe, stone_axe, stone_shovel]),
+                            (iron_ingot_item, [iron_pickaxe, iron_axe, iron_shovel]),
+                            (gold_ingot_item, [golden_pickaxe, golden_axe, golden_shovel])]:
+
+    recipes.add_recipe(["###", " @ ", " @ "], {'#': material, '@': stick_item},
+                   ItemStack(toolset[0].id, amount=1))
+    recipes.add_recipe(["## ", "#@ ", " @ "], {'#': material, '@': stick_item},
+                   ItemStack(toolset[1].id, amount=1))
+    recipes.add_recipe([" # ", " @ ", " @ "], {'#': material, '@': stick_item},
+                    ItemStack(toolset[-1].id, amount=1))
 
 #sand items
 
@@ -188,9 +189,8 @@ for wood in (oakwoodplank_block, junglewoodplank_block, sprucewoodplank_block):
                        ItemStack(wood_pickaxe.id, amount=1))
     recipes.add_recipe(["## ", "#@ ", " @ "], {'#': wood, '@': stick_item},
                        ItemStack(wood_axe.id, amount=1))
-#wood shovel does not exist yet...
-    #recipes.add_recipe(["## ", "#@ ", " @ "], {'#': wood, '@': stick_item},
-                       #ItemStack(wood_axe.id, amount=1))
+    recipes.add_recipe([" # ", " @ ", " @ "], {'#': wood, '@': stick_item},
+                       ItemStack(wood_shovel.id, amount=1))
 
 # sand items
 
