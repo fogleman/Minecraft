@@ -1,7 +1,6 @@
 from world import *
 from nature import *
 import globals
-from globals import *
 
 
 class Model(World):
@@ -19,12 +18,13 @@ class Model(World):
                 self[position] = grass_block
 
     def initialize(self):
-        world_size = config.getint('World', 'size')
-        world_type = config.getint('World', 'type')
-        hill_height = config.getint('World', 'hill_height')
-        flat_world = config.getboolean('World', 'flat')
-        self.max_trees = config.getint('World', 'max_trees')
-        tree_chance = self.max_trees / float(world_size * (SECTOR_SIZE ** 3))
+        world_size = globals.config.getint('World', 'size')
+        world_type = globals.config.getint('World', 'type')
+        hill_height = globals.config.getint('World', 'hill_height')
+        flat_world = globals.config.getboolean('World', 'flat')
+        self.max_trees = globals.config.getint('World', 'max_trees')
+        tree_chance = self.max_trees / float(world_size *
+                                             (globals.SECTOR_SIZE ** 3))
         n = world_size / 2  # 80
         s = 1
         y = 0

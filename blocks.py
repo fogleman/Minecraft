@@ -441,7 +441,7 @@ class StonebrickBlock(HardBlock):
     name = "Stone Bricks"
 
 
-class OakWoodPlankBlock(WoodBlock):
+class BirchWoodPlankBlock(WoodBlock):
     top_texture = 3, 3
     bottom_texture = 3, 3
     side_texture = 3, 3
@@ -451,14 +451,14 @@ class OakWoodPlankBlock(WoodBlock):
     name = "Oak Wood Planks"
 
 
-class SpruceWoodPlankBlock(WoodBlock):
+class OakWoodPlankBlock(WoodBlock):
     top_texture = 1, 3
     bottom_texture = 1, 3
     side_texture = 1, 3
-    texture_name = "wood_spruce",
+    texture_name = "wood_birch",
     hardness = 2
     id = 5.1
-    name = "Spruce Wood Planks"
+    name = "Birch Wood Planks"
 
 
 class JungleWoodPlankBlock(WoodBlock):
@@ -1046,9 +1046,9 @@ craft_block = CraftTableBlock()
 sandstone_block = SandstoneBlock()
 quartz_block = QuartzBlock()
 stonebrick_block = StonebrickBlock()
-oakwoodplank_block = OakWoodPlankBlock()
+birchwoodplank_block = BirchWoodPlankBlock()
 junglewoodplank_block = JungleWoodPlankBlock()
-sprucewoodplank_block = SpruceWoodPlankBlock()
+oakwoodplank_block = OakWoodPlankBlock()
 snowgrass_block = SnowGrassBlock()
 oakwood_block = OakWoodBlock()
 oakleaf_block = OakLeafBlock()

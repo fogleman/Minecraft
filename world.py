@@ -8,7 +8,7 @@ import pyglet
 from pyglet.gl import *
 
 from blocks import *
-from globals import *
+import globals
 
 
 FACES = (
@@ -70,7 +70,9 @@ def normalize(position):
 
 def sectorize(position):
     x, y, z = normalize(position)
-    x, y, z = x / SECTOR_SIZE, y / SECTOR_SIZE, z / SECTOR_SIZE
+    x, y, z = (x / globals.SECTOR_SIZE,
+               y / globals.SECTOR_SIZE,
+               z / globals.SECTOR_SIZE)
     return x, 0, z
 
 
@@ -237,7 +239,6 @@ class World(dict):
     #    x, y, z = position
         # only show exposed faces
     #    index = 0
-        #count = 24
         vertex_data = block.get_vertices(*position)
         texture_data = block.texture_data
         count = len(texture_data) / 2
@@ -287,7 +288,7 @@ class World(dict):
     def change_sectors(self, before, after):
         before_set = set()
         after_set = set()
-        pad = VISIBLE_SECTORS_RADIUS
+        pad = globals.VISIBLE_SECTORS_RADIUS
         for dx in xrange(-pad, pad + 1):
             for dy in (0,):  # xrange(-pad, pad + 1):
                 for dz in xrange(-pad, pad + 1):
@@ -335,7 +336,7 @@ class World(dict):
         # Updates spreading
         # TODO: This is too simple
         self.spreading_time += dt
-        if self.spreading_time >= SPREADING_MUTATION_DELAY:
+        if self.spreading_time >= globals.SPREADING_MUTATION_DELAY:
             self.spreading_time = 0.0
             if self.spreading_mutable_blocks:
                 position = self.spreading_mutable_blocks.pop()

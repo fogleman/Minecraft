@@ -1,14 +1,14 @@
 from entity import *
 from world import *
-from math import cos, sin, atan2, pi, fmod, radians
+from math import cos, sin, atan2, radians
 from pyglet.window import key
 from inventory import *
 from items import *
 import globals
-from globals import *
 
 class Player(Entity):
-    def __init__(self, position, rotation, flying=False, game_mode=0):
+    def __init__(self, position, rotation, flying=False,
+                 game_mode=globals.GAME_MODE):
         super(Player, self).__init__(position, rotation, health=7,
                                      max_health=10, attack_power=2.0 / 3,
                                      attack_range=4)
@@ -19,12 +19,8 @@ class Player(Entity):
         self.game_mode = game_mode
         self.strafe = [0, 0]
         self.dy = 0
-        print self.game_mode
-
 
         initial_items = [torch_block, stick_item]
-
-
 
         for item in initial_items:
             quantity = random.randint(2, 10)
@@ -33,12 +29,11 @@ class Player(Entity):
             #else:
             #    self.quick_slots.add_item(item.id, quantity)
 
-
-        self.key_move_forward = config.getint('Controls', 'move_forward')
-        self.key_move_backward = config.getint('Controls', 'move_backward')
-        self.key_move_left = config.getint('Controls', 'move_left')
-        self.key_move_right = config.getint('Controls', 'move_right')
-        self.key_jump = config.getint('Controls', 'jump')
+        self.key_move_forward = globals.config.getint('Controls', 'move_forward')
+        self.key_move_backward = globals.config.getint('Controls', 'move_backward')
+        self.key_move_left = globals.config.getint('Controls', 'move_left')
+        self.key_move_right = globals.config.getint('Controls', 'move_right')
+        self.key_jump = globals.config.getint('Controls', 'jump')
 
     def add_item(self, item_id):
         if self.quick_slots.add_item(item_id):
@@ -82,7 +77,7 @@ class Player(Entity):
         elif symbol == key.LSHIFT or symbol == key.RSHIFT:
             if self.flying:
                 self.dy = -0.045  # inversed jump speed
-        elif symbol == key.TAB and self.game_mode is 0:
+        elif symbol == key.TAB and self.game_mode == 'creative':
             self.dy = 0
             self.flying = not self.flying
 
@@ -120,7 +115,7 @@ class Player(Entity):
         x_r = radians(x)
         m = cos(y_r)
         dy = sin(y_r)
-        x_r -= HALF_PI
+        x_r -= globals.HALF_PI
         dx = cos(x_r) * m
         dz = sin(x_r) * m
         return dx, dy, dz
@@ -165,7 +160,7 @@ class Player(Entity):
                     p[i] -= (d - pad) * face[i]
                     if face == (0, -1, 0) or face == (0, 1, 0):
                         # jump damage
-                        if not self.flying and self.game_mode is not 0:
+                        if self.game_mode == 'survival':
                             damage = self.dy * -1000.0
                             damage = 3.0 * damage / 22.0
                             damage -= 2.0

@@ -1,8 +1,18 @@
-from math import pi
-from pyglet.resource import get_settings_path
-import os
-from ConfigParser import ConfigParser
+"""
+Global variables.
+
+WARNING: Never use `from globals import *`!
+Since these global variables are modified during runtime, using `import *`
+would lead to unpredictable consequences.
+"""
+
+# Python packages
 import argparse
+from ConfigParser import ConfigParser
+from math import pi
+import os
+# Third-party packages
+from pyglet.resource import get_settings_path
 
 APP_NAME = 'pyCraftr'  # should I stay or should I go?
 
@@ -20,7 +30,7 @@ DEG_RAD = pi / 180.0
 HALF_PI = pi / 2.0  # 90 degrees
 SPREADING_MUTATION_DELAY = 4  # in seconds
 TILESET_SIZE = 16  # The tileset therefore contains TILESET_SIZE ** 2 tiles.
-GAMEMODE = 0 #0 = creative (no damage), 1 = Survival (take Damage
+GAME_MODE = 'creative'
 
 EFFECT_VOLUME = 1
 MOTION_BLUR = False
