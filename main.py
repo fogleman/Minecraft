@@ -33,9 +33,9 @@ if not os.path.lexists(config_file):
     globals.config.add_section('World')
     globals.config.set('World', 'type', str(type))  # 0=plains,1=dirt,2=desert,3=islands,4=sand,5=stone,6=snow
     globals.config.set('World', 'hill_height', str(hill_height))  # height of the hills
-    globals.config.set('World', 'flat', '0')  # dont make mountains,  make a flat world
+    globals.config.set('World', 'flat', 'false')  # dont make mountains, make a flat world
     globals.config.set('World', 'size', '64')
-    globals.config.set('World', 'show_fog', '1')
+    globals.config.set('World', 'show_fog', 'true')
     globals.config.set('World', 'max_trees', str(max_trees))
 
     globals.config.add_section('Controls')
@@ -131,7 +131,7 @@ def main(options):
         globals.config.set('World', 'max_trees', max_trees)
 
     if options.flat:
-        globals.config.set('World', 'flat', '1')
+        globals.config.set('World', 'flat', 'true')
 
     if options.fast:
         globals.TIME_RATE /= 20
