@@ -12,11 +12,13 @@ class CommandException(Exception):
         self.message = message
 
     def __str__(self):
-        return "%s [%s]" % (self.message, self.command_text) if self.message else "Bad command: %s" % self.command_text
+        return "%s: %s" % (self.__class__.__name__, self.message)
 
 
 class UnknownCommandException(CommandException):
-    pass
+    def __init__(self, command_text, *args, **kwargs):
+        super(UnknownCommandException, self).__init__(command_text, *args, **kwargs)
+        self.message = "Unrecognized command: %s" % self.command_text
 
 
 class CommandParser(object):

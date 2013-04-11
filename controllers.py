@@ -487,8 +487,6 @@ class GameController(Controller):
             try:
                 self.command_parser.execute(txt, controller=self, user=self.player, world=self.model)
                 self.toggle_text_input()
-            except UnknownCommandException, e:
-                print ("Unrecognized command: %s [%s]" % (txt, e))
             except CommandException, e:
                 print e
             return pyglet.event.EVENT_HANDLED
