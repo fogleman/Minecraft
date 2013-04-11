@@ -14,6 +14,7 @@ class Player(Entity):
                                      attack_range=4)
         self.inventory = Inventory()
         self.quick_slots = Inventory(9)
+        self.armors = Inventory(4)
         self.flying = flying
         self.game_mode = game_mode
         self.strafe = [0, 0]
