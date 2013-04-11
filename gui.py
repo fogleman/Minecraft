@@ -734,7 +734,7 @@ class TextWidget(Control):
     """
     Variation of this example: http://www.pyglet.org/doc/programming_guide/text_input.py
     """
-    def __init__(self, parent, text, x, y, width, key_released=None, *args, **kwargs):
+    def __init__(self, parent, text, x, y, width, multi_line=False, key_released=None, *args, **kwargs):
         super(TextWidget, self).__init__(parent, *args, **kwargs)
         self.batch = pyglet.graphics.Batch()
         self.vertex_list = None
@@ -755,6 +755,7 @@ class TextWidget(Control):
         self.layout.y = y
         self._on_resize()
         self._key_released = key_released
+        self.multi_line = multi_line
 
     def focus(self):
         self.caret.visible = True
@@ -808,6 +809,8 @@ class TextWidget(Control):
 
     def on_text(self, text):
         if self.visible:
+            if not self.multi_line:
+                text = text.replace('\r', '')  # Remove carriage returns
             self.caret.on_text(text)
             return pyglet.event.EVENT_HANDLED
 
