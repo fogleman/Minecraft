@@ -12,7 +12,7 @@ from gui import *
 from model import *
 from player import *
 from savingsystem import *
-from commands import CommandParser, UnknownCommandException
+from commands import CommandParser, CommandException, UnknownCommandException
 
 
 # Define a simple function to create GLfloat arrays of floats:
@@ -482,6 +482,8 @@ class GameController(Controller):
                 self.toggle_text_input()
             except UnknownCommandException, e:
                 print ("Unrecognized command: %s [%s]" % (txt, e))
+            except CommandException, e:
+                print e
             return pyglet.event.EVENT_HANDLED
 
     def toggle_text_input(self):

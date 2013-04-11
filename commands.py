@@ -9,6 +9,10 @@ class CommandException(Exception):
     def __init__(self, command_text, message=None, *args, **kwargs):
         super(CommandException, self).__init__(self, message, *args, **kwargs)
         self.command_text = command_text
+        self.message = message
+
+    def __str__(self):
+        return "%s [%s]" % (self.message, self.command_text) if self.message else "Bad command: %s" % self.command_text
 
 
 class UnknownCommandException(CommandException):
@@ -34,7 +38,8 @@ class CommandParser(object):
                 cmd_regex = command_type.command
                 match = re.match(cmd_regex, stripped)
                 if match:
-                    return command_type(user, world, controller), match
+                    instance = command_type(stripped, user, world, controller)
+                    return instance, match
         return None
 
     def execute(self, command_text, controller=None, user=None, world=None):
@@ -63,7 +68,8 @@ class Command(object):
     command = None
     help_text = None
 
-    def __init__(self, user, world, controller):
+    def __init__(self, command_text, user, world, controller):
+        self.command_text = command_text
         self.user = user
         self.world = world
         self.controller = controller
@@ -73,11 +79,16 @@ class Command(object):
 
 
 class GiveBlockCommand(Command):
-    command = r"^give (\d+) (\d+)?$"
+    command = r"^give (\d+(?:\.\d+)?)\s*(\d+)?$"
     help_text = "give <block_id> [amount]: Give a specified amount (default of 1) of the item to the player"
 
     def execute(self, block_id, amount=1, *args, **kwargs):
-        self.user.inventory.add_item(int(block_id), quantity=int(amount))
+        try:
+            self.user.inventory.add_item(float(block_id), quantity=int(amount))
+        except KeyError:
+            raise CommandException(self.command_text, message="ID %s unknown." % block_id)
+        except ValueError:
+            raise CommandException(self.command_text, message="ID should be a number. Amount must be an integer.")
 
 
 class SetTimeCommand(Command):
@@ -85,4 +96,11 @@ class SetTimeCommand(Command):
     help_text = "time set <number>: Set the time of day 00-24"
 
     def execute(self, time, *args, **kwargs):
-        self.controller.time_of_day = int(time)
+        try:
+            tod = int(time)
+            if 0 <= td <= 24:
+                self.controller.time_of_day = tod
+            else:
+                raise ValueError
+        except ValueError:
+            raise CommandException(self.command_text, message="Time should be a number between 0 and 24")
