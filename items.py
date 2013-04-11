@@ -90,6 +90,16 @@ class DiamondItem(Item):
     max_stack_size = 64
     name = "Diamond"
 
+class IronIngotItem(Item):
+    id = 265
+    max_stack_size = 64
+    name = "Iron Ingot"
+
+class GoldIngotItem(Item):
+    id = 266
+    max_stack_size = 64
+    name = "Gold Ingot"
+
 class StickItem(Item):
     id = 280
     max_stack_size = 64
@@ -135,6 +145,13 @@ class IronAxe(Tool):
     id = 258
     name = "Iron Axe"
 
+class EmeraldAxe(Tool):
+    material = IRON_TOOL
+    tool_type = AXE
+    max_stack_size = 1
+    id = 258.1
+    name = "Emerald Axe"
+
 class DiamondAxe(Tool):
     material = DIAMOND_TOOL
     tool_type = AXE
@@ -170,6 +187,13 @@ class IronPickaxe(Tool):
     id = 257
     name = "Iron Pickaxe"
 
+class EmeraldPickaxe(Tool):
+    material = IRON_TOOL
+    tool_type = PICKAXE
+    max_stack_size = 1
+    id = 257.1
+    name = "Emerald Pickaxe"
+
 class DiamondPickaxe(Tool):
     material = DIAMOND_TOOL
     tool_type = PICKAXE
@@ -184,18 +208,144 @@ class GoldenPickaxe(Tool):
     id = 285
     name = "Golden Pickaxe"
 
+class WoodShovel(Tool):
+    material = WOODEN_TOOL
+    tool_type = SHOVEL
+    max_stack_size = 1
+    id = 269
+    name = "Wooden Shovel"
+
+class StoneShovel(Tool):
+    material = STONE_TOOL
+    tool_type = SHOVEL
+    max_stack_size = 1
+    id = 273
+    name = "Stone Shovel"
+
+class IronShovel(Tool):
+    material = IRON_TOOL
+    tool_type = SHOVEL
+    max_stack_size = 1
+    id = 256
+    name = "Iron Shovel"
+
+class EmeraldShovel(Tool):
+    material = IRON_TOOL
+    tool_type = SHOVEL
+    max_stack_size = 1
+    id = 256.1
+    name = "Emerald Shovel"
+
+class DiamondShovel(Tool):
+    material = DIAMOND_TOOL
+    tool_type = SHOVEL
+    max_stack_size = 1
+    id = 277
+    name = "Diamond Shovel"
+
+class GoldenShovel(Tool):
+    material = GOLDEN_TOOL
+    tool_type = SHOVEL
+    max_stack_size = 1
+    id = 284
+    name = "Golden Shovel"
+
+class Armor(Item):
+    material = None
+    defense_point = 0
+    armor_type = None
+
+    def __init__(self):
+        super(Armor, self).__init__()
+
+class IronHelmet(Armor):
+    material = IRON_TOOL
+    defense_point = 1
+    armor_type = HELMET
+    id = 306
+    name = "Iron Helmet"
+
+class IronChestplate(Armor):
+    material = IRON_TOOL
+    defense_point = 3
+    armor_type = CHESTPLATE
+    id = 307
+    name = "Iron Chestplate"
+
+class IronLeggings(Armor):
+    material = IRON_TOOL
+    defense_point = 2.5
+    armor_type = LEGGINGS
+    id = 308
+    name = "Iron Leggings"
+
+class IronBoots(Armor):
+    material = IRON_TOOL
+    defense_point = 1
+    armor_type = BOOTS
+    id = 309
+    name = "Iron Boots"
+
+##Emerald Armor .. Pretty much re-textured Iron armor (from Tekkit)
+
+#class EmeraldHelmet(Armor):
+    #material = IRON_TOOL
+    #defense_point = 1
+    #armor_type = HELMET
+    #id = 306.1
+    #name = "Emerald Helmet"
+
+#class EmeraldChestplate(Armor):
+    #material = IRON_TOOL
+    #defense_point = 3
+    #armor_type = CHESTPLATE
+    #id = 307.1
+    #name = "Emerald Chestplate"
+
+#class EmeraldLeggings(Armor):
+    #material = IRON_TOOL
+    #defense_point = 2.5
+    #armor_type = LEGGINGS
+    #id = 308.1
+    #name = "Emerald Leggings"
+
+#class EmeraldBoots(Armor):
+    #material = IRON_TOOL
+    #defense_point = 1
+    #armor_type = BOOTS
+    #id = 309.1
+    #name = "Emerald Boots"
+
 coal_item = CoalItem()
 diamond_item = DiamondItem()
 stick_item = StickItem()
+iron_ingot_item = IronIngotItem()
+gold_ingot_item = GoldIngotItem()
 wood_axe = WoodAxe()
 stone_axe = StoneAxe()
 iron_axe = IronAxe()
 diamond_axe = DiamondAxe()
 golden_axe = GoldenAxe()
+emerald_axe = EmeraldAxe()
 wood_pickaxe = WoodPickaxe()
 stone_pickaxe = StonePickaxe()
 iron_pickaxe = IronPickaxe()
 diamond_pickaxe = DiamondPickaxe()
 golden_pickaxe = GoldenPickaxe()
+emerald_pickaxe = EmeraldPickaxe()
+wood_shovel = WoodShovel()
+stone_shovel = StoneShovel()
+iron_shovel = IronShovel()
+diamond_shovel = DiamondShovel()
+golden_shovel = GoldenShovel()
+emerald_shovel = EmeraldShovel()
+iron_helmet = IronHelmet()
+iron_chestplate = IronChestplate()
+iron_leggings = IronLeggings()
+iron_boots = IronBoots()
+#emerald_helmet = EmeraldHelmet()
+#emerald_chestplace = EmeraldChestplate()
+#emerald_leggings = EmeraldLeggings()
+#emerald_boots = EmeraldBoots()
 yellowdye_item = YellowDyeItem()
 ladder_item = LadderItem()

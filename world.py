@@ -234,26 +234,26 @@ class World(dict):
             self.enqueue(self._show_block, position, block)
 
     def _show_block(self, position, block):
-        x, y, z = position
+    #    x, y, z = position
         # only show exposed faces
-        index = 0
+    #    index = 0
         count = 24
         vertex_data = block.get_vertices(*position)
         texture_data = block.texture_data
         # FIXME: Do something of what follows.
-        for dx, dy, dz in []:  # FACES:
-            if (x + dx, y + dy, z + dz) in self:
-                count -= 8  # 4
-                i = index * 12
-                j = index * 8
-                del vertex_data[i:i + 12]
-                del texture_data[j:j + 8]
-            else:
-                index += 1
+    #    for dx, dy, dz in []:  # FACES:
+    #        if (x + dx, y + dy, z + dz) in self:
+    #            count -= 8  # 4
+    #            i = index * 12
+    #            j = index * 8
+    #            del vertex_data[i:i + 12]
+    #            del texture_data[j:j + 8]
+    #        else:
+    #            index += 1
 
         # create vertex list
         batch = self.transparency_batch if block.transparent else self.batch
-        self._shown[position] = batch.add(count, GL_QUADS, self.group,
+        self._shown[position] = batch.add(count, GL_QUADS, block.group or self.group,
                                           ('v3f/static', vertex_data),
                                           ('t2f/static', texture_data))
 
