@@ -854,8 +854,8 @@ class RoseBlock(Block):
 amount_label_color = 0, 0, 0, 255
 
 class ReedBlock(Block):
-    top_texture = 0, -15
-    bottom_texture = 10, 1
+    top_texture = -1, -1
+    bottom_texture = -1, -1
     side_texture = 10, 1
     hardness = 0.8
     transparent = True
@@ -865,8 +865,8 @@ class ReedBlock(Block):
     amount_label_color = 0, 0, 0, 255
 
 class PotatoBlock(Block):
-    top_texture = 0, -15
-    bottom_texture = 10, 3
+    top_texture = -1, -1
+    bottom_texture = -1, -1
     side_texture = 10, 3
     hardness = 0.8
     transparent = True
@@ -876,8 +876,8 @@ class PotatoBlock(Block):
     amount_label_color = 0, 0, 0, 255
 
 class CarrotBlock(Block):
-    top_texture = 0, -15
-    bottom_texture = 10, 2
+    top_texture = -1, -1
+    bottom_texture = -1, -1
     side_texture = 10, 2
     hardness = 0.8
     transparent = True
