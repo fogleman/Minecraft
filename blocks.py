@@ -316,6 +316,24 @@ class SandstoneBlock(HardBlock):
     id = 24
     name = "Sandstone"
 
+class EmeraldOreBlock(HardBlock):
+    top_texture = 8, 5
+    bottom_texture = 8, 5
+    side_texture = 8, 5
+    hardness = 2
+    id = 129
+    name = "Emerald Ore"
+    def __init__(self):
+        super(EmeraldOreBlock, self).__init__()
+        self.drop_id = 388
+
+class LapisOreBlock(HardBlock):
+    top_texture = 8, 6
+    bottom_texture = 8, 6
+    side_texture = 8, 6
+    hardness = 2
+    id = 21
+    name = "Lapis Ore"
 
 # Changed Marble to Quartz -- It seems that Quartz is MC's answer to Tekkit's MArble.
 class QuartzBlock(HardBlock):
@@ -769,9 +787,6 @@ class ReedBlock(Block):
     name = "Reed"
     max_stack_size = 16
     amount_label_color = 0, 0, 0, 255
-    def __init__(self):
-        super(ReedBlock, self).__init__()
-        self.drop_id = 338
 
 class PotatoBlock(Block):
     top_texture = 0, -15
@@ -783,9 +798,6 @@ class PotatoBlock(Block):
     name = "Potato"
     max_stack_size = 16
     amount_label_color = 0, 0, 0, 255
-    def __init__(self):
-        super(PotatoBlock, self).__init__()
-        self.drop_id = 392
 
 class CarrotBlock(Block):
     top_texture = 0, -15
@@ -797,9 +809,6 @@ class CarrotBlock(Block):
     name = "Carrot"
     max_stack_size = 16
     amount_label_color = 0, 0, 0, 255
-    def __init__(self):
-        super(CarrotBlock, self).__init__()
-        self.drop_id = 391
 
 class DiamondBlock(HardBlock):
     top_texture = 11, 0
@@ -993,5 +1002,7 @@ stonebrickmossy_block = MossyStonebrickBlock()
 quartzcolumn_block = ColumnQuartzBlock()
 quartzchisled_block = ChisledQuartzBlock()
 ice_block = IceBlock()
+emeraldore_block = EmeraldOreBlock()
+lapisore_block = LapisOreBlock()
 
 

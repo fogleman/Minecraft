@@ -160,23 +160,15 @@ recipes.add_recipe(["##", "##"], {'#': sprucewoodplank_block},
 recipes.add_recipe(["##", "##"], {'#': junglewoodplank_block},
                    ItemStack(craft_block.id, amount=1))
 
-#  wood axes
-recipes.add_recipe(["###", "@", " @ "], {'#': sprucewoodplank_block, '@': stick_item},
-                   ItemStack(wood_axe.id, amount=4))
-recipes.add_recipe(["###", "@", " @ "], {'#': oakwoodplank_block, '@': stick_item},
-                   ItemStack(wood_axe.id, amount=4))
-recipes.add_recipe(["###", "@", " @ "], {'#': junglewoodplank_block, '@': stick_item},
-                   ItemStack(wood_axe.id, amount=4))
-
 #  diamond tools
 recipes.add_recipe(["###", " @ ", " @ "], {'#': diamond_item, '@': stick_item},
                    ItemStack(diamond_pickaxe.id, amount=4))
 recipes.add_recipe(["## ", "#@ ", " @ "], {'#': diamond_item, '@': stick_item},
                    ItemStack(diamond_axe.id, amount=4))
 # stone tools
-recipes.add_recipe(["###", " @ ", " @ "], {'#': cobble_block, '@': stick_item},
-                   ItemStack(stone_axe.id, amount=4))
 recipes.add_recipe(["## ", "#@ ", " @ "], {'#': cobble_block, '@': stick_item},
+                   ItemStack(stone_axe.id, amount=4))
+recipes.add_recipe(["###", "#@ ", " @ "], {'#': cobble_block, '@': stick_item},
                    ItemStack(stone_pickaxe.id, amount=4))
 
 #sand items
@@ -192,6 +184,13 @@ for wood in (oakwoodplank_block, junglewoodplank_block, sprucewoodplank_block):
                         ItemStack(chest_block.id, amount=1))
     recipes.add_recipe(["##", "##"], {'#': wood},
                         ItemStack(craft_block.id, amount=1))
+    recipes.add_recipe(["###", " @ ", " @ "], {'#': wood, '@': stick_item},
+                       ItemStack(wood_pickaxe.id, amount=1))
+    recipes.add_recipe(["## ", "#@ ", " @ "], {'#': wood, '@': stick_item},
+                       ItemStack(wood_axe.id, amount=1))
+#wood shovel does not exist yet...
+    #recipes.add_recipe(["## ", "#@ ", " @ "], {'#': wood, '@': stick_item},
+                       #ItemStack(wood_axe.id, amount=1))
 
 # sand items
 

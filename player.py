@@ -21,7 +21,7 @@ class Player(Entity):
         print self.game_mode
 
 
-        initial_items = [torch_item, stick_item]
+        initial_items = [torch_block, stick_item]
 
 
 
