@@ -30,7 +30,7 @@ class CommandParser(object):
         commands can handle it.
         """
         if command_text.startswith("/"):
-            stripped = command_text[1:]
+            stripped = command_text[1:].strip()
             # Look for a subclass of Command whose format matches command_text
             for command_type in Command.__subclasses__():
                 if not hasattr(command_type, "command"):
@@ -53,7 +53,15 @@ class CommandParser(object):
         if parsed:
             command, match = parsed
             # Pass matched groups to command.execute
-            ret = command.execute(*match.groups(), **match.groupdict())
+            # ...but filter out "None" arguments. If commands
+            # want optional arguments, they should use keyword arguments
+            # in their execute methods.
+            args = filter(lambda a: a is not None, match.groups())
+            kwargs = {}
+            for key, value in match.groupdict().iteritems():
+                if value is not None:
+                    kwargs[key] = value
+            ret = command.execute(*args, **kwargs)
             if ret is None:
                 return COMMAND_HANDLED
             else:
@@ -98,7 +106,7 @@ class SetTimeCommand(Command):
     def execute(self, time, *args, **kwargs):
         try:
             tod = int(time)
-            if 0 <= td <= 24:
+            if 0 <= tod <= 24:
                 self.controller.time_of_day = tod
             else:
                 raise ValueError
