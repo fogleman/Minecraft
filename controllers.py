@@ -483,7 +483,7 @@ class GameController(Controller):
 
     def text_input_callback(self, text_input, symbol, modifier):
         if symbol == key.ENTER:
-            txt = text_input.text.replace(os.linesep, '')
+            txt = text_input.text.replace('\n', '')
             try:
                 self.command_parser.execute(txt, controller=self, user=self.player, world=self.model)
                 self.toggle_text_input()
