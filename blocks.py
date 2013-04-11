@@ -10,11 +10,10 @@ from pyglet.image.atlas import TextureAtlas
 def get_texture_coordinates(x, y, tileset_size=TILESET_SIZE):
     if x == -1 and y == -1:
         return ()
-    else:
-        m = 1.0 / tileset_size
-        dx = x * m
-        dy = y * m
-        return dx, dy, dx + m, dy, dx + m, dy + m, dx, dy + m
+    m = 1.0 / tileset_size
+    dx = x * m
+    dy = y * m
+    return dx, dy, dx + m, dy, dx + m, dy + m, dx, dy + m
 
 
 BLOCKS_DIR = {}
