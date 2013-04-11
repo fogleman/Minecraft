@@ -634,7 +634,6 @@ class TorchBlock(WoodBlock):
     id = 50
     name = "Torch"
 
-
 class YFlowersBlock(Block):
     top_texture = 6, 6
     bottom_texture = 1, 0
