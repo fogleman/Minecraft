@@ -147,6 +147,27 @@ class IronAxe(Tool):
     id = 258
     name = "Iron Axe"
 
+class EmeraldAxe(Tool):
+    material = globals.IRON_TOOL
+    tool_type = globals.AXE
+    max_stack_size = 1
+    id = 258.1
+    name = "Emerald Axe"
+
+class RubyAxe(Tool):
+    material = globals.IRON_TOOL
+    tool_type = globals.AXE
+    max_stack_size = 1
+    id = 258.2
+    name = "Ruby Axe"
+
+class SapphireAxe(Tool):
+    material = globals.IRON_TOOL
+    tool_type = globals.AXE
+    max_stack_size = 1
+    id = 258.3
+    name = "Sapphire Axe"
+
 class DiamondAxe(Tool):
     material = globals.DIAMOND_TOOL
     tool_type = globals.AXE
@@ -182,6 +203,27 @@ class IronPickaxe(Tool):
     id = 257
     name = "Iron Pickaxe"
 
+class EmeraldPickaxe(Tool):
+    material = globals.IRON_TOOL
+    tool_type = globals.PICKAXE
+    max_stack_size = 1
+    id = 257.1
+    name = "Emerald Pickaxe"
+
+class RubyPickaxe(Tool):
+    material = globals.IRON_TOOL
+    tool_type = globals.PICKAXE
+    max_stack_size = 1
+    id = 257.2
+    name = "Ruby Pickaxe"
+
+class SapphirePickaxe(Tool):
+    material = globals.IRON_TOOL
+    tool_type = globals.PICKAXE
+    max_stack_size = 1
+    id = 257.3
+    name = "Sapphire Pickaxe"
+
 class DiamondPickaxe(Tool):
     material = globals.DIAMOND_TOOL
     tool_type = globals.PICKAXE
@@ -216,6 +258,27 @@ class IronShovel(Tool):
     max_stack_size = 1
     id = 256
     name = "Iron Shovel"
+
+class EmeraldShovel(Tool):
+    material = globals.IRON_TOOL
+    tool_type = globals.SHOVEL
+    max_stack_size = 1
+    id = 256.1
+    name = "Emerald Shovel"
+
+class RubyShovel(Tool):
+    material = globals.IRON_TOOL
+    tool_type = globals.SHOVEL
+    max_stack_size = 1
+    id = 256.2
+    name = "Ruby Shovel"
+
+class SapphireShovel(Tool):
+    material = globals.IRON_TOOL
+    tool_type = globals.SHOVEL
+    max_stack_size = 1
+    id = 256.3
+    name = "Sapphire Shovel"
 
 class DiamondShovel(Tool):
     material = globals.DIAMOND_TOOL
@@ -267,6 +330,36 @@ class IronBoots(Armor):
     id = 309
     name = "Iron Boots"
 
+##Emerald Armor .. Pretty much re-textured Iron armor (from Tekkit)
+
+#class EmeraldHelmet(Armor):
+    #material = globals.IRON_TOOL
+    #defense_point = 1
+    #armor_type = globals.HELMET
+    #id = 306.1
+    #name = "Emerald Helmet"
+
+#class EmeraldChestplate(Armor):
+    #material = globals.IRON_TOOL
+    #defense_point = 3
+    #armor_type = globals.CHESTPLATE
+    #id = 307.1
+    #name = "Emerald Chestplate"
+
+#class EmeraldLeggings(Armor):
+    #material = globals.IRON_TOOL
+    #defense_point = 2.5
+    #armor_type = globals.LEGGINGS
+    #id = 308.1
+    #name = "Emerald Leggings"
+
+#class EmeraldBoots(Armor):
+    #material = globals.IRON_TOOL
+    #defense_point = 1
+    #armor_type = globals.BOOTS
+    #id = 309.1
+    #name = "Emerald Boots"
+
 coal_item = CoalItem()
 diamond_item = DiamondItem()
 stick_item = StickItem()
@@ -277,19 +370,32 @@ stone_axe = StoneAxe()
 iron_axe = IronAxe()
 diamond_axe = DiamondAxe()
 golden_axe = GoldenAxe()
+emerald_axe = EmeraldAxe()
 wood_pickaxe = WoodPickaxe()
 stone_pickaxe = StonePickaxe()
 iron_pickaxe = IronPickaxe()
 diamond_pickaxe = DiamondPickaxe()
 golden_pickaxe = GoldenPickaxe()
+emerald_pickaxe = EmeraldPickaxe()
 wood_shovel = WoodShovel()
 stone_shovel = StoneShovel()
 iron_shovel = IronShovel()
 diamond_shovel = DiamondShovel()
 golden_shovel = GoldenShovel()
+emerald_shovel = EmeraldShovel()
 iron_helmet = IronHelmet()
 iron_chestplate = IronChestplate()
 iron_leggings = IronLeggings()
 iron_boots = IronBoots()
+#emerald_helmet = EmeraldHelmet()
+#emerald_chestplace = EmeraldChestplate()
+#emerald_leggings = EmeraldLeggings()
+#emerald_boots = EmeraldBoots()
 yellowdye_item = YellowDyeItem()
 ladder_item = LadderItem()
+ruby_pickaxe = RubyPickaxe()
+ruby_shovel = RubyShovel()
+ruby_axe = RubyAxe()
+sapphire_pickaxe = SapphirePickaxe()
+sapphire_shovel = SapphireShovel()
+sapphire_axe = SapphireAxe()
