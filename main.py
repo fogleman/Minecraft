@@ -130,20 +130,8 @@ def main(options):
         globals.config.set('World', 'hill_height', hill_height)
         globals.config.set('World', 'max_trees', max_trees)
 
-    if options.hillheight:
-        globals.config.set('World', 'hill_height', str(options.hillheight))
-
-    if options.worldsize:
-        globals.config.set('World', 'size', str(options.worldsize))
-
     if options.flat:
         globals.config.set('World', 'flat', '1')
-
-    if options.maxtrees:
-        globals.config.set('World', 'max_trees', str(options.maxtrees))
-
-    if options.hide_fog:
-        globals.config.set('World', 'show_fog', '0')
 
     if options.fast:
         globals.TIME_RATE /= 20
