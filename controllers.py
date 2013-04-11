@@ -448,9 +448,10 @@ class GameController(Controller):
             if crack_level >= CRACK_LEVELS:
                 return
             texture_data = crack_textures.texture_data[crack_level]
+            count = len(texture_data) / 2
             if self.crack:
                 self.crack.delete()
-            self.crack = self.crack_batch.add(24, GL_QUADS, self.model.group,
+            self.crack = self.crack_batch.add(count, GL_QUADS, self.model.group,
                                               ('v3f/static', vertex_data),
                                               ('t2f/static', texture_data))
 
@@ -469,6 +470,9 @@ class GameController(Controller):
 
                 glColor3d(0, 0, 0)
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+                count = len(vertex_data) / 2
+                print count
+                print "====="
                 pyglet.graphics.draw(24, GL_QUADS, ('v3f/static', vertex_data))
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
 

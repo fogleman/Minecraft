@@ -8,10 +8,13 @@ from pyglet.image.atlas import TextureAtlas
 
 
 def get_texture_coordinates(x, y, tileset_size=TILESET_SIZE):
-    m = 1.0 / tileset_size
-    dx = x * m
-    dy = y * m
-    return dx, dy, dx + m, dy, dx + m, dy + m, dx, dy + m
+    if x == -1 and y == -1:
+        return ()
+    else:
+        m = 1.0 / tileset_size
+        dx = x * m
+        dy = y * m
+        return dx, dy, dx + m, dy, dx + m, dy + m, dx, dy + m
 
 
 BLOCKS_DIR = {}
@@ -121,14 +124,18 @@ class Block(object):
         yp = y + h
         zm = z - w
         zp = z + w
-        return [
-            xm,yp,zm, xm,yp,zp, xp,yp,zp, xp,yp,zm,  # top
-            xm,ym,zm, xp,ym,zm, xp,ym,zp, xm,ym,zp,  # bottom
+        ret = []
+        if len(self.top_texture) > 0 or len(self.side_texture) == 0:
+            ret.extend([xm,yp,zm, xm,yp,zp, xp,yp,zp, xp,yp,zm])  # top
+        if len(self.bottom_texture) > 0 or len(self.side_texture) == 0:
+            ret.extend([xm,ym,zm, xp,ym,zm, xp,ym,zp, xm,ym,zp])  # bottom
+        ret.extend([
             xm,ym,zm, xm,ym,zp, xm,yp,zp, xm,yp,zm,  # left
             xp,ym,zp, xp,ym,zm, xp,yp,zm, xp,yp,zp,  # right
             xm,ym,zp, xp,ym,zp, xp,yp,zp, xm,yp,zp,  # front
             xp,ym,zm, xm,ym,zm, xm,yp,zm, xp,yp,zm,  # back
-        ]
+        ])
+        return ret
 
     def play_break_sound(self, player=None, position=None):
         if self.break_sound is not None:
