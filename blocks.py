@@ -8,6 +8,8 @@ from pyglet.image.atlas import TextureAtlas
 
 
 def get_texture_coordinates(x, y, tileset_size=TILESET_SIZE):
+    if x == -1 and y == -1:
+        return ()
     m = 1.0 / tileset_size
     dx = x * m
     dy = y * m
@@ -121,14 +123,18 @@ class Block(object):
         yp = y + h
         zm = z - w
         zp = z + w
-        return [
-            xm,yp,zm, xm,yp,zp, xp,yp,zp, xp,yp,zm,  # top
-            xm,ym,zm, xp,ym,zm, xp,ym,zp, xm,ym,zp,  # bottom
+        ret = []
+        if len(self.top_texture) > 0 or len(self.side_texture) == 0:
+            ret.extend([xm,yp,zm, xm,yp,zp, xp,yp,zp, xp,yp,zm])  # top
+        if len(self.bottom_texture) > 0 or len(self.side_texture) == 0:
+            ret.extend([xm,ym,zm, xp,ym,zm, xp,ym,zp, xm,ym,zp])  # bottom
+        ret.extend([
             xm,ym,zm, xm,ym,zp, xm,yp,zp, xm,yp,zm,  # left
             xp,ym,zp, xp,ym,zm, xp,yp,zm, xp,yp,zp,  # right
             xm,ym,zp, xp,ym,zp, xp,yp,zp, xm,yp,zp,  # front
             xp,ym,zm, xm,ym,zm, xm,yp,zm, xp,yp,zm,  # back
-        ]
+        ])
+        return ret
 
     def play_break_sound(self, player=None, position=None):
         if self.break_sound is not None:
@@ -880,10 +886,10 @@ class RoseBlock(Block):
 amount_label_color = 0, 0, 0, 255
 
 class ReedBlock(Block):
-    top_texture = 0, -15
-    bottom_texture = 10, 1
+    top_texture = -1, -1
+    bottom_texture = -1, -1
     side_texture = 10, 1
-    hardness = 0.8
+    hardness = 0.0
     transparent = True
     id =83
     name = "Reed"
@@ -891,10 +897,10 @@ class ReedBlock(Block):
     amount_label_color = 0, 0, 0, 255
 
 class PotatoBlock(Block):
-    top_texture = 0, -15
-    bottom_texture = 10, 3
+    top_texture = -1, -1
+    bottom_texture = -1, -1
     side_texture = 10, 3
-    hardness = 0.8
+    hardness = 0.0
     transparent = True
     id =142
     name = "Potato"
@@ -902,10 +908,10 @@ class PotatoBlock(Block):
     amount_label_color = 0, 0, 0, 255
 
 class CarrotBlock(Block):
-    top_texture = 0, -15
-    bottom_texture = 10, 2
+    top_texture = -1, -1
+    bottom_texture = -1, -1
     side_texture = 10, 2
-    hardness = 0.8
+    hardness = 0.0
     transparent = True
     id =141
     name = "Carrot"

@@ -237,9 +237,10 @@ class World(dict):
     #    x, y, z = position
         # only show exposed faces
     #    index = 0
-        count = 24
+        #count = 24
         vertex_data = block.get_vertices(*position)
         texture_data = block.texture_data
+        count = len(texture_data) / 2
         # FIXME: Do something of what follows.
     #    for dx, dy, dz in []:  # FACES:
     #        if (x + dx, y + dy, z + dz) in self:

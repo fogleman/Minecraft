@@ -20,12 +20,12 @@ def vec(*args):
     return (GLfloat * len(args))(*args)
 
 class Controller(object):
-    def __init__(self, window): 
+    def __init__(self, window):
         self.window = window
 
-    def setup(self):            
+    def setup(self):
         pass
-        
+
     def update(self, dt):
         pass
 
@@ -38,11 +38,11 @@ class Controller(object):
         glOrtho(0, width, 0, height, -1, 1)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
-        
+
     def push_handlers(self):
         self.setup()
         self.window.push_handlers(self)
-        
+
     def pop_handlers(self):
         self.window.pop_handlers()
 
@@ -71,7 +71,7 @@ class MainMenuController(Controller):
         self.label = Label(APP_NAME, font_name='ChunkFive Roman', font_size=50, x=window.width/2, y=self.frame.y + self.frame.height,
             anchor_x='center', anchor_y='top', color=(255, 255, 255, 255), batch=self.batch,
             group=self.labels_group)
-        
+
     def start_game_func(self):
         controller = GameController(self.window, show_gui=self.show_gui)
         self.window.switch_controller(controller)
@@ -84,13 +84,13 @@ class MainMenuController(Controller):
     def clear(self):
         glClearColor(0.0, 0.0, 0.0, 1.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        
+
     def on_mouse_press(self, x, y, button, modifiers):
         # maybe we can add a GUIManager to do the hit test automatically
         for button in self.buttons:
             if button.hit_test(x, y):
                 button.on_mouse_click()
-            
+
     def on_mouse_motion(self, x, y, dx, dy):
         cursor = None
         for button in self.buttons:
@@ -191,7 +191,7 @@ class GameController(Controller):
         self.update_time()
         self.camera.update(dt)
 
-    def setup(self):            
+    def setup(self):
         glClearColor(self.bg_red, self.bg_green, self.bg_blue, 1)
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)
@@ -210,7 +210,7 @@ class GameController(Controller):
             glFogf(GL_FOG_DENSITY, 0.35)
             glFogf(GL_FOG_START, 20.0)
             glFogf(GL_FOG_END, DRAW_DISTANCE) # 80)
-            
+
         self.window.set_exclusive_mouse(True)
         self.focus_block = Block(width=1.05, height=1.05)
         self.earth = vec(0.8, 0.8, 0.8, 1.0)
@@ -448,9 +448,10 @@ class GameController(Controller):
             if crack_level >= CRACK_LEVELS:
                 return
             texture_data = crack_textures.texture_data[crack_level]
+            count = len(texture_data) / 2
             if self.crack:
                 self.crack.delete()
-            self.crack = self.crack_batch.add(24, GL_QUADS, self.model.group,
+            self.crack = self.crack_batch.add(count, GL_QUADS, self.model.group,
                                               ('v3f/static', vertex_data),
                                               ('t2f/static', texture_data))
 
@@ -469,6 +470,9 @@ class GameController(Controller):
 
                 glColor3d(0, 0, 0)
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+                #count = len(vertex_data) / 2
+                #print count
+                #print "====="
                 pyglet.graphics.draw(24, GL_QUADS, ('v3f/static', vertex_data))
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
 
@@ -508,13 +512,13 @@ class GameController(Controller):
         self.window.push_handlers(self)
         self.window.push_handlers(self.item_list)
         self.window.push_handlers(self.inventory_list)
-        
+
     def pop_handlers(self):
         self.window.pop_handlers()
         self.window.pop_handlers()
         self.window.pop_handlers()
         self.window.pop_handlers()
         self.window.pop_handlers()
-        
+
     def on_close(self):
         self.save_to_file()
