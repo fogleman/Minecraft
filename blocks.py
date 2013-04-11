@@ -3,6 +3,8 @@
 from __future__ import unicode_literals
 from globals import *
 import sounds
+from pyglet.gl import *
+from pyglet.image.atlas import TextureAtlas
 
 
 def get_texture_coordinates(x, y, tileset_size=TILESET_SIZE):
@@ -13,6 +15,35 @@ def get_texture_coordinates(x, y, tileset_size=TILESET_SIZE):
 
 
 BLOCKS_DIR = {}
+
+#To enable, extract a texture pack's blocks folder to resources/texturepacks/textures/blocks/
+#For MC 1.5 Texture Packs
+class TextureGroupIndividual(pyglet.graphics.Group):
+    def __init__(self, names):
+        super(TextureGroupIndividual, self).__init__()
+        atlas = TextureAtlas(64*len(names), 64)
+        self.texture = atlas.texture
+        self.texture_data = []
+        i=0
+        for name in names:
+            subtex = atlas.add(pyglet.image.load(os.path.join('resources', 'texturepacks', 'textures', 'blocks', name+'.png')).get_region(0,0,64,64))
+            for val in subtex.tex_coords:
+                i += 1
+                if i % 3 != 0: self.texture_data.append(val) #tex_coords has a z component we don't utilize
+        #Repeat the last texture for the remaining sides
+        # (top, bottom, side, side, side, side)
+        # ie: ("dirt",) ("grass_top","dirt","grass_side")
+        # Becomes ("dirt","dirt","dirt","dirt","dirt","dirt") ("grass_top","dirt","grass_side","grass_side","grass_side","grass_side")
+        self.texture_data += self.texture_data[-8:]*(6-len(names))
+
+    def set_state(self):
+        glBindTexture(self.texture.target, self.texture.id)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+        glEnable(self.texture.target)
+
+    def unset_state(self):
+        glDisable(self.texture.target)
 
 
 class Block(object):
@@ -31,6 +62,8 @@ class Block(object):
     top_texture = ()
     bottom_texture = ()
     side_texture = ()
+    group = None  # The texture (group) the block renders from
+    texture_name = None  # A list of block faces, named what Mojang names their blocks/"file".png
 
     # Sounds
     break_sound = sounds.wood_break
@@ -59,13 +92,16 @@ class Block(object):
         if height is not None:
             self.height = height
 
-        # Applies get_texture_coordinates to each of the faces to be textured.
-        for k in ('top_texture', 'bottom_texture', 'side_texture'):
-            v = getattr(self, k)
-            if v:
-                setattr(self, k, get_texture_coordinates(*v))
-
-        self.texture_data = self.get_texture_data()
+        if self.texture_name and os.path.exists(os.path.join('resources', 'texturepacks', 'textures', 'blocks')):
+            self.group = TextureGroupIndividual(self.texture_name)
+            self.texture_data = self.group.texture_data
+        else:
+            # Applies get_texture_coordinates to each of the faces to be textured.
+            for k in ('top_texture', 'bottom_texture', 'side_texture'):
+                v = getattr(self, k)
+                if v:
+                    setattr(self, k, get_texture_coordinates(*v))
+            self.texture_data = self.get_texture_data()
 
         BLOCKS_DIR[self.id] = self
 
@@ -121,6 +157,7 @@ class StoneBlock(HardBlock):
     top_texture = 2, 1
     bottom_texture = 2, 1
     side_texture = 2, 1
+    texture_name = "stone",
     hardness = 1.5
     id = 1
     name = "Stone"
@@ -135,6 +172,7 @@ class GrassBlock(Block):
     top_texture = 1, 0
     bottom_texture = 0, 1
     side_texture = 0, 0
+    texture_name = "grass_top", "dirt", "grass_side"
     hardness = 0.6
     id = 2
     break_sound = sounds.dirt_break
@@ -150,6 +188,7 @@ class DirtBlock(Block):
     top_texture = 0, 1
     bottom_texture = 0, 1
     side_texture = 0, 1
+    texture_name = "dirt",
     hardness = 0.5
     id = 3
     name = "Dirt"
@@ -160,6 +199,7 @@ class SnowBlock(Block):
     top_texture = 4, 1
     bottom_texture = 4, 1
     side_texture = 4, 1
+    texture_name = "snow",
     hardness = 0.5
     id = 80
     name = "Snow"
@@ -170,6 +210,7 @@ class SandBlock(Block):
     top_texture = 1, 1
     bottom_texture = 1, 1
     side_texture = 1, 1
+    texture_name = "sand",
     hardness = 0.5
     amount_label_color = 0, 0, 0, 255
     id = 12
@@ -182,6 +223,7 @@ class GoldOreBlock(HardBlock):
     top_texture = 3, 4
     bottom_texture = 3, 4
     side_texture = 3, 4
+    texture_name = "oreGold",
     hardness = 3
     id = 14
     digging_tool = PICKAXE
@@ -192,6 +234,7 @@ class IronOreBlock(HardBlock):
     top_texture = 1, 4
     bottom_texture = 1, 4
     side_texture = 1, 4
+    texture_name = "oreIron",
     hardness = 3
     id = 15
     digging_tool = PICKAXE
@@ -202,6 +245,7 @@ class DiamondOreBlock(HardBlock):
     top_texture = 2, 4
     bottom_texture = 2, 4
     side_texture = 2, 4
+    texture_name = "oreDiamond",
     hardness = 3
     id = 56
     digging_tool = PICKAXE
@@ -215,6 +259,7 @@ class CoalOreBlock(HardBlock):
     top_texture = 0, 4
     bottom_texture = 0, 4
     side_texture = 0, 4
+    texture_name = "oreCoal",
     hardness = 3
     id = 16
     digging_tool = PICKAXE
@@ -228,6 +273,7 @@ class BrickBlock(HardBlock):
     top_texture = 2, 0
     bottom_texture = 2, 0
     side_texture = 2, 0
+    texture_name = "brick",
     hardness = 2
     id = 45
     digging_tool = PICKAXE
@@ -249,6 +295,7 @@ class GlassBlock(Block):
     top_texture = 0, 5
     bottom_texture = 0, 5
     side_texture = 0, 5
+    texture_name = "glass",
     transparent = True
     hardness = 0.2
     amount_label_color = 0, 0, 0, 255
@@ -261,6 +308,7 @@ class GravelBlock(Block):
     top_texture = 1, 5
     bottom_texture = 1, 5
     side_texture = 1, 5
+    texture_name = "gravel",
     hardness = 0.4
     amount_label_color = 0, 0, 0, 255
     id = 13
@@ -273,6 +321,7 @@ class BedrockBlock(HardBlock):
     top_texture = 3, 0
     bottom_texture = 3, 0
     side_texture = 3, 0
+    texture_name = "bedrock",
     hardness = -1  # Unbreakable
     id = 7
     name = "Bedrock"
@@ -282,6 +331,7 @@ class WaterBlock(Block):
     top_texture = 0, 2
     bottom_texture = 6, 7
     side_texture = 6, 7
+    texture_name = "water",
     transparent = True
     hardness = -1  # Unobtainable
     density = 0.5
@@ -294,6 +344,7 @@ class CraftTableBlock(WoodBlock):
     top_texture = 8, 1
     bottom_texture = 1, 1
     side_texture = 8, 0
+    texture_name = "workbench_top","wood","workbench_front","workbench_side",
     hardness = 2.5
     id = 58
     name = "Crafting Table"
@@ -311,6 +362,7 @@ class SandstoneBlock(HardBlock):
     top_texture = 2, 2
     bottom_texture = 2, 2
     side_texture = 2, 2
+    texture_name = "sandstone_top","sandstone_bottom","sandstone_side"
     amount_label_color = 0, 0, 0, 255
     hardness = 0.8
     id = 24
@@ -332,6 +384,7 @@ class StonebrickBlock(HardBlock):
     top_texture = 0, 3
     bottom_texture = 0, 3
     side_texture = 0, 3
+    texture_name = "stonebricksmooth",
     hardness = 1.5
     id = 98
     name = "Stone Bricks"
@@ -341,6 +394,7 @@ class OakWoodPlankBlock(WoodBlock):
     top_texture = 3, 3
     bottom_texture = 3, 3
     side_texture = 3, 3
+    texture_name = "wood",
     hardness = 2
     id = 5.0
     name = "Oak Wood Planks"
@@ -350,6 +404,7 @@ class SpruceWoodPlankBlock(WoodBlock):
     top_texture = 1, 3
     bottom_texture = 1, 3
     side_texture = 1, 3
+    texture_name = "wood_spruce",
     hardness = 2
     id = 5.1
     name = "Spruce Wood Planks"
@@ -359,6 +414,7 @@ class JungleWoodPlankBlock(WoodBlock):
     top_texture = 2, 3
     bottom_texture = 2, 3
     side_texture = 2, 3
+    texture_name = "wood_jungle",
     hardness = 2
     id = 5.3
     name = "Jungle Wood Planks"
@@ -370,6 +426,7 @@ class SnowGrassBlock(Block):
     top_texture = 4, 1
     bottom_texture = 0, 1
     side_texture = 4, 0
+    texture_name = "snow","dirt","snow_side"
     hardness = 0.6
     id = 80
     break_sound = sounds.dirt_break
@@ -383,6 +440,7 @@ class OakWoodBlock(WoodBlock):
     top_texture = 7, 1
     bottom_texture = 7, 1
     side_texture = 7, 0
+    texture_name = "tree_top","tree_top","tree_side"
     hardness = 2
     id = 17.0
     name = "Oak wood"
@@ -405,6 +463,7 @@ class JungleWoodBlock(WoodBlock):
     top_texture = 6, 1
     bottom_texture = 6, 1
     side_texture = 6, 0
+    texture_name = "tree_top","tree_top","tree_jungle"
     hardness = 2
     id = 17.1
     name = "Jungle wood"
@@ -414,6 +473,7 @@ class BirchWoodBlock(WoodBlock):
     top_texture = 5, 1
     bottom_texture = 5, 1
     side_texture = 5, 0
+    texture_name = "tree_top","tree_top","tree_birch"
     hardness = 2
     id = 17.2
     amount_label_color = 0, 0, 0, 255
@@ -424,6 +484,7 @@ class CactusBlock(Block):
     top_texture = 7, 5
     bottom_texture = 7, 3
     side_texture = 7, 4
+    texture_name = "cactus_top","cactus_bottom","cactus_side"
     width = 0.8
     hardness = 2
     id = 81
@@ -434,6 +495,7 @@ class TallCactusBlock(Block):
     top_texture = 7, 5
     bottom_texture = 7, 3
     side_texture = 7, 4
+    texture_name = "cactus_top","cactus_bottom","cactus_side"
     transparent = True
     width = 0.3
     hardness = 1
@@ -453,6 +515,7 @@ class OakLeafBlock(LeafBlock):
     top_texture = 7, 2
     bottom_texture = 7, 2
     side_texture = 7, 2
+    texture_name = "leaves",
     hardness = 0.2
     id = 18.0
     name = "Oak Leaves"
@@ -462,6 +525,7 @@ class JungleLeafBlock(LeafBlock):
     top_texture = 6, 2
     bottom_texture = 6, 2
     side_texture = 6, 2
+    texture_name = "leaves_jungle",
     hardness = 0.2
     id = 18.1
     name = "Jungle Leaves"
@@ -471,6 +535,7 @@ class BirchLeafBlock(LeafBlock):
     top_texture = 5, 2
     bottom_texture = 5, 2
     side_texture = 5, 2
+    texture_name = "leaves",
     hardness = 0.2
     id = 18.2
     name = "Birch Leaves"
@@ -484,6 +549,7 @@ class MelonBlock(Block):
     top_texture = 4, 3
     bottom_texture = 4, 3
     side_texture = 4, 2
+    texture_name = "melon_top","melon_top","melon_side"
     transparent = True
     hardness = 1
     width = 0.8
@@ -497,6 +563,7 @@ class PumpkinBlock(Block):
     top_texture = 2, 5
     bottom_texture = 2, 5
     side_texture = 3, 5
+    texture_name = "pumpkin_top","pumpkin_top","pumpkin_side"
     transparent = True
     hardness = 1
     width = 0.8
@@ -509,6 +576,7 @@ class TorchBlock(WoodBlock):
     top_texture = 5, 5
     bottom_texture = 0, 1
     side_texture = 4, 5
+    texture_name = "torch",
     hardness = 1
     transparent = True
     width = 0.2
@@ -550,6 +618,7 @@ class CobbleBlock(HardBlock):
     top_texture = 6, 3
     bottom_texture = 6, 3
     side_texture = 6, 3
+    texture_name = "stonebrick",
     hardness = 2
     id = 4
     name = "Cobblestone"
@@ -559,6 +628,7 @@ class CobbleFenceBlock(HardBlock):
     top_texture = 6, 3
     bottom_texture = 6, 3
     side_texture = 6, 3
+    texture_name = "stonebrick",
     transparent = True
     hardness = 2
     width = 0.6
@@ -570,6 +640,7 @@ class BookshelfBlock(WoodBlock):
     top_texture = 1, 2
     bottom_texture = 0, 2
     side_texture = 5, 4
+    texture_name = "wood","wood","bookshelf"
     hardness = 1.5
     id = 47
     name = "Bookshelf"
@@ -579,6 +650,7 @@ class FurnaceBlock(HardBlock):
     top_texture = 7, 7
     bottom_texture = 6, 3
     side_texture = 7, 6
+    texture_name = "furnace_top","stonebrick","furnace_front","furnace_side"
     hardness = 3.5
     id = 61
     name = "Furnace"
@@ -605,23 +677,13 @@ class ChestBlock(Block):
     id = 54
     name = "Chest"
 
-
-class CactusBlock(Block):
-    top_texture = 7, 5
-    bottom_texture = 7, 3
-    side_texture = 7, 4
-    transparent = True
-    width = 0.8
-    hardness = 2
-    id = 81
-    name = "Cactus"
-
 # Wool blocks
 
 class BlackWoolBlock(Block):
     top_texture = 15, 0
     bottom_texture = 15, 0
     side_texture = 15, 0
+    texture_name = "cloth_15",
     hardness = 1
     id =35.15
     name = "Black Wool"
@@ -630,6 +692,7 @@ class RedWoolBlock(Block):
     top_texture = 15, 1
     bottom_texture = 15, 1
     side_texture = 15, 1
+    texture_name = "cloth_14",
     hardness = 1
     id =35.14
     name = "Red Wool"
@@ -638,6 +701,7 @@ class GreenWoolBlock(Block):
     top_texture = 15, 2
     bottom_texture = 15, 2
     side_texture = 15, 2
+    texture_name = "cloth_13",
     hardness = 1
     id =35.13
     name = "Green Wool"
@@ -646,6 +710,7 @@ class BrownWoolBlock(Block):
     top_texture = 15, 3
     bottom_texture = 15, 3
     side_texture = 15, 3
+    texture_name = "cloth_12",
     hardness = 1
     id =35.12
     name = "Brown Wool"
@@ -654,6 +719,7 @@ class BlueWoolBlock(Block):
     top_texture = 15, 4
     bottom_texture = 15, 4
     side_texture = 15, 4
+    texture_name = "cloth_11",
     hardness = 1
     id =35.11
     name = "Blue Wool"
@@ -662,6 +728,7 @@ class PurpleWoolBlock(Block):
     top_texture = 15, 5
     bottom_texture = 15, 5
     side_texture = 15, 5
+    texture_name = "cloth_10",
     hardness = 1
     id =35.10
     name = "Purple Wool"
@@ -670,6 +737,7 @@ class CyanWoolBlock(Block):
     top_texture = 15, 6
     bottom_texture = 15, 6
     side_texture = 15, 6
+    texture_name = "cloth_9",
     hardness = 1
     id =35.9
     name = "Cyan Wool"
@@ -678,6 +746,7 @@ class LightGreyWoolBlock(Block):
     top_texture = 15, 7
     bottom_texture = 15, 7
     side_texture = 15, 7
+    texture_name = "cloth_8",
     hardness = 1
     id =35.8
     name = "Light Grey Wool"
@@ -686,6 +755,7 @@ class GreyWoolBlock(Block):
     top_texture = 15, 8
     bottom_texture = 15, 8
     side_texture = 15, 8
+    texture_name = "cloth_7",
     hardness = 1
     id =35.7
     name = "Grey Wool"
@@ -694,6 +764,7 @@ class PinkWoolBlock(Block):
     top_texture = 15, 9
     bottom_texture = 15, 9
     side_texture = 15, 9
+    texture_name = "cloth_6",
     hardness = 1
     id =35.6
     name = "Pink Wool"
@@ -702,7 +773,7 @@ class LimeWoolBlock(Block):
     top_texture = 15, 10
     bottom_texture = 15, 10
     side_texture = 15, 10
-    width = 0.8
+    texture_name = "cloth_5",
     hardness = 1
     id =35.5
     name = "Lime Wool"
@@ -711,6 +782,7 @@ class YellowWoolBlock(Block):
     top_texture = 15, 11
     bottom_texture = 15, 11
     side_texture = 15, 11
+    texture_name = "cloth_4",
     hardness = 1
     id =35.4
     name = "Yellow Wool"
@@ -719,6 +791,7 @@ class LightBlueWoolBlock(Block):
     top_texture = 15, 12
     bottom_texture = 15, 12
     side_texture = 15, 12
+    texture_name = "cloth_3",
     hardness = 1
     id =35.3
     name = "Light Blue Wool"
@@ -727,6 +800,7 @@ class MagentaWoolBlock(Block):
     top_texture = 15, 13
     bottom_texture = 15, 13
     side_texture = 15, 13
+    texture_name = "cloth_2",
     hardness = 1
     id =35.2
     name = "Magenta Wool"
@@ -735,6 +809,7 @@ class OrangeWoolBlock(Block):
     top_texture = 15, 14
     bottom_texture = 15, 14
     side_texture = 15, 14
+    texture_name = "cloth_1",
     hardness = 1
     id =35.1
     name = "Orange Wool"
@@ -743,6 +818,7 @@ class WhiteWoolBlock(Block):
     top_texture = 15, 15
     bottom_texture = 15, 15
     side_texture = 15, 15
+    texture_name = "cloth_0",
     hardness = 1
     id =35.0
     name = "White Wool"
@@ -826,5 +902,3 @@ lightbluewool_block = LightBlueWoolBlock()
 magentawool_block = MagentaWoolBlock()
 orangewool_block = OrangeWoolBlock()
 whitewool_block = WhiteWoolBlock()
-
-

@@ -253,7 +253,7 @@ class World(dict):
 
         # create vertex list
         batch = self.transparency_batch if block.transparent else self.batch
-        self._shown[position] = batch.add(count, GL_QUADS, self.group,
+        self._shown[position] = batch.add(count, GL_QUADS, block.group or self.group,
                                           ('v3f/static', vertex_data),
                                           ('t2f/static', texture_data))
 
