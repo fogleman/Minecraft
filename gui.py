@@ -129,18 +129,17 @@ class Control(object):
         pass
 
 class AbstractInventory(Control):
-    def change_index(self, change):
-        self.set_index(self.current_index + change)
+    def __init__(self, parent, *args, **kwargs):
+        self._current_index = 0
+        self.parent = parent
+        
+    @property
+    def current_index(self):
+        return int(self._current_index)
 
-    def set_index(self, index):
-        index = int(index)
-        if self.current_index == index:
-            return
-        self.current_index = index
-        if self.current_index >= self.max_items:
-            self.current_index = 0
-        elif self.current_index < 0:
-            self.current_index = self.max_items - 1
+    @current_index.setter
+    def current_index(self, value):
+        self._current_index = value % self.max_items
         self.update_current()
 
     def get_block_icon(self, block):
@@ -160,11 +159,9 @@ class ItemSelector(AbstractInventory):
         self.group = pyglet.graphics.OrderedGroup(1)
         self.labels_group = pyglet.graphics.OrderedGroup(2)
         self.amount_labels = []
-        self.parent = parent
         self.model = model
         self.player = player
         self.max_items = 9
-        self.current_index = 0
         self.icon_size = self.model.group.texture.width / globals.TILESET_SIZE
         self.visible = True
         self.num_keys = [getattr(globals, 'INVENTORY_%d_KEY' % i)
@@ -266,7 +263,7 @@ class ItemSelector(AbstractInventory):
 
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
         if self.visible and self.parent.window.exclusive:
-            self.change_index(scroll_y * -1)
+            self.current_index -= scroll_y
             return pyglet.event.EVENT_HANDLED
 
     def on_key_press(self, symbol, modifiers):
