@@ -33,7 +33,6 @@ class Model(World):
         world_size = globals.config.getint('World', 'size')
         world_type = globals.TERRAIN_CHOICE  # FIXME: Unify names!
         hill_height = globals.TERRAIN['hill_height']
-        flat_world = globals.config.getboolean('World', 'flat')
         self.max_trees = globals.TERRAIN['max_trees']
         tree_chance = self.max_trees / float(world_size *
                                              (globals.SECTOR_SIZE ** 3))
@@ -97,7 +96,7 @@ class Model(World):
                             tree_class = random.choice(tree_class)
                         self.generate_tree((x, y - 2, z), tree_class)
 
-        if flat_world:
+        if globals.FLAT_MODE:
             return
 
         o = n - 10 + hill_height - 6
