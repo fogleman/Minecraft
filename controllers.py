@@ -212,8 +212,7 @@ class GameController(Controller):
             glFogf(GL_FOG_DENSITY, 0.35)
             glFogf(GL_FOG_START, 20.0)
             glFogf(GL_FOG_END, globals.DRAW_DISTANCE)  # 80)
-            
-        self.window.set_exclusive_mouse(True)
+
         self.focus_block = Block(width=1.05, height=1.05)
         self.earth = vec(0.8, 0.8, 0.8, 1.0)
         self.white = vec(1.0, 1.0, 1.0, 1.0)
