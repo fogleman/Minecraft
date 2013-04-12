@@ -690,7 +690,7 @@ class TorchBlock(WoodBlock):
 
 class YFlowersBlock(Block):
     top_texture = 6, 6
-    bottom_texture = 1, 0
+    bottom_texture = -1, -1
     side_texture = 6, 5
     hardness = 0.1
     transparent = True
