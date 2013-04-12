@@ -111,13 +111,13 @@ class CraftingTests(unittest.TestCase):
         recipes = []
         ingres = []
         outputs = []
-        for i in xrange(0, 300):
+        for i in xrange(0, 50):
             recipe, ingre, output, recipe2, recipe3 = self.generate_random_recipe()
             recipes.append(recipe2)
             ingres.append(ingre)
             outputs.append(output)
             self.recipes.add_recipe(recipe, ingre, output)
-        self.assertEqual(self.recipes.nr_recipes, 300)
+        self.assertEqual(self.recipes.nr_recipes, 50)
         for i, recipe in enumerate(recipes):
             self.assertEqual(self.recipes.craft(recipe), outputs[i])
 
