@@ -46,13 +46,13 @@ class Player(Entity):
 
     def on_key_release(self, symbol, modifiers):
         if symbol == globals.MOVE_FORWARD_KEY:
-            self.strafe[0] = 0
+            self.strafe[0] += 1
         elif symbol == globals.MOVE_BACKWARD_KEY:
-            self.strafe[0] = 0
+            self.strafe[0] -= 1
         elif symbol == globals.MOVE_LEFT_KEY:
-            self.strafe[1] = 0
+            self.strafe[1] += 1
         elif symbol == globals.MOVE_RIGHT_KEY:
-            self.strafe[1] = 0
+            self.strafe[1] -= 1
         elif (symbol == globals.JUMP_KEY
               or symbol == globals.CROUCH_KEY) and self.flying:
             self.dy = 0
