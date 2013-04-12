@@ -47,13 +47,11 @@ class Controller(object):
         self.window.pop_handlers()
 
 class MainMenuController(Controller):
-    def __init__(self, window, show_gui=True):
+    def __init__(self, window):
         super(MainMenuController, self).__init__(window)
         self.batch = pyglet.graphics.Batch()
         self.group = pyglet.graphics.OrderedGroup(2)
         self.labels_group = pyglet.graphics.OrderedGroup(3)
-
-        self.show_gui = show_gui
 
         background = load_image('resources', 'textures', 'main_menu_background.png')
         image = load_image('resources', 'textures', 'frame.png')
@@ -73,7 +71,7 @@ class MainMenuController(Controller):
             group=self.labels_group)
 
     def start_game_func(self):
-        controller = GameController(self.window, show_gui=self.show_gui)
+        controller = GameController(self.window)
         self.window.switch_controller(controller)
         return pyglet.event.EVENT_HANDLED
 
@@ -124,9 +122,8 @@ class MainMenuController(Controller):
 
 
 class GameController(Controller):
-    def __init__(self, window, show_gui=True):
+    def __init__(self, window):
         super(GameController, self).__init__(window)
-        self.show_gui = show_gui  # TODO: Rename into hud_enabled
         self.sector = None
         self.time_of_day = 0.0
         self.count = 0
@@ -203,7 +200,7 @@ class GameController(Controller):
         glEnable(GL_BLEND)
         glEnable(GL_LINE_SMOOTH)
 
-        if globals.SHOW_FOG:
+        if globals.FOG_ENABLED:
             glEnable(GL_FOG)
             glFogfv(GL_FOG_COLOR, vec(self.bg_red, self.bg_green, self.bg_blue, 1))
             glHint(GL_FOG_HINT, GL_DONT_CARE)
@@ -236,7 +233,7 @@ class GameController(Controller):
                                      anchor_style=globals.ANCHOR_LEFT|globals.ANCHOR_RIGHT|globals.ANCHOR_BOTTOM)
         self.command_parser = CommandParser()
         self.camera = Camera3D(target=self.player)
-        if self.show_gui:
+        if globals.HUD_ENABLED:
             self.label = pyglet.text.Label(
                 '', font_name='Arial', font_size=8, x=10, y=self.window.height - 10,
                 anchor_x='left', anchor_y='top', color=(255, 255, 255, 255))
@@ -362,7 +359,7 @@ class GameController(Controller):
 
     def on_key_press(self, symbol, modifiers):
         if symbol == globals.TOGGLE_HUD_KEY:
-            self.show_gui = not self.show_gui
+            globals.HUD_ENABLED = not globals.HUD_ENABLED
         elif symbol == globals.SAVE_KEY:
             self.save_to_file()
         elif symbol == globals.INVENTORY_SORT_KEY:
@@ -391,13 +388,13 @@ class GameController(Controller):
             return pyglet.event.EVENT_HANDLED
 
     def on_resize(self, width, height):
-        if self.show_gui:
+        if globals.HUD_ENABLED:
             self.label.y = height - 10
         self.text_input._on_resize()
 
     def set_3d(self):
         width, height = self.window.get_size()
-        if globals.SHOW_FOG:
+        if globals.FOG_ENABLED:
             glFogfv(GL_FOG_COLOR, vec(self.bg_red, self.bg_green, self.bg_blue, 1.0))
         glEnable(GL_DEPTH_TEST)
         glViewport(0, 0, width, height)
@@ -435,7 +432,7 @@ class GameController(Controller):
         self.crack_batch.draw()
         self.draw_focused_block()
         self.set_2d()
-        if self.show_gui:
+        if globals.HUD_ENABLED:
             self.draw_label()
             self.item_list.draw()
             self.inventory_list.draw()

@@ -73,8 +73,8 @@ def initialize_config():
         choices=globals.DRAW_DISTANCE_CHOICES)
     globals.DRAW_DISTANCE = globals.DRAW_DISTANCE_CHOICES[globals.DRAW_DISTANCE_CHOICE]
 
-    globals.SHOW_FOG = get_or_update_config(
-        graphics, 'show_fog', globals.SHOW_FOG, conv=bool)
+    globals.FOG_ENABLED = get_or_update_config(
+        graphics, 'fog_enabled', globals.FOG_ENABLED, conv=bool)
 
     globals.MOTION_BLUR = get_or_update_config(
         graphics, 'motion_blur', globals.MOTION_BLUR, conv=bool)
@@ -99,13 +99,14 @@ def initialize_config():
 
 
 class Window(pyglet.window.Window):
-    def __init__(self, launch_fullscreen=False, show_gui=True, **kwargs):
+    def __init__(self, launch_fullscreen=False,
+                 **kwargs):
         super(Window, self).__init__(
             globals.WINDOW_WIDTH, globals.WINDOW_HEIGHT, **kwargs)
         self.exclusive = False
         self.reticle = None
         self.controller = None
-        controller = MainMenuController(self, show_gui=show_gui)
+        controller = MainMenuController(self)
         self.switch_controller(controller)
         if launch_fullscreen:
             self.set_fullscreen()
@@ -186,12 +187,11 @@ def main(options):
 
     # try:
         # window_config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
-        # window = Window(show_gui=options.show_gui, caption='pyCraftr', resizable=True, config=window_config, save=save_object)
+        # window = Window(caption='pyCraftr', resizable=True, config=window_config)
     # except pyglet.window.NoSuchConfigException:
     window = Window(
-        launch_fullscreen=options.fullscreen,
-        show_gui=options.show_gui, caption=globals.APP_NAME, resizable=True,
-        vsync=False)
+        launch_fullscreen=options.fullscreen, caption=globals.APP_NAME,
+        resizable=True, vsync=False)
 
     globals.main_timer = Timer()
     pyglet.clock.schedule_interval(globals.main_timer.schedule, globals.TIMER_INTERVAL)
@@ -202,7 +202,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Play a Python made Minecraft clone.')
 
     display_group = parser.add_argument_group('Display options')
-    display_group.add_argument("--show-gui", action="store_true", default=True, help="Enabled by default.")
     display_group.add_argument("--fullscreen", action="store_true", default=False, help="Runs the game in fullscreen. Press 'Q' to exit the game.")
 
     game_group = parser.add_argument_group('Game options')
