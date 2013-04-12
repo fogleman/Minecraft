@@ -164,7 +164,6 @@ def main(options):
         show_gui=options.show_gui, caption=globals.APP_NAME, resizable=True,
         vsync=False)
 
-    pyglet.clock.set_fps_limit(globals.MAX_FPS)
     pyglet.app.run()
 
 
