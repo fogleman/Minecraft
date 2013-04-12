@@ -130,8 +130,8 @@ class AbstractInventory(Control):
         self.update_current()
 
     def get_block_icon(self, block):
-        if os.path.isfile(os.path.join('resources', 'textures', 'icons', str(block.id) + ".png")):
-            block_icon = pyglet.image.load(os.path.join('resources', 'textures', 'icons', str(block.id) + ".png"))
+        if os.path.isfile(os.path.join('resources', 'textures', 'icons', block.id.filename() + ".png")):
+            block_icon = pyglet.image.load(os.path.join('resources', 'textures', 'icons', block.id.filename() + ".png"))
         else:
             block_icon = (block.group or self.model.group).texture.get_region(
                 int(block.texture_data[2*8] * globals.TILESET_SIZE) * self.icon_size,

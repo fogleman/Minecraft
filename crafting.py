@@ -138,7 +138,7 @@ recipes.add_recipe(["#", "#"], {'#': quartz_block},
 recipes.add_recipe(["#", "#", "#"], {'#': quartz_block},
                    ItemStack(quartzcolumn_block.id, amount=3))
 recipes.add_recipe(["   ", "   ", "###"], {'#': quartz_block},
-                   ItemStack(quartzchisled_block.id, amount=3))
+                   ItemStack(quartzchiseled_block.id, amount=3))
 
 # wood items
 

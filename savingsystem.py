@@ -8,6 +8,7 @@ import math
 # Modules from this project
 from model import *
 from player import *
+from blocks import BlockID
 import globals
 
 
@@ -31,7 +32,8 @@ def save_world(window, game_dir, world=None):
         with open(os.path.join(game_dir, world, "blocks.dat"), "wb", 1024*1024) as f:
             f.write(struct.pack("Q",len(blocks)))
             for blockpos in blocks:
-                f.write(structvec.pack(*blockpos) + structuchar2.pack(blocks[blockpos].id_main, blocks[blockpos].id_sub))
+                id = blocks[blockpos].id
+                f.write(structvec.pack(*blockpos) + structuchar2.pack(id.main, id.sub))
         sectors = window.model.sectors
         with open(os.path.join(game_dir, world, "sectors.dat"), "wb", 1024*1024) as f:
             f.write(struct.pack("Q",len(sectors)))
@@ -79,8 +81,7 @@ def open_world(gamecontroller, game_dir, world=None):
         with open(os.path.join(game_dir, world, "blocks.dat"), "rb") as f:
             for i in xrange(struct.unpack("Q",f.read(8))[0]):
                 bx, by, bz, blockid, dataid = structvecBB.unpack(f.read(8))
-                if dataid is not 0: blockid += (float(dataid) / 10)
-                blocks[(bx,by,bz)] = globals.BLOCKS_DIR[blockid]
+                blocks[(bx,by,bz)] = globals.BLOCKS_DIR[BlockID(blockid, dataid)]
     else:
         file = open(os.path.join(game_dir, world, "blocks.pkl"), "rb")
         fileversion = struct.unpack("B",file.read(1))[0]

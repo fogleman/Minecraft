@@ -23,18 +23,20 @@ class Item(object):
     max_stack_size = 0
     amount_label_color = 255, 255, 255, 255
     name = "Item"
+    group = None
 
     def __init__(self):
+        self.id = BlockID(self.id)
         globals.ITEMS_DIR[self.id] = self
 
     def on_right_click(self):
         pass
 
 class ItemStack(object):
-    def __init__(self, type = 0, amount = 1, durability = -1, data = 0):
+    def __init__(self, type = 0, amount = 1, durability = 0, data = 0):
         if amount < 1:
             amount = 1
-        self.type = type
+        self.type = BlockID(type, durability)
         self.amount = amount
         self.durability = durability
         self.data = data
@@ -111,7 +113,7 @@ class YellowDyeItem(Item):
     name = "Dandelion Yellow Dye"
 
 class CactusGreenDyeItem(Item):
-    id = 351.2
+    id = 351,2
     max_stack_size = 64
     name = "Cactus Green Dye"
 
@@ -149,21 +151,21 @@ class EmeraldAxe(Tool):
     material = globals.IRON_TOOL
     tool_type = globals.AXE
     max_stack_size = 1
-    id = 258.1
+    id = 258,1
     name = "Emerald Axe"
 
 class RubyAxe(Tool):
     material = globals.IRON_TOOL
     tool_type = globals.AXE
     max_stack_size = 1
-    id = 258.2
+    id = 258,2
     name = "Ruby Axe"
 
 class SapphireAxe(Tool):
     material = globals.IRON_TOOL
     tool_type = globals.AXE
     max_stack_size = 1
-    id = 258.3
+    id = 258,3
     name = "Sapphire Axe"
 
 class DiamondAxe(Tool):
@@ -205,21 +207,21 @@ class EmeraldPickaxe(Tool):
     material = globals.IRON_TOOL
     tool_type = globals.PICKAXE
     max_stack_size = 1
-    id = 257.1
+    id = 257,1
     name = "Emerald Pickaxe"
 
 class RubyPickaxe(Tool):
     material = globals.IRON_TOOL
     tool_type = globals.PICKAXE
     max_stack_size = 1
-    id = 257.2
+    id = 257,2
     name = "Ruby Pickaxe"
 
 class SapphirePickaxe(Tool):
     material = globals.IRON_TOOL
     tool_type = globals.PICKAXE
     max_stack_size = 1
-    id = 257.3
+    id = 257,3
     name = "Sapphire Pickaxe"
 
 class DiamondPickaxe(Tool):
@@ -261,21 +263,21 @@ class EmeraldShovel(Tool):
     material = globals.IRON_TOOL
     tool_type = globals.SHOVEL
     max_stack_size = 1
-    id = 256.1
+    id = 256,1
     name = "Emerald Shovel"
 
 class RubyShovel(Tool):
     material = globals.IRON_TOOL
     tool_type = globals.SHOVEL
     max_stack_size = 1
-    id = 256.2
+    id = 256,2
     name = "Ruby Shovel"
 
 class SapphireShovel(Tool):
     material = globals.IRON_TOOL
     tool_type = globals.SHOVEL
     max_stack_size = 1
-    id = 256.3
+    id = 256,3
     name = "Sapphire Shovel"
 
 class DiamondShovel(Tool):
