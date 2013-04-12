@@ -64,8 +64,16 @@ class BlockID(object):
     def __init__(self, main, sub=0):
         if isinstance(main, tuple):
             self.main, self.sub = main
-        elif isinstance(main, str):
-            a, b = main.split(".")
+        elif isinstance(main, basestring):
+            # Allow "35", "35.0", or "35,0"
+            spl = main.split(".") if "." in main else main.split(",") if "," in main else (main,)
+            if len(spl) == 2:
+                a, b = spl
+            elif len(spl) == 1:
+                a = spl[0]
+                b = 0
+            else:
+                raise ValueError("Expected #.# or #,#. Got %s" % main)
             self.main = int(a)
             self.sub = int(b or 0)
         elif isinstance(main, self.__class__):
@@ -472,7 +480,7 @@ class SapphireOreBlock(HardBlock):
     side_texture = 12, 2
     hardness = 2
     id = 129,2 # not in MC
-    name = "Ruby Ore"
+    name = "Sapphire Ore"
 
 # Changed Marble to Quartz -- It seems that Quartz is MC's answer to Tekkit's Marble.
 class QuartzBlock(HardBlock):
