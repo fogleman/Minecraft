@@ -442,8 +442,8 @@ class InventorySelector(AbstractInventory):
                 group=self.amount_labels_group)
             self.amount_labels.append(amount_label)
             self.icons.append(icon)
-            if block.id > 0:
-                crafting_ingredients[int(floor(i / (2 if self.mode == 0 else 3)))].append(block)
+            if item.get_object().id > 0:
+                crafting_ingredients[int(floor(i / (2 if self.mode == 0 else 3)))].append(item.get_object())
 
         if len(crafting_ingredients) > 0:
             outcome = globals.recipes.craft(crafting_ingredients)
@@ -553,7 +553,7 @@ class InventorySelector(AbstractInventory):
             return
         self.crafting_outcome = item
 
-        icon = image_sprite(self.get_block_icon(item.get_object()), self.batch, self.group)
+        self.crafting_outcome_icon = image_sprite(self.get_block_icon(item.get_object()), self.batch, self.group)
         inventory_rows = floor(self.max_items / 9)
         inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
         quick_slots_y = self.frame.y + 4
