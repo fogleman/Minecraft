@@ -63,6 +63,14 @@ class Model(World):
             + (sapphireore_block,) * 2 + (lapisore_block,) * 8 \
             + (quartz_block,) * 3
 
+        # ores avaliable on the lowest level, closet to bedrock
+        lowlevel_ores = ((stone_block,) * 75 + (diamondore_block,) * 2 + (sapphireore_block,) * 2)
+        #  ores in the 'mid-level' .. also, the common ore blockes
+        midlevel_ores = ((stone_block,) * 80 + (rubyore_block,) * 2 + (coalore_block,) * 4 + (gravel_block,) * 5 + (ironore_block,) * 5 + (lapisore_block,) * 2)
+        # ores closest to the top level dirt and ground
+        highlevel_ores = ((stone_block,) * 85 + (gravel_block,) * 5 + (coalore_block,) * 3 + (quartz_block,) * 5)
+
+
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
 
@@ -75,14 +83,50 @@ class Model(World):
                 # Generation of the ground
 
                 block = worldtypes_grounds[world_type]
+                levelcount=0
+
 
                 if isinstance(block, (tuple, list)):
                     block = random.choice(block)
                 self.init_block((x, y - 2, z), block)
                 for yy in xrange(-16, -2):
                     # ores and filler...
-                    oblock = random.choice(ore_type_blocks)
-                    self.init_block((x, yy , z), oblock)
+                    #oblock = random.choice(ore_type_blocks)
+                    levelcount = levelcount +1
+                    if levelcount == 1:
+                        blockset = lowlevel_ores
+                    if levelcount == 2:
+                        blockset = lowlevel_ores
+                    if levelcount == 3:
+                        blockset = lowlevel_ores
+                    if levelcount == 4:
+                        blockset = midlevel_ores
+                    if levelcount == 5:
+                        blockset = midlevel_ores
+                    if levelcount == 6:
+                        blockset = midlevel_ores
+                    if levelcount == 7:
+                        blockset = midlevel_ores
+                    if levelcount == 8:
+                        blockset = midlevel_ores
+                    if levelcount == 9:
+                        blockset = midlevel_ores
+                    if levelcount == 10:
+                        blockset = midlevel_ores
+                    if levelcount == 11:
+                        blockset = highlevel_ores
+                    if levelcount == 12:
+                        blockset = highlevel_ores
+                    if levelcount == 13:
+                        blockset = highlevel_ores
+                    if levelcount == 14:
+                        blockset = highlevel_ores
+                    if levelcount == 15:
+                        blockset = highlevel_ores
+                    if levelcount == 16:
+                        blockset = highlevel_ores
+                    oblock = random.choice(blockset)
+                    self.init_block((x, yy, z), oblock)
 
                 for yy in xrange(-18, -16):
                     self.init_block((x, yy , z), bed_block)
