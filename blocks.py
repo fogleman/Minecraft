@@ -65,7 +65,7 @@ class BlockID(object):
     def __init__(self, main, sub=0):
         if isinstance(main, tuple):
             self.main, self.sub = main
-        elif isinstance(main, str):
+        elif isinstance(main, basestring):
             a, b = main.split(".")
             self.main = int(a)
             self.sub = int(b or 0)
