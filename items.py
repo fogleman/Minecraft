@@ -107,6 +107,11 @@ class StickItem(Item):
     max_stack_size = 64
     name = "Stick"
 
+class FlintItem(Item):
+    id = 318
+    max_stack_size = 64
+    name = "Flint"
+
 class YellowDyeItem(Item):
     id = 351
     max_stack_size = 64
@@ -365,6 +370,7 @@ diamond_item = DiamondItem()
 stick_item = StickItem()
 iron_ingot_item = IronIngotItem()
 gold_ingot_item = GoldIngotItem()
+flint_item = FlintItem()
 wood_axe = WoodAxe()
 stone_axe = StoneAxe()
 iron_axe = IronAxe()
