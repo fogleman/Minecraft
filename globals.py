@@ -161,6 +161,8 @@ NEAR_CLIP_DISTANCE = 0.1  # TODO: make min and max clip distance dynamic
 FAR_CLIP_DISTANCE = 200.0  # Maximum render distance,
                            # ignoring effects of sector_size and fog
 
+SHOW_FOG = True
+
 MOTION_BLUR = False
 
 

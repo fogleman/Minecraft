@@ -74,13 +74,13 @@ def initialize_config():
     globals.DRAW_DISTANCE = globals.DRAW_DISTANCE_CHOICES[globals.DRAW_DISTANCE_CHOICE]
 
     globals.MOTION_BLUR = get_or_update_config(
-        graphics, 'motion_blur', globals.MOTION_BLUR)
+        graphics, 'motion_blur', globals.MOTION_BLUR, conv=bool)
 
     world = 'World'
 
     get_or_update_config(world, 'flat', False, conv=bool)  # dont make mountains, make a flat world
     get_or_update_config(world, 'size', 64, conv=int)
-    get_or_update_config(world, 'show_fog', True, conv=bool)
+    globals.SHOW_FOG = get_or_update_config(world, 'show_fog', True, conv=bool)
 
     # Adds missing keys to configuration file and converts to pyglet keys.
     for control, default_key_name in globals.KEY_BINDINGS.items():

@@ -141,7 +141,6 @@ class GameController(Controller):
         self.block_damage = 0
         self.crack = None
         self.mouse_pressed = False
-        self.show_fog = globals.config.getboolean('World', 'show_fog')
         self.last_key = None
         self.sorted = False
 
@@ -204,7 +203,7 @@ class GameController(Controller):
         glEnable(GL_BLEND)
         glEnable(GL_LINE_SMOOTH)
 
-        if self.show_fog:
+        if globals.SHOW_FOG:
             glEnable(GL_FOG)
             glFogfv(GL_FOG_COLOR, vec(self.bg_red, self.bg_green, self.bg_blue, 1))
             glHint(GL_FOG_HINT, GL_DONT_CARE)
@@ -398,7 +397,7 @@ class GameController(Controller):
 
     def set_3d(self):
         width, height = self.window.get_size()
-        if self.show_fog:
+        if globals.SHOW_FOG:
             glFogfv(GL_FOG_COLOR, vec(self.bg_red, self.bg_green, self.bg_blue, 1.0))
         glEnable(GL_DEPTH_TEST)
         glViewport(0, 0, width, height)
