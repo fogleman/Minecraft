@@ -17,7 +17,7 @@ class InventoryTests(unittest.TestCase):
             inv = Inventory(slot_count=size).find_empty_slot()
             self.assertEqual(inv, 0 if size > 0 else -1)
 
-    def test_add_item_1(self):
+    def test_add_1(self):
         for size in [0, 9, random.randint(3, 100)]:
             inv = Inventory(slot_count=size)
             item = random.choice(globals.ITEMS_DIR.keys())
@@ -42,7 +42,7 @@ class InventoryTests(unittest.TestCase):
                 self.assertTrue(foundBlock)
             self.assertEqual(result, result2)
 
-    def test_add_item_2(self):
+    def test_add_2(self):
         inv = Inventory(slot_count=20)
         block = random.choice(globals.BLOCKS_DIR.keys())
         max_items = globals.BLOCKS_DIR[block].max_stack_size * 20
@@ -61,6 +61,27 @@ class InventoryTests(unittest.TestCase):
         for slot in inv2.slots:
             self.assertEqual(slot.type, item)
             self.assertEqual(slot.amount, globals.ITEMS_DIR[item].max_stack_size)
+
+    def test_remove(self):
+        inv = Inventory(slot_count=20)
+        block = random.choice(globals.BLOCKS_DIR.keys())
+        max_items = globals.BLOCKS_DIR[block].max_stack_size * 20
+        for i in xrange(0, max_items):
+            self.assertTrue(inv.add_item(block))
+        self.assertFalse(inv.remove_item(block, quantity=0))
+        for i in xrange(0, 20):
+            self.assertTrue(inv.remove_item(block, quantity=globals.BLOCKS_DIR[block].max_stack_size))
+        self.assertEqual(inv.slots, [None] * 20)
+        for i in xrange(0, max_items):
+            self.assertTrue(inv.add_item(block))
+        for i in xrange(0, 20):
+            self.assertTrue(inv.remove_by_index(i, quantity=globals.BLOCKS_DIR[block].max_stack_size))
+        self.assertEqual(inv.slots, [None] * 20)
+        for i in xrange(0, 20):
+            inv.slots[i] = ItemStack(block, amount=1)
+            inv.slots[i].change_amount(-1)
+        inv.remove_unnecessary_stacks()
+        self.assertEqual(inv.slots, [None] * 20)
 
 if __name__ == '__main__':
     unittest.main()
