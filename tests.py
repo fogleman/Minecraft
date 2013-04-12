@@ -3,6 +3,7 @@ import random
 from inventory import Inventory
 from items import ItemStack
 import globals
+from crafting import *
 
 class InventoryTests(unittest.TestCase):
 
@@ -82,6 +83,39 @@ class InventoryTests(unittest.TestCase):
             inv.slots[i].change_amount(-1)
         inv.remove_unnecessary_stacks()
         self.assertEqual(inv.slots, [None] * 20)
+
+class CraftingTests(unittest.TestCase):
+
+    def setUp(self):
+        self.recipes = Recipes()
+
+    def generate_random_recipe(self, length=3):
+        characters = '#@'
+        recipe = []
+        recipe2 = []
+        ingre = {}
+        for character in characters:
+            ingre[character] = random.choice(globals.BLOCKS_DIR.values())
+        for i in xrange(0, length):
+            recipe.append(''.join(random.choice(characters) for x in xrange(length)))
+            recipe2.append([])
+            for character in recipe[i]:
+                recipe2[i].append(ingre[character])
+        return recipe, ingre, ItemStack(random.choice(globals.BLOCKS_DIR.values()).id, amount=1), recipe2
+
+    def test_1(self):
+        recipes = []
+        ingres = []
+        outputs = []
+        for i in xrange(0, 100):
+            recipe, ingre, output, recipe2 = self.generate_random_recipe()
+            recipes.append(recipe2)
+            ingres.append(ingre)
+            outputs.append(output)
+            self.recipes.add_recipe(recipe, ingre, output)
+        self.assertEqual(self.recipes.nr_recipes, 100)
+        for i, recipe in enumerate(recipes):
+            self.assertEqual(self.recipes.craft(recipe), outputs[i])
 
 if __name__ == '__main__':
     unittest.main()
