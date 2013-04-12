@@ -56,6 +56,8 @@ TILESET_SIZE = 16  # The tileset therefore contains TILESET_SIZE ** 2 tiles.
 # Game logic
 #
 
+BLOCKS_DIR = {}  # Block ID => block object
+ITEMS_DIR = {}  # Item ID => item object
 TIME_RATE = 240 * 10  # Rate of change (steps per hour).
 SPREADING_MUTATION_DELAY = 4  # in seconds
 
