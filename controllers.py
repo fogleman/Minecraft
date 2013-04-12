@@ -50,7 +50,6 @@ class MainMenuController(Controller):
     def __init__(self, window, show_gui=True):
         super(MainMenuController, self).__init__(window)
         self.batch = pyglet.graphics.Batch()
-        self.background_group = pyglet.graphics.OrderedGroup(0)
         self.group = pyglet.graphics.OrderedGroup(2)
         self.labels_group = pyglet.graphics.OrderedGroup(3)
 

@@ -181,9 +181,7 @@ class ItemSelector(AbstractInventory):
             if not item:
                 x += (self.icon_size * 0.5) + 3
                 continue
-            block = item.get_object()
-            block_icon = self.get_block_icon(block)
-            icon = image_sprite(block_icon, self.batch, self.group)
+            icon = image_sprite(self.get_block_icon(item.get_object()), self.batch, self.group)
             icon.scale = 0.5
             icon.x = x
             icon.y = self.frame.y + 3
@@ -193,7 +191,7 @@ class ItemSelector(AbstractInventory):
             amount_label = pyglet.text.Label(
                 str(item.amount), font_name='Arial', font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
-                color=block.amount_label_color, batch=self.batch,
+                color=item.get_object().amount_label_color, batch=self.batch,
                 group=self.labels_group)
             self.amount_labels.append(amount_label)
             self.icons.append(icon)
@@ -339,9 +337,7 @@ class InventorySelector(AbstractInventory):
                     x = self.frame.x + 7
                     y -= (self.icon_size * 0.5) + 3
                 continue
-            block = item.get_object()
-            block_icon = self.get_block_icon(block)
-            icon = image_sprite(block_icon, self.batch, self.group)
+            icon = image_sprite(self.get_block_icon(item.get_object()), self.batch, self.group)
             icon.scale = 0.5
             icon.x = x
             icon.y = y - icon.height
@@ -352,7 +348,7 @@ class InventorySelector(AbstractInventory):
             amount_label = pyglet.text.Label(
                 str(item.amount), font_name='Arial', font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
-                color=block.amount_label_color, batch=self.batch,
+                color=item.get_object().amount_label_color, batch=self.batch,
                 group=self.amount_labels_group)
             self.amount_labels.append(amount_label)
             self.icons.append(icon)
@@ -363,9 +359,7 @@ class InventorySelector(AbstractInventory):
             if not item:
                 x += (self.icon_size * 0.5) + 3
                 continue
-            block = item.get_object()
-            block_icon = self.get_block_icon(block)
-            icon = image_sprite(block_icon, self.batch, self.group)
+            icon = image_sprite(self.get_block_icon(item.get_object()), self.batch, self.group)
             icon.scale = 0.5
             icon.x = x
             icon.y = self.frame.y + 7
@@ -375,7 +369,7 @@ class InventorySelector(AbstractInventory):
             amount_label = pyglet.text.Label(
                 str(item.amount), font_name='Arial', font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
-                color=block.amount_label_color, batch=self.batch,
+                color=item.get_object().amount_label_color, batch=self.batch,
                 group=self.amount_labels_group)
             self.amount_labels.append(amount_label)
             self.icons.append(icon)
@@ -388,16 +382,14 @@ class InventorySelector(AbstractInventory):
             if not item:
                 y -= (self.icon_size * 0.5) + 3
                 continue
-            block = item.get_object()
-            block_icon = self.get_block_icon(block)
-            icon = image_sprite(block_icon, self.batch, self.group)
+            icon = image_sprite(self.get_block_icon(item.get_object()), self.batch, self.group)
             icon.scale = 0.5
             icon.x = x
             icon.y = y
             amount_label = pyglet.text.Label(
                 str(item.amount), font_name='Arial', font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
-                color=block.amount_label_color, batch=self.batch,
+                color=item.get_object().amount_label_color, batch=self.batch,
                 group=self.amount_labels_group)
             self.amount_labels.append(amount_label)
             self.icons.append(icon)
@@ -421,9 +413,7 @@ class InventorySelector(AbstractInventory):
                     x = self.frame.x + (165 if self.mode == 0 else 72)
                     y -= (self.icon_size * 0.5) + 3
                 continue
-            block = item.get_object()
-            block_icon = self.get_block_icon(block)
-            icon = image_sprite(block_icon, self.batch, self.group)
+            icon = image_sprite(self.get_block_icon(item.get_object()), self.batch, self.group)
             icon.scale = 0.5
             icon.x = x
             icon.y = y - icon.height
@@ -436,7 +426,7 @@ class InventorySelector(AbstractInventory):
             amount_label = pyglet.text.Label(
                 str(item.amount), font_name='Arial', font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
-                color=block.amount_label_color, batch=self.batch,
+                color=item.get_object().amount_label_color, batch=self.batch,
                 group=self.amount_labels_group)
             self.amount_labels.append(amount_label)
             self.icons.append(icon)
@@ -551,9 +541,7 @@ class InventorySelector(AbstractInventory):
             return
         self.crafting_outcome = item
 
-        block = item.get_object()
-        block_icon = self.get_block_icon(block)
-        self.crafting_outcome_icon = image_sprite(block_icon, self.batch, self.group)
+        icon = image_sprite(self.get_block_icon(item.get_object()), self.batch, self.group)
         inventory_rows = floor(self.max_items / 9)
         inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
         quick_slots_y = self.frame.y + 4
@@ -569,7 +557,7 @@ class InventorySelector(AbstractInventory):
         self.crafting_outcome_label = pyglet.text.Label(
             str(item.amount), font_name='Arial', font_size=9,
             x= self.crafting_outcome_icon.x + 3, y= self.crafting_outcome_icon.y, anchor_x='left', anchor_y='bottom',
-            color=block.amount_label_color,
+            color=item.get_object().amount_label_color,
             group=self.group)
 
     def remove_crafting_outcome(self):
@@ -582,9 +570,7 @@ class InventorySelector(AbstractInventory):
             return
         self.selected_item = item
 
-        block = item.get_object()
-        block_icon = self.get_block_icon(block)
-        self.selected_item_icon = image_sprite(block_icon, self.batch, self.group)
+        self.selected_item_icon = image_sprite(self.get_block_icon(item.get_object()), self.batch, self.group)
         self.selected_item_icon.scale = 0.4
 
     def remove_selected_item(self):
