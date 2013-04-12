@@ -73,14 +73,16 @@ def initialize_config():
         choices=globals.DRAW_DISTANCE_CHOICES)
     globals.DRAW_DISTANCE = globals.DRAW_DISTANCE_CHOICES[globals.DRAW_DISTANCE_CHOICE]
 
+    globals.SHOW_FOG = get_or_update_config(
+        graphics, 'show_fog', globals.SHOW_FOG, conv=bool)
+
     globals.MOTION_BLUR = get_or_update_config(
         graphics, 'motion_blur', globals.MOTION_BLUR, conv=bool)
 
     world = 'World'
 
+    # TODO: This setting must be removed when terrain generation will improve.
     get_or_update_config(world, 'size', 64, conv=int)
-    globals.SHOW_FOG = get_or_update_config(
-        world, 'show_fog', globals.SHOW_FOG, conv=bool)
 
     # Adds missing keys to configuration file and converts to pyglet keys.
     for control, default_key_name in globals.KEY_BINDINGS.items():
