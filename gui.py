@@ -69,7 +69,7 @@ class Button(Rectangle):
             self.sprite = image_sprite(image, self.batch, self.group)
             if image_highlighted:
                 self.sprite_highlighted = image_sprite(image_highlighted, self.batch, self.group)
-                self.sprite_highlighted.opacity = 0
+                self.sprite_highlighted.visible = False
         if caption:
             self.label = Label(caption, font_name=font_name, font_size=12,
                 anchor_x='center', anchor_y='center', color=(255, 255, 255, 255), batch=self.batch,
@@ -88,12 +88,12 @@ class Button(Rectangle):
 
     def draw(self):
         if self.sprite and not (self.sprite_highlighted and self.highlighted):
-            self.sprite_highlighted.opacity = 0
-            self.sprite.opacity = 255
+            self.sprite_highlighted.visible = False
+            self.sprite.visible = True
             self.sprite.draw()
         elif self.sprite_highlighted and self.highlighted:
-            self.sprite_highlighted.opacity = 255
-            self.sprite.opacity = 0
+            self.sprite_highlighted.visible = True
+            self.sprite.visible = False
             self.sprite_highlighted.draw()
         if self.label:
             self.label.draw()
@@ -232,9 +232,9 @@ class ItemSelector(AbstractInventory):
         for i, heart in enumerate(self.hearts):
             heart.x = self.frame.x + i * (20 + 2) + (self.frame.width - hearts_to_show * (20 + 2)) / 2
             heart.y = self.icon_size * 1.0 + 12
-            heart.opacity = 255
+            heart.visible = True
             if showed_hearts >= hearts_to_show:
-                heart.opacity = 0
+                heart.visible = False
             showed_hearts += 1
 
     def get_current_block(self):
