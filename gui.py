@@ -11,6 +11,7 @@ from crafting import *
 import globals
 from inventory import *
 from items import *
+from utils import load_image
 
 class Rectangle(object):
     def __init__(self, x, y, width, height):
@@ -131,7 +132,7 @@ class AbstractInventory(Control):
 
     def get_block_icon(self, block):
         if os.path.isfile(os.path.join('resources', 'textures', 'icons', block.id.filename() + ".png")):
-            block_icon = pyglet.image.load(os.path.join('resources', 'textures', 'icons', block.id.filename() + ".png"))
+            block_icon = load_image('resources', 'textures', 'icons', block.id.filename() + ".png")
         else:
             block_icon = (block.group or self.model.group).texture.get_region(
                 int(block.texture_data[2*8] * globals.TILESET_SIZE) * self.icon_size,
@@ -156,8 +157,8 @@ class ItemSelector(AbstractInventory):
         self.num_keys = [getattr(globals, 'INVENTORY_%d_KEY' % i)
                          for i in range(1, 10)]
 
-        image = pyglet.image.load(os.path.join('resources', 'textures', 'slots.png'))
-        heart_image = pyglet.image.load(os.path.join('resources', 'textures', 'heart.png'))
+        image = load_image('resources', 'textures', 'slots.png')
+        heart_image = load_image('resources', 'textures', 'heart.png')
         frame_size = image.height / 2
         self.frame = pyglet.sprite.Sprite(
             image.get_region(0, frame_size, image.width, frame_size),
@@ -321,9 +322,9 @@ class InventorySelector(AbstractInventory):
 
     def change_image(self):
         if self.mode == 0:
-            image = pyglet.image.load(os.path.join('resources', 'textures', 'inventory.png'))
+            image = load_image('resources', 'textures', 'inventory.png')
         elif self.mode == 1:
-            image = pyglet.image.load(os.path.join('resources', 'textures', 'inventory_when_crafting_table.png'))
+            image = load_image('resources', 'textures', 'inventory_when_crafting_table.png')
         self.frame = pyglet.sprite.Sprite(image.get_region(0, 0, image.width, image.height), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
         self.frame.x = (self.parent.window.width - self.frame.width) / 2
         self.frame.y = self.icon_size / 2 - 4
