@@ -39,3 +39,4 @@
 
 # Misc
 - need place for brainstorming/ideas etc. related to project, so we can cooperate (IRC/forums/Reddit/mailing list?)
+- write more unit tests (tests.py)
