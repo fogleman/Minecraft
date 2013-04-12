@@ -26,20 +26,20 @@ class Recipes(object):
             line = ingre_list[i]
             if len(line) == 0:
                 continue
-            sum = 0
+            isempty = True
             for id in line:
-                sum = sum + id
-            if sum == 0:    # empty line
+                if id: isempty = False
+            if isempty:
                 ingre_list.pop(i)
 
         #remove empty column
         for i in (0, -1):
-            sum = 0
+            isempty = True
             for line in ingre_list:
                 if len(line) == 0:
                     continue
-                sum = sum + line[i]
-            if sum == 0:
+                if line[i]: isempty = False
+            if isempty:
                 for line in ingre_list:
                     if len(line) == 0:
                         continue
@@ -72,7 +72,7 @@ class Recipes(object):
         self.nr_recipes += 1
 
     def add_shapeless_recipe(self, ingre, output):
-        ingre_list = [x.id for x in ingre if x.id != 0]
+        ingre_list = [x.id for x in ingre if x.id]
         ingre_list.sort()
         r = Recipe(ingre_list, output)
         r.shapeless = True
@@ -85,7 +85,7 @@ class Recipes(object):
             id_list.append([b.id for b in
                             line])    # removed b.id != 0: it may make the
                             # shape different
-            shapeless_id_list.extend([b.id for b in line if b.id != 0])
+            shapeless_id_list.extend([b.id for b in line if b.id])
         shapeless_id_list.sort()
 
         self.remove_empty_line_col(id_list)
@@ -138,7 +138,7 @@ recipes.add_recipe(["#", "#"], {'#': quartz_block},
 recipes.add_recipe(["#", "#", "#"], {'#': quartz_block},
                    ItemStack(quartzcolumn_block.id, amount=3))
 recipes.add_recipe(["   ", "   ", "###"], {'#': quartz_block},
-                   ItemStack(quartzchisled_block.id, amount=3))
+                   ItemStack(quartzchiseled_block.id, amount=3))
 
 # wood items
 

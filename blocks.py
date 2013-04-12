@@ -52,15 +52,52 @@ class TextureGroupIndividual(pyglet.graphics.Group):
     def unset_state(self):
         glDisable(self.texture.target)
 
+""" 
+The Datatype for Block and Item ID's
+Creation: BlockID(1)   BlockID(35)   BlockID(35, 3)   BlockID((35,3))   BlockID("35.3")
+str(id) : "1.0"        "35.0"        "35.3"           "35.3"            "35.3"
+Typical uses: id == 1    id == BlockID(35, 3)   id < 255
+"""
+class BlockID(object):
+    main = 0
+    sub = 0 #Aka DataID, damageID, etc
+
+    def __init__(self, main, sub=0):
+        if isinstance(main, tuple):
+            self.main, self.sub = main
+        elif isinstance(main, str):
+            a, b = main.split(".")
+            self.main = int(a)
+            self.sub = int(b or 0)
+        elif isinstance(main, self.__class__):
+            self.main = main.main
+            self.sub = main.sub
+        else:
+            self.main = int(main)
+            self.sub = int(sub)
+    def __repr__(self):
+        return '%d.%d' % (self.main, self.sub)
+    def __hash__(self): 
+        return hash(repr(self))
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.main == other.main and self.sub == other.sub
+        else: #For int's
+            return self.main == other
+    def __nonzero__(self):
+        return self.main is not 0
+    def __cmp__(self,other):
+        return cmp(self.main, other)
+    def is_item(self): return self.main > 255
+    def filename(self):
+        if self.sub == 0: return str(self.main)
+        return '%d.%d' % (self.main, self.sub)
 
 class Block(object):
     id = None  # Original minecraft id (also called data value).
                # Verify on http://www.minecraftwiki.net/wiki/Data_values
                # when creating a new "official" block.
     drop_id = None
-
-    id_main = None  # Whole number component of id
-    id_sub = None  # Decimal component of id
 
     width = 1.0
     height = 1.0
@@ -89,10 +126,8 @@ class Block(object):
     digging_tool = -1
 
     def __init__(self, width=None, height=None):
+        self.id = BlockID(self.id or 0)
         self.drop_id = self.id
-        if self.id is not None:
-            self.id_main = int(self.id)
-            self.id_sub = int(str(self.id % 1)[2:] or 0)
 
         if width is not None:
             self.width = width
@@ -176,7 +211,7 @@ class StoneBlock(HardBlock):
 
     def __init__(self):
         super(StoneBlock, self).__init__()
-        self.drop_id = CobbleBlock.id
+        self.drop_id = BlockID(CobbleBlock.id)
 
 
 class GrassBlock(Block):
@@ -192,7 +227,7 @@ class GrassBlock(Block):
 
     def __init__(self):
         super(GrassBlock, self).__init__()
-        self.drop_id = DirtBlock.id
+        self.drop_id = BlockID(DirtBlock.id)
 
 
 class DirtBlock(Block):
@@ -262,7 +297,7 @@ class DiamondOreBlock(HardBlock):
     digging_tool = globals.PICKAXE
     def __init__(self):
         super(DiamondOreBlock, self).__init__()
-        self.drop_id = 264
+        self.drop_id = BlockID(264)
     name = "Diamond Ore"
 
 
@@ -276,7 +311,7 @@ class CoalOreBlock(HardBlock):
     digging_tool = globals.PICKAXE
     def __init__(self):
         super(CoalOreBlock, self).__init__()
-        self.drop_id = 263
+        self.drop_id = BlockID(263)
     name = "Coal Ore"
 
 
@@ -383,8 +418,9 @@ class EmeraldOreBlock(HardBlock):
     top_texture = 8, 5
     bottom_texture = 8, 5
     side_texture = 8, 5
+    texture_name = "oreEmerald",
     hardness = 2
-    id = 129.0
+    id = 129,0
     name = "Emerald Ore"
     #def __init__(self):
         #super(EmeraldOreBlock, self).__init__()
@@ -394,6 +430,7 @@ class LapisOreBlock(HardBlock):
     top_texture = 8, 6
     bottom_texture = 8, 6
     side_texture = 8, 6
+    texture_name = "oreLapis",
     hardness = 2
     id = 21
     name = "Lapis Ore"
@@ -403,7 +440,7 @@ class RubyOreBlock(HardBlock):
     bottom_texture = 12, 0
     side_texture = 12, 0
     hardness = 2
-    id = 129.1 # not in MC, just 1 +0.1 value
+    id = 129,1 # not in MC
     name = "Ruby Ore"
 
 class SapphireOreBlock(HardBlock):
@@ -411,7 +448,7 @@ class SapphireOreBlock(HardBlock):
     bottom_texture = 12, 2
     side_texture = 12, 2
     hardness = 2
-    id = 129.2 # not in MC, just 1 +0.2 value
+    id = 129,2 # not in MC
     name = "Ruby Ore"
 
 # Changed Marble to Quartz -- It seems that Quartz is MC's answer to Tekkit's Marble.
@@ -419,19 +456,21 @@ class QuartzBlock(HardBlock):
     top_texture = 3, 2
     bottom_texture = 9, 4
     side_texture = 3, 2
-    id = 155.0
+    texture_name = "quartzblock_top","quartzblock_bottom","quartzblock_side"
+    id = 155,0
     hardness = 2
     name = "Quartz"
     amount_label_color = 0, 0, 0, 255
     digging_tool = globals.PICKAXE
 
-class ChisledQuartzBlock(HardBlock):
+class ChiseledQuartzBlock(HardBlock):
     top_texture = 3, 2
     bottom_texture = 9, 4
     side_texture = 9, 6
-    id = 155.1
+    texture_name = "quartzblock_chiseled_top","quartzblock_chiseled_top","quartzblock_chiseled"
+    id = 155,1
     hardness = 2
-    name = "Chisled Quartz"
+    name = "Chiseled Quartz"
     amount_label_color = 0, 0, 0, 255
     digging_tool = globals.PICKAXE
 
@@ -439,7 +478,8 @@ class ColumnQuartzBlock(HardBlock):
     top_texture = 3, 2
     bottom_texture = 9, 4
     side_texture = 9, 5
-    id = 155.2
+    texture_name = "quartzblock_lines_top","quartzblock_lines_top","quartzblock_lines"
+    id = 155,2
     hardness = 2
     name = "Column Quartz"
     amount_label_color = 0, 0, 0, 255
@@ -449,30 +489,19 @@ class QuartzBrickBlock(HardBlock):
     top_texture = 13, 0
     bottom_texture = 13, 0
     side_texture = 13, 0
-    id = 155.3
+    id = 155,3
     hardness = 2
     name = "Quartz Brick"
     amount_label_color = 0, 0, 0, 255
     digging_tool = globals.PICKAXE
 
-
-class StonebrickBlock(HardBlock):
-    top_texture = 0, 3
-    bottom_texture = 0, 3
-    side_texture = 0, 3
-    texture_name = "stonebricksmooth",
-    hardness = 1.5
-    id = 98
-    name = "Stone Bricks"
-
-
 class BirchWoodPlankBlock(WoodBlock):
     top_texture = 3, 3
     bottom_texture = 3, 3
     side_texture = 3, 3
-    texture_name = "wood",
+    texture_name = "wood_birch",
     hardness = 2
-    id = 5.0
+    id = 5,0
     name = "Birch Wood Planks"
 
 
@@ -480,9 +509,9 @@ class OakWoodPlankBlock(WoodBlock):
     top_texture = 1, 3
     bottom_texture = 1, 3
     side_texture = 1, 3
-    texture_name = "wood_oak",
+    texture_name = "wood",
     hardness = 2
-    id = 5.1
+    id = 5,1
     name = "Oak Wood Planks"
 
 
@@ -492,7 +521,7 @@ class JungleWoodPlankBlock(WoodBlock):
     side_texture = 2, 3
     texture_name = "wood_jungle",
     hardness = 2
-    id = 5.3
+    id = 5,3
     name = "Jungle Wood Planks"
 
 
@@ -509,7 +538,7 @@ class SnowGrassBlock(Block):
 
     def __init__(self):
         super(SnowGrassBlock, self).__init__()
-        self.drop_id = DirtBlock.id
+        self.drop_id = BlockID(DirtBlock.id)
 
 
 class OakWoodBlock(WoodBlock):
@@ -518,7 +547,7 @@ class OakWoodBlock(WoodBlock):
     side_texture = 7, 0
     texture_name = "tree_top","tree_top","tree_side"
     hardness = 2
-    id = 17.0
+    id = 17,0
     name = "Oak wood"
 
 
@@ -527,12 +556,12 @@ class OakBranchBlock(WoodBlock):
     bottom_texture = 7, 0
     side_texture = 7, 0
     hardness = 2
-    id = 17.1
+    id = 17,1
     name = "Oak wood"
 
     def __init__(self):
         super(OakBranchBlock, self).__init__()
-        self.drop_id = OakWoodBlock.id
+        self.drop_id = BlockID(OakWoodBlock.id)
 
 
 class JungleWoodBlock(WoodBlock):
@@ -541,7 +570,7 @@ class JungleWoodBlock(WoodBlock):
     side_texture = 6, 0
     texture_name = "tree_top","tree_top","tree_jungle"
     hardness = 2
-    id = 17.1
+    id = 17,1
     name = "Jungle wood"
 
 
@@ -551,7 +580,7 @@ class BirchWoodBlock(WoodBlock):
     side_texture = 5, 0
     texture_name = "tree_top","tree_top","tree_birch"
     hardness = 2
-    id = 17.2
+    id = 17,2
     amount_label_color = 0, 0, 0, 255
     name = "Birch wood"
 
@@ -563,7 +592,7 @@ class CactusBlock(Block):
     texture_name = "cactus_top","cactus_bottom","cactus_side"
     width = 0.8
     hardness = 2
-    id = 81
+    id = 81,0
     name = "Cactus"
 
 
@@ -575,7 +604,7 @@ class TallCactusBlock(Block):
     transparent = True
     width = 0.3
     hardness = 1
-    id = 81.1  # not a real MC block, so the last possible # i think.
+    id = 81,1  # not a real MC block, so the last possible # i think.
     name = "Thin Cactus"
 
 
@@ -593,7 +622,7 @@ class OakLeafBlock(LeafBlock):
     side_texture = 7, 2
     texture_name = "leaves",
     hardness = 0.2
-    id = 18.0
+    id = 18,0
     name = "Oak Leaves"
 
 
@@ -603,7 +632,7 @@ class JungleLeafBlock(LeafBlock):
     side_texture = 6, 2
     texture_name = "leaves_jungle",
     hardness = 0.2
-    id = 18.1
+    id = 18,1
     name = "Jungle Leaves"
 
 
@@ -613,7 +642,7 @@ class BirchLeafBlock(LeafBlock):
     side_texture = 5, 2
     texture_name = "leaves",
     hardness = 0.2
-    id = 18.2
+    id = 18,2
     name = "Birch Leaves"
 
     def __init__(self):
@@ -675,6 +704,7 @@ class StoneSlabBlock(HardBlock):
     top_texture = 4, 4
     bottom_texture = 4, 4
     side_texture = 4, 4
+    texture_name = "stoneslab_top","stoneslab_top","stoneslab_side",
     hardness = 2
     id = 43
     name = "Full Stone Slab"
@@ -684,6 +714,7 @@ class ClayBlock(HardBlock):
     top_texture = 6, 4
     bottom_texture = 6, 4
     side_texture = 6, 4
+    texture_name = "clay",
     hardness = 0.6
     id = 82
     name = "Clay Block"
@@ -695,7 +726,7 @@ class CobbleBlock(HardBlock):
     side_texture = 6, 3
     texture_name = "stonebrick",
     hardness = 2
-    id = 4
+    id = 4,0
     name = "Cobblestone"
 
 
@@ -707,7 +738,7 @@ class CobbleFenceBlock(HardBlock):
     transparent = True
     hardness = 2
     width = 0.6
-    id = 4.1
+    id = 4,1
     name = "Cobblestone Fence Post"
 
 
@@ -742,7 +773,7 @@ class FarmBlock(Block):
 
     def __init__(self):
         super(FarmBlock, self).__init__()
-        self.drop_id = DirtBlock.id
+        self.drop_id = BlockID(DirtBlock.id)
 
 class ChestBlock(Block):
     top_texture = 8, 4
@@ -760,7 +791,7 @@ class BlackWoolBlock(Block):
     side_texture = 15, 0
     texture_name = "cloth_15",
     hardness = 1
-    id =35.15
+    id = 35,15
     name = "Black Wool"
 
 class RedWoolBlock(Block):
@@ -769,7 +800,7 @@ class RedWoolBlock(Block):
     side_texture = 15, 1
     texture_name = "cloth_14",
     hardness = 1
-    id =35.14
+    id = 35,14
     name = "Red Wool"
 
 class GreenWoolBlock(Block):
@@ -778,7 +809,7 @@ class GreenWoolBlock(Block):
     side_texture = 15, 2
     texture_name = "cloth_13",
     hardness = 1
-    id =35.13
+    id = 35,13
     name = "Green Wool"
 
 class BrownWoolBlock(Block):
@@ -787,7 +818,7 @@ class BrownWoolBlock(Block):
     side_texture = 15, 3
     texture_name = "cloth_12",
     hardness = 1
-    id =35.12
+    id = 35,12
     name = "Brown Wool"
 
 class BlueWoolBlock(Block):
@@ -796,7 +827,7 @@ class BlueWoolBlock(Block):
     side_texture = 15, 4
     texture_name = "cloth_11",
     hardness = 1
-    id =35.11
+    id = 35,11
     name = "Blue Wool"
 
 class PurpleWoolBlock(Block):
@@ -805,7 +836,7 @@ class PurpleWoolBlock(Block):
     side_texture = 15, 5
     texture_name = "cloth_10",
     hardness = 1
-    id =35.10
+    id = 35,10
     name = "Purple Wool"
 
 class CyanWoolBlock(Block):
@@ -814,7 +845,7 @@ class CyanWoolBlock(Block):
     side_texture = 15, 6
     texture_name = "cloth_9",
     hardness = 1
-    id =35.9
+    id = 35,9
     name = "Cyan Wool"
 
 class LightGreyWoolBlock(Block):
@@ -823,7 +854,7 @@ class LightGreyWoolBlock(Block):
     side_texture = 15, 7
     texture_name = "cloth_8",
     hardness = 1
-    id =35.8
+    id = 35,8
     name = "Light Grey Wool"
 
 class GreyWoolBlock(Block):
@@ -832,7 +863,7 @@ class GreyWoolBlock(Block):
     side_texture = 15, 8
     texture_name = "cloth_7",
     hardness = 1
-    id =35.7
+    id = 35,7
     name = "Grey Wool"
 
 class PinkWoolBlock(Block):
@@ -841,7 +872,7 @@ class PinkWoolBlock(Block):
     side_texture = 15, 9
     texture_name = "cloth_6",
     hardness = 1
-    id =35.6
+    id = 35,6
     name = "Pink Wool"
 
 class LimeWoolBlock(Block):
@@ -850,7 +881,7 @@ class LimeWoolBlock(Block):
     side_texture = 15, 10
     texture_name = "cloth_5",
     hardness = 1
-    id =35.5
+    id = 35,5
     name = "Lime Wool"
 
 class YellowWoolBlock(Block):
@@ -859,7 +890,7 @@ class YellowWoolBlock(Block):
     side_texture = 15, 11
     texture_name = "cloth_4",
     hardness = 1
-    id =35.4
+    id = 35,4
     name = "Yellow Wool"
 
 class LightBlueWoolBlock(Block):
@@ -868,7 +899,7 @@ class LightBlueWoolBlock(Block):
     side_texture = 15, 12
     texture_name = "cloth_3",
     hardness = 1
-    id =35.3
+    id = 35,3
     name = "Light Blue Wool"
 
 class MagentaWoolBlock(Block):
@@ -877,7 +908,7 @@ class MagentaWoolBlock(Block):
     side_texture = 15, 13
     texture_name = "cloth_2",
     hardness = 1
-    id =35.2
+    id = 35,2
     name = "Magenta Wool"
 
 class OrangeWoolBlock(Block):
@@ -886,7 +917,7 @@ class OrangeWoolBlock(Block):
     side_texture = 15, 14
     texture_name = "cloth_1",
     hardness = 1
-    id =35.1
+    id = 35,1
     name = "Orange Wool"
 
 class WhiteWoolBlock(Block):
@@ -895,7 +926,7 @@ class WhiteWoolBlock(Block):
     side_texture = 15, 15
     texture_name = "cloth_0",
     hardness = 1
-    id =35.0
+    id = 35,0
     name = "White Wool"
 amount_label_color = 0, 0, 0, 255
 
@@ -905,7 +936,7 @@ class RoseBlock(Block):
     bottom_texture = 10, 0
     side_texture = 10, 0
     hardness = .08
-    id =38
+    id = 38
     name = "Rose"
 amount_label_color = 0, 0, 0, 255
 
@@ -915,7 +946,7 @@ class ReedBlock(Block):
     side_texture = 10, 1
     hardness = 0.0
     transparent = True
-    id =83
+    id = 83
     name = "Reed"
     max_stack_size = 16
     amount_label_color = 0, 0, 0, 255
@@ -926,7 +957,7 @@ class PotatoBlock(Block):
     side_texture = 10, 3
     hardness = 0.0
     transparent = True
-    id =142
+    id = 142
     name = "Potato"
     max_stack_size = 16
     amount_label_color = 0, 0, 0, 255
@@ -937,7 +968,7 @@ class CarrotBlock(Block):
     side_texture = 10, 2
     hardness = 0.0
     transparent = True
-    id =141
+    id = 141
     name = "Carrot"
     max_stack_size = 16
     amount_label_color = 0, 0, 0, 255
@@ -946,6 +977,7 @@ class DiamondBlock(HardBlock):
     top_texture = 11, 0
     bottom_texture = 11, 0
     side_texture = 11, 0
+    texture_name = "blockDiamond",
     hardness = 5
     id = 57
     digging_tool = globals.PICKAXE
@@ -955,6 +987,7 @@ class GoldBlock(HardBlock):
     top_texture = 11, 1
     bottom_texture = 11, 1
     side_texture = 11, 1
+    texture_name = "blockGold",
     hardness = 4
     id = 41
     digging_tool = globals.PICKAXE
@@ -964,6 +997,7 @@ class IronBlock(HardBlock):
     top_texture = 11, 2
     bottom_texture = 11, 2
     side_texture = 11, 2
+    texture_name = "blockIron",
     hardness = 4
     id = 42
     digging_tool = globals.PICKAXE
@@ -973,43 +1007,51 @@ class StonebrickBlock(HardBlock):
     top_texture = 0, 3
     bottom_texture = 0, 3
     side_texture = 0, 3
+    texture_name = "stonebricksmooth",
     hardness = 1.5
-    id = 98.0
+    id = 98,0
+    digging_tool = globals.PICKAXE
     name = "Stone Bricks"
 
 class CrackedStonebrickBlock(HardBlock):
     top_texture = 9, 2
     bottom_texture = 9, 2
     side_texture = 9, 2
+    texture_name = "stonebricksmooth_cracked",
     hardness = 1.5
-    id = 98.1
+    id = 98,1
+    digging_tool = globals.PICKAXE
     name = "Cracked Stone Bricks"
 
 class MossyStonebrickBlock(HardBlock):
     top_texture = 9, 1
     bottom_texture = 9, 1
     side_texture = 9, 1
+    texture_name = "stonebricksmooth_mossy",
     hardness = 1.5
-    id = 98.2
+    id = 98,2
+    digging_tool = globals.PICKAXE
     name = "Mossy Stone Bricks"
 
 class IceBlock(Block):
     top_texture = 8, 7
     bottom_texture = 8, 7
     side_texture = 8, 7
+    texture_name = "ice",
     id = 79
     hardness = 0.5
     transparent = True
     name = "Ice"
     amount_label_color = 0, 0, 0, 255
 
-class MossyStoneBlock(HardBlock):
+class MossyCobbleBlock(HardBlock):
     top_texture = 9, 3
     bottom_texture = 9, 3
     side_texture = 9, 3
+    texture_name = "stoneMoss",
     hardness = 1.5
     id = 48
-    name = "Mossy Stone"
+    name = "Mossy Cobblestone"
     digging_tool = globals.PICKAXE
     max_stack_size = 64
 
@@ -1060,6 +1102,7 @@ melon_block = MelonBlock()
 stoneslab_block = StoneSlabBlock()
 clay_block = ClayBlock()
 cobble_block = CobbleBlock()
+mossycobble_block = MossyCobbleBlock()
 bookshelf_block = BookshelfBlock()
 furnace_block = FurnaceBlock()
 farm_block = FarmBlock()
@@ -1100,7 +1143,7 @@ iron_block = IronBlock()
 stonebrickcracked_block = CrackedStonebrickBlock()
 stonebrickmossy_block = MossyStonebrickBlock()
 quartzcolumn_block = ColumnQuartzBlock()
-quartzchisled_block = ChisledQuartzBlock()
+quartzchiseled_block = ChiseledQuartzBlock()
 quartzbrick_block = QuartzBrickBlock()
 ice_block = IceBlock()
 emeraldore_block = EmeraldOreBlock()

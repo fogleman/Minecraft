@@ -1,4 +1,5 @@
 import re
+from blocks import BlockID
 
 
 COMMAND_HANDLED = True
@@ -94,7 +95,7 @@ class GiveBlockCommand(Command):
 
     def execute(self, block_id, amount=1, *args, **kwargs):
         try:
-            self.user.inventory.add_item(float(block_id), quantity=int(amount))
+            self.user.inventory.add_item(BlockID(str(block_id)), quantity=int(amount))
         except KeyError:
             raise CommandException(self.command_text, message="ID %s unknown." % block_id)
         except ValueError:

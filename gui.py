@@ -114,8 +114,32 @@ class Control(object):
     def _on_draw(self):
         pass
 
+class AbstractInventory(Control):
+    def change_index(self, change):
+        self.set_index(self.current_index + change)
 
-class ItemSelector(Control):
+    def set_index(self, index):
+        index = int(index)
+        if self.current_index == index:
+            return
+        self.current_index = index
+        if self.current_index >= self.max_items:
+            self.current_index = 0
+        elif self.current_index < 0:
+            self.current_index = self.max_items - 1
+        self.update_current()
+
+    def get_block_icon(self, block):
+        if os.path.isfile(os.path.join('resources', 'textures', 'icons', block.id.filename() + ".png")):
+            block_icon = pyglet.image.load(os.path.join('resources', 'textures', 'icons', block.id.filename() + ".png"))
+        else:
+            block_icon = (block.group or self.model.group).texture.get_region(
+                int(block.texture_data[2*8] * globals.TILESET_SIZE) * self.icon_size,
+                int(block.texture_data[2*8+1] * globals.TILESET_SIZE) * self.icon_size, self.icon_size,
+                self.icon_size)
+        return block_icon
+
+class ItemSelector(AbstractInventory):
     def __init__(self, parent, player, model, *args, **kwargs):
         super(ItemSelector, self).__init__(parent, *args, **kwargs)
         self.batch = pyglet.graphics.Batch()
@@ -148,31 +172,6 @@ class ItemSelector(Control):
                 batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
             self.hearts.append(heart)
         self.current_block_label = None
-
-    def change_index(self, change):
-        self.set_index(self.current_index + change)
-
-    def set_index(self, index):
-        index = int(index)
-        if self.current_index == index:
-            return
-        self.current_index = index
-        if self.current_index >= self.max_items:
-            self.current_index = 0
-        elif self.current_index < 0:
-            self.current_index = self.max_items - 1
-        self.update_current()
-
-    def get_block_icon(self, block):
-        block_icon = None
-        if os.path.isfile(os.path.join('resources', 'textures', 'icons', str(block.id) + ".png")) == True:
-            block_icon = pyglet.image.load(os.path.join('resources', 'textures', 'icons', str(block.id) + ".png"))
-        else:
-            block_icon = self.model.group.texture.get_region(
-                int(block.side_texture[0] * globals.TILESET_SIZE) * self.icon_size,
-                int(block.side_texture[1] * globals.TILESET_SIZE) * self.icon_size, self.icon_size,
-                self.icon_size)
-        return block_icon
 
     def update_items(self):
         self.player.quick_slots.remove_unnecessary_stacks()
@@ -294,7 +293,7 @@ class ItemSelector(Control):
         self.batch.draw()
 
 
-class InventorySelector(Control):
+class InventorySelector(AbstractInventory):
     def __init__(self, parent, player, model, *args, **kwargs):
         super(InventorySelector, self).__init__(parent, *args, **kwargs)
         self.batch = pyglet.graphics.Batch()
@@ -320,9 +319,6 @@ class InventorySelector(Control):
         #self.active.opacity = 0
         self.visible = False
 
-    def change_index(self, change):
-        self.set_index(self.current_index + change)
-
     def change_image(self):
         if self.mode == 0:
             image = pyglet.image.load(os.path.join('resources', 'textures', 'inventory.png'))
@@ -331,27 +327,6 @@ class InventorySelector(Control):
         self.frame = pyglet.sprite.Sprite(image.get_region(0, 0, image.width, image.height), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
         self.frame.x = (self.parent.window.width - self.frame.width) / 2
         self.frame.y = self.icon_size / 2 - 4
-
-    def set_index(self, index):
-        index = int(index)
-        if self.current_index == index:
-            return
-        self.current_index = index
-        if self.current_index >= self.max_items:
-            self.current_index = 0
-        elif self.current_index < 0:
-            self.current_index = self.max_items - 1
-        self.update_current()
-
-    def get_block_icon(self, block):
-        if os.path.isfile(os.path.join('resources', 'textures', 'icons', str(block.id) + ".png")) == True:
-            block_icon = pyglet.image.load(os.path.join('resources', 'textures', 'icons', str(block.id) + ".png"))
-        else:
-            block_icon = self.model.group.texture.get_region(
-                int(block.side_texture[0] * globals.TILESET_SIZE) * self.icon_size,
-                int(block.side_texture[1] * globals.TILESET_SIZE) * self.icon_size, self.icon_size,
-                self.icon_size)
-        return block_icon
 
     def update_items(self):
         rows = floor(self.max_items / 9)
