@@ -121,7 +121,7 @@ class MainMenuController(Controller):
 class GameController(Controller):
     def __init__(self, window, show_gui=True):
         super(GameController, self).__init__(window)
-        self.show_gui = show_gui
+        self.show_gui = show_gui  # TODO: Rename into hud_enabled
         self.sector = None
         self.time_of_day = 0.0
         self.count = 0
@@ -139,9 +139,6 @@ class GameController(Controller):
         self.show_fog = globals.config.getboolean('World', 'show_fog')
         self.last_key = None
         self.sorted = False
-        self.key_inventory = globals.config.getint('Controls', 'inventory')
-        self.key_sound_up = globals.config.getint('Controls', 'sound_up')
-        self.key_sound_down = globals.config.getint('Controls', 'sound_down')
 
     def update(self, dt):
         sector = sectorize(self.player.position)
@@ -361,11 +358,11 @@ class GameController(Controller):
             self.on_mouse_motion(x, y, dx, dy)
 
     def on_key_press(self, symbol, modifiers):
-        if symbol == key.B or symbol == key.F3:
+        if symbol == globals.TOGGLE_HUD_KEY:
             self.show_gui = not self.show_gui
-        elif symbol == key.V:
+        elif symbol == globals.SAVE_KEY:
             self.save_to_file()
-        elif symbol == key.M:
+        elif symbol == globals.INVENTORY_SORT_KEY:
             if self.last_key == symbol and not self.sorted:
                 self.player.quick_slots.sort()
                 self.player.inventory.sort()
@@ -375,18 +372,18 @@ class GameController(Controller):
                 self.player.inventory.change_sort_mode()
                 self.item_list.update_items()
                 self.inventory_list.update_items()
-        elif symbol == self.key_inventory:
+        elif symbol == globals.INVENTORY_KEY:
             self.set_highlighted_block(None)
             self.mouse_pressed = False
             self.inventory_list.toggle()
-        elif symbol == self.key_sound_up:
+        elif symbol == globals.SOUND_UP_KEY:
             globals.EFFECT_VOLUME = min(globals.EFFECT_VOLUME + .1, 1)
-        elif symbol == self.key_sound_down:
+        elif symbol == globals.SOUND_DOWN_KEY:
             globals.EFFECT_VOLUME = max(globals.EFFECT_VOLUME - .1, 0)
         self.last_key = symbol
 
     def on_key_release(self, symbol, modifiers):
-        if symbol == key.T:
+        if symbol == globals.TALK_KEY:
             self.toggle_text_input()
             return pyglet.event.EVENT_HANDLED
 
@@ -484,7 +481,7 @@ class GameController(Controller):
         self.label.draw()
 
     def text_input_callback(self, text_input, symbol, modifier):
-        if symbol == key.ENTER:
+        if symbol == globals.VALIDATE_KEY:
             txt = text_input.text.replace('\n', '')
             try:
                 self.command_parser.execute(txt, controller=self, user=self.player, world=self.model)

@@ -129,9 +129,8 @@ class ItemSelector(Control):
         self.current_index = 0
         self.icon_size = self.model.group.texture.width / globals.TILESET_SIZE
         self.visible = True
-        self.num_keys = [
-            key._1, key._2, key._3, key._4, key._5,
-            key._6, key._7, key._8, key._9, key._0]
+        self.num_keys = [getattr(globals, 'INVENTORY_%d_KEY' % i)
+                         for i in range(1, 10)]
 
         image = pyglet.image.load(os.path.join('resources', 'textures', 'slots.png'))
         heart_image = pyglet.image.load(os.path.join('resources', 'textures', 'heart.png'))
@@ -272,7 +271,7 @@ class ItemSelector(Control):
                 index = (symbol - self.num_keys[0])
                 self.set_index(index)
                 return pyglet.event.EVENT_HANDLED
-            elif symbol == key.ENTER:
+            elif symbol == globals.VALIDATE_KEY:
                 current_block = self.get_current_block_item_and_amount()
                 if current_block:
                     if not self.player.inventory.add_item(
@@ -741,10 +740,10 @@ class InventorySelector(Control):
 
     def on_key_press(self, symbol, modifiers):
         if self.visible:
-            if symbol == key.ESCAPE:
+            if symbol == globals.ESCAPE_KEY:
                 self.toggle()
                 return pyglet.event.EVENT_HANDLED
-            elif symbol == key.ENTER:
+            elif symbol == globals.VALIDATE_KEY:
                 return pyglet.event.EVENT_HANDLED
 
     def on_resize(self, width, height):
@@ -864,7 +863,7 @@ class TextWidget(Control):
 
     def on_key_release(self, symbol, modifier):
         if self.visible:
-            if symbol == key.ESCAPE:
+            if symbol == globals.ESCAPE_KEY:
                 self.toggle()
                 self.parent.window.pop_handlers()
             if self._key_released:

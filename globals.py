@@ -29,6 +29,49 @@ GAME_MODE = CREATIVE_MODE
 
 
 #
+# User input
+#
+
+# Movement
+MOVE_FORWARD_KEY = 'W'
+MOVE_BACKWARD_KEY = 'S'
+MOVE_LEFT_KEY = 'A'
+MOVE_RIGHT_KEY = 'D'
+JUMP_KEY = 'SPACE'
+CROUCH_KEY = 'LSHIFT'
+FLY_KEY = 'TAB'
+
+# Action
+INVENTORY_KEY = 'E'
+INVENTORY_SORT_KEY = 'M'
+INVENTORY_1_KEY = '1'
+INVENTORY_2_KEY = '2'
+INVENTORY_3_KEY = '3'
+INVENTORY_4_KEY = '4'
+INVENTORY_5_KEY = '5'
+INVENTORY_6_KEY = '6'
+INVENTORY_7_KEY = '7'
+INVENTORY_8_KEY = '8'
+INVENTORY_9_KEY = '9'
+INVENTORY_10_KEY = '0'
+TALK_KEY = 'T'
+VALIDATE_KEY = 'ENTER'
+
+# Settings
+SOUND_UP_KEY = 'PAGEUP'
+SOUND_DOWN_KEY = 'PAGEDOWN'
+TOGGLE_HUD_KEY = 'F3'
+
+# Various
+SAVE_KEY = 'V'
+ESCAPE_KEY = 'ESCAPE'
+
+KEY_BINDINGS = dict(
+    (k.lower()[:-4], v) for k, v in locals().items() if k[-4:] == '_KEY'
+)
+
+
+#
 # Saves
 #
 
@@ -66,29 +109,31 @@ SPREADING_MUTATION_DELAY = 4  # in seconds
 # Terrain generation
 #
 
-TERRAIN_CHOICES = {
+TERRAIN_CHOICES = {  # hill_height & max_trees mandatory for the moment.
     'plains': {
-        'hill_height': '2',
-        'max_trees': '700',
+        'hill_height': 2,
+        'max_trees': 700,
     },
     'desert': {
-        'hill_height': '5',
-        'max_trees': '50',
+        'hill_height': 5,
+        'max_trees': 50,
     },
     'island': {
-        'hill_height': '8',
-        'max_trees': '700',
+        'hill_height': 8,
+        'max_trees': 700,
     },
     'mountains': {
-        'hill_height': '12',
-        'max_trees': '4000',
+        'hill_height': 12,
+        'max_trees': 4000,
     },
     'snow': {
-        'hill_height': '4',
-        'max_trees': '1500',
+        'hill_height': 4,
+        'max_trees': 1500,
     }
 }
 DEFAULT_TERRAIN_CHOICE = 'plains'
+TERRAIN_CHOICE = DEFAULT_TERRAIN_CHOICE
+TERRAIN = TERRAIN_CHOICES[DEFAULT_TERRAIN_CHOICE]
 
 
 #
@@ -108,7 +153,8 @@ DRAW_DISTANCE_CHOICES = {
     'long': 60.0 * 2.0
 }
 DEFAULT_DRAW_DISTANCE_CHOICE = 'short'
-DRAW_DISTANCE = DRAW_DISTANCE_CHOICES[DEFAULT_DRAW_DISTANCE_CHOICE]
+DRAW_DISTANCE_CHOICE = DEFAULT_DRAW_DISTANCE_CHOICE
+DRAW_DISTANCE = DRAW_DISTANCE_CHOICES[DRAW_DISTANCE_CHOICE]
 
 FOV = 65.0  # TODO: add menu option to change FOV
 NEAR_CLIP_DISTANCE = 0.1  # TODO: make min and max clip distance dynamic
@@ -146,9 +192,11 @@ HALF_PI = pi / 2.0  # 90 degrees
 # Global files & directories
 #
 
-config = ConfigParser()
-LAUNCH_OPTIONS = argparse.Namespace()
-
 game_dir = get_settings_path(APP_NAME)
 if not os.path.exists(game_dir):
     os.makedirs(game_dir)
+
+config = ConfigParser()
+config_file = os.path.join(game_dir, 'game.cfg')
+config.read(config_file)
+LAUNCH_OPTIONS = argparse.Namespace()

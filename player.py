@@ -29,12 +29,6 @@ class Player(Entity):
             #else:
             #    self.quick_slots.add_item(item.id, quantity)
 
-        self.key_move_forward = globals.config.getint('Controls', 'move_forward')
-        self.key_move_backward = globals.config.getint('Controls', 'move_backward')
-        self.key_move_left = globals.config.getint('Controls', 'move_left')
-        self.key_move_right = globals.config.getint('Controls', 'move_right')
-        self.key_jump = globals.config.getint('Controls', 'jump')
-
     def add_item(self, item_id):
         if self.quick_slots.add_item(item_id):
             return True
@@ -48,36 +42,36 @@ class Player(Entity):
             self.health = self.max_health
 
     def on_key_release(self, symbol, modifiers):
-        if symbol == self.key_move_forward:
+        if symbol == globals.MOVE_FORWARD_KEY:
             self.strafe[0] += 1
-        elif symbol == self.key_move_backward:
+        elif symbol == globals.MOVE_BACKWARD_KEY:
             self.strafe[0] -= 1
-        elif symbol == self.key_move_left:
+        elif symbol == globals.MOVE_LEFT_KEY:
             self.strafe[1] += 1
-        elif symbol == self.key_move_right:
+        elif symbol == globals.MOVE_RIGHT_KEY:
             self.strafe[1] -= 1
-        elif (symbol == self.key_jump or symbol == key.LSHIFT
-              or symbol == key.RSHIFT) and self.flying:
+        elif (symbol == globals.JUMP_KEY
+              or symbol == globals.CROUCH_KEY) and self.flying:
             self.dy = 0
 
     def on_key_press(self, symbol, modifiers):
-        if symbol == self.key_move_forward:
+        if symbol == globals.MOVE_FORWARD_KEY:
             self.strafe[0] -= 1
-        elif symbol == self.key_move_backward:
+        elif symbol == globals.MOVE_BACKWARD_KEY:
             self.strafe[0] += 1
-        elif symbol == self. key_move_left:
+        elif symbol == globals.MOVE_LEFT_KEY:
             self.strafe[1] -= 1
-        elif symbol == self.key_move_right:
+        elif symbol == globals.MOVE_RIGHT_KEY:
             self.strafe[1] += 1
-        elif symbol == self.key_jump:
+        elif symbol == globals.JUMP_KEY:
             if self.flying:
                 self.dy = 0.045  # jump speed
             elif self.dy == 0:
                 self.dy = 0.016  # jump speed
-        elif symbol == key.LSHIFT or symbol == key.RSHIFT:
+        elif symbol == globals.CROUCH_KEY:
             if self.flying:
                 self.dy = -0.045  # inversed jump speed
-        elif symbol == key.TAB and self.game_mode == globals.CREATIVE_MODE:
+        elif symbol == globals.FLY_KEY and self.game_mode == globals.CREATIVE_MODE:
             self.dy = 0
             self.flying = not self.flying
 

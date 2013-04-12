@@ -19,10 +19,10 @@ class Model(World):
 
     def initialize(self):
         world_size = globals.config.getint('World', 'size')
-        world_type = globals.config.get('World', 'type')
-        hill_height = globals.config.getint('World', 'hill_height')
+        world_type = globals.TERRAIN_CHOICE  # FIXME: Unify names!
+        hill_height = globals.TERRAIN['hill_height']
         flat_world = globals.config.getboolean('World', 'flat')
-        self.max_trees = globals.config.getint('World', 'max_trees')
+        self.max_trees = globals.TERRAIN['max_trees']
         tree_chance = self.max_trees / float(world_size *
                                              (globals.SECTOR_SIZE ** 3))
         n = world_size / 2  # 80

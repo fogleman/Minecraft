@@ -1,9 +1,8 @@
+from ConfigParser import NoSectionError, NoOptionError
 import argparse
 from binascii import hexlify
 import datetime
-import operator
 import os
-import cPickle as pickle
 import random
 import time
 
@@ -11,7 +10,6 @@ import pyglet
 # Disable error checking for increased performance
 pyglet.options['debug_gl'] = False
 from pyglet.gl import *
-from pyglet.window import key
 
 #import kytten
 from blocks import *
@@ -20,40 +18,52 @@ from savingsystem import *
 from controllers import *
 
 
-config_file = os.path.join(globals.game_dir, 'game.cfg')
-if not os.path.lexists(config_file):
-    globals.config.add_section('World')
-
-    world_type = globals.DEFAULT_TERRAIN_CHOICE  # FIXME: Unify names!
-    globals.config.set('World', 'type', world_type)
-    terrain = globals.TERRAIN_CHOICES[world_type]
-    for k, v in terrain.items():
-        globals.config.set('World', k, v)
-
-    globals.config.set('World', 'flat', 'false')  # dont make mountains, make a flat world
-    globals.config.set('World', 'size', '64')
-    globals.config.set('World', 'show_fog', 'true')
-
-    globals.config.add_section('Controls')
-    globals.config.set('Controls', 'move_forward', str(key.W))
-    globals.config.set('Controls', 'move_backward', str(key.S))
-    globals.config.set('Controls', 'move_left', str(key.A))
-    globals.config.set('Controls', 'move_right', str(key.D))
-    globals.config.set('Controls', 'jump', str(key.SPACE))
-    globals.config.set('Controls', 'inventory', str(key.E))
-    globals.config.set('Controls', 'sound_up', str(key.PAGEUP))
-    globals.config.set('Controls', 'sound_down', str(key.PAGEDOWN))
-
+def safe_add_to_config(section, option, default_value):
     try:
-        with open(config_file, 'wb') as handle:
-            globals.config.write(handle)
-    except:
-        print "Problem: Configuration file (%s) doesn't exist." % config_file
-        sys.exit(1)
-else:
-    globals.config.read(config_file)
+        user_value = globals.config.get(section, option)
+    except NoSectionError:
+        globals.config.add_section(section)
+    except NoOptionError:
+        pass
+    else:
+        # If no exception (meaning that the option is already set), do nothing.
+        return user_value
+    globals.config.set(section, option, default_value)
+    return default_value
 
-####
+
+class InvalidKey(Exception):
+    pass
+
+
+def get_key(key_name):
+    key_code = getattr(pyglet.window.key, key_name, None)
+    if key_code is None:
+        # Handles cases like pyglet.window.key._1
+        key_code = getattr(pyglet.window.key, '_' + key_name, None)
+        if key_code is None:
+            raise InvalidKey('%s is not a valid key.' % key_name)
+    return key_code
+
+
+def initialize_config():
+    safe_add_to_config('World', 'flat', 'false')  # dont make mountains, make a flat world
+    safe_add_to_config('World', 'size', '64')
+    safe_add_to_config('World', 'show_fog', 'true')
+
+    # Adds missing keys to configuration file and converts to pyglet keys.
+    for control, default_key_name in globals.KEY_BINDINGS.items():
+        key_name = safe_add_to_config('Controls', control, default_key_name)
+        try:
+            pyglet_key = get_key(key_name)
+        except InvalidKey:
+            pyglet_key = get_key(default_key_name)
+            globals.config.set('Controls', control, default_key_name)
+        setattr(globals, control.upper() + '_KEY', pyglet_key)
+
+    with open(globals.config_file, 'wb') as handle:
+        globals.config.write(handle)
+
 
 class Window(pyglet.window.Window):
     def __init__(self, width, height, launch_fullscreen=False, show_gui=True,**kwargs):
@@ -82,10 +92,10 @@ class Window(pyglet.window.Window):
 
     def on_key_press(self, symbol, modifiers):
         if self.exclusive:
-            if symbol == key.ESCAPE and not self.fullscreen:
+            if symbol == globals.ESCAPE_KEY and not self.fullscreen:
                 self.set_exclusive_mouse(False)
-            elif symbol == key.Q and self.fullscreen:
-                pyglet.app.exit() # for fullscreen
+            elif symbol == key.Q and self.fullscreen:  # FIXME: Better fullscreen mode.
+                pyglet.app.exit()  # for fullscreen
 
     def on_draw(self):
         if self.exclusive:
@@ -115,18 +125,13 @@ def main(options):
     for name, val in options._get_kwargs():
         setattr(globals.LAUNCH_OPTIONS, name, val)
 
-    if options.draw_distance:
-        globals.DRAW_DISTANCE = globals.DRAW_DISTANCE_CHOICES[options.draw_distance]
+    globals.DRAW_DISTANCE = globals.DRAW_DISTANCE_CHOICES[options.draw_distance]
 
-    if options.terrain:
-        world_type = options.terrain  # FIXME: Unify names!
-        globals.config.set('World', 'type', world_type)
-        terrain = globals.TERRAIN_CHOICES[world_type]
-        for k, v in terrain.items():
-            globals.config.set('World', k, v)
+    globals.TERRAIN_CHOICE = options.terrain
+    globals.TERRAIN = globals.TERRAIN_CHOICES[options.terrain]
 
     if options.flat:
-        globals.config.set('World', 'flat', 'true')
+        safe_add_to_config('World', 'flat', 'true')
 
     if options.fast:
         globals.TIME_RATE /= 20
@@ -162,12 +167,6 @@ def main(options):
 
     pyglet.clock.set_fps_limit(globals.MAX_FPS)
     pyglet.app.run()
-    if options.save_config:
-        try:
-            with open(config_file, 'wb') as handle:
-                globals.config.write(handle)
-        except:
-            print "Problem: Write error."
 
 
 if __name__ == '__main__':
@@ -190,10 +189,11 @@ if __name__ == '__main__':
     save_group.add_argument("--disable-auto-save", action="store_false", default=True, help="Do not save world on exit.")
     save_group.add_argument("--save", default=globals.SAVE_FILENAME, help="Type a name for the world to be saved as.")
     save_group.add_argument("--disable-save", action="store_false", default=True, help="Disables saving.")
-    save_group.add_argument("--save-config", action="store_true", default=False, help="Saves the choices as the default config.")
     save_group.add_argument("--save-mode", choices=globals.SAVE_MODES, default=globals.SAVE_MODE, help="Flatfile Struct (flatfile) is the smallest and fastest")
 
     parser.add_argument("--seed", default=None)
     parser.add_argument("--motion-blur", action="store_true", default=False)
+
     options = parser.parse_args()
+    initialize_config()
     main(options)
