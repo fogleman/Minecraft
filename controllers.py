@@ -234,7 +234,7 @@ class GameController(Controller):
         self.text_input = TextWidget(self, '', 0, self.window.height, 100,
                                      visible=False,
                                      key_released=self.text_input_callback,
-                                     anchor_style=ANCHOR_LEFT|ANCHOR_RIGHT|ANCHOR_BOTTOM)
+                                     anchor_style=globals.ANCHOR_LEFT|globals.ANCHOR_RIGHT|globals.ANCHOR_BOTTOM)
         self.command_parser = CommandParser()
         self.camera = Camera3D(target=self.player)
         if self.show_gui:

@@ -210,3 +210,9 @@ config = ConfigParser()
 config_file = os.path.join(game_dir, 'game.cfg')
 config.read(config_file)
 LAUNCH_OPTIONS = argparse.Namespace()
+
+ANCHOR_NONE   = 0
+ANCHOR_LEFT   = 1
+ANCHOR_TOP    = 1 << 1
+ANCHOR_RIGHT  = 1 << 2
+ANCHOR_BOTTOM = 1 << 3

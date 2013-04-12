@@ -15,27 +15,38 @@ from utils import load_image, image_sprite
 
 class Rectangle(object):
     def __init__(self, x, y, width, height):
-        self.x, self.y = x, y
-        self.width, self.height = width, height
-
-    def set_position(self, x, y):
-        self.x, self.y = x, y
-
-    def set_size(self, width, height):
-        self.width, self.height = width, height
-
-    def get_center(self):
-        return self.x + self.width / 2, self.y + self.height / 2
+        self.position = x, y
+        self.size = width, height
 
     def hit_test(self, x, y):
-        return (x >= self.x and x <= self.x + self.width) and (y >= self.y and y <= self.y + self.height)
+        return (x >= self.min[0] and x <= self.max[0]) and (y >= self.min[1] and y <= self.max[1])
 
     def vertex_list(self):
         return [self.x, self.y,
                 self.x + self.width, self.y,
                 self.x + self.width, self.y + self.height,
                 self.x, self.y + self.height]
+
+    @property
+    def position(self):
+        return self.x, self.y
+
+    @position.setter
+    def position(self, position):
+        self.x, self.y = position
+
+    @property
+    def size(self):
+        return self.width, self.height
+
+    @size.setter
+    def size(self, size):
+        self.width, self.height = size
 	
+    @property
+    def center(self):
+        return self.x + self.width / 2, self.y + self.height / 2
+
     @property
     def min(self):
         return (self.x, self.y)
@@ -66,13 +77,14 @@ class Button(Rectangle):
         self.set_position(x, y)
 	
     def set_position(self, x, y):
-        super(Button, self).set_position(x, y)
+        super(Button, self)
+        self.position = x, y
         if self.sprite:
             self.sprite.x, self.sprite.y = x, y
         if self.sprite_highlighted:
             self.sprite_highlighted.x, self.sprite_highlighted.y = x, y
         if self.label:
-            self.label.x, self.label.y = self.get_center()
+            self.label.x, self.label.y = self.center
 
     def draw(self):
         if self.sprite and not (self.sprite_highlighted and self.highlighted):
@@ -89,15 +101,8 @@ class Button(Rectangle):
     def on_mouse_click(self):
         self.on_click()
 
-ANCHOR_NONE   = 0
-ANCHOR_LEFT   = 1
-ANCHOR_TOP    = 1 << 1
-ANCHOR_RIGHT  = 1 << 2
-ANCHOR_BOTTOM = 1 << 3
-
-
 class Control(object):
-    def __init__(self, parent, anchor_style=ANCHOR_NONE, visible=True, *args, **kwargs):
+    def __init__(self, parent, anchor_style=globals.ANCHOR_NONE, visible=True, *args, **kwargs):
         self.parent = parent
         self.visible = visible
         self.anchor_style = anchor_style
@@ -114,9 +119,9 @@ class Control(object):
     def _on_resize(self):
         pw, ph = self.parent.window.get_size()
         al, at, ar, ab = None, None, None, None
-        if (self.anchor_style & ANCHOR_RIGHT) == ANCHOR_RIGHT:
+        if (self.anchor_style & globals.ANCHOR_RIGHT) == globals.ANCHOR_RIGHT:
             ar = pw
-        if (self.anchor_style & ANCHOR_BOTTOM) == ANCHOR_BOTTOM:
+        if (self.anchor_style & globals.ANCHOR_BOTTOM) == globals.ANCHOR_BOTTOM:
             ab = 0
         # TODO: Implement ANCHOR_LEFT and ANCHOR_TOP
         self._anchor_points = (al, at, ar, ab)
