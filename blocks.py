@@ -6,13 +6,10 @@ from __future__ import unicode_literals
 import os
 # Third-party packages
 from utils import load_image
-from pyglet.gl import *
-from pyglet.image.atlas import TextureAtlas
+import pyglet
 # Modules from this project
 import globals
 import sounds
-from pyglet.gl import *
-from pyglet.image.atlas import TextureAtlas
 from random import randint
 
 

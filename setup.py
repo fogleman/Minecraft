@@ -7,7 +7,7 @@ import globals
 
 ext_modules = [
     Extension(name, [name + '.py']) for name in (
-        'blocks', 'cameras', 'controllers', 'crafting', 'entity', 'globals', 'gui', 'inventory', 'items',
+        'blocks', 'cameras', 'controllers', 'crafting', 'entity', 'gui', 'inventory', 'items',
         'manager', 'model', 'nature', 'player', 'savingsystem', 'sounds', 'terrain', 'world',
     )
 ]
