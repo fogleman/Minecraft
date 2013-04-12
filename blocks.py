@@ -134,6 +134,10 @@ class Block(object):
     name = "Block"
 
     digging_tool = -1
+    # How long can this item burn (-1 for non-fuel items)
+    burning_time = -1
+    # How long does it take to smelt this item (-1 for unsmeltable items)
+    smelting_time = -1
 
     def __init__(self, width=None, height=None):
         self.id = BlockID(self.id or 0)
@@ -295,7 +299,7 @@ class IronOreBlock(HardBlock):
     id = 15
     digging_tool = globals.PICKAXE
     name = "Iron Ore"
-
+    smelting_time = 10
 
 class DiamondOreBlock(HardBlock):
     top_texture = 2, 4
@@ -782,6 +786,92 @@ class FurnaceBlock(HardBlock):
     id = 61
     name = "Furnace"
 
+    fuel = None # fuel slot
+    smelt_stack = None # input slot
+    outcome_item = None
+    smelt_outcome = None # output slot
+
+    fuel_task = None
+    smelt_task = None
+
+    def set_smelting_item(self, item):
+        if item is None:
+            return
+        self.smelt_stack = item
+        self.outcome_item = globals.smelting_recipes.smelt(self.smelt_stack.get_object())
+        # no such recipe
+        if self.outcome_item is None:
+            return
+        else:
+            self.smelt()
+
+    def set_fuel(self, fuel):
+        if fuel is None:
+            return
+        self.fuel = fuel
+        # invalid fuel
+        if self.fuel.get_object().burning_time == -1:
+            return
+        else:
+            self.smelt()
+
+    def full(self, reserve=0):
+        if self.smelt_outcome is None:
+            return False
+
+        return self.smelt_outcome.get_object().max_stack_size < self.smelt_outcome.amount + reserve
+
+
+    def smelt_done(self):
+        self.smelt_task = None
+        # outcome
+        if self.smelt_outcome is None:
+            self.smelting_outcome = self.outcome_item
+        else:
+            self.smelting_outcome.change_amount(self.outcome_item.amount)
+        # cost
+        self.smelt_stack.change_amount(-1)
+        # input slot has been empty
+        if self.smelt_stack.amount <= 0:
+            self.smelt_stack = None
+            self.outcome_item = None
+        # stop
+        if self.full(self.outcome_item.amount) or self.smelt_stack is None:
+            return
+        if self.fuel is None or self.fuel_task is None:
+            return
+        # smelting task
+        self.smelt_task = globals.main_timer.add_task(self.smelt_stack.get_object().smelting_time, self.smelt_done)
+
+    def remove_fuel(self):
+        self.fuel_task = None
+        self.fuel.change_amount(-1)
+        if self.fuel.amount <= 0:
+            self.fuel = None
+            # stop smelting task
+            globals.main_timer.remove_task(self.smelt_task)
+            self.smelt_task = None
+            return
+
+        # continue
+        if self.smelt_task is not None:
+            self.fuel_task = globals.main_timer.add_task(self.fuel.get_object().burning_time, self.remove_fuel)
+
+    def smelt(self):
+        if self.fuel is None or self.smelt_stack is None:
+            return
+        # smelting
+        if self.fuel_task is not None or self.smelt_task is not None:
+            return
+        if self.full():
+            return
+
+        burning_time = self.fuel.get_object().burning_time
+        smelting_time = self.smelt_stack.get_object().smelting_time
+        # fuel task: remove fuel
+        self.fuel_task = globals.main_timer.add_task(burning_time, self.remove_fuel)
+        # smelting task
+        self.smelt_task = globals.main_timer.add_task(smelting_time, self.smelt_done)
 
 class FarmBlock(Block):
     top_texture = 5, 3

@@ -25,6 +25,11 @@ class Item(object):
     name = "Item"
     group = None
 
+    # How long can this item burn (-1 for non-fuel items)
+    burning_time = -1
+    # How long does it take to smelt this item (-1 for unsmeltable items)
+    smelting_time = -1
+
     def __init__(self):
         self.id = BlockID(self.id)
         globals.ITEMS_DIR[self.id] = self
@@ -81,6 +86,7 @@ class CoalItem(Item):
     id = 263
     max_stack_size = 64
     name = "Coal"
+    burning_time = 80
 
 class LadderItem(Item):
     id = 16

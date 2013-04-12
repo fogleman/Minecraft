@@ -13,10 +13,11 @@ from pyglet.gl import *
 
 #import kytten
 from blocks import *
+from items import *
 import globals
 from savingsystem import *
 from controllers import *
-
+from timer import Timer
 
 def safe_add_to_config(section, option, default_value):
     try:
@@ -116,7 +117,6 @@ class Window(pyglet.window.Window):
             ('v2i', (x - n, y, x + n, y, x, y - n, x, y + n))
         )
 
-
 def main(options):
     globals.GAME_MODE = options.game_mode
     globals.SAVE_FILENAME = options.save
@@ -166,6 +166,8 @@ def main(options):
         vsync=False)
 
     pyglet.clock.set_fps_limit(globals.MAX_FPS)
+    globals.main_timer = Timer()
+    pyglet.clock.schedule_interval(globals.main_timer.schedule, globals.TIMER_INTERVAL)
     pyglet.app.run()
 
 

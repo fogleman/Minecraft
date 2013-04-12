@@ -456,7 +456,7 @@ class InventorySelector(AbstractInventory):
                 crafting_ingredients[int(floor(i / (2 if self.mode == 0 else 3)))].append(block)
 
         if len(crafting_ingredients) > 0:
-            outcome = recipes.craft(crafting_ingredients)
+            outcome = globals.recipes.craft(crafting_ingredients)
             if outcome:
                 self.set_crafting_outcome(outcome)
             elif self.crafting_outcome:
