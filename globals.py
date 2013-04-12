@@ -179,7 +179,6 @@ WOODEN_TOOL, STONE_TOOL, IRON_TOOL, DIAMOND_TOOL, GOLDEN_TOOL = range(5)
 PICKAXE, AXE, SHOVEL, HOE, SWORD = range(5)
 HELMET, CHESTPLATE, LEGGINGS, BOOTS = range(4)
 
-
 #
 # Static aliases
 #
@@ -187,6 +186,17 @@ HELMET, CHESTPLATE, LEGGINGS, BOOTS = range(4)
 DEG_RAD = pi / 180.0
 HALF_PI = pi / 2.0  # 90 degrees
 
+#
+# Recipes
+#
+recipes = None
+smelting_recipes = None
+
+#
+# Timer
+#
+TIMER_INTERVAL = 1
+main_timer = None
 
 #
 # Global files & directories
