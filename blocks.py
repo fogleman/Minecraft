@@ -66,7 +66,15 @@ class BlockID(object):
         if isinstance(main, tuple):
             self.main, self.sub = main
         elif isinstance(main, basestring):
-            a, b = main.split(".")
+            # Allow "35", "35.0", or "35,0"
+            spl = main.split(".") if "." in main else main.split(",") if "," in main else (main,)
+            if len(spl) == 2:
+                a, b = spl
+            elif len(spl) == 1:
+                a = spl[0]
+                b = 0
+            else:
+                raise ValueError("Expected #.# or #,#. Got %s" % main)
             self.main = int(a)
             self.sub = int(b or 0)
         elif isinstance(main, self.__class__):
