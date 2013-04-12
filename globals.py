@@ -216,3 +216,6 @@ ANCHOR_LEFT   = 1
 ANCHOR_TOP    = 1 << 1
 ANCHOR_RIGHT  = 1 << 2
 ANCHOR_BOTTOM = 1 << 3
+
+ICONS_PATH = os.path.join('resources', 'textures', 'icons')
+TEXTURES_PATH = os.path.join('resources', 'textures')

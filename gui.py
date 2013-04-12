@@ -132,7 +132,7 @@ class AbstractInventory(Control):
     def __init__(self, parent, *args, **kwargs):
         self._current_index = 0
         self.parent = parent
-        
+
     @property
     def current_index(self):
         return int(self._current_index)
@@ -143,13 +143,10 @@ class AbstractInventory(Control):
         self.update_current()
 
     def get_block_icon(self, block):
-        if os.path.isfile(os.path.join('resources', 'textures', 'icons', block.id.filename() + ".png")):
-            block_icon = load_image('resources', 'textures', 'icons', block.id.filename() + ".png")
-        else:
-            block_icon = (block.group or self.model.group).texture.get_region(
-                int(block.texture_data[2*8] * globals.TILESET_SIZE) * self.icon_size,
-                int(block.texture_data[2*8+1] * globals.TILESET_SIZE) * self.icon_size, self.icon_size,
-                self.icon_size)
+        block_icon = load_image(globals.ICONS_PATH, block.id.filename() + ".png") or (block.group or self.model.group).texture.get_region(
+            int(block.texture_data[2*8] * globals.TILESET_SIZE) * self.icon_size,
+            int(block.texture_data[2*8+1] * globals.TILESET_SIZE) * self.icon_size, self.icon_size,
+            self.icon_size)
         return block_icon
 
 class ItemSelector(AbstractInventory):
