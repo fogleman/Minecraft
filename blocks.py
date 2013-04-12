@@ -23,8 +23,6 @@ def get_texture_coordinates(x, y, tileset_size=globals.TILESET_SIZE):
     return dx, dy, dx + m, dy, dx + m, dy + m, dx, dy + m
 
 
-BLOCKS_DIR = {}
-
 #To enable, extract a texture pack's blocks folder to resources/texturepacks/textures/blocks/
 #For MC 1.5 Texture Packs
 class TextureGroupIndividual(pyglet.graphics.Group):
@@ -112,7 +110,7 @@ class Block(object):
                     setattr(self, k, get_texture_coordinates(*v))
             self.texture_data = self.get_texture_data()
 
-        BLOCKS_DIR[self.id] = self
+        globals.BLOCKS_DIR[self.id] = self
 
     def __str__(self):
         return self.name
@@ -386,7 +384,7 @@ class EmeraldOreBlock(HardBlock):
     bottom_texture = 8, 5
     side_texture = 8, 5
     hardness = 2
-    id = 129
+    id = 129.0
     name = "Emerald Ore"
     #def __init__(self):
         #super(EmeraldOreBlock, self).__init__()
@@ -416,7 +414,7 @@ class SapphireOreBlock(HardBlock):
     id = 129.2 # not in MC, just 1 +0.2 value
     name = "Ruby Ore"
 
-# Changed Marble to Quartz -- It seems that Quartz is MC's answer to Tekkit's MArble.
+# Changed Marble to Quartz -- It seems that Quartz is MC's answer to Tekkit's Marble.
 class QuartzBlock(HardBlock):
     top_texture = 3, 2
     bottom_texture = 9, 4
@@ -424,6 +422,26 @@ class QuartzBlock(HardBlock):
     id = 155.0
     hardness = 2
     name = "Quartz"
+    amount_label_color = 0, 0, 0, 255
+    digging_tool = globals.PICKAXE
+
+class ChisledQuartzBlock(HardBlock):
+    top_texture = 3, 2
+    bottom_texture = 9, 4
+    side_texture = 9, 6
+    id = 155.1
+    hardness = 2
+    name = "Chisled Quartz"
+    amount_label_color = 0, 0, 0, 255
+    digging_tool = globals.PICKAXE
+
+class ColumnQuartzBlock(HardBlock):
+    top_texture = 3, 2
+    bottom_texture = 9, 4
+    side_texture = 9, 5
+    id = 155.2
+    hardness = 2
+    name = "Column Quartz"
     amount_label_color = 0, 0, 0, 255
     digging_tool = globals.PICKAXE
 
@@ -974,37 +992,6 @@ class MossyStonebrickBlock(HardBlock):
     hardness = 1.5
     id = 98.2
     name = "Mossy Stone Bricks"
-
-# Changed Marble to Quartz -- It seems that Quartz is MC's answer to Tekkit's MArble.
-class QuartzBlock(HardBlock):
-    top_texture = 3, 2
-    bottom_texture = 9, 4
-    side_texture = 3, 2
-    id = 155.0
-    hardness = 2
-    name = "Quartz"
-    amount_label_color = 0, 0, 0, 255
-    digging_tool = globals.PICKAXE
-
-class ColumnQuartzBlock(HardBlock):
-    top_texture = 3, 2
-    bottom_texture = 9, 4
-    side_texture = 9, 5
-    id = 155.2
-    hardness = 2
-    name = "Column Quartz"
-    amount_label_color = 0, 0, 0, 255
-    digging_tool = globals.PICKAXE
-
-class ChisledQuartzBlock(HardBlock):
-    top_texture = 3, 2
-    bottom_texture = 9, 4
-    side_texture = 9, 6
-    id = 155.1
-    hardness = 2
-    name = "Chisled Quartz"
-    amount_label_color = 0, 0, 0, 255
-    digging_tool = globals.PICKAXE
 
 class IceBlock(Block):
     top_texture = 8, 7

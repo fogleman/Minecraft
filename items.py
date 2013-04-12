@@ -18,8 +18,6 @@ ITEM_ID_MIN = 256
 # * Weapons
 # * Armor
 
-ITEMS_DIR = {}
-
 class Item(object):
     id = None
     max_stack_size = 0
@@ -27,7 +25,7 @@ class Item(object):
     name = "Item"
 
     def __init__(self):
-        ITEMS_DIR[self.id] = self
+        globals.ITEMS_DIR[self.id] = self
 
     def on_right_click(self):
         pass
@@ -41,9 +39,9 @@ class ItemStack(object):
         self.durability = durability
         self.data = data
         if type >= ITEM_ID_MIN:
-            self.max_stack_size = ITEMS_DIR[type].max_stack_size
+            self.max_stack_size = globals.ITEMS_DIR[type].max_stack_size
         else:
-            self.max_stack_size = BLOCKS_DIR[type].max_stack_size
+            self.max_stack_size = globals.BLOCKS_DIR[type].max_stack_size
 
     # for debugging
     def __repr__(self):
@@ -73,9 +71,9 @@ class ItemStack(object):
 
     def get_object(self):
         if self.id >= ITEM_ID_MIN:
-            return ITEMS_DIR[self.id]
+            return globals.ITEMS_DIR[self.id]
         else:
-            return BLOCKS_DIR[self.id]
+            return globals.BLOCKS_DIR[self.id]
 
 class CoalItem(Item):
     id = 263
