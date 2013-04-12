@@ -309,6 +309,7 @@ class Armor(Item):
     material = None
     defense_point = 0
     armor_type = None
+    max_stack_size = 1
 
     def __init__(self):
         super(Armor, self).__init__()
