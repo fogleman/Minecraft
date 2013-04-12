@@ -163,9 +163,11 @@ NEAR_CLIP_DISTANCE = 0.1  # TODO: make min and max clip distance dynamic
 FAR_CLIP_DISTANCE = 200.0  # Maximum render distance,
                            # ignoring effects of sector_size and fog
 
-SHOW_FOG = True
+FOG_ENABLED = True
 
 MOTION_BLUR = False
+
+HUD_ENABLED = True
 
 
 #
@@ -193,14 +195,18 @@ HALF_PI = pi / 2.0  # 90 degrees
 #
 # Recipes
 #
+
 recipes = None
 smelting_recipes = None
+
 
 #
 # Timer
 #
+
 TIMER_INTERVAL = 1
 main_timer = None
+
 
 #
 # Global files & directories
