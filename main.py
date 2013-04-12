@@ -105,7 +105,6 @@ class Window(pyglet.window.Window):
                 glAccum(GL_MULT, 0.65)
                 glAccum(GL_ACCUM, 0.35)
                 glAccum(GL_RETURN, 1.0)
-        pyglet.clock.tick()
 
     def on_resize(self, width, height):
         if self.reticle:
@@ -165,7 +164,6 @@ def main(options):
         show_gui=options.show_gui, caption=globals.APP_NAME, resizable=True,
         vsync=False)
 
-    pyglet.clock.set_fps_limit(globals.MAX_FPS)
     globals.main_timer = Timer()
     pyglet.clock.schedule_interval(globals.main_timer.schedule, globals.TIMER_INTERVAL)
     pyglet.app.run()

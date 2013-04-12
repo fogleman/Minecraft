@@ -13,7 +13,7 @@ from model import *
 from player import *
 from savingsystem import *
 from commands import CommandParser, CommandException, UnknownCommandException
-
+from utils import load_image
 
 # Define a simple function to create GLfloat arrays of floats:
 def vec(*args):
@@ -56,13 +56,13 @@ class MainMenuController(Controller):
 
         self.show_gui = show_gui
 
-        background = pyglet.image.load(os.path.join('resources', 'textures', 'main_menu_background.png'))
-        image = pyglet.image.load(os.path.join('resources', 'textures', 'frame.png'))
+        background = load_image('resources', 'textures', 'main_menu_background.png')
+        image = load_image('resources', 'textures', 'frame.png')
         self.frame_rect = Rectangle(0, 0, image.width, image.height)
         self.background = pyglet.sprite.Sprite(background.get_region(0, 0, background.width, background.height), batch=self.batch, group=self.background_group)
         self.background.scale = max(float(window.get_size()[0]) / self.background.width, float(window.get_size()[1]) / self.background.height)
         self.frame = pyglet.sprite.Sprite(image.get_region(0, 0, image.width, image.height), batch=self.batch, group=pyglet.graphics.OrderedGroup(1))
-        button_image = pyglet.image.load(os.path.join('resources', 'textures', 'button.png'))
+        button_image = load_image('resources', 'textures', 'button.png')
         pyglet.font.add_file('resources/fonts/Chunkfive.ttf')
         pyglet.font.load('ChunkFive Roman')
         self.start_game = Button(0, 0, 160, 50, image=button_image, caption="Start game", batch=self.batch, group=self.group, label_group=self.labels_group, on_click=self.start_game_func, font_name='ChunkFive Roman')

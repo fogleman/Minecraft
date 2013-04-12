@@ -5,13 +5,11 @@ from __future__ import unicode_literals
 # Python packages
 import os
 # Third-party packages
-from pyglet.gl import *
-from pyglet.image.atlas import TextureAtlas
+from utils import load_image
+import pyglet
 # Modules from this project
 import globals
 import sounds
-from pyglet.gl import *
-from pyglet.image.atlas import TextureAtlas
 from random import randint
 
 
@@ -34,7 +32,7 @@ class TextureGroupIndividual(pyglet.graphics.Group):
         self.texture_data = []
         i=0
         for name in names:
-            subtex = atlas.add(pyglet.image.load(os.path.join('resources', 'texturepacks', 'textures', 'blocks', name+'.png')).get_region(0,0,64,64))
+            subtex = atlas.add(load_image('resources', 'texturepacks', 'textures', 'blocks', name+'.png').get_region(0,0,64,64))
             for val in subtex.tex_coords:
                 i += 1
                 if i % 3 != 0: self.texture_data.append(val) #tex_coords has a z component we don't utilize
