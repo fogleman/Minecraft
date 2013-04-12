@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from ConfigParser import NoSectionError, NoOptionError
 import argparse
 from binascii import hexlify
