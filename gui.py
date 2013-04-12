@@ -61,12 +61,10 @@ class Button(Rectangle):
         self.batch, self.group, self.label_group = batch, group, label_group
         self.sprite = image_sprite(image, self.batch, self.group) 
         self.sprite_highlighted = hidden_image_sprite(image_highlighted, self.batch, self.group)
-        self.label = None
-        self.on_click = on_click
+        self.on_mouse_click = on_click
         self.highlighted = False
-        self.label = Label(caption, font_name=font_name, font_size=12,
-            anchor_x='center', anchor_y='center', color=(255, 255, 255, 255), batch=self.batch,
-            group=self.label_group) if caption else None
+        self.label = Label(caption, font_name, 12, anchor_x='center', anchor_y='center', 
+            color=(255, 255, 255, 255), batch=self.batch, group=self.label_group) if caption else None
         self.position = x, y
 	
     @property
@@ -84,19 +82,20 @@ class Button(Rectangle):
             self.label.x, self.label.y = self.center
 
     def draw(self):
+        self.draw_sprite()
+        self.draw_label()
+
+    def draw_sprite(self):
         if self.sprite and not (self.sprite_highlighted and self.highlighted):
-            self.sprite_highlighted.visible = False
-            self.sprite.visible = True
+            self.sprite_highlighted.visible, self.sprite.visible = False, True
             self.sprite.draw()
         elif self.sprite_highlighted and self.highlighted:
-            self.sprite_highlighted.visible = True
-            self.sprite.visible = False
+            self.sprite_highlighted.visible, self.sprite.visible = True, False
             self.sprite_highlighted.draw()
+
+    def draw_label(self):
         if self.label:
             self.label.draw()
-
-    def on_mouse_click(self):
-        self.on_click()
 
 class Control(object):
     def __init__(self, parent, anchor_style=globals.ANCHOR_NONE, visible=True, *args, **kwargs):
