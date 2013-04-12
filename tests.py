@@ -86,34 +86,73 @@ class InventoryTests(unittest.TestCase):
 
 class CraftingTests(unittest.TestCase):
 
-    def setUp(self):
-        self.recipes = Recipes()
+    current_block_id = 0
 
-    def generate_random_recipe(self, length=3):
-        characters = '#@'
+    def generate_random_recipe(self, characters='#@'):
         recipe = []
         recipe2 = []
+        recipe3 = []
         ingre = {}
         for character in characters:
-            ingre[character] = random.choice(globals.BLOCKS_DIR.values())
-        for i in xrange(0, length):
-            recipe.append(''.join(random.choice(characters) for x in xrange(length)))
+            ingre[character] = globals.BLOCKS_DIR.values()[self.current_block_id]
+            self.current_block_id += 1
+            if self.current_block_id >= len(globals.BLOCKS_DIR.values()):
+                self.current_block_id = 0
+        for i in xrange(0, 3):
+            recipe.append(''.join(random.choice(characters) for x in xrange(3)))
             recipe2.append([])
             for character in recipe[i]:
                 recipe2[i].append(ingre[character])
-        return recipe, ingre, ItemStack(random.choice(globals.BLOCKS_DIR.values()).id, amount=1), recipe2
+                recipe3.append(ingre[character])
+        return recipe, ingre, ItemStack(random.choice(globals.BLOCKS_DIR.values()).id, amount=random.randint(1, 20)), recipe2, recipe3
 
-    def test_1(self):
+    def test_add_1(self):
+        self.recipes = Recipes()
         recipes = []
         ingres = []
         outputs = []
-        for i in xrange(0, 100):
-            recipe, ingre, output, recipe2 = self.generate_random_recipe()
+        for i in xrange(0, 300):
+            recipe, ingre, output, recipe2, recipe3 = self.generate_random_recipe()
             recipes.append(recipe2)
             ingres.append(ingre)
             outputs.append(output)
             self.recipes.add_recipe(recipe, ingre, output)
-        self.assertEqual(self.recipes.nr_recipes, 100)
+        self.assertEqual(self.recipes.nr_recipes, 300)
+        for i, recipe in enumerate(recipes):
+            self.assertEqual(self.recipes.craft(recipe), outputs[i])
+
+    def test_add_2(self):
+        self.recipes = Recipes()
+        recipes = []
+        ingres = []
+        outputs = []
+        for i in xrange(0, 25):
+            recipe, ingre, output, recipe2, recipe3 = self.generate_random_recipe()
+            recipes.append(recipe2)
+            ingres.append(ingre)
+            outputs.append(output)
+            self.recipes.add_shapeless_recipe(recipe3, output)
+        for i, recipe in enumerate(recipes):
+            self.assertEqual(self.recipes.craft(recipe), outputs[i])
+
+    def test_add_3(self):
+        self.recipes = Recipes()
+        recipes = []
+        ingres = []
+        outputs = []
+        for i in xrange(0, 25):
+            shapeless = random.choice([True, False])
+            if shapeless:
+                recipe, ingre, output, recipe2, recipe3 = self.generate_random_recipe()
+            else:
+                recipe, ingre, output, recipe2, recipe3 = self.generate_random_recipe(characters='12')
+            recipes.append(recipe2)
+            ingres.append(ingre)
+            outputs.append(output)
+            if shapeless:
+                self.recipes.add_shapeless_recipe(recipe3, output)
+            else:
+                self.recipes.add_recipe(recipe, ingre, output)
         for i, recipe in enumerate(recipes):
             self.assertEqual(self.recipes.craft(recipe), outputs[i])
 
