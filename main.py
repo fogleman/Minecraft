@@ -107,7 +107,7 @@ class Window(pyglet.window.Window):
 
     def update(self, dt):
         self.controller.update(dt)
-        
+
     def switch_controller(self, new_controller):
         if self.controller:
             self.controller.pop_handlers()
@@ -196,7 +196,7 @@ if __name__ == '__main__':
     display_group = parser.add_argument_group('Display options')
     display_group.add_argument("--show-gui", action="store_true", default=True, help="Enabled by default.")
     display_group.add_argument("--fullscreen", action="store_true", default=False, help="Runs the game in fullscreen. Press 'Q' to exit the game.")
-    
+
     game_group = parser.add_argument_group('Game options')
     game_group.add_argument("--terrain", choices=globals.TERRAIN_CHOICES, default=globals.DEFAULT_TERRAIN_CHOICE)
     game_group.add_argument("--flat", action="store_true", default=False, help="Generate a flat world.")

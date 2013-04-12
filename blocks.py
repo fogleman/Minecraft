@@ -55,7 +55,7 @@ class TextureGroupIndividual(pyglet.graphics.Group):
     def unset_state(self):
         glDisable(self.texture.target)
 
-""" 
+"""
 The Datatype for Block and Item ID's
 Creation: BlockID(1)   BlockID(35)   BlockID(35, 3)   BlockID((35,3))   BlockID("35.3")
 str(id) : "1.0"        "35.0"        "35.3"           "35.3"            "35.3"
@@ -88,7 +88,7 @@ class BlockID(object):
             self.sub = int(sub)
     def __repr__(self):
         return '%d.%d' % (self.main, self.sub)
-    def __hash__(self): 
+    def __hash__(self):
         return hash(repr(self))
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -412,7 +412,7 @@ class WaterBlock(Block):
     top_texture = 0, 2
     bottom_texture = 6, 7
     side_texture = 6, 7
-    texture_name = "water",
+    texture_name = "Water",
     transparent = True
     hardness = -1  # Unobtainable
     density = 0.5
@@ -709,6 +709,7 @@ class PumpkinBlock(Block):
     width = 0.8
     id = 86
     name = "Pumpkin"
+    regenerated_health = 3 # pumpkin pie
     break_sound = sounds.melon_break
 
 
@@ -1081,6 +1082,7 @@ class PotatoBlock(Block):
     id = 142
     name = "Potato"
     max_stack_size = 16
+    regenerated_health = 1
     amount_label_color = 0, 0, 0, 255
 
 class CarrotBlock(Block):
@@ -1091,6 +1093,7 @@ class CarrotBlock(Block):
     transparent = True
     id = 141
     name = "Carrot"
+    regenerated_health = 2
     max_stack_size = 16
     amount_label_color = 0, 0, 0, 255
 
