@@ -106,13 +106,13 @@ class CraftingTests(unittest.TestCase):
                 recipe3.append(ingre[character])
         return recipe, ingre, ItemStack(random.choice(globals.BLOCKS_DIR.values()).id, amount=random.randint(1, 20)), recipe2, recipe3
 
-    def test_add_1(self):
+    def test_add_1(self, characters='#@'):
         self.recipes = Recipes()
         recipes = []
         ingres = []
         outputs = []
         for i in xrange(0, 50):
-            recipe, ingre, output, recipe2, recipe3 = self.generate_random_recipe()
+            recipe, ingre, output, recipe2, recipe3 = self.generate_random_recipe(characters=characters)
             recipes.append(recipe2)
             ingres.append(ingre)
             outputs.append(output)
@@ -121,13 +121,13 @@ class CraftingTests(unittest.TestCase):
         for i, recipe in enumerate(recipes):
             self.assertEqual(self.recipes.craft(recipe), outputs[i])
 
-    def test_add_2(self):
+    def test_add_2(self, characters='#@'):
         self.recipes = Recipes()
         recipes = []
         ingres = []
         outputs = []
         for i in xrange(0, 25):
-            recipe, ingre, output, recipe2, recipe3 = self.generate_random_recipe()
+            recipe, ingre, output, recipe2, recipe3 = self.generate_random_recipe(characters=characters)
             recipes.append(recipe2)
             ingres.append(ingre)
             outputs.append(output)
@@ -155,6 +155,12 @@ class CraftingTests(unittest.TestCase):
                 self.recipes.add_recipe(recipe, ingre, output)
         for i, recipe in enumerate(recipes):
             self.assertEqual(self.recipes.craft(recipe), outputs[i])
+
+    def test_add_4(self):
+        self.test_add_1(characters='!@#$123456789')
+
+    def test_add_5(self):
+        self.test_add_2(characters='!@#$123456789')
 
 if __name__ == '__main__':
     unittest.main()
