@@ -8,7 +8,7 @@ import pyglet
 from pyglet.gl import *
 
 from blocks import *
-from globals import *
+import globals
 
 
 FACES = (
@@ -70,7 +70,9 @@ def normalize(position):
 
 def sectorize(position):
     x, y, z = normalize(position)
-    x, y, z = x / SECTOR_SIZE, y / SECTOR_SIZE, z / SECTOR_SIZE
+    x, y, z = (x / globals.SECTOR_SIZE,
+               y / globals.SECTOR_SIZE,
+               z / globals.SECTOR_SIZE)
     return x, 0, z
 
 
@@ -234,26 +236,26 @@ class World(dict):
             self.enqueue(self._show_block, position, block)
 
     def _show_block(self, position, block):
-        x, y, z = position
+    #    x, y, z = position
         # only show exposed faces
-        index = 0
-        count = 24
+    #    index = 0
         vertex_data = block.get_vertices(*position)
         texture_data = block.texture_data
+        count = len(texture_data) / 2
         # FIXME: Do something of what follows.
-        for dx, dy, dz in []:  # FACES:
-            if (x + dx, y + dy, z + dz) in self:
-                count -= 8  # 4
-                i = index * 12
-                j = index * 8
-                del vertex_data[i:i + 12]
-                del texture_data[j:j + 8]
-            else:
-                index += 1
+    #    for dx, dy, dz in []:  # FACES:
+    #        if (x + dx, y + dy, z + dz) in self:
+    #            count -= 8  # 4
+    #            i = index * 12
+    #            j = index * 8
+    #            del vertex_data[i:i + 12]
+    #            del texture_data[j:j + 8]
+    #        else:
+    #            index += 1
 
         # create vertex list
         batch = self.transparency_batch if block.transparent else self.batch
-        self._shown[position] = batch.add(count, GL_QUADS, self.group,
+        self._shown[position] = batch.add(count, GL_QUADS, block.group or self.group,
                                           ('v3f/static', vertex_data),
                                           ('t2f/static', texture_data))
 
@@ -286,7 +288,7 @@ class World(dict):
     def change_sectors(self, before, after):
         before_set = set()
         after_set = set()
-        pad = VISIBLE_SECTORS_RADIUS
+        pad = globals.VISIBLE_SECTORS_RADIUS
         for dx in xrange(-pad, pad + 1):
             for dy in (0,):  # xrange(-pad, pad + 1):
                 for dz in xrange(-pad, pad + 1):
@@ -334,7 +336,7 @@ class World(dict):
         # Updates spreading
         # TODO: This is too simple
         self.spreading_time += dt
-        if self.spreading_time >= SPREADING_MUTATION_DELAY:
+        if self.spreading_time >= globals.SPREADING_MUTATION_DELAY:
             self.spreading_time = 0.0
             if self.spreading_mutable_blocks:
                 position = self.spreading_mutable_blocks.pop()

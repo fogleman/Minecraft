@@ -143,6 +143,58 @@ class YFlowers(object):
         for item in trunk.blocks.items():
             world.init_block(*item)
 
+class Potato(object):
+    trunk_block = potato_block
+    trunk_height_range = 1, 2
+    grows_on = grass_block, dirt_block
+
+    @classmethod
+    def add_to_world(cls, world, position):
+        trunk = Trunk(position, block=cls.trunk_block,
+                      height_range=cls.trunk_height_range)
+
+        for item in trunk.blocks.items():
+            world.init_block(*item)
+
+class Carrot(object):
+    trunk_block = carrot_block
+    trunk_height_range = 1, 2
+    grows_on = grass_block, dirt_block
+
+    @classmethod
+    def add_to_world(cls, world, position):
+        trunk = Trunk(position, block=cls.trunk_block,
+                      height_range=cls.trunk_height_range)
+
+        for item in trunk.blocks.items():
+            world.init_block(*item)
+
+class Reed(object):
+    trunk_block = yflowers_block
+    trunk_height_range = 1, 2
+    grows_on = sand_block, dirt_block
+
+    @classmethod
+    def add_to_world(cls, world, position):
+        trunk = Trunk(position, block=cls.trunk_block,
+                      height_range=cls.trunk_height_range)
+
+        for item in trunk.blocks.items():
+            world.init_block(*item)
+
+class Rose(object):
+    trunk_block = rose_block
+    trunk_height_range = 1, 2
+    grows_on = grass_block, dirt_block
+
+    @classmethod
+    def add_to_world(cls, world, position):
+        trunk = Trunk(position, block=cls.trunk_block,
+                      height_range=cls.trunk_height_range)
+
+        for item in trunk.blocks.items():
+            world.init_block(*item)
+
 TREES = (
     OakTree,
     JungleTree,
@@ -152,6 +204,10 @@ TREES = (
     WaterMelon,
     Pumpkin,
     YFlowers,
+    Potato,
+    Carrot,
+    Reed,
+    Rose,
 )
 
 TREE_BLOCKS = tuple(tree.trunk_block for tree in TREES)
