@@ -2,7 +2,8 @@ import pyglet
 import os
 
 def load_image(*args):
-	return pyglet.image.load(os.path.join(*args))
+	path = os.path.join(*args)
+	return pyglet.image.load(os.path.join(*args)) if os.path.isfile(path) else None
 
 def image_sprite(image, batch, group, x=0, y=0, width=None, height=None):
 	if image == None or batch == None or group == None:
