@@ -42,7 +42,7 @@ def get_or_update_config(section, option, default_value, conv=str, choices=()):
             raise InvalidChoice('%s.%s must be in %s' %
                                 (section, option, repr(tuple(choices))))
         return user_value
-    globals.config.set(section, option, default_value)
+    globals.config.set(section, option, str(default_value))
     return default_value
 
 
