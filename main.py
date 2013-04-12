@@ -29,7 +29,7 @@ class InvalidChoice(Exception):
 def get_or_update_config(section, option, default_value, conv=str, choices=()):
     try:
         if conv is bool:
-            user_value = globals.config.getboolean(section, option.lower())
+            user_value = globals.config.getboolean(section, option)
         else:
             user_value = conv(globals.config.get(section, option))
     except NoSectionError:
