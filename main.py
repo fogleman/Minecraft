@@ -104,7 +104,6 @@ class Window(pyglet.window.Window):
                 glAccum(GL_MULT, 0.65)
                 glAccum(GL_ACCUM, 0.35)
                 glAccum(GL_RETURN, 1.0)
-        pyglet.clock.tick()
 
     def on_resize(self, width, height):
         if self.reticle:
