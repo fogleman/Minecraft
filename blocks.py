@@ -457,7 +457,7 @@ class SapphireOreBlock(HardBlock):
     side_texture = 12, 2
     hardness = 2
     id = 129,2 # not in MC
-    name = "Ruby Ore"
+    name = "Sapphire Ore"
 
 # Changed Marble to Quartz -- It seems that Quartz is MC's answer to Tekkit's Marble.
 class QuartzBlock(HardBlock):
