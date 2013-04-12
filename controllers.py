@@ -62,10 +62,11 @@ class MainMenuController(Controller):
         self.background.scale = max(float(window.get_size()[0]) / self.background.width, float(window.get_size()[1]) / self.background.height)
         self.frame = image_sprite(image, self.batch, 1)
         button_image = load_image('resources', 'textures', 'button.png')
+        button_highlighted = load_image('resources', 'textures', 'button_highlighted.png')
         pyglet.font.add_file('resources/fonts/Chunkfive.ttf')
         pyglet.font.load('ChunkFive Roman')
-        self.start_game = Button(0, 0, 160, 50, image=button_image, caption="Start game", batch=self.batch, group=self.group, label_group=self.labels_group, on_click=self.start_game_func, font_name='ChunkFive Roman')
-        self.exit_game = Button(0, 0, 160, 50, image=button_image, caption="Exit game", batch=self.batch, group=self.group, label_group=self.labels_group, on_click=self.exit_game_func, font_name='ChunkFive Roman')
+        self.start_game = Button(0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Start game", batch=self.batch, group=self.group, label_group=self.labels_group, on_click=self.start_game_func, font_name='ChunkFive Roman')
+        self.exit_game = Button(0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Exit game", batch=self.batch, group=self.group, label_group=self.labels_group, on_click=self.exit_game_func, font_name='ChunkFive Roman')
         self.buttons = [self.start_game, self.exit_game]
         self.label = Label(globals.APP_NAME, font_name='ChunkFive Roman', font_size=50, x=window.width/2, y=self.frame.y + self.frame.height,
             anchor_x='center', anchor_y='top', color=(255, 255, 255, 255), batch=self.batch,
@@ -93,7 +94,12 @@ class MainMenuController(Controller):
     def on_mouse_motion(self, x, y, dx, dy):
         cursor = None
         for button in self.buttons:
+            if button.highlighted:
+                button.highlighted = False
+                button.draw()
             if button.hit_test(x, y):
+                button.highlighted = True
+                button.draw()
                 cursor = self.window.get_system_mouse_cursor(pyglet.window.Window.CURSOR_HAND)
         self.window.set_mouse_cursor(cursor)
 

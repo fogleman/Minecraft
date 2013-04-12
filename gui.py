@@ -45,7 +45,7 @@ class Rectangle(object):
         return (self.x + self.width, self.y + self.height)
 
 class Button(Rectangle):
-    def __init__(self, x, y, width, height, image=None, caption=None, batch=None, group=None, label_group=None, on_click=None, font_name='Arial'):
+    def __init__(self, x, y, width, height, image=None, image_highlighted=None, caption=None, batch=None, group=None, label_group=None, on_click=None, font_name='Arial'):
         super(Button, self).__init__(x, y, width, height)
         self.batch = batch
         self.group = group
@@ -53,8 +53,12 @@ class Button(Rectangle):
         self.sprite = None
         self.label = None
         self.on_click = on_click
+        self.highlighted = False
         if image:
             self.sprite = image_sprite(image, self.batch, self.group)
+            if image_highlighted:
+                self.sprite_highlighted = image_sprite(image_highlighted, self.batch, self.group)
+                self.sprite_highlighted.opacity = 0
         if caption:
             self.label = Label(caption, font_name=font_name, font_size=12,
                 anchor_x='center', anchor_y='center', color=(255, 255, 255, 255), batch=self.batch,
@@ -65,12 +69,20 @@ class Button(Rectangle):
         super(Button, self).set_position(x, y)
         if self.sprite:
             self.sprite.x, self.sprite.y = x, y
+        if self.sprite_highlighted:
+            self.sprite_highlighted.x, self.sprite_highlighted.y = x, y
         if self.label:
             self.label.x, self.label.y = self.get_center()
 
     def draw(self):
-        if self.sprite:
+        if self.sprite and not (self.sprite_highlighted and self.highlighted):
+            self.sprite_highlighted.opacity = 0
+            self.sprite.opacity = 255
             self.sprite.draw()
+        elif self.sprite_highlighted and self.highlighted:
+            self.sprite_highlighted.opacity = 255
+            self.sprite.opacity = 0
+            self.sprite_highlighted.draw()
         if self.label:
             self.label.draw()
 
