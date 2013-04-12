@@ -11,7 +11,7 @@ from crafting import *
 import globals
 from inventory import *
 from items import *
-from utils import load_image, image_sprite
+from utils import load_image, image_sprite, hidden_image_sprite
 
 class Rectangle(object):
     def __init__(self, x, y, width, height):
@@ -58,32 +58,29 @@ class Rectangle(object):
 class Button(Rectangle):
     def __init__(self, x, y, width, height, image=None, image_highlighted=None, caption=None, batch=None, group=None, label_group=None, on_click=None, font_name='Arial'):
         super(Button, self).__init__(x, y, width, height)
-        self.batch = batch
-        self.group = group
-        self.label_group = label_group
-        self.sprite = None
+        self.batch, self.group, self.label_group = batch, group, label_group
+        self.sprite = image_sprite(image, self.batch, self.group) 
+        self.sprite_highlighted = hidden_image_sprite(image_highlighted, self.batch, self.group)
         self.label = None
         self.on_click = on_click
         self.highlighted = False
-        if image:
-            self.sprite = image_sprite(image, self.batch, self.group)
-            if image_highlighted:
-                self.sprite_highlighted = image_sprite(image_highlighted, self.batch, self.group)
-                self.sprite_highlighted.visible = False
-        if caption:
-            self.label = Label(caption, font_name=font_name, font_size=12,
-                anchor_x='center', anchor_y='center', color=(255, 255, 255, 255), batch=self.batch,
-                group=self.label_group)
-        self.set_position(x, y)
-	
-    def set_position(self, x, y):
-        super(Button, self)
+        self.label = Label(caption, font_name=font_name, font_size=12,
+            anchor_x='center', anchor_y='center', color=(255, 255, 255, 255), batch=self.batch,
+            group=self.label_group) if caption else None
         self.position = x, y
-        if self.sprite:
-            self.sprite.x, self.sprite.y = x, y
-        if self.sprite_highlighted:
-            self.sprite_highlighted.x, self.sprite_highlighted.y = x, y
-        if self.label:
+	
+    @property
+    def position(self):
+        return self.x, self.y
+
+    @position.setter
+    def position(self, position):
+        self.x, self.y = position
+        if hasattr(self, 'sprite') and self.sprite:
+            self.sprite.x, self.sprite.y = position
+        if hasattr(self, 'sprite_highlighted') and self.sprite_highlighted:
+            self.sprite_highlighted.x, self.sprite_highlighted.y = position
+        if hasattr(self, 'label') and self.label:
             self.label.x, self.label.y = self.center
 
     def draw(self):

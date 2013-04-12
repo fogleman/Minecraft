@@ -113,8 +113,8 @@ class MainMenuController(Controller):
         self.label.x = width / 2
         button_x = self.frame.x + (self.frame.width - self.start_game.width) / 2
         button_y = self.frame.y + (self.frame.height - self.start_game.height) / 2
-        self.start_game.set_position(button_x, button_y - 10)
-        self.exit_game.set_position(button_x, button_y - self.start_game.height - 30)
+        self.start_game.position = button_x, button_y - 10
+        self.exit_game.position = button_x, button_y - self.start_game.height - 30
 
     def on_draw(self):
         self.clear()
