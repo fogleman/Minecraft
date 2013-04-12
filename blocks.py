@@ -12,6 +12,7 @@ import globals
 import sounds
 from pyglet.gl import *
 from pyglet.image.atlas import TextureAtlas
+from random import randint
 
 
 def get_texture_coordinates(x, y, tileset_size=globals.TILESET_SIZE):
@@ -97,7 +98,16 @@ class Block(object):
     id = None  # Original minecraft id (also called data value).
                # Verify on http://www.minecraftwiki.net/wiki/Data_values
                # when creating a new "official" block.
-    drop_id = None
+
+    _drop_id = None
+
+    @property
+    def drop_id(self):
+        return self._drop_id
+
+    @drop_id.setter
+    def drop_id(self, value):
+        self._drop_id = value
 
     width = 1.0
     height = 1.0
@@ -362,6 +372,17 @@ class GravelBlock(Block):
     digging_tool = globals.SHOVEL
     break_sound = sounds.gravel_break
 
+    @property
+    def drop_id(self):
+        # 10% chance of dropping flint
+        if randint(0, 10) == 0:
+            return BlockID(318)
+        else:
+            return self._drop_id
+
+    @drop_id.setter
+    def drop_id(self, value):
+        self._drop_id = value
 
 class BedrockBlock(HardBlock):
     top_texture = 3, 0
