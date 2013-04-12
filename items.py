@@ -89,7 +89,7 @@ class CoalItem(Item):
     burning_time = 80
 
 class LadderItem(Item):
-    id = 16
+    id = 999
     max_stack_size = 64
     name = "Ladder"
 
@@ -125,6 +125,21 @@ class YellowDyeItem(Item):
 
 class CactusGreenDyeItem(Item):
     id = 351,2
+    max_stack_size = 64
+    name = "Cactus Green Dye"
+
+class RedDyeItem(Item):
+    id = 351,1
+    max_stack_size = 64
+    name = "Red Dye"
+
+class SugarItem(Item):
+    id = 353
+    max_stack_size = 64
+    name = "Sugar"
+
+class PaperItem(Item):
+    id = 339
     max_stack_size = 64
     name = "Cactus Green Dye"
 
@@ -412,3 +427,7 @@ ruby_axe = RubyAxe()
 sapphire_pickaxe = SapphirePickaxe()
 sapphire_shovel = SapphireShovel()
 sapphire_axe = SapphireAxe()
+ladder_item = LadderItem()
+reddye_item = RedDyeItem()
+sugar_item = SugarItem()
+paper_item = PaperItem()
