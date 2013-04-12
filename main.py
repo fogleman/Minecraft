@@ -28,7 +28,10 @@ class InvalidChoice(Exception):
 
 def get_or_update_config(section, option, default_value, conv=str, choices=()):
     try:
-        user_value = conv(globals.config.get(section, option))
+        if conv is bool:
+            user_value = globals.config.getboolean(section, option.lower())
+        else:
+            user_value = conv(globals.config.get(section, option))
     except NoSectionError:
         globals.config.add_section(section)
     except NoOptionError:
@@ -58,21 +61,26 @@ def get_key(key_name):
 
 
 def initialize_config():
+    graphics = 'Graphics'
+
     globals.WINDOW_WIDTH = get_or_update_config(
-        'Graphics', 'width', globals.WINDOW_WIDTH, conv=int)
+        graphics, 'width', globals.WINDOW_WIDTH, conv=int)
     globals.WINDOW_HEIGHT = get_or_update_config(
-        'Graphics', 'height', globals.WINDOW_HEIGHT, conv=int)
+        graphics, 'height', globals.WINDOW_HEIGHT, conv=int)
 
     globals.DRAW_DISTANCE_CHOICE = get_or_update_config(
-        'Graphics', 'draw_distance', globals.DRAW_DISTANCE_CHOICE,
+        graphics, 'draw_distance', globals.DRAW_DISTANCE_CHOICE,
         choices=globals.DRAW_DISTANCE_CHOICES)
     globals.DRAW_DISTANCE = globals.DRAW_DISTANCE_CHOICES[globals.DRAW_DISTANCE_CHOICE]
 
-    boolean_choices = ('true', 'false')
+    globals.MOTION_BLUR = get_or_update_config(
+        graphics, 'motion_blur', globals.MOTION_BLUR)
 
-    get_or_update_config('World', 'flat', 'false', choices=boolean_choices)  # dont make mountains, make a flat world
-    get_or_update_config('World', 'size', 64, conv=int)
-    get_or_update_config('World', 'show_fog', 'true', choices=boolean_choices)
+    world = 'World'
+
+    get_or_update_config(world, 'flat', False, conv=bool)  # dont make mountains, make a flat world
+    get_or_update_config(world, 'size', 64, conv=int)
+    get_or_update_config(world, 'show_fog', True, conv=bool)
 
     # Adds missing keys to configuration file and converts to pyglet keys.
     for control, default_key_name in globals.KEY_BINDINGS.items():
@@ -142,7 +150,6 @@ class Window(pyglet.window.Window):
 def main(options):
     globals.GAME_MODE = options.game_mode
     globals.SAVE_FILENAME = options.save
-    globals.MOTION_BLUR = options.motion_blur
     globals.DISABLE_SAVE = options.disable_save
     for name, val in options._get_kwargs():
         setattr(globals.LAUNCH_OPTIONS, name, val)
@@ -210,7 +217,6 @@ if __name__ == '__main__':
     save_group.add_argument("--save-mode", choices=globals.SAVE_MODES, default=globals.SAVE_MODE, help="Flatfile Struct (flatfile) is the smallest and fastest")
 
     parser.add_argument("--seed", default=None)
-    parser.add_argument("--motion-blur", action="store_true", default=False)
 
     options = parser.parse_args()
     initialize_config()
