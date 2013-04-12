@@ -1,13 +1,25 @@
-from world import *
-from nature import *
+# Imports, sorted alphabetically.
+
+# Python packages
+import time
+# Third-party packages
+# Nothing for now..
+# Modules from this project
 import globals
+from nature import *
+from world import *
 
 
 class Model(World):
     def __init__(self, initialize=True):
         super(Model, self).__init__()
         if initialize:
+            print('Building terrain...')
+            start = time.time()
             self.initialize()
+            print('Terrain successfully built in %f seconds.' % (time.time() - start))
+
+        print('Preparing game...')
 
         # Convert dirt to grass if no block or a transparent one is above.
         for position, block in ((p, b) for p, b in self.items()
