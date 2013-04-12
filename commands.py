@@ -90,12 +90,12 @@ class Command(object):
 
 
 class GiveBlockCommand(Command):
-    command = r"^give (\d+(?:\.\d+)?)\s*(\d+)?$"
+    command = r"^give (\d+(?:[\.,]\d+)?)(?:\s+(\d+))?$"
     help_text = "give <block_id> [amount]: Give a specified amount (default of 1) of the item to the player"
 
     def execute(self, block_id, amount=1, *args, **kwargs):
         try:
-            self.user.inventory.add_item(BlockID(str(block_id)), quantity=int(amount))
+            self.user.inventory.add_item(BlockID(block_id), quantity=int(amount))
         except KeyError:
             raise CommandException(self.command_text, message="ID %s unknown." % block_id)
         except ValueError:
@@ -115,3 +115,15 @@ class SetTimeCommand(Command):
                 raise ValueError
         except ValueError:
             raise CommandException(self.command_text, message="Time should be a number between 0 and 24")
+
+
+class GetIDCommand(Command):
+    command = r"^id$"
+    help_text = "id: Get the id of the active item"
+
+    def execute(self, *args, **kwargs):
+        current = self.controller.item_list.get_current_block()
+        if current:
+            print("ID: %s" % current.id)
+        else:
+            print("ID: None")
