@@ -1,12 +1,16 @@
 # coding: utf-8
 
+# Imports, sorted alphabetically.
+
 # Future imports
 from __future__ import unicode_literals
 # Python packages
 import os
 # Third-party packages
-from utils import load_image
 import pyglet
+from pyglet.gl import *
+from pyglet.image.atlas import TextureAtlas
+from utils import load_image
 # Modules from this project
 import globals
 import sounds
