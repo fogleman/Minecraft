@@ -19,9 +19,10 @@ from savingsystem import *
 from controllers import *
 from timer import Timer
 
-def safe_add_to_config(section, option, default_value):
+
+def get_or_update_config(section, option, default_value, conv=str):
     try:
-        user_value = globals.config.get(section, option)
+        user_value = conv(globals.config.get(section, option))
     except NoSectionError:
         globals.config.add_section(section)
     except NoOptionError:
@@ -48,13 +49,18 @@ def get_key(key_name):
 
 
 def initialize_config():
-    safe_add_to_config('World', 'flat', 'false')  # dont make mountains, make a flat world
-    safe_add_to_config('World', 'size', '64')
-    safe_add_to_config('World', 'show_fog', 'true')
+    globals.WINDOW_WIDTH = get_or_update_config(
+        'Graphics', 'width', globals.WINDOW_WIDTH, conv=int)
+    globals.WINDOW_HEIGHT = get_or_update_config(
+        'Graphics', 'height', globals.WINDOW_HEIGHT, conv=int)
+
+    get_or_update_config('World', 'flat', 'false')  # dont make mountains, make a flat world
+    get_or_update_config('World', 'size', '64')
+    get_or_update_config('World', 'show_fog', 'true')
 
     # Adds missing keys to configuration file and converts to pyglet keys.
     for control, default_key_name in globals.KEY_BINDINGS.items():
-        key_name = safe_add_to_config('Controls', control, default_key_name)
+        key_name = get_or_update_config('Controls', control, default_key_name)
         try:
             pyglet_key = get_key(key_name)
         except InvalidKey:
@@ -67,8 +73,9 @@ def initialize_config():
 
 
 class Window(pyglet.window.Window):
-    def __init__(self, width, height, launch_fullscreen=False, show_gui=True,**kwargs):
-        super(Window, self).__init__(width, height, **kwargs)
+    def __init__(self, launch_fullscreen=False, show_gui=True, **kwargs):
+        super(Window, self).__init__(
+            globals.WINDOW_WIDTH, globals.WINDOW_HEIGHT, **kwargs)
         self.exclusive = False
         self.reticle = None
         self.controller = None
@@ -130,7 +137,7 @@ def main(options):
     globals.TERRAIN = globals.TERRAIN_CHOICES[options.terrain]
 
     if options.flat:
-        safe_add_to_config('World', 'flat', 'true')
+        get_or_update_config('World', 'flat', 'true')
 
     if options.fast:
         globals.TIME_RATE /= 20
@@ -157,10 +164,10 @@ def main(options):
 
     # try:
         # window_config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
-        # window = Window(show_gui=options.show_gui, width=options.width, height=options.height, caption='pyCraftr', resizable=True, config=window_config, save=save_object)
+        # window = Window(show_gui=options.show_gui, caption='pyCraftr', resizable=True, config=window_config, save=save_object)
     # except pyglet.window.NoSuchConfigException:
     window = Window(
-        options.width, options.height, launch_fullscreen=options.fullscreen,
+        launch_fullscreen=options.fullscreen,
         show_gui=options.show_gui, caption=globals.APP_NAME, resizable=True,
         vsync=False)
 
@@ -173,8 +180,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Play a Python made Minecraft clone.')
 
     display_group = parser.add_argument_group('Display options')
-    display_group.add_argument("--width", type=int, default=globals.WINDOW_WIDTH, help="Set the window width.")
-    display_group.add_argument("--height", type=int, default=globals.WINDOW_HEIGHT, help="Set the window height.")
     display_group.add_argument("--show-gui", action="store_true", default=True, help="Enabled by default.")
     display_group.add_argument("--draw-distance", choices=globals.DRAW_DISTANCE_CHOICES, default=globals.DEFAULT_DRAW_DISTANCE_CHOICE, help="How far to draw the map.")
     display_group.add_argument("--fullscreen", action="store_true", default=False, help="Runs the game in fullscreen. Press 'Q' to exit the game.")
