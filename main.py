@@ -78,9 +78,9 @@ def initialize_config():
 
     world = 'World'
 
-    get_or_update_config(world, 'flat', False, conv=bool)  # dont make mountains, make a flat world
     get_or_update_config(world, 'size', 64, conv=int)
-    globals.SHOW_FOG = get_or_update_config(world, 'show_fog', True, conv=bool)
+    globals.SHOW_FOG = get_or_update_config(
+        world, 'show_fog', globals.SHOW_FOG, conv=bool)
 
     # Adds missing keys to configuration file and converts to pyglet keys.
     for control, default_key_name in globals.KEY_BINDINGS.items():
@@ -157,8 +157,7 @@ def main(options):
     globals.TERRAIN_CHOICE = options.terrain
     globals.TERRAIN = globals.TERRAIN_CHOICES[options.terrain]
 
-    if options.flat:
-        get_or_update_config('World', 'flat', 'true')
+    globals.FLAT_MODE = options.flat
 
     if options.fast:
         globals.TIME_RATE /= 20
