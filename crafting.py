@@ -143,10 +143,12 @@ globals.recipes.add_recipe(["   ", "   ", "###"], {'#': quartz_block},
 
 # wood items
 
-globals.recipes.add_recipe(["#"], {'#': birchwood_block},
-                   ItemStack(birchwoodplank_block.id, amount=4))
-globals.recipes.add_recipe(["#"], {'#': junglewood_block},
-                   ItemStack(junglewoodplank_block.id, amount=4))
+globals.recipes.add_shapeless_recipe((birchwood_block,),
+                    ItemStack(birchwoodplank_block.id, amount=4))
+globals.recipes.add_shapeless_recipe((junglewood_block,),
+                    ItemStack(junglewoodplank_block.id, amount=4))
+globals.recipes.add_shapeless_recipe((oakwood_block,),
+                    ItemStack(oakwoodplank_block.id, amount=4))
 globals.recipes.add_recipe(["#", "#"], {'#': oakwoodplank_block},
                    ItemStack(stick_item.id, amount=4))
 globals.recipes.add_recipe(["#", "#"], {'#': junglewoodplank_block},
@@ -168,6 +170,8 @@ globals.recipes.add_recipe(["##", "##"], {'#': oakwoodplank_block},
                    ItemStack(craft_block.id, amount=1))
 globals.recipes.add_recipe(["##", "##"], {'#': junglewoodplank_block},
                    ItemStack(craft_block.id, amount=1))
+globals.recipes.add_recipe(["# #", "###", "# #"], {'#': stick_item},
+                           ItemStack(ladder_item.id, amount=4))
 
 for material, toolset in [(diamond_item, [diamond_pickaxe, diamond_axe, diamond_shovel]),
                             (cobble_block, [stone_pickaxe, stone_axe, stone_shovel]),
@@ -198,12 +202,7 @@ for material, armors in [(iron_ingot_item, [iron_helmet, iron_chestplate, iron_l
 
 #sand items
 
-globals.recipes.add_shapeless_recipe((birchwood_block,),
-                    ItemStack(birchwoodplank_block.id, amount=4))
-globals.recipes.add_shapeless_recipe((junglewood_block,),
-                    ItemStack(junglewoodplank_block.id, amount=4))
-globals.recipes.add_shapeless_recipe((oakwood_block,),
-                    ItemStack(oakwoodplank_block.id, amount=4))
+
 for wood in (birchwoodplank_block, junglewoodplank_block, oakwoodplank_block):
     globals.recipes.add_recipe(["#", "#"], {'#': wood},
                         ItemStack(stick_item.id, amount=4))
@@ -211,22 +210,20 @@ for wood in (birchwoodplank_block, junglewoodplank_block, oakwoodplank_block):
                         ItemStack(chest_block.id, amount=1))
     globals.recipes.add_recipe(["##", "##"], {'#': wood},
                         ItemStack(craft_block.id, amount=1))
-    globals.recipes.add_recipe(["###", " @ ", " @ "], {'#': wood, '@': stick_item},
-                       ItemStack(wood_pickaxe.id, amount=1))
-    globals.recipes.add_recipe(["## ", "#@ ", " @ "], {'#': wood, '@': stick_item},
-                       ItemStack(wood_axe.id, amount=1))
-    globals.recipes.add_recipe([" # ", " @ ", " @ "], {'#': wood, '@': stick_item},
-                       ItemStack(wood_shovel.id, amount=1))
+    globals.recipes.add_recipe(["###", " @ ", " @ "], {'#': wood, '@': stick_item}, ItemStack(wood_pickaxe.id, amount=1))
+    globals.recipes.add_recipe(["## ", "#@ ", " @ "], {'#': wood, '@': stick_item}, ItemStack(wood_axe.id, amount=1))
+    globals.recipes.add_recipe([" # ", " @ ", " @ "], {'#': wood, '@': stick_item}, ItemStack(wood_shovel.id, amount=1))
 
 # sand items
 
 globals.recipes.add_recipe(["##", "##"], {'#': sand_block},
                    ItemStack(sandstone_block.id, amount=1))
 
-# dye items
-globals.recipes.add_recipe(["#"], {'#': yflowers_block},
-                   ItemStack(yellowdye_item.id, amount=4))
-
+# plants items
+globals.recipes.add_recipe(["#"], {'#': yflowers_block}, ItemStack(yellowdye_item.id, amount=2))
+globals.recipes.add_recipe(["#"], {'#': rose_block}, ItemStack(reddye_item.id, amount=2))
+globals.recipes.add_recipe(["#"], {'#': reed_block}, ItemStack(sugar_item.id, amount=1))
+globals.recipes.add_recipe(["   ","   ", "###"], {'#': reed_block}, ItemStack(paper_item.id, amount=4))
 
 # combined items
 globals.recipes.add_recipe(["#", "@"], {'#': coal_item, '@': stick_item},

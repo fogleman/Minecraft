@@ -49,11 +49,11 @@ class Model(World):
         }
 
         world_type_trees = {
-            'plains': (OakTree, BirchTree, WaterMelon, Pumpkin, YFlowers, Potato),
+            'plains': (OakTree, BirchTree, WaterMelon, Pumpkin, YFlowers, Potato, Carrot),
             'desert': (Cactus, TallCactus, Rose),
             'island': (OakTree, JungleTree, BirchTree, Cactus, TallCactus, WaterMelon, YFlowers, Reed),
             'mountains': (OakTree, BirchTree, Pumpkin, YFlowers, Potato, Carrot),
-            'snow': (OakTree, BirchTree, WaterMelon, YFlowers, Potato, Rose,),
+            'snow': (OakTree, BirchTree, WaterMelon, YFlowers, Potato, Rose),
         }
 
         ore_type_blocks = (stone_block,) * 75 + (gravel_block,) * 10 \
