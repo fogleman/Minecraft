@@ -466,7 +466,8 @@ class GameController(Controller):
                 self.focus_block.height = hit_block.height * 1.05
                 vertex_data = self.focus_block.get_vertices(*position)
 
-                self.show_cracks(hit_block, vertex_data)
+                if hit_block.hardness > 0.0:
+                    self.show_cracks(hit_block, vertex_data)
 
                 glColor3d(0, 0, 0)
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
