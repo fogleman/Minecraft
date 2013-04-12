@@ -5,13 +5,12 @@ from __future__ import unicode_literals
 # Python packages
 import os
 # Third-party packages
+import pyglet
 from pyglet.gl import *
 from pyglet.image.atlas import TextureAtlas
 # Modules from this project
 import globals
 import sounds
-from pyglet.gl import *
-from pyglet.image.atlas import TextureAtlas
 from random import randint
 
 
