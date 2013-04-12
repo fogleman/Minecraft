@@ -22,7 +22,11 @@ from controllers import *
 from timer import Timer
 
 
-def get_or_update_config(section, option, default_value, conv=str):
+class InvalidChoice(Exception):
+    pass
+
+
+def get_or_update_config(section, option, default_value, conv=str, choices=()):
     try:
         user_value = conv(globals.config.get(section, option))
     except NoSectionError:
@@ -30,7 +34,10 @@ def get_or_update_config(section, option, default_value, conv=str):
     except NoOptionError:
         pass
     else:
-        # If no exception (meaning that the option is already set), do nothing.
+        # If the option is already set:
+        if choices and user_value not in choices:
+            raise InvalidChoice('%s.%s must be in %s' %
+                                (section, option, repr(tuple(choices))))
         return user_value
     globals.config.set(section, option, default_value)
     return default_value
@@ -56,9 +63,16 @@ def initialize_config():
     globals.WINDOW_HEIGHT = get_or_update_config(
         'Graphics', 'height', globals.WINDOW_HEIGHT, conv=int)
 
-    get_or_update_config('World', 'flat', 'false')  # dont make mountains, make a flat world
-    get_or_update_config('World', 'size', '64')
-    get_or_update_config('World', 'show_fog', 'true')
+    globals.DRAW_DISTANCE_CHOICE = get_or_update_config(
+        'Graphics', 'draw_distance', globals.DRAW_DISTANCE_CHOICE,
+        choices=globals.DRAW_DISTANCE_CHOICES)
+    globals.DRAW_DISTANCE = globals.DRAW_DISTANCE_CHOICES[globals.DRAW_DISTANCE_CHOICE]
+
+    boolean_choices = ('true', 'false')
+
+    get_or_update_config('World', 'flat', 'false', choices=boolean_choices)  # dont make mountains, make a flat world
+    get_or_update_config('World', 'size', 64, conv=int)
+    get_or_update_config('World', 'show_fog', 'true', choices=boolean_choices)
 
     # Adds missing keys to configuration file and converts to pyglet keys.
     for control, default_key_name in globals.KEY_BINDINGS.items():
@@ -133,8 +147,6 @@ def main(options):
     for name, val in options._get_kwargs():
         setattr(globals.LAUNCH_OPTIONS, name, val)
 
-    globals.DRAW_DISTANCE = globals.DRAW_DISTANCE_CHOICES[options.draw_distance]
-
     globals.TERRAIN_CHOICE = options.terrain
     globals.TERRAIN = globals.TERRAIN_CHOICES[options.terrain]
 
@@ -183,7 +195,6 @@ if __name__ == '__main__':
 
     display_group = parser.add_argument_group('Display options')
     display_group.add_argument("--show-gui", action="store_true", default=True, help="Enabled by default.")
-    display_group.add_argument("--draw-distance", choices=globals.DRAW_DISTANCE_CHOICES, default=globals.DEFAULT_DRAW_DISTANCE_CHOICE, help="How far to draw the map.")
     display_group.add_argument("--fullscreen", action="store_true", default=False, help="Runs the game in fullscreen. Press 'Q' to exit the game.")
     
     game_group = parser.add_argument_group('Game options')
