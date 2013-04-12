@@ -11,7 +11,7 @@ from crafting import *
 import globals
 from inventory import *
 from items import *
-from utils import load_image
+from utils import load_image, image_sprite
 
 class Rectangle(object):
     def __init__(self, x, y, width, height):
@@ -54,7 +54,7 @@ class Button(Rectangle):
         self.label = None
         self.on_click = on_click
         if image:
-            self.sprite = Sprite(image.get_region(0, 0, self.width, self.height), batch=self.batch, group=self.group)
+            self.sprite = image_sprite(image, self.batch, self.group)
         if caption:
             self.label = Label(caption, font_name=font_name, font_size=12,
                 anchor_x='center', anchor_y='center', color=(255, 255, 255, 255), batch=self.batch,
@@ -160,17 +160,11 @@ class ItemSelector(AbstractInventory):
         image = load_image('resources', 'textures', 'slots.png')
         heart_image = load_image('resources', 'textures', 'heart.png')
         frame_size = image.height / 2
-        self.frame = pyglet.sprite.Sprite(
-            image.get_region(0, frame_size, image.width, frame_size),
-            batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
-        self.active = pyglet.sprite.Sprite(
-            image.get_region(0, 0, frame_size, frame_size), batch=self.batch,
-            group=pyglet.graphics.OrderedGroup(2))
+        self.frame = image_sprite(image, self.batch, 0, y=frame_size, height=frame_size)
+        self.active = image_sprite(image, self.batch, 2, width=frame_size, height=frame_size)
         self.hearts = []
         for i in range(0, 10):
-            heart = pyglet.sprite.Sprite(
-                heart_image.get_region(0, 0, heart_image.width, heart_image.width),
-                batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
+            heart = image_sprite(heart_image, self.batch, 0)
             self.hearts.append(heart)
         self.current_block_label = None
 
@@ -189,8 +183,7 @@ class ItemSelector(AbstractInventory):
                 continue
             block = item.get_object()
             block_icon = self.get_block_icon(block)
-            icon = pyglet.sprite.Sprite(block_icon, batch=self.batch,
-                                        group=self.group)
+            icon = image_sprite(block_icon, self.batch, self.group)
             icon.scale = 0.5
             icon.x = x
             icon.y = self.frame.y + 3
@@ -316,8 +309,6 @@ class InventorySelector(AbstractInventory):
         self.crafting_outcome_icon = None
         self.crafting_outcome_label = None
         self.crafting_table_panel = Inventory(9)
-        #self.active = pyglet.sprite.Sprite(image.get_region(0, 0, image.height / 4, image.height / 4), batch=self.batch, group=pyglet.graphics.OrderedGroup(2))
-        #self.active.opacity = 0
         self.visible = False
 
     def change_image(self):
@@ -325,7 +316,7 @@ class InventorySelector(AbstractInventory):
             image = load_image('resources', 'textures', 'inventory.png')
         elif self.mode == 1:
             image = load_image('resources', 'textures', 'inventory_when_crafting_table.png')
-        self.frame = pyglet.sprite.Sprite(image.get_region(0, 0, image.width, image.height), batch=self.batch, group=pyglet.graphics.OrderedGroup(0))
+        self.frame = image_sprite(image, self.batch, 0)
         self.frame.x = (self.parent.window.width - self.frame.width) / 2
         self.frame.y = self.icon_size / 2 - 4
 
@@ -350,8 +341,7 @@ class InventorySelector(AbstractInventory):
                 continue
             block = item.get_object()
             block_icon = self.get_block_icon(block)
-            icon = pyglet.sprite.Sprite(block_icon, batch=self.batch,
-                                        group=self.group)
+            icon = image_sprite(block_icon, self.batch, self.group)
             icon.scale = 0.5
             icon.x = x
             icon.y = y - icon.height
@@ -375,8 +365,7 @@ class InventorySelector(AbstractInventory):
                 continue
             block = item.get_object()
             block_icon = self.get_block_icon(block)
-            icon = pyglet.sprite.Sprite(block_icon, batch=self.batch,
-                                        group=self.group)
+            icon = image_sprite(block_icon, self.batch, self.group)
             icon.scale = 0.5
             icon.x = x
             icon.y = self.frame.y + 7
@@ -401,8 +390,7 @@ class InventorySelector(AbstractInventory):
                 continue
             block = item.get_object()
             block_icon = self.get_block_icon(block)
-            icon = pyglet.sprite.Sprite(block_icon, batch=self.batch,
-                                        group=self.group)
+            icon = image_sprite(block_icon, self.batch, self.group)
             icon.scale = 0.5
             icon.x = x
             icon.y = y
@@ -435,8 +423,7 @@ class InventorySelector(AbstractInventory):
                 continue
             block = item.get_object()
             block_icon = self.get_block_icon(block)
-            icon = pyglet.sprite.Sprite(block_icon, batch=self.batch,
-                                        group=self.group)
+            icon = image_sprite(block_icon, self.batch, self.group)
             icon.scale = 0.5
             icon.x = x
             icon.y = y - icon.height
@@ -566,7 +553,7 @@ class InventorySelector(AbstractInventory):
 
         block = item.get_object()
         block_icon = self.get_block_icon(block)
-        self.crafting_outcome_icon = pyglet.sprite.Sprite(block_icon, batch=self.batch, group=self.group)
+        self.crafting_outcome_icon = image_sprite(block_icon, self.batch, self.group)
         inventory_rows = floor(self.max_items / 9)
         inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
         quick_slots_y = self.frame.y + 4
@@ -597,7 +584,7 @@ class InventorySelector(AbstractInventory):
 
         block = item.get_object()
         block_icon = self.get_block_icon(block)
-        self.selected_item_icon = pyglet.sprite.Sprite(block_icon, batch=self.batch, group=self.group)
+        self.selected_item_icon = image_sprite(block_icon, self.batch, self.group)
         self.selected_item_icon.scale = 0.4
 
     def remove_selected_item(self):
