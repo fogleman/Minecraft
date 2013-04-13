@@ -63,9 +63,12 @@ class MainMenuView(View):
         self.frame = image_sprite(image, self.batch, 1)
         button_image = load_image('resources', 'textures', 'button.png')
         button_highlighted = load_image('resources', 'textures', 'button_highlighted.png')
-        self.start_game = Button(0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Start game", batch=self.batch, group=self.group, label_group=self.labels_group, on_click=self.controller.start_game_func, font_name='ChunkFive Roman')
-        self.game_options = Button(0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Options...", batch=self.batch, group=self.group, label_group=self.labels_group, on_click=self.controller.game_options_func, font_name='ChunkFive Roman')
-        self.exit_game = Button(0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Exit game", batch=self.batch, group=self.group, label_group=self.labels_group, on_click=self.controller.exit_game_func, font_name='ChunkFive Roman')
+        self.start_game = Button(0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Start game", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
+        self.start_game.push_handlers(on_click=self.controller.start_game_func)
+        self.game_options = Button(0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Options...", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
+        self.game_options.push_handlers(on_click=self.controller.game_options_func)
+        self.exit_game = Button(0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Exit game", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
+        self.exit_game.push_handlers(on_click=self.controller.exit_game_func)
         self.buttons = [self.start_game, self.game_options, self.exit_game]
         self.label = Label(globals.APP_NAME, font_name='ChunkFive Roman', font_size=50, x=width/2, y=self.frame.y + self.frame.height,
             anchor_x='center', anchor_y='top', color=(255, 255, 255, 255), batch=self.batch,
@@ -104,8 +107,10 @@ class OptionsView(View):
         self.frame = image_sprite(image, self.batch, 1)
         button_image = load_image('resources', 'textures', 'button.png')
         button_highlighted = load_image('resources', 'textures', 'button_highlighted.png')
-        self.button_return = Button(0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Done", batch=self.batch, group=self.group, label_group=self.labels_group, on_click=self.controller.main_menu_func, font_name='ChunkFive Roman')
-        self.controls_button = Button(0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Controls...", batch=self.batch, group=self.group, label_group=self.labels_group, on_click=self.controller.controls_func, font_name='ChunkFive Roman')
+        self.button_return = Button(0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Done", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
+        self.button_return.push_handlers(on_click=self.controller.main_menu_func)
+        self.controls_button = Button(0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Controls...", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
+        self.controls_button.push_handlers(on_click=self.controller.controls_func)
         self.buttons = [self.controls_button, self.button_return]
             
         self.on_resize(width, height)
@@ -137,16 +142,24 @@ class ControlsView(View):
         self.frame = image_sprite(image, self.batch, 1)
         button_image = load_image('resources', 'textures', 'button.png')
         button_highlighted = load_image('resources', 'textures', 'button_highlighted.png')
-        self.button_return = Button(0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Done", batch=self.batch, group=self.group, label_group=self.labels_group, on_click=self.controller.game_options_func, font_name='ChunkFive Roman')
-        self.buttons = [self.button_return]
+        self.button_attack = Button(0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Attack", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
+        self.button_attack.push_handlers(on_click=self.capture_key_func)
+        self.button_return = Button(0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Done", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
+        self.button_return.push_handlers(on_click=self.controller.game_options_func)
+        self.buttons = [self.button_attack, self.button_return]
             
         self.on_resize(width, height)
+
+    def capture_key_func(self):
+        pass
 
     def on_resize(self, width, height):
         self.background.scale = 1.0
         self.background.scale = max(float(width) / self.background.width, float(height) / self.background.height)
         self.background.x, self.background.y = 0, 0
         self.frame.x, self.frame.y = (width - self.frame.width) / 2, (height - self.frame.height) / 2
-        button_x = self.frame.x + (self.frame.width - self.button_return.width) / 2
-        button_y = self.frame.y + (self.frame.height - self.button_return.height) / 2 - 130
+        button_x = self.frame.x + (self.frame.width - self.button_attack.width) / 2
+        button_y = self.frame.y + (self.frame.height - self.button_attack.height) / 2 + 10
+        self.button_attack.position = button_x, button_y
+        button_y -= self.button_attack.height + 20
         self.button_return.position = button_x, button_y

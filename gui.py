@@ -58,13 +58,12 @@ class Rectangle(object):
     def max(self):
         return (self.x + self.width, self.y + self.height)
 
-class Button(Rectangle):
-    def __init__(self, x, y, width, height, image=None, image_highlighted=None, caption=None, batch=None, group=None, label_group=None, on_click=None, font_name='Arial'):
+class Button(pyglet.event.EventDispatcher, Rectangle):
+    def __init__(self, x, y, width, height, image=None, image_highlighted=None, caption=None, batch=None, group=None, label_group=None, font_name='Arial'):
         super(Button, self).__init__(x, y, width, height)
         self.batch, self.group, self.label_group = batch, group, label_group
         self.sprite = image_sprite(image, self.batch, self.group)
         self.sprite_highlighted = hidden_image_sprite(image_highlighted, self.batch, self.group)
-        self.on_mouse_click = on_click
         self.highlighted = False
         self.label = Label(str(caption), font_name, 12, anchor_x='center', anchor_y='center',
             color=(255, 255, 255, 255), batch=self.batch, group=self.label_group) if caption else None
@@ -99,6 +98,11 @@ class Button(Rectangle):
     def draw_label(self):
         if self.label:
             self.label.draw()
+            
+    def on_mouse_click(self):
+        self.dispatch_event('on_click')
+        
+Button.register_event_type('on_click')
 
 class Control(object):
     def __init__(self, parent, anchor_style=globals.ANCHOR_NONE, visible=True, *args, **kwargs):
