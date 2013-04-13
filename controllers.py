@@ -1,29 +1,35 @@
+# Imports, sorted alphabetically.
+
 # Python packages
-from math import cos, sin, atan2, pi, fmod, radians
-import os, operator
+from math import cos, sin, pi, fmod
+import operator
+
 # Third-party packages
-from pyglet.window import key
-from pyglet.text import Label
 from pyglet.gl import *
+
 # Modules from this project
 from cameras import *
-from views import *
-import globals
+from commands import CommandParser, CommandException
+import globals as G
 from gui import *
 from model import *
 from player import *
 from savingsystem import *
 from commands import CommandParser, COMMAND_HANDLED, COMMAND_ERROR_COLOR, CommandException, UnknownCommandException
-from utils import load_image, image_sprite
+from utils import init_resources
+from views import *
 
-# Define a simple function to create GLfloat arrays of floats:
+
 def vec(*args):
+    """Creates GLfloat arrays of floats"""
     return (GLfloat * len(args))(*args)
+
 
 class Controller(object):
     def __init__(self, window):
         self.window = window
         self.current_view = None
+        init_resources()
 
     def setup(self):
         pass
@@ -67,8 +73,8 @@ class MainMenuController(Controller):
         return pyglet.event.EVENT_HANDLED
 
     def new_game_func(self):
-        if globals.DISABLE_SAVE:
-            remove_world(globals.game_dir, globals.SAVE_FILENAME)
+        if G.DISABLE_SAVE:
+            remove_world(G.game_dir, G.SAVE_FILENAME)
         self.window.switch_controller(GameController(self.window))
         return pyglet.event.EVENT_HANDLED
 
@@ -130,6 +136,8 @@ class GameController(Controller):
             if block:
                 if self.highlighted_block != block:
                     self.set_highlighted_block(block)
+            else:
+                self.set_highlighted_block(None)
 
             if self.highlighted_block:
                 hit_block = self.model[self.highlighted_block]
@@ -151,8 +159,6 @@ class GameController(Controller):
                                 and self.player.add_item(hit_block.drop_id):
                             self.item_list.update_items()
                             self.inventory_list.update_items()
-                else:
-                    self.set_highlighted_block(None)
         self.update_time()
         self.camera.update(dt)
 
@@ -167,14 +173,14 @@ class GameController(Controller):
         glEnable(GL_BLEND)
         glEnable(GL_LINE_SMOOTH)
 
-        if globals.FOG_ENABLED:
+        if G.FOG_ENABLED:
             glEnable(GL_FOG)
             glFogfv(GL_FOG_COLOR, vec(self.bg_red, self.bg_green, self.bg_blue, 1))
             glHint(GL_FOG_HINT, GL_DONT_CARE)
             glFogi(GL_FOG_MODE, GL_LINEAR)
             glFogf(GL_FOG_DENSITY, 0.35)
             glFogf(GL_FOG_START, 20.0)
-            glFogf(GL_FOG_END, globals.DRAW_DISTANCE)  # 80)
+            glFogf(GL_FOG_END, G.DRAW_DISTANCE)  # 80)
 
         self.focus_block = Block(width=1.05, height=1.05)
         self.earth = vec(0.8, 0.8, 0.8, 1.0)
@@ -182,13 +188,13 @@ class GameController(Controller):
         self.ambient = vec(1.0, 1.0, 1.0, 1.0)
         self.polished = GLfloat(100.0)
         self.crack_batch = pyglet.graphics.Batch()
-        if globals.DISABLE_SAVE \
-                and world_exists(globals.game_dir, globals.SAVE_FILENAME):
-            open_world(self, globals.game_dir, globals.SAVE_FILENAME)
+        if G.DISABLE_SAVE \
+                and world_exists(G.game_dir, G.SAVE_FILENAME):
+            open_world(self, G.game_dir, G.SAVE_FILENAME)
         else:
             self.model = Model()
             self.player = Player((0, 0, 0), (-20, 0),
-                                 game_mode=globals.GAME_MODE)
+                                 game_mode=G.GAME_MODE)
         print('Game mode: ' + self.player.game_mode)
         self.item_list = ItemSelector(self, self.player, self.model)
         self.inventory_list = InventorySelector(self, self.player, self.model)
@@ -208,12 +214,12 @@ class GameController(Controller):
                                    background_color=(64,64,64,200))
         self.command_parser = CommandParser()
         self.camera = Camera3D(target=self.player)
-        if globals.HUD_ENABLED:
+        if G.HUD_ENABLED:
             self.label = pyglet.text.Label(
                 '', font_name='Arial', font_size=8, x=10, y=self.window.height - 10,
                 anchor_x='left', anchor_y='top', color=(255, 255, 255, 255))
         pyglet.clock.schedule_interval_soft(self.model.process_queue,
-                                            1.0 / globals.MAX_FPS)
+                                            1.0 / G.MAX_FPS)
 
     def update_time(self):
         """
@@ -230,12 +236,12 @@ class GameController(Controller):
             else 24.0 - self.time_of_day
 
         if time_of_day <= 2.5:
-            self.time_of_day += 1.0 / globals.TIME_RATE
-            time_of_day += 1.0 / globals.TIME_RATE
+            self.time_of_day += 1.0 / G.TIME_RATE
+            time_of_day += 1.0 / G.TIME_RATE
             self.count += 1
         else:
-            self.time_of_day += 20.0 / globals.TIME_RATE
-            time_of_day += 20.0 / globals.TIME_RATE
+            self.time_of_day += 20.0 / G.TIME_RATE
+            time_of_day += 20.0 / G.TIME_RATE
             self.count += 1.0 / 20.0
         if self.time_of_day > 24.0:
             self.time_of_day = 0.0
@@ -244,9 +250,9 @@ class GameController(Controller):
         side = len(self.model.sectors) * 2.0
 
         self.light_y = 2.0 * side * sin(time_of_day * self.hour_deg
-                                        * globals.DEG_RAD)
+                                        * G.DEG_RAD)
         self.light_z = 2.0 * side * cos(time_of_day * self.hour_deg
-                                        * globals.DEG_RAD)
+                                        * G.DEG_RAD)
         if time_of_day <= 2.5:
             ambient_value = 1.0
         else:
@@ -259,7 +265,7 @@ class GameController(Controller):
         self.bg_green = 0.9 * sin_t
         self.bg_blue = min(sin_t + 0.4, 0.8)
 
-        if fmod(self.count / 2, globals.TIME_RATE) == 0:
+        if fmod(self.count / 2, G.TIME_RATE) == 0:
             if self.clock == 18:
                 self.clock = 6
             else:
@@ -273,8 +279,8 @@ class GameController(Controller):
         self.crack = None
 
     def save_to_file(self):
-        if globals.DISABLE_SAVE:
-            save_world(self, globals.game_dir, globals.SAVE_FILENAME)
+        if G.DISABLE_SAVE:
+            save_world(self, G.game_dir, G.SAVE_FILENAME)
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.window.exclusive:
@@ -294,12 +300,17 @@ class GameController(Controller):
                         self.inventory_list.toggle(False)
                         return
 
+                    if hit_block.id == furnace_block.id:
+                        self.inventory_list.mode = 2
+                        self.inventory_list.toggle(False)
+                        return
+
                     if hit_block.density >= 1:
                         current_block = self.item_list.get_current_block()
                         if current_block is not None:
                             # if current block is an item,
                             # call its on_right_click() method to handle this event
-                            if current_block.id >= ITEM_ID_MIN:
+                            if current_block.id >= G.ITEM_ID_MIN:
                                 current_block.on_right_click()
                             else:
                                 localx, localy, localz = map(operator.sub,previous,normalize(self.player.position))
@@ -333,11 +344,11 @@ class GameController(Controller):
             self.on_mouse_motion(x, y, dx, dy)
 
     def on_key_press(self, symbol, modifiers):
-        if symbol == globals.TOGGLE_HUD_KEY:
-            globals.HUD_ENABLED = not globals.HUD_ENABLED
-        elif symbol == globals.SAVE_KEY:
+        if symbol == G.TOGGLE_HUD_KEY:
+            G.HUD_ENABLED = not G.HUD_ENABLED
+        elif symbol == G.SAVE_KEY:
             self.save_to_file()
-        elif symbol == globals.INVENTORY_SORT_KEY:
+        elif symbol == G.INVENTORY_SORT_KEY:
             if self.last_key == symbol and not self.sorted:
                 self.player.quick_slots.sort()
                 self.player.inventory.sort()
@@ -347,23 +358,23 @@ class GameController(Controller):
                 self.player.inventory.change_sort_mode()
                 self.item_list.update_items()
                 self.inventory_list.update_items()
-        elif symbol == globals.INVENTORY_KEY:
+        elif symbol == G.INVENTORY_KEY:
             self.set_highlighted_block(None)
             self.mouse_pressed = False
             self.inventory_list.toggle()
-        elif symbol == globals.SOUND_UP_KEY:
-            globals.EFFECT_VOLUME = min(globals.EFFECT_VOLUME + .1, 1)
-        elif symbol == globals.SOUND_DOWN_KEY:
-            globals.EFFECT_VOLUME = max(globals.EFFECT_VOLUME - .1, 0)
+        elif symbol == G.SOUND_UP_KEY:
+            G.EFFECT_VOLUME = min(G.EFFECT_VOLUME + .1, 1)
+        elif symbol == G.SOUND_DOWN_KEY:
+            G.EFFECT_VOLUME = max(G.EFFECT_VOLUME - .1, 0)
         self.last_key = symbol
 
     def on_key_release(self, symbol, modifiers):
-        if symbol == globals.TALK_KEY:
+        if symbol == G.TALK_KEY:
             self.toggle_text_input()
             return pyglet.event.EVENT_HANDLED
 
     def on_resize(self, width, height):
-        if globals.HUD_ENABLED:
+        if G.HUD_ENABLED:
             self.label.y = height - 10
         self.text_input.resize(x=0, y=0, width=self.window.width)
         self.chat_box.resize(x=0, y=self.text_input.y + self.text_input.height + 50,
@@ -371,15 +382,15 @@ class GameController(Controller):
 
     def set_3d(self):
         width, height = self.window.get_size()
-        if globals.FOG_ENABLED:
+        if G.FOG_ENABLED:
             glFogfv(GL_FOG_COLOR, vec(self.bg_red, self.bg_green, self.bg_blue, 1.0))
         glEnable(GL_DEPTH_TEST)
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        gluPerspective(globals.FOV, width / float(height),
-                       globals.NEAR_CLIP_DISTANCE,
-                       globals.FAR_CLIP_DISTANCE)
+        gluPerspective(G.FOV, width / float(height),
+                       G.NEAR_CLIP_DISTANCE,
+                       G.FAR_CLIP_DISTANCE)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         self.camera.transform()
@@ -409,7 +420,7 @@ class GameController(Controller):
         self.crack_batch.draw()
         self.draw_focused_block()
         self.set_2d()
-        if globals.HUD_ENABLED:
+        if G.HUD_ENABLED:
             self.draw_label()
             self.item_list.draw()
             self.inventory_list.draw()
@@ -462,7 +473,7 @@ class GameController(Controller):
         self.chat_box.write_line(text, **kwargs)
 
     def text_input_callback(self, symbol, modifier):
-        if symbol == globals.VALIDATE_KEY:
+        if symbol == G.VALIDATE_KEY:
             txt = self.text_input.text.replace('\n', '')
             try:
                 ex = self.command_parser.execute(txt, controller=self, user=self.player, world=self.model)

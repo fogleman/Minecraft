@@ -1,4 +1,12 @@
+# Imports, sorted alphabetically.
+
+# Python packages
 import re
+
+# Third-party packages
+# Nothing for now...
+
+# Modules from this project
 from blocks import BlockID
 from items import get_item
 

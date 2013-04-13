@@ -1,5 +1,14 @@
-from pyglet.gl import *
+# Imports, sorted alphabetically.
+
+# Python packages
 from math import cos, sin, radians
+
+# Third-party packages
+from pyglet.gl import *
+
+# Modules from this project
+# Nothing for now...
+
 
 class Camera3D(object):
     def __init__(self, target=None):

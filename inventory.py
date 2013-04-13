@@ -1,6 +1,15 @@
-from items import *
+# Imports, sorted alphabetically.
+
+# Python packages
 import sys
-import globals
+
+# Third-party packages
+# Nothing for now...
+
+# Modules from this project
+import globals as G
+from items import *
+
 
 class Inventory(object):
     sort_mode = 0

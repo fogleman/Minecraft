@@ -1,20 +1,20 @@
-from math import floor, ceil
-import os
+# Imports, sorted alphabetically.
 
-from pyglet.sprite import Sprite
-from pyglet.text import Label
+# Python packages
+from math import floor, ceil
+
+# Third-party packages
 from pyglet.gl import *
+from pyglet.text import Label
 from pyglet.window import key
 
+# Modules from this project
 from blocks import *
 from crafting import *
-import globals
+import globals as G
 from inventory import *
-from items import *
-from utils import load_image, image_sprite, hidden_image_sprite
+from utils import load_image, image_sprite, hidden_image_sprite, get_block_icon
 
-pyglet.font.add_file('resources/fonts/Chunkfive.ttf')
-pyglet.font.load('ChunkFive Roman')
 
 class Rectangle(object):
     def __init__(self, x, y, width, height):
@@ -45,7 +45,7 @@ class Rectangle(object):
     @size.setter
     def size(self, size):
         self.width, self.height = size
-	
+
     @property
     def center(self):
         return self.x + self.width / 2, self.y + self.height / 2
@@ -59,7 +59,7 @@ class Rectangle(object):
         return (self.x + self.width, self.y + self.height)
 
 class Button(pyglet.event.EventDispatcher, Rectangle):
-    def __init__(self, parent, x, y, width, height, image=None, image_highlighted=None, caption=None, batch=None, group=None, label_group=None, font_name='Arial'):
+    def __init__(self, parent, x, y, width, height, image=None, image_highlighted=None, caption=None, batch=None, group=None, label_group=None, font_name=G.DEFAULT_FONT):
         super(Button, self).__init__(x, y, width, height)
         parent.push_handlers(self)
         self.batch, self.group, self.label_group = batch, group, label_group
@@ -69,7 +69,7 @@ class Button(pyglet.event.EventDispatcher, Rectangle):
         self.label = Label(str(caption), font_name, 12, anchor_x='center', anchor_y='center',
             color=(255, 255, 255, 255), batch=self.batch, group=self.label_group) if caption else None
         self.position = x, y
-	
+
     @property
     def position(self):
         return self.x, self.y
@@ -99,11 +99,11 @@ class Button(pyglet.event.EventDispatcher, Rectangle):
     def draw_label(self):
         if self.label:
             self.label.draw()
-            
+
     def on_mouse_click(self, x, y, button, modifiers):
         if self.hit_test(x, y):
             self.dispatch_event('on_click')
-        
+
 Button.register_event_type('on_click')
 
 
@@ -150,13 +150,6 @@ class AbstractInventory(Control):
         self._current_index = value % self.max_items
         self.update_current()
 
-    def get_block_icon(self, block):
-        block_icon = load_image(globals.ICONS_PATH, block.id.filename() + ".png") or (block.group or self.model.group).texture.get_region(
-            int(block.texture_data[2*8] * globals.TILESET_SIZE) * self.icon_size,
-            int(block.texture_data[2*8+1] * globals.TILESET_SIZE) * self.icon_size, self.icon_size,
-            self.icon_size)
-        return block_icon
-
 class ItemSelector(AbstractInventory):
     def __init__(self, parent, player, model, *args, **kwargs):
         super(ItemSelector, self).__init__(parent, *args, **kwargs)
@@ -167,9 +160,9 @@ class ItemSelector(AbstractInventory):
         self.model = model
         self.player = player
         self.max_items = 9
-        self.icon_size = self.model.group.texture.width / globals.TILESET_SIZE
+        self.icon_size = self.model.group.texture.width / G.TILESET_SIZE
         self.visible = True
-        self.num_keys = [getattr(globals, 'INVENTORY_%d_KEY' % i)
+        self.num_keys = [getattr(G, 'INVENTORY_%d_KEY' % i)
                          for i in range(1, 10)]
 
         image = load_image('resources', 'textures', 'slots.png')
@@ -196,7 +189,7 @@ class ItemSelector(AbstractInventory):
             if not item:
                 x += (self.icon_size * 0.5) + 3
                 continue
-            icon = image_sprite(self.get_block_icon(item.get_object()), self.batch, self.group)
+            icon = image_sprite(get_block_icon(item.get_object(), self.icon_size, self.model), self.batch, self.group)
             icon.scale = 0.5
             icon.x = x
             icon.y = self.frame.y + 3
@@ -204,7 +197,7 @@ class ItemSelector(AbstractInventory):
             item.quickslots_y = icon.y
             x += (self.icon_size * 0.5) + 3
             amount_label = pyglet.text.Label(
-                str(item.amount), font_name='Arial', font_size=9,
+                str(item.amount), font_name=G.DEFAULT_FONT, font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
                 color=item.get_object().amount_label_color, batch=self.batch,
                 group=self.labels_group)
@@ -217,7 +210,7 @@ class ItemSelector(AbstractInventory):
             self.current_block_label.delete()
         if hasattr(self.get_current_block_item(False), 'quickslots_x') and hasattr(self.get_current_block_item(False), 'quickslots_y'):
             self.current_block_label = pyglet.text.Label(
-                self.get_current_block_item(False).name, font_name='Arial', font_size=9,
+                self.get_current_block_item(False).name, font_name=G.DEFAULT_FONT, font_size=9,
                 x=self.get_current_block_item(False).quickslots_x + 0.25 * self.icon_size, y=self.get_current_block_item(False).quickslots_y - 20,
                 anchor_x='center', anchor_y='bottom',
                 color=(255, 255, 255, 255), batch=self.batch,
@@ -275,9 +268,9 @@ class ItemSelector(AbstractInventory):
         if self.visible:
             if symbol in self.num_keys:
                 index = (symbol - self.num_keys[0])
-                self.set_index(index)
+                self.current_index = index
                 return pyglet.event.EVENT_HANDLED
-            elif symbol == globals.VALIDATE_KEY:
+            elif symbol == G.VALIDATE_KEY:
                 current_block = self.get_current_block_item_and_amount()
                 if current_block:
                     if not self.player.inventory.add_item(
@@ -312,16 +305,17 @@ class InventorySelector(AbstractInventory):
         self.player = player
         self.max_items = self.player.inventory.slot_count
         self.current_index = 1
-        self.icon_size = self.model.group.texture.width / globals.TILESET_SIZE
+        self.icon_size = self.model.group.texture.width / G.TILESET_SIZE
         self.selected_item = None
         self.selected_item_icon = None
-        self.mode = 0 # 0 - Normal inventory, 1 - Crafting Table
+        self.mode = 0 # 0 - Normal inventory, 1 - Crafting Table, 2 - Furnace
         self.change_image()
         self.crafting_panel = Inventory(4)
         self.crafting_outcome = None  # should be an item stack
         self.crafting_outcome_icon = None
         self.crafting_outcome_label = None
         self.crafting_table_panel = Inventory(9)
+        self.furnace_panel = Inventory(2)
         self.visible = False
 
     def change_image(self):
@@ -329,6 +323,8 @@ class InventorySelector(AbstractInventory):
             image = load_image('resources', 'textures', 'inventory.png')
         elif self.mode == 1:
             image = load_image('resources', 'textures', 'inventory_when_crafting_table.png')
+        elif self.mode == 2:
+            image = load_image('resources', 'textures', 'inventory_when_furnace.png')
         self.frame = image_sprite(image, self.batch, 0)
         self.frame.x = (self.parent.window.width - self.frame.width) / 2
         self.frame.y = self.icon_size / 2 - 4
@@ -352,7 +348,7 @@ class InventorySelector(AbstractInventory):
                     x = self.frame.x + 7
                     y -= (self.icon_size * 0.5) + 3
                 continue
-            icon = image_sprite(self.get_block_icon(item.get_object()), self.batch, self.group)
+            icon = image_sprite(get_block_icon(item.get_object(), self.icon_size, self.model), self.batch, self.group)
             icon.scale = 0.5
             icon.x = x
             icon.y = y - icon.height
@@ -361,7 +357,7 @@ class InventorySelector(AbstractInventory):
                 x = self.frame.x + 7
                 y -= (self.icon_size * 0.5) + 3
             amount_label = pyglet.text.Label(
-                str(item.amount), font_name='Arial', font_size=9,
+                str(item.amount), font_name=G.DEFAULT_FONT, font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
                 color=item.get_object().amount_label_color, batch=self.batch,
                 group=self.amount_labels_group)
@@ -374,7 +370,7 @@ class InventorySelector(AbstractInventory):
             if not item:
                 x += (self.icon_size * 0.5) + 3
                 continue
-            icon = image_sprite(self.get_block_icon(item.get_object()), self.batch, self.group)
+            icon = image_sprite(get_block_icon(item.get_object(), self.icon_size, self.model), self.batch, self.group)
             icon.scale = 0.5
             icon.x = x
             icon.y = self.frame.y + 7
@@ -382,7 +378,7 @@ class InventorySelector(AbstractInventory):
             item.quickslots_y = icon.y
             x += (self.icon_size * 0.5) + 3
             amount_label = pyglet.text.Label(
-                str(item.amount), font_name='Arial', font_size=9,
+                str(item.amount), font_name=G.DEFAULT_FONT, font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
                 color=item.get_object().amount_label_color, batch=self.batch,
                 group=self.amount_labels_group)
@@ -397,12 +393,12 @@ class InventorySelector(AbstractInventory):
             if not item:
                 y -= (self.icon_size * 0.5) + 3
                 continue
-            icon = image_sprite(self.get_block_icon(item.get_object()), self.batch, self.group)
+            icon = image_sprite(get_block_icon(item.get_object(), self.icon_size, self.model), self.batch, self.group)
             icon.scale = 0.5
             icon.x = x
             icon.y = y
             amount_label = pyglet.text.Label(
-                str(item.amount), font_name='Arial', font_size=9,
+                str(item.amount), font_name=G.DEFAULT_FONT, font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
                 color=item.get_object().amount_label_color, batch=self.batch,
                 group=self.amount_labels_group)
@@ -410,51 +406,56 @@ class InventorySelector(AbstractInventory):
             self.icons.append(icon)
         self.update_current()
 
-        crafting_y = inventory_y + inventory_height + (42 if self.mode == 0 else 14)
-        crafting_rows = (2 if self.mode == 0 else 3)
+        crafting_y = inventory_y + inventory_height + (42 if self.mode == 0 else 14 if self.mode == 1 else 32)
+        crafting_rows = (2 if self.mode == 0 else 3 if self.mode == 1 else 2)
         crafting_height = (crafting_rows * (self.icon_size * 0.5)) + (crafting_rows * 3)
-        x = self.frame.x + (165 if self.mode == 0 else 72)
+        x = self.frame.x + (165 if self.mode == 0 else 72 if self.mode == 1 else 63)
         y = self.frame.y + crafting_y + crafting_height
-        items = self.crafting_panel.get_items() if self.mode == 0 else self.crafting_table_panel.get_items()
-        items = items[:self.crafting_panel.slot_count] if self.mode == 0 else items[:self.crafting_table_panel.slot_count]
+        items = self.crafting_panel.get_items() if self.mode == 0 else self.crafting_table_panel.get_items() if self.mode == 1 else self.furnace_panel.get_items()
+        items = items[:self.crafting_panel.slot_count] if self.mode == 0 else items[:self.crafting_table_panel.slot_count] if self.mode == 1 else items[:self.furnace_panel.slot_count]
         # NOTE: each line in the crafting panel should be a sub-list in the crafting ingredient list
-        crafting_ingredients = [[], []] if self.mode == 0 else [[], [], []]
+        crafting_ingredients = [[], []] if self.mode == 0 else [[], [], []] if self.mode == 1 else [[], []]
         for i, item in enumerate(items):
             if not item:
                 # placeholder
-                crafting_ingredients[int(floor(i / (2 if self.mode == 0 else 3)))].append(air_block)
+                crafting_ingredients[int(floor(i / (2 if self.mode == 0 else 3 if self.mode == 1 else 1)))].append(air_block)
                 x += (self.icon_size * 0.5) + 3
-                if x >= (self.frame.x + (165 if self.mode == 0 else 72)) + 35 * ((2 if self.mode == 0 else 3)):
-                    x = self.frame.x + (165 if self.mode == 0 else 72)
+                if x >= (self.frame.x + (165 if self.mode == 0 else 72 if self.mode == 1 else 63)) + 35 * ((2 if self.mode == 0 else 3 if self.mode == 1 else 1)):
+                    x = self.frame.x + (165 if self.mode == 0 else 72 if self.mode == 1 else 63)
                     y -= (self.icon_size * 0.5) + 3
                 continue
-            icon = image_sprite(self.get_block_icon(item.get_object()), self.batch, self.group)
+            icon = image_sprite(get_block_icon(item.get_object(), self.icon_size, self.model), self.batch, self.group)
             icon.scale = 0.5
             icon.x = x
             icon.y = y - icon.height
             item.quickslots_x = icon.x
             item.quickslots_y = icon.y
             x += (self.icon_size * 0.5) + 3
-            if x >= (self.frame.x + (165 if self.mode == 0 else 72)) + 35 * ((2 if self.mode == 0 else 3)):
-                x = self.frame.x + (165 if self.mode == 0 else 72)
+            if x >= (self.frame.x + (165 if self.mode == 0 else 72 if self.mode == 1 else 63)) + 35 * ((2 if self.mode == 0 else 3 if self.mode == 1 else 1)):
+                x = self.frame.x + (165 if self.mode == 0 else 72 if self.mode == 1 else 63)
                 y -= (self.icon_size * 0.5) + 3
             amount_label = pyglet.text.Label(
-                str(item.amount), font_name='Arial', font_size=9,
+                str(item.amount), font_name=G.DEFAULT_FONT, font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
                 color=item.get_object().amount_label_color, batch=self.batch,
                 group=self.amount_labels_group)
             self.amount_labels.append(amount_label)
             self.icons.append(icon)
             if item.get_object().id > 0:
-                crafting_ingredients[int(floor(i / (2 if self.mode == 0 else 3)))].append(item.get_object())
+                crafting_ingredients[int(floor(i / (2 if self.mode == 0 else 3 if self.mode == 1 else 1)))].append(item.get_object())
 
-        if len(crafting_ingredients) > 0:
-            outcome = globals.recipes.craft(crafting_ingredients)
+        if len(crafting_ingredients) > 0 and self.mode < 2:
+            outcome = G.recipes.craft(crafting_ingredients)
             if outcome:
                 self.set_crafting_outcome(outcome)
             elif self.crafting_outcome:
                 self.remove_crafting_outcome()
-
+        elif len(crafting_ingredients) > 0 and self.mode == 2:
+            outcome = globals.smelting_recipes.smelt(crafting_ingredients[0][0])
+            if outcome:
+                self.set_crafting_outcome(outcome)
+            elif self.crafting_outcome:
+                self.remove_crafting_outcome()
         self.update_current()
 
     def update_current(self):
@@ -481,13 +482,13 @@ class InventorySelector(AbstractInventory):
 
     def mouse_coords_to_index(self, x, y):
         inventory_rows = floor(self.max_items / 9)
-        crafting_rows = (2 if self.mode == 0 else 3)
+        crafting_rows = (2 if self.mode == 0 else 3 if self.mode == 1 else 2)
         quick_slots_y = self.frame.y + 4
         inventory_y = quick_slots_y + 42
         inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
-        crafting_items_per_row = (2 if self.mode == 0 else 3)
-        crafting_y = inventory_y + inventory_height + (42 if self.mode == 0 else 14)
-        crafting_x = self.frame.x + (165 if self.mode == 0 else 72)
+        crafting_items_per_row = (2 if self.mode == 0 else 3 if self.mode == 1 else 1)
+        crafting_y = inventory_y + inventory_height + (42 if self.mode == 0 else 14 if self.mode == 1 else 32)
+        crafting_x = self.frame.x + (165 if self.mode == 0 else 72 if self.mode == 1 else 63)
         crafting_height = (crafting_rows * (self.icon_size * 0.5)) + (crafting_rows * 3)
         crafting_width = (crafting_items_per_row * (self.icon_size * 0.5)) + (crafting_items_per_row-1) * 3
 
@@ -496,7 +497,7 @@ class InventorySelector(AbstractInventory):
         armor_height = 4 * (self.icon_size * 0.5 + 3)
         armor_width = self.icon_size * 0.5
 
-        crafting_outcome_y = inventory_y + inventory_height + (60 if self.mode == 0 else 42)
+        crafting_outcome_y = inventory_y + inventory_height + (60 if self.mode == 0 else 42 if self.mode == 1 else 57)
         crafting_outcome_x = self.frame.x + (270 if self.mode == 0 else 222)
         crafting_outcome_width = crafting_outcome_height = self.icon_size * 0.5
         # out of bound
@@ -517,6 +518,8 @@ class InventorySelector(AbstractInventory):
                 self.crafting_panel.remove_unnecessary_stacks()
             elif self.mode == 1:
                 self.crafting_table_panel.remove_unnecessary_stacks()
+            elif self.mode == 2:
+                self.furnace_panel.remove_unnecessary_stacks()
             inventory = self.player.inventory
             items_per_row = 9
         elif crafting_y <= y <= crafting_y + crafting_height and x >= crafting_x \
@@ -529,6 +532,9 @@ class InventorySelector(AbstractInventory):
             elif self.mode == 1:
                 self.crafting_table_panel.remove_unnecessary_stacks()
                 inventory = self.crafting_table_panel
+            elif self.mode == 2:
+                self.furnace_panel.remove_unnecessary_stacks()
+                inventory = self.furnace_panel
             x_offset = x - crafting_x
             items_per_row = crafting_items_per_row
         elif crafting_outcome_y <= y <= crafting_outcome_y + crafting_outcome_height and \
@@ -556,11 +562,11 @@ class InventorySelector(AbstractInventory):
             return
         self.crafting_outcome = item
 
-        self.crafting_outcome_icon = image_sprite(self.get_block_icon(item.get_object()), self.batch, self.group)
+        self.crafting_outcome_icon = image_sprite(get_block_icon(item.get_object(), self.icon_size, self.model), self.batch, self.group)
         inventory_rows = floor(self.max_items / 9)
         inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
         quick_slots_y = self.frame.y + 4
-        inventory_y = quick_slots_y + (42 if self.mode == 0 else 14)
+        inventory_y = quick_slots_y + (42 if self.mode == 0 else 14 if self.mode == 1 else 32)
         if self.mode == 0:
             self.crafting_outcome_icon.scale = 0.5
             self.crafting_outcome_icon.y = inventory_y + inventory_height + 62
@@ -569,8 +575,12 @@ class InventorySelector(AbstractInventory):
             self.crafting_outcome_icon.scale = 0.5
             self.crafting_outcome_icon.y = inventory_y + inventory_height + 80
             self.crafting_outcome_icon.x = self.frame.x + 225
+        elif self.mode == 2:
+            self.crafting_outcome_icon.scale = 0.5
+            self.crafting_outcome_icon.y = inventory_y + inventory_height + 67
+            self.crafting_outcome_icon.x = self.frame.x + 222
         self.crafting_outcome_label = pyglet.text.Label(
-            str(item.amount), font_name='Arial', font_size=9,
+            str(item.amount), font_name=G.DEFAULT_FONT, font_size=9,
             x= self.crafting_outcome_icon.x + 3, y= self.crafting_outcome_icon.y, anchor_x='left', anchor_y='bottom',
             color=item.get_object().amount_label_color,
             group=self.group)
@@ -585,7 +595,7 @@ class InventorySelector(AbstractInventory):
             return
         self.selected_item = item
 
-        self.selected_item_icon = image_sprite(self.get_block_icon(item.get_object()), self.batch, self.group)
+        self.selected_item_icon = image_sprite(get_block_icon(item.get_object(), self.icon_size, self.model), self.batch, self.group)
         self.selected_item_icon.scale = 0.4
 
     def remove_selected_item(self):
@@ -611,11 +621,11 @@ class InventorySelector(AbstractInventory):
                 inventory_rows = floor(self.max_items / 9)
                 inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
                 quick_slots_y = self.frame.y + 4
-                inventory_y = quick_slots_y + (42 if self.mode == 0 else 14)
-                self.selected_item_icon.y = inventory_y + inventory_height + (60 if self.mode == 0 else 42)
+                inventory_y = quick_slots_y + (42 if self.mode == 0 else 14 if self.mode == 1 else 32)
+                self.selected_item_icon.y = inventory_y + inventory_height + (60 if self.mode == 0 else 42 if self.mode == 1 else 57)
                 self.selected_item_icon.x = self.frame.x + (270 if self.mode == 0 else 222)
                 # cost
-                current_panel = self.crafting_panel if self.mode == 0 else self.crafting_table_panel
+                current_panel = self.crafting_panel if self.mode == 0 else self.crafting_table_panel if self.mode == 1 else self.furnace_panel
                 for ingre in current_panel.slots:
                     if ingre :
                         ingre.change_amount(-1)
@@ -704,10 +714,10 @@ class InventorySelector(AbstractInventory):
 
     def on_key_press(self, symbol, modifiers):
         if self.visible:
-            if symbol == globals.ESCAPE_KEY:
+            if symbol == G.ESCAPE_KEY:
                 self.toggle()
                 return pyglet.event.EVENT_HANDLED
-            elif symbol == globals.VALIDATE_KEY:
+            elif symbol == G.VALIDATE_KEY:
                 return pyglet.event.EVENT_HANDLED
 
     def on_resize(self, width, height):
@@ -872,7 +882,7 @@ class TextWidget(Control):
 
     def on_key_release(self, symbol, modifier):
         if self.visible and not self.readonly:
-            if symbol == globals.ESCAPE_KEY:
+            if symbol == G.ESCAPE_KEY:
                 self.toggle()
                 self.parent.pop_handlers()
             dispatched = self.dispatch_event('key_released', symbol, modifier)

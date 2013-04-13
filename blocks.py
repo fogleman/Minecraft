@@ -4,20 +4,23 @@
 
 # Future imports
 from __future__ import unicode_literals
+
 # Python packages
 import os
+
 # Third-party packages
 import pyglet
 from pyglet.gl import *
 from pyglet.image.atlas import TextureAtlas
 from utils import load_image
+
 # Modules from this project
-import globals
-import sounds
+import globals as G
 from random import randint
+import sounds
 
 
-def get_texture_coordinates(x, y, tileset_size=globals.TILESET_SIZE):
+def get_texture_coordinates(x, y, tileset_size=G.TILESET_SIZE):
     if x == -1 and y == -1:
         return ()
     m = 1.0 / tileset_size
@@ -55,22 +58,27 @@ class TextureGroupIndividual(pyglet.graphics.Group):
     def unset_state(self):
         glDisable(self.texture.target)
 
-"""
-The Datatype for Block and Item ID's
-Creation: BlockID(1)   BlockID(35)   BlockID(35, 3)   BlockID((35,3))   BlockID("35.3")
-str(id) : "1.0"        "35.0"        "35.3"           "35.3"            "35.3"
-Typical uses: id == 1    id == BlockID(35, 3)   id < 255
-"""
+
 class BlockID(object):
+    """
+    Datatype for Block and Item IDs
+
+    Creation: BlockID(1)   BlockID(35)   BlockID(35, 3)   BlockID((35,
+    3))   BlockID("35.3")
+    str(id) : "1.0"        "35.0"        "35.3"           "35.3"
+    "35.3"
+    Typical uses: id == 1    id == BlockID(35, 3)   id < 255
+    """
+
     main = 0
-    sub = 0 #Aka DataID, damageID, etc
+    sub = 0  # A.k.a. DataID, damageID, etc
 
     def __init__(self, main, sub=0):
         if isinstance(main, tuple):
             self.main, self.sub = main
         elif isinstance(main, basestring):
             # Allow "35", "35.0", or "35,0"
-            spl = main.split(".") if "." in main else main.split(",") if "," in main else (main,)
+            spl = main.split(".") if "." in main else main.split(",") if "," in main else (main, 0)
             if len(spl) == 2:
                 a, b = spl
             elif len(spl) == 1:
@@ -86,23 +94,34 @@ class BlockID(object):
         else:
             self.main = int(main)
             self.sub = int(sub)
+
     def __repr__(self):
         return '%d.%d' % (self.main, self.sub)
+
     def __hash__(self):
-        return hash(repr(self))
-    def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return self.main == other.main and self.sub == other.sub
-        else: #For int's
-            return self.main == other
+        return hash((self.main, self.sub))
+
+    def __cmp__(self, other):
+        if isinstance(other, tuple):
+            return cmp((self.main, self.sub), other)
+        if isinstance(other, float):
+            return cmp(float(repr(self.main)), other)
+        if isinstance(other, int):
+            return cmp(self.main, other)
+        if isinstance(other, BlockID):
+            return cmp(self.main, other.main) or cmp(self.sub, other.sub)
+
     def __nonzero__(self):
-        return self.main is not 0
-    def __cmp__(self,other):
-        return cmp(self.main, other)
-    def is_item(self): return self.main > 255
+        """Checks whether it is an AirBlock."""
+        return self.main != 0
+
+    def is_item(self):
+        return self.main > 255
+
     def filename(self):
         if self.sub == 0: return str(self.main)
         return '%d.%d' % (self.main, self.sub)
+
 
 class Block(object):
     id = None  # Original minecraft id (also called data value).
@@ -169,7 +188,7 @@ class Block(object):
                     setattr(self, k, get_texture_coordinates(*v))
             self.texture_data = self.get_texture_data()
 
-        globals.BLOCKS_DIR[self.id] = self
+        G.BLOCKS_DIR[self.id] = self
 
     def __str__(self):
         return self.name
@@ -217,7 +236,7 @@ class AirBlock(Block):
 
 class WoodBlock(Block):
     break_sound = sounds.wood_break
-    digging_tool = globals.AXE
+    digging_tool = G.AXE
 
 
 class HardBlock(Block):
@@ -231,7 +250,7 @@ class StoneBlock(HardBlock):
     hardness = 1.5
     id = 1
     name = "Stone"
-    digging_tool = globals.PICKAXE
+    digging_tool = G.PICKAXE
 
     def __init__(self):
         super(StoneBlock, self).__init__()
@@ -247,7 +266,7 @@ class GrassBlock(Block):
     id = 2
     break_sound = sounds.dirt_break
     name = 'Grass'
-    digging_tool = globals.SHOVEL
+    digging_tool = G.SHOVEL
 
     def __init__(self):
         super(GrassBlock, self).__init__()
@@ -262,7 +281,7 @@ class DirtBlock(Block):
     hardness = 0.5
     id = 3
     name = "Dirt"
-    digging_tool = globals.SHOVEL
+    digging_tool = G.SHOVEL
     break_sound = sounds.dirt_break
 
 class SnowBlock(Block):
@@ -285,7 +304,7 @@ class SandBlock(Block):
     amount_label_color = 0, 0, 0, 255
     id = 12
     name = "Sand"
-    digging_tool = globals.SHOVEL
+    digging_tool = G.SHOVEL
     break_sound = sounds.sand_break
 
 
@@ -296,7 +315,7 @@ class GoldOreBlock(HardBlock):
     texture_name = "oreGold",
     hardness = 3
     id = 14
-    digging_tool = globals.PICKAXE
+    digging_tool = G.PICKAXE
     name = "Gold Ore"
 
 
@@ -307,7 +326,7 @@ class IronOreBlock(HardBlock):
     texture_name = "oreIron",
     hardness = 3
     id = 15
-    digging_tool = globals.PICKAXE
+    digging_tool = G.PICKAXE
     name = "Iron Ore"
     smelting_time = 10
 
@@ -318,7 +337,7 @@ class DiamondOreBlock(HardBlock):
     texture_name = "oreDiamond",
     hardness = 3
     id = 56
-    digging_tool = globals.PICKAXE
+    digging_tool = G.PICKAXE
     def __init__(self):
         super(DiamondOreBlock, self).__init__()
         self.drop_id = BlockID(264)
@@ -332,7 +351,7 @@ class CoalOreBlock(HardBlock):
     texture_name = "oreCoal",
     hardness = 3
     id = 16
-    digging_tool = globals.PICKAXE
+    digging_tool = G.PICKAXE
     def __init__(self):
         super(CoalOreBlock, self).__init__()
         self.drop_id = BlockID(263)
@@ -346,7 +365,7 @@ class BrickBlock(HardBlock):
     texture_name = "brick",
     hardness = 2
     id = 45
-    digging_tool = globals.PICKAXE
+    digging_tool = G.PICKAXE
     name = "Bricks"
 
 
@@ -383,7 +402,7 @@ class GravelBlock(Block):
     amount_label_color = 0, 0, 0, 255
     id = 13
     name = "Gravel"
-    digging_tool = globals.SHOVEL
+    digging_tool = G.SHOVEL
     break_sound = sounds.gravel_break
 
     @property
@@ -416,6 +435,7 @@ class WaterBlock(Block):
     transparent = True
     hardness = -1  # Unobtainable
     density = 0.5
+    height = 0.8
     id = 8
     name = "Water"
     break_sound = sounds.water_break
@@ -496,7 +516,7 @@ class QuartzBlock(HardBlock):
     hardness = 2
     name = "Quartz"
     amount_label_color = 0, 0, 0, 255
-    digging_tool = globals.PICKAXE
+    digging_tool = G.PICKAXE
 
 class ChiseledQuartzBlock(HardBlock):
     top_texture = 3, 2
@@ -507,7 +527,7 @@ class ChiseledQuartzBlock(HardBlock):
     hardness = 2
     name = "Chiseled Quartz"
     amount_label_color = 0, 0, 0, 255
-    digging_tool = globals.PICKAXE
+    digging_tool = G.PICKAXE
 
 class ColumnQuartzBlock(HardBlock):
     top_texture = 3, 2
@@ -518,7 +538,7 @@ class ColumnQuartzBlock(HardBlock):
     hardness = 2
     name = "Column Quartz"
     amount_label_color = 0, 0, 0, 255
-    digging_tool = globals.PICKAXE
+    digging_tool = G.PICKAXE
 
 class QuartzBrickBlock(HardBlock):
     top_texture = 13, 0
@@ -528,7 +548,7 @@ class QuartzBrickBlock(HardBlock):
     hardness = 2
     name = "Quartz Brick"
     amount_label_color = 0, 0, 0, 255
-    digging_tool = globals.PICKAXE
+    digging_tool = G.PICKAXE
 
 class BirchWoodPlankBlock(WoodBlock):
     top_texture = 3, 3
@@ -656,7 +676,7 @@ class OakLeafBlock(LeafBlock):
     bottom_texture = 7, 2
     side_texture = 7, 2
     texture_name = "leaves",
-    hardness = 0.2
+    hardness = 0.3
     id = 18,0
     name = "Oak Leaves"
 
@@ -666,7 +686,7 @@ class JungleLeafBlock(LeafBlock):
     bottom_texture = 6, 2
     side_texture = 6, 2
     texture_name = "leaves_jungle",
-    hardness = 0.2
+    hardness = 0.3
     id = 18,1
     name = "Jungle Leaves"
 
@@ -676,7 +696,7 @@ class BirchLeafBlock(LeafBlock):
     bottom_texture = 5, 2
     side_texture = 5, 2
     texture_name = "leaves",
-    hardness = 0.2
+    hardness = 0.3
     id = 18,2
     name = "Birch Leaves"
 
@@ -728,7 +748,7 @@ class YFlowersBlock(Block):
     top_texture = 6, 6
     bottom_texture = -1, -1
     side_texture = 6, 5
-    hardness = 0.1
+    hardness = 0.0
     transparent = True
     width = 0.5
     id = 37
@@ -809,7 +829,7 @@ class FurnaceBlock(HardBlock):
         if item is None:
             return
         self.smelt_stack = item
-        self.outcome_item = globals.smelting_recipes.smelt(self.smelt_stack.get_object())
+        self.outcome_item = G.smelting_recipes.smelt(self.smelt_stack.get_object())
         # no such recipe
         if self.outcome_item is None:
             return
@@ -852,7 +872,7 @@ class FurnaceBlock(HardBlock):
         if self.fuel is None or self.fuel_task is None:
             return
         # smelting task
-        self.smelt_task = globals.main_timer.add_task(self.smelt_stack.get_object().smelting_time, self.smelt_done)
+        self.smelt_task = G.main_timer.add_task(self.smelt_stack.get_object().smelting_time, self.smelt_done)
 
     def remove_fuel(self):
         self.fuel_task = None
@@ -860,13 +880,13 @@ class FurnaceBlock(HardBlock):
         if self.fuel.amount <= 0:
             self.fuel = None
             # stop smelting task
-            globals.main_timer.remove_task(self.smelt_task)
+            G.main_timer.remove_task(self.smelt_task)
             self.smelt_task = None
             return
 
         # continue
         if self.smelt_task is not None:
-            self.fuel_task = globals.main_timer.add_task(self.fuel.get_object().burning_time, self.remove_fuel)
+            self.fuel_task = G.main_timer.add_task(self.fuel.get_object().burning_time, self.remove_fuel)
 
     def smelt(self):
         if self.fuel is None or self.smelt_stack is None:
@@ -880,9 +900,9 @@ class FurnaceBlock(HardBlock):
         burning_time = self.fuel.get_object().burning_time
         smelting_time = self.smelt_stack.get_object().smelting_time
         # fuel task: remove fuel
-        self.fuel_task = globals.main_timer.add_task(burning_time, self.remove_fuel)
+        self.fuel_task = G.main_timer.add_task(burning_time, self.remove_fuel)
         # smelting task
-        self.smelt_task = globals.main_timer.add_task(smelting_time, self.smelt_done)
+        self.smelt_task = G.main_timer.add_task(smelting_time, self.smelt_done)
 
 class FarmBlock(Block):
     top_texture = 5, 3
@@ -1104,7 +1124,7 @@ class DiamondBlock(HardBlock):
     texture_name = "blockDiamond",
     hardness = 5
     id = 57
-    digging_tool = globals.PICKAXE
+    digging_tool = G.PICKAXE
     name = "Diamond Block"
 
 class GoldBlock(HardBlock):
@@ -1114,7 +1134,7 @@ class GoldBlock(HardBlock):
     texture_name = "blockGold",
     hardness = 4
     id = 41
-    digging_tool = globals.PICKAXE
+    digging_tool = G.PICKAXE
     name = "Gold Block"
 
 class IronBlock(HardBlock):
@@ -1124,7 +1144,7 @@ class IronBlock(HardBlock):
     texture_name = "blockIron",
     hardness = 4
     id = 42
-    digging_tool = globals.PICKAXE
+    digging_tool = G.PICKAXE
     name = "Iron Block"
 
 class StonebrickBlock(HardBlock):
@@ -1134,7 +1154,7 @@ class StonebrickBlock(HardBlock):
     texture_name = "stonebricksmooth",
     hardness = 1.5
     id = 98,0
-    digging_tool = globals.PICKAXE
+    digging_tool = G.PICKAXE
     name = "Stone Bricks"
 
 class CrackedStonebrickBlock(HardBlock):
@@ -1144,7 +1164,7 @@ class CrackedStonebrickBlock(HardBlock):
     texture_name = "stonebricksmooth_cracked",
     hardness = 1.5
     id = 98,1
-    digging_tool = globals.PICKAXE
+    digging_tool = G.PICKAXE
     name = "Cracked Stone Bricks"
 
 class MossyStonebrickBlock(HardBlock):
@@ -1154,7 +1174,7 @@ class MossyStonebrickBlock(HardBlock):
     texture_name = "stonebricksmooth_mossy",
     hardness = 1.5
     id = 98,2
-    digging_tool = globals.PICKAXE
+    digging_tool = G.PICKAXE
     name = "Mossy Stone Bricks"
 
 class IceBlock(Block):
@@ -1176,7 +1196,7 @@ class MossyCobbleBlock(HardBlock):
     hardness = 1.5
     id = 48
     name = "Mossy Cobblestone"
-    digging_tool = globals.PICKAXE
+    digging_tool = G.PICKAXE
     max_stack_size = 64
 
 CRACK_LEVELS = 10

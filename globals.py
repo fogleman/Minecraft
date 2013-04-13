@@ -6,13 +6,19 @@ Since these global variables are modified during runtime, using `import *`
 would lead to unpredictable consequences.
 """
 
+# Imports, sorted alphabetically.
+
 # Python packages
-import argparse
 from ConfigParser import ConfigParser
+import argparse
 from math import pi
 import os
+
 # Third-party packages
 from pyglet.resource import get_settings_path
+
+# Modules from this project
+# Nothing for now...
 
 
 APP_NAME = 'pyCraftr'  # should I stay or should I go?
@@ -105,6 +111,11 @@ TILESET_SIZE = 16  # The tileset therefore contains TILESET_SIZE ** 2 tiles.
 
 BLOCKS_DIR = {}  # Block ID => block object
 ITEMS_DIR = {}  # Item ID => item object
+
+# items and blocks share a common id table
+# ids of items should be >= ITEM_ID_MIN
+ITEM_ID_MIN = 256
+
 TIME_RATE = 240 * 10  # Rate of change (steps per hour).
 SPREADING_MUTATION_DELAY = 4  # in seconds
 
@@ -144,6 +155,7 @@ TERRAIN = TERRAIN_CHOICES[DEFAULT_TERRAIN_CHOICE]
 # Graphical rendering
 #
 
+FULLSCREEN = False
 WINDOW_WIDTH = 850  # Screen width (in pixels)
 WINDOW_HEIGHT = 480  # Screen height (in pixels)
 
@@ -231,3 +243,4 @@ ANCHOR_BOTTOM = 1 << 3
 
 ICONS_PATH = os.path.join('resources', 'textures', 'icons')
 TEXTURES_PATH = os.path.join('resources', 'textures')
+DEFAULT_FONT = 'ChunkFive Roman'
