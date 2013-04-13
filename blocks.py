@@ -430,6 +430,7 @@ class CraftTableBlock(WoodBlock):
     hardness = 2.5
     id = 58
     name = "Crafting Table"
+    burning_time = 15
 
 class MetaBlock(WoodBlock): # this is a experimental block.
     top_texture = 9, 0
@@ -538,6 +539,7 @@ class BirchWoodPlankBlock(WoodBlock):
     texture_name = "wood_birch",
     hardness = 2
     id = 5,0
+    burning_time = 15
     name = "Birch Wood Planks"
 
 
@@ -548,6 +550,7 @@ class OakWoodPlankBlock(WoodBlock):
     texture_name = "wood",
     hardness = 2
     id = 5,1
+    burning_time = 15
     name = "Oak Wood Planks"
 
 
@@ -558,6 +561,7 @@ class JungleWoodPlankBlock(WoodBlock):
     texture_name = "wood_jungle",
     hardness = 2
     id = 5,3
+    burning_time = 15
     name = "Jungle Wood Planks"
 
 
@@ -732,6 +736,7 @@ class YFlowersBlock(Block):
     hardness = 0.0
     transparent = True
     width = 0.5
+    density = 0.3
     id = 37
     name = "Dandelion"
     break_sound = sounds.leaves_break
@@ -787,6 +792,7 @@ class BookshelfBlock(WoodBlock):
     hardness = 1.5
     id = 47
     name = "Bookshelf"
+    burning_time = 15
 
 
 class FurnaceBlock(HardBlock):
@@ -905,6 +911,7 @@ class ChestBlock(Block):
     hardness = 2
     id = 54
     name = "Chest"
+    burning_time = 15
 
 # Wool blocks
 
@@ -1059,6 +1066,7 @@ class RoseBlock(Block):
     bottom_texture = 10, 0
     side_texture = 10, 0
     hardness = .08
+    density = 0.8
     id = 38
     name = "Rose"
 amount_label_color = 0, 0, 0, 255
@@ -1070,6 +1078,7 @@ class ReedBlock(Block):
     hardness = 0.0
     transparent = True
     id = 83
+    density = 0.8
     name = "Reed"
     max_stack_size = 16
     amount_label_color = 0, 0, 0, 255
