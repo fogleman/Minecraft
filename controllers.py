@@ -31,7 +31,7 @@ class Controller(object):
     def update(self, dt):
         if self.current_view:
             self.current_view.update(dt)
-        
+
     def switch_view(self, new_view):
         if self.current_view:
             self.current_view.pop_handlers()
@@ -130,6 +130,8 @@ class GameController(Controller):
             if block:
                 if self.highlighted_block != block:
                     self.set_highlighted_block(block)
+                else:
+                self.set_highlighted_block(None)
 
             if self.highlighted_block:
                 hit_block = self.model[self.highlighted_block]
@@ -151,8 +153,8 @@ class GameController(Controller):
                                 and self.player.add_item(hit_block.drop_id):
                             self.item_list.update_items()
                             self.inventory_list.update_items()
-                else:
-                    self.set_highlighted_block(None)
+                #else:
+                    #self.set_highlighted_block(None)
         self.update_time()
         self.camera.update(dt)
 
