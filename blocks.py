@@ -1117,6 +1117,7 @@ class ReedBlock(Block):
 
 class PotatoBlock(Block):
     width = 1.0 / sqrt(2)
+    height = 0.5
     top_texture = -1, -1
     bottom_texture = -1, -1
     side_texture = 10, 3
@@ -1131,6 +1132,7 @@ class PotatoBlock(Block):
 
 class CarrotBlock(Block):
     width = 1.0 / sqrt(2)
+    height = 0.5
     top_texture = -1, -1
     bottom_texture = -1, -1
     side_texture = 10, 2
