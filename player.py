@@ -1,14 +1,22 @@
-from entity import *
-from world import *
+# Imports, sorted alphabetically.
+
+# Python packages
 from math import cos, sin, atan2, radians
-from pyglet.window import key
+import random
+
+# Third-party packages
+# Nothing for now...
+
+# Modules from this project
+from entity import *
+import globals as G
 from inventory import *
-from items import *
-import globals
+from world import *
+
 
 class Player(Entity):
     def __init__(self, position, rotation, flying=False,
-                 game_mode=globals.GAME_MODE):
+                 game_mode=G.GAME_MODE):
         super(Player, self).__init__(position, rotation, health=7,
                                      max_health=10, attack_power=2.0 / 3,
                                      attack_range=4)
@@ -45,36 +53,36 @@ class Player(Entity):
         self.strafe = [0, 0]
 
     def on_key_release(self, symbol, modifiers):
-        if symbol == globals.MOVE_FORWARD_KEY:
+        if symbol == G.MOVE_FORWARD_KEY:
             self.strafe[0] += 1
-        elif symbol == globals.MOVE_BACKWARD_KEY:
+        elif symbol == G.MOVE_BACKWARD_KEY:
             self.strafe[0] -= 1
-        elif symbol == globals.MOVE_LEFT_KEY:
+        elif symbol == G.MOVE_LEFT_KEY:
             self.strafe[1] += 1
-        elif symbol == globals.MOVE_RIGHT_KEY:
+        elif symbol == G.MOVE_RIGHT_KEY:
             self.strafe[1] -= 1
-        elif (symbol == globals.JUMP_KEY
-              or symbol == globals.CROUCH_KEY) and self.flying:
+        elif (symbol == G.JUMP_KEY
+              or symbol == G.CROUCH_KEY) and self.flying:
             self.dy = 0
 
     def on_key_press(self, symbol, modifiers):
-        if symbol == globals.MOVE_FORWARD_KEY:
+        if symbol == G.MOVE_FORWARD_KEY:
             self.strafe[0] -= 1
-        elif symbol == globals.MOVE_BACKWARD_KEY:
+        elif symbol == G.MOVE_BACKWARD_KEY:
             self.strafe[0] += 1
-        elif symbol == globals.MOVE_LEFT_KEY:
+        elif symbol == G.MOVE_LEFT_KEY:
             self.strafe[1] -= 1
-        elif symbol == globals.MOVE_RIGHT_KEY:
+        elif symbol == G.MOVE_RIGHT_KEY:
             self.strafe[1] += 1
-        elif symbol == globals.JUMP_KEY:
+        elif symbol == G.JUMP_KEY:
             if self.flying:
                 self.dy = 0.045  # jump speed
             elif self.dy == 0:
                 self.dy = 0.016  # jump speed
-        elif symbol == globals.CROUCH_KEY:
+        elif symbol == G.CROUCH_KEY:
             if self.flying:
                 self.dy = -0.045  # inversed jump speed
-        elif symbol == globals.FLY_KEY and self.game_mode == globals.CREATIVE_MODE:
+        elif symbol == G.FLY_KEY and self.game_mode == G.CREATIVE_MODE:
             self.dy = 0
             self.flying = not self.flying
 
@@ -112,7 +120,7 @@ class Player(Entity):
         x_r = radians(x)
         m = cos(y_r)
         dy = sin(y_r)
-        x_r -= globals.HALF_PI
+        x_r -= G.HALF_PI
         dx = cos(x_r) * m
         dz = sin(x_r) * m
         return dx, dy, dz
@@ -157,7 +165,7 @@ class Player(Entity):
                     p[i] -= (d - pad) * face[i]
                     if face == (0, -1, 0) or face == (0, 1, 0):
                         # jump damage
-                        if self.game_mode == globals.SURVIVAL_MODE:
+                        if self.game_mode == G.SURVIVAL_MODE:
                             damage = self.dy * -1000.0
                             damage = 3.0 * damage / 22.0
                             damage -= 2.0

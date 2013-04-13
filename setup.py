@@ -1,8 +1,15 @@
+# Imports, sorted alphabetically.
+
+# Python packages
+from Cython.Distutils import build_ext
 from distutils.core import setup
 from distutils.extension import Extension
-from Cython.Distutils import build_ext
 
-import globals
+# Third-party packages
+# Nothing for now...
+
+# Modules from this project
+import globals as G
 
 
 ext_modules = [
@@ -13,7 +20,7 @@ ext_modules = [
 ]
 
 setup(
-    name=globals.APP_NAME,
+    name=G.APP_NAME,
     cmdclass={'build_ext': build_ext},
     ext_modules=ext_modules
 )

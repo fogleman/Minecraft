@@ -1,17 +1,20 @@
-from math import floor, ceil
-import os
+# Imports, sorted alphabetically.
 
-from pyglet.sprite import Sprite
-from pyglet.text import Label
+# Python packages
+from math import floor, ceil
+
+# Third-party packages
 from pyglet.gl import *
+from pyglet.text import Label
 from pyglet.window import key
 
+# Modules from this project
 from blocks import *
 from crafting import *
-import globals
+import globals as G
 from inventory import *
-from items import *
 from utils import load_image, image_sprite, hidden_image_sprite, get_block_icon
+
 
 class Rectangle(object):
     def __init__(self, x, y, width, height):
@@ -56,7 +59,7 @@ class Rectangle(object):
         return (self.x + self.width, self.y + self.height)
 
 class Button(pyglet.event.EventDispatcher, Rectangle):
-    def __init__(self, parent, x, y, width, height, image=None, image_highlighted=None, caption=None, batch=None, group=None, label_group=None, font_name=globals.DEFAULT_FONT):
+    def __init__(self, parent, x, y, width, height, image=None, image_highlighted=None, caption=None, batch=None, group=None, label_group=None, font_name=G.DEFAULT_FONT):
         super(Button, self).__init__(x, y, width, height)
         parent.push_handlers(self)
         self.batch, self.group, self.label_group = batch, group, label_group
@@ -104,7 +107,7 @@ class Button(pyglet.event.EventDispatcher, Rectangle):
 Button.register_event_type('on_click')
 
 class Control(object):
-    def __init__(self, parent, anchor_style=globals.ANCHOR_NONE, visible=True, *args, **kwargs):
+    def __init__(self, parent, anchor_style=G.ANCHOR_NONE, visible=True, *args, **kwargs):
         self.parent = parent
         self.visible = visible
         self.anchor_style = anchor_style
@@ -121,9 +124,9 @@ class Control(object):
     def _on_resize(self):
         pw, ph = self.parent.window.get_size()
         al, at, ar, ab = None, None, None, None
-        if (self.anchor_style & globals.ANCHOR_RIGHT) == globals.ANCHOR_RIGHT:
+        if (self.anchor_style & G.ANCHOR_RIGHT) == G.ANCHOR_RIGHT:
             ar = pw
-        if (self.anchor_style & globals.ANCHOR_BOTTOM) == globals.ANCHOR_BOTTOM:
+        if (self.anchor_style & G.ANCHOR_BOTTOM) == G.ANCHOR_BOTTOM:
             ab = 0
         # TODO: Implement ANCHOR_LEFT and ANCHOR_TOP
         self._anchor_points = (al, at, ar, ab)
@@ -158,9 +161,9 @@ class ItemSelector(AbstractInventory):
         self.model = model
         self.player = player
         self.max_items = 9
-        self.icon_size = self.model.group.texture.width / globals.TILESET_SIZE
+        self.icon_size = self.model.group.texture.width / G.TILESET_SIZE
         self.visible = True
-        self.num_keys = [getattr(globals, 'INVENTORY_%d_KEY' % i)
+        self.num_keys = [getattr(G, 'INVENTORY_%d_KEY' % i)
                          for i in range(1, 10)]
 
         image = load_image('resources', 'textures', 'slots.png')
@@ -195,7 +198,7 @@ class ItemSelector(AbstractInventory):
             item.quickslots_y = icon.y
             x += (self.icon_size * 0.5) + 3
             amount_label = pyglet.text.Label(
-                str(item.amount), font_name=globals.DEFAULT_FONT, font_size=9,
+                str(item.amount), font_name=G.DEFAULT_FONT, font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
                 color=item.get_object().amount_label_color, batch=self.batch,
                 group=self.labels_group)
@@ -208,7 +211,7 @@ class ItemSelector(AbstractInventory):
             self.current_block_label.delete()
         if hasattr(self.get_current_block_item(False), 'quickslots_x') and hasattr(self.get_current_block_item(False), 'quickslots_y'):
             self.current_block_label = pyglet.text.Label(
-                self.get_current_block_item(False).name, font_name=globals.DEFAULT_FONT, font_size=9,
+                self.get_current_block_item(False).name, font_name=G.DEFAULT_FONT, font_size=9,
                 x=self.get_current_block_item(False).quickslots_x + 0.25 * self.icon_size, y=self.get_current_block_item(False).quickslots_y - 20,
                 anchor_x='center', anchor_y='bottom',
                 color=(255, 255, 255, 255), batch=self.batch,
@@ -268,7 +271,7 @@ class ItemSelector(AbstractInventory):
                 index = (symbol - self.num_keys[0])
                 self.current_index = index
                 return pyglet.event.EVENT_HANDLED
-            elif symbol == globals.VALIDATE_KEY:
+            elif symbol == G.VALIDATE_KEY:
                 current_block = self.get_current_block_item_and_amount()
                 if current_block:
                     if not self.player.inventory.add_item(
@@ -303,7 +306,7 @@ class InventorySelector(AbstractInventory):
         self.player = player
         self.max_items = self.player.inventory.slot_count
         self.current_index = 1
-        self.icon_size = self.model.group.texture.width / globals.TILESET_SIZE
+        self.icon_size = self.model.group.texture.width / G.TILESET_SIZE
         self.selected_item = None
         self.selected_item_icon = None
         self.mode = 0 # 0 - Normal inventory, 1 - Crafting Table, 2 - Furnace
@@ -355,7 +358,7 @@ class InventorySelector(AbstractInventory):
                 x = self.frame.x + 7
                 y -= (self.icon_size * 0.5) + 3
             amount_label = pyglet.text.Label(
-                str(item.amount), font_name=globals.DEFAULT_FONT, font_size=9,
+                str(item.amount), font_name=G.DEFAULT_FONT, font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
                 color=item.get_object().amount_label_color, batch=self.batch,
                 group=self.amount_labels_group)
@@ -376,7 +379,7 @@ class InventorySelector(AbstractInventory):
             item.quickslots_y = icon.y
             x += (self.icon_size * 0.5) + 3
             amount_label = pyglet.text.Label(
-                str(item.amount), font_name=globals.DEFAULT_FONT, font_size=9,
+                str(item.amount), font_name=G.DEFAULT_FONT, font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
                 color=item.get_object().amount_label_color, batch=self.batch,
                 group=self.amount_labels_group)
@@ -396,7 +399,7 @@ class InventorySelector(AbstractInventory):
             icon.x = x
             icon.y = y
             amount_label = pyglet.text.Label(
-                str(item.amount), font_name=globals.DEFAULT_FONT, font_size=9,
+                str(item.amount), font_name=G.DEFAULT_FONT, font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
                 color=item.get_object().amount_label_color, batch=self.batch,
                 group=self.amount_labels_group)
@@ -433,7 +436,7 @@ class InventorySelector(AbstractInventory):
                 x = self.frame.x + (165 if self.mode == 0 else 72 if self.mode == 1 else 63)
                 y -= (self.icon_size * 0.5) + 3
             amount_label = pyglet.text.Label(
-                str(item.amount), font_name=globals.DEFAULT_FONT, font_size=9,
+                str(item.amount), font_name=G.DEFAULT_FONT, font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
                 color=item.get_object().amount_label_color, batch=self.batch,
                 group=self.amount_labels_group)
@@ -443,7 +446,7 @@ class InventorySelector(AbstractInventory):
                 crafting_ingredients[int(floor(i / (2 if self.mode == 0 else 3 if self.mode == 1 else 1)))].append(item.get_object())
 
         if len(crafting_ingredients) > 0 and self.mode < 2:
-            outcome = globals.recipes.craft(crafting_ingredients)
+            outcome = G.recipes.craft(crafting_ingredients)
             if outcome:
                 self.set_crafting_outcome(outcome)
             elif self.crafting_outcome:
@@ -573,7 +576,7 @@ class InventorySelector(AbstractInventory):
             self.crafting_outcome_icon.y = inventory_y + inventory_height + 127
             self.crafting_outcome_icon.x = self.frame.x + 225
         self.crafting_outcome_label = pyglet.text.Label(
-            str(item.amount), font_name=globals.DEFAULT_FONT, font_size=9,
+            str(item.amount), font_name=G.DEFAULT_FONT, font_size=9,
             x= self.crafting_outcome_icon.x + 3, y= self.crafting_outcome_icon.y, anchor_x='left', anchor_y='bottom',
             color=item.get_object().amount_label_color,
             group=self.group)
@@ -707,10 +710,10 @@ class InventorySelector(AbstractInventory):
 
     def on_key_press(self, symbol, modifiers):
         if self.visible:
-            if symbol == globals.ESCAPE_KEY:
+            if symbol == G.ESCAPE_KEY:
                 self.toggle()
                 return pyglet.event.EVENT_HANDLED
-            elif symbol == globals.VALIDATE_KEY:
+            elif symbol == G.VALIDATE_KEY:
                 return pyglet.event.EVENT_HANDLED
 
     def on_resize(self, width, height):
@@ -830,7 +833,7 @@ class TextWidget(Control):
 
     def on_key_release(self, symbol, modifier):
         if self.visible:
-            if symbol == globals.ESCAPE_KEY:
+            if symbol == G.ESCAPE_KEY:
                 self.toggle()
                 self.parent.window.pop_handlers()
             if self._key_released:

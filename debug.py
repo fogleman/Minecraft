@@ -1,12 +1,18 @@
+# Imports, sorted alphabetically.
+
+# Python packages
 import time
 
+# Third-party packages
+# Nothing for now...
+
 # Modules from this project
-import globals
+import globals as G
 
 
 def performance_info(func):
     def inner(*args, **kwargs):
-        if not globals.DEBUG:
+        if not G.DEBUG:
             return func(*args, **kwargs)
         start = time.time()
         out = func(*args, **kwargs)

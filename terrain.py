@@ -1,10 +1,21 @@
-# Terrain generating algorithm
+"""
+Terrain generating algorithm
+"""
 
-from math import cos, pi, sqrt
-from utils import FastRandom, fast_floor, fast_abs
+# Imports, sorted alphabetically.
+
+# Python packages
+from math import sqrt
+
+# Third-party packages
+# Nothing for now
+
+# Modules from this project
 from blocks import *
+from utils import FastRandom, fast_floor, fast_abs
 
-# Imporved Perlin Noise based on Improved Noise reference implementation by Ken Perlin
+
+# Improved Perlin Noise based on Improved Noise reference implementation by Ken Perlin
 class PerlinNoise(object):
     def __init__(self, seed):
         rand = FastRandom(seed)
@@ -313,11 +324,3 @@ class TerrainGenerator(object):
 
     def cave_density(self, x, y, z):
         return self.cave_gen.fBm(x * 0.02, y * 0.02, z * 0.02)
-
-
-
-
-    
-
-
-
