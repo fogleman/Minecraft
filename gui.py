@@ -11,10 +11,7 @@ from crafting import *
 import globals
 from inventory import *
 from items import *
-from utils import load_image, image_sprite, hidden_image_sprite
-
-pyglet.font.add_file('resources/fonts/Chunkfive.ttf')
-pyglet.font.load('ChunkFive Roman')
+from utils import load_image, image_sprite, hidden_image_sprite, get_block_icon
 
 class Rectangle(object):
     def __init__(self, x, y, width, height):
@@ -45,7 +42,7 @@ class Rectangle(object):
     @size.setter
     def size(self, size):
         self.width, self.height = size
-	
+
     @property
     def center(self):
         return self.x + self.width / 2, self.y + self.height / 2
@@ -59,7 +56,7 @@ class Rectangle(object):
         return (self.x + self.width, self.y + self.height)
 
 class Button(pyglet.event.EventDispatcher, Rectangle):
-    def __init__(self, parent, x, y, width, height, image=None, image_highlighted=None, caption=None, batch=None, group=None, label_group=None, font_name='Arial'):
+    def __init__(self, parent, x, y, width, height, image=None, image_highlighted=None, caption=None, batch=None, group=None, label_group=None, font_name=globals.DEFAULT_FONT):
         super(Button, self).__init__(x, y, width, height)
         parent.push_handlers(self)
         self.batch, self.group, self.label_group = batch, group, label_group
@@ -69,7 +66,7 @@ class Button(pyglet.event.EventDispatcher, Rectangle):
         self.label = Label(str(caption), font_name, 12, anchor_x='center', anchor_y='center',
             color=(255, 255, 255, 255), batch=self.batch, group=self.label_group) if caption else None
         self.position = x, y
-	
+
     @property
     def position(self):
         return self.x, self.y
@@ -99,11 +96,11 @@ class Button(pyglet.event.EventDispatcher, Rectangle):
     def draw_label(self):
         if self.label:
             self.label.draw()
-            
+
     def on_mouse_click(self, x, y, button, modifiers):
         if self.hit_test(x, y):
             self.dispatch_event('on_click')
-        
+
 Button.register_event_type('on_click')
 
 class Control(object):
@@ -151,13 +148,6 @@ class AbstractInventory(Control):
         self._current_index = value % self.max_items
         self.update_current()
 
-    def get_block_icon(self, block):
-        block_icon = load_image(globals.ICONS_PATH, block.id.filename() + ".png") or (block.group or self.model.group).texture.get_region(
-            int(block.texture_data[2*8] * globals.TILESET_SIZE) * self.icon_size,
-            int(block.texture_data[2*8+1] * globals.TILESET_SIZE) * self.icon_size, self.icon_size,
-            self.icon_size)
-        return block_icon
-
 class ItemSelector(AbstractInventory):
     def __init__(self, parent, player, model, *args, **kwargs):
         super(ItemSelector, self).__init__(parent, *args, **kwargs)
@@ -197,7 +187,7 @@ class ItemSelector(AbstractInventory):
             if not item:
                 x += (self.icon_size * 0.5) + 3
                 continue
-            icon = image_sprite(self.get_block_icon(item.get_object()), self.batch, self.group)
+            icon = image_sprite(get_block_icon(item.get_object(), self.icon_size, self.model), self.batch, self.group)
             icon.scale = 0.5
             icon.x = x
             icon.y = self.frame.y + 3
@@ -205,7 +195,7 @@ class ItemSelector(AbstractInventory):
             item.quickslots_y = icon.y
             x += (self.icon_size * 0.5) + 3
             amount_label = pyglet.text.Label(
-                str(item.amount), font_name='Arial', font_size=9,
+                str(item.amount), font_name=globals.DEFAULT_FONT, font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
                 color=item.get_object().amount_label_color, batch=self.batch,
                 group=self.labels_group)
@@ -218,7 +208,7 @@ class ItemSelector(AbstractInventory):
             self.current_block_label.delete()
         if hasattr(self.get_current_block_item(False), 'quickslots_x') and hasattr(self.get_current_block_item(False), 'quickslots_y'):
             self.current_block_label = pyglet.text.Label(
-                self.get_current_block_item(False).name, font_name='Arial', font_size=9,
+                self.get_current_block_item(False).name, font_name=globals.DEFAULT_FONT, font_size=9,
                 x=self.get_current_block_item(False).quickslots_x + 0.25 * self.icon_size, y=self.get_current_block_item(False).quickslots_y - 20,
                 anchor_x='center', anchor_y='bottom',
                 color=(255, 255, 255, 255), batch=self.batch,
@@ -353,7 +343,7 @@ class InventorySelector(AbstractInventory):
                     x = self.frame.x + 7
                     y -= (self.icon_size * 0.5) + 3
                 continue
-            icon = image_sprite(self.get_block_icon(item.get_object()), self.batch, self.group)
+            icon = image_sprite(get_block_icon(item.get_object(), self.icon_size, self.model), self.batch, self.group)
             icon.scale = 0.5
             icon.x = x
             icon.y = y - icon.height
@@ -362,7 +352,7 @@ class InventorySelector(AbstractInventory):
                 x = self.frame.x + 7
                 y -= (self.icon_size * 0.5) + 3
             amount_label = pyglet.text.Label(
-                str(item.amount), font_name='Arial', font_size=9,
+                str(item.amount), font_name=globals.DEFAULT_FONT, font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
                 color=item.get_object().amount_label_color, batch=self.batch,
                 group=self.amount_labels_group)
@@ -375,7 +365,7 @@ class InventorySelector(AbstractInventory):
             if not item:
                 x += (self.icon_size * 0.5) + 3
                 continue
-            icon = image_sprite(self.get_block_icon(item.get_object()), self.batch, self.group)
+            icon = image_sprite(get_block_icon(item.get_object(), self.icon_size, self.model), self.batch, self.group)
             icon.scale = 0.5
             icon.x = x
             icon.y = self.frame.y + 7
@@ -383,7 +373,7 @@ class InventorySelector(AbstractInventory):
             item.quickslots_y = icon.y
             x += (self.icon_size * 0.5) + 3
             amount_label = pyglet.text.Label(
-                str(item.amount), font_name='Arial', font_size=9,
+                str(item.amount), font_name=globals.DEFAULT_FONT, font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
                 color=item.get_object().amount_label_color, batch=self.batch,
                 group=self.amount_labels_group)
@@ -398,12 +388,12 @@ class InventorySelector(AbstractInventory):
             if not item:
                 y -= (self.icon_size * 0.5) + 3
                 continue
-            icon = image_sprite(self.get_block_icon(item.get_object()), self.batch, self.group)
+            icon = image_sprite(get_block_icon(item.get_object(), self.icon_size, self.model), self.batch, self.group)
             icon.scale = 0.5
             icon.x = x
             icon.y = y
             amount_label = pyglet.text.Label(
-                str(item.amount), font_name='Arial', font_size=9,
+                str(item.amount), font_name=globals.DEFAULT_FONT, font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
                 color=item.get_object().amount_label_color, batch=self.batch,
                 group=self.amount_labels_group)
@@ -429,7 +419,7 @@ class InventorySelector(AbstractInventory):
                     x = self.frame.x + (165 if self.mode == 0 else 72)
                     y -= (self.icon_size * 0.5) + 3
                 continue
-            icon = image_sprite(self.get_block_icon(item.get_object()), self.batch, self.group)
+            icon = image_sprite(get_block_icon(item.get_object(), self.icon_size, self.model), self.batch, self.group)
             icon.scale = 0.5
             icon.x = x
             icon.y = y - icon.height
@@ -440,7 +430,7 @@ class InventorySelector(AbstractInventory):
                 x = self.frame.x + (165 if self.mode == 0 else 72)
                 y -= (self.icon_size * 0.5) + 3
             amount_label = pyglet.text.Label(
-                str(item.amount), font_name='Arial', font_size=9,
+                str(item.amount), font_name=globals.DEFAULT_FONT, font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
                 color=item.get_object().amount_label_color, batch=self.batch,
                 group=self.amount_labels_group)
@@ -557,7 +547,7 @@ class InventorySelector(AbstractInventory):
             return
         self.crafting_outcome = item
 
-        self.crafting_outcome_icon = image_sprite(self.get_block_icon(item.get_object()), self.batch, self.group)
+        self.crafting_outcome_icon = image_sprite(get_block_icon(item.get_object(), self.icon_size, self.model), self.batch, self.group)
         inventory_rows = floor(self.max_items / 9)
         inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
         quick_slots_y = self.frame.y + 4
@@ -571,7 +561,7 @@ class InventorySelector(AbstractInventory):
             self.crafting_outcome_icon.y = inventory_y + inventory_height + 80
             self.crafting_outcome_icon.x = self.frame.x + 225
         self.crafting_outcome_label = pyglet.text.Label(
-            str(item.amount), font_name='Arial', font_size=9,
+            str(item.amount), font_name=globals.DEFAULT_FONT, font_size=9,
             x= self.crafting_outcome_icon.x + 3, y= self.crafting_outcome_icon.y, anchor_x='left', anchor_y='bottom',
             color=item.get_object().amount_label_color,
             group=self.group)
@@ -586,7 +576,7 @@ class InventorySelector(AbstractInventory):
             return
         self.selected_item = item
 
-        self.selected_item_icon = image_sprite(self.get_block_icon(item.get_object()), self.batch, self.group)
+        self.selected_item_icon = image_sprite(get_block_icon(item.get_object(), self.icon_size, self.model), self.batch, self.group)
         self.selected_item_icon.scale = 0.4
 
     def remove_selected_item(self):
