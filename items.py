@@ -1,9 +1,7 @@
 from blocks import *
 import globals
 
-# items and blocks share a common id table
-# ids of items should be >= ITEM_ID_MIN
-ITEM_ID_MIN = 256
+
 
 # From MinecraftWiki
 # Items are objects which do not exist outside of the player's inventory and hands
@@ -45,7 +43,7 @@ class ItemStack(object):
         self.amount = amount
         self.durability = durability
         self.data = data
-        if type >= ITEM_ID_MIN:
+        if type >= globals.ITEM_ID_MIN:
             self.max_stack_size = globals.ITEMS_DIR[type].max_stack_size
         else:
             self.max_stack_size = globals.BLOCKS_DIR[type].max_stack_size
@@ -77,7 +75,7 @@ class ItemStack(object):
         return self.get_object().name
 
     def get_object(self):
-        if self.id >= ITEM_ID_MIN:
+        if self.id >= globals.ITEM_ID_MIN:
             return globals.ITEMS_DIR[self.id]
         else:
             return globals.BLOCKS_DIR[self.id]
