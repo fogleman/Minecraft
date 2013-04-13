@@ -8,7 +8,11 @@ import re
 
 # Modules from this project
 from blocks import BlockID
+import pyglet  # for screencap command
+import os #  also for screencap command
+import datetime
 
+now = datetime.datetime.now()
 
 COMMAND_HANDLED = True
 COMMAND_NOT_HANDLED = None
@@ -135,3 +139,17 @@ class GetIDCommand(Command):
             print("ID: %s" % current.id)
         else:
             print("ID: None")
+
+class TakeScreencapCommand(Command):
+    command = r"^screencap$"
+    help_text = "screencap: saves current screen to a file"
+
+    def execute(self, *args, **kwargs):
+        now = datetime.datetime.now()
+        dt = datetime.datetime(now.year, now.month, now.day, now.hour, now.minute, now.second)
+        st = dt.strftime('%Y-%m-%d_%H.%M.%S')
+        filename = str(st) + '.png'
+        if not os.path.exists('screencaptures'):
+            os.makedirs('screencaptures')
+
+        pyglet.image.get_buffer_manager().get_color_buffer().save('screencaptures/' + filename)

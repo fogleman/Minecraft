@@ -597,6 +597,7 @@ class OakWoodBlock(WoodBlock):
     hardness = 2
     id = 17,0
     name = "Oak wood"
+    burning_time = 15
 
 
 class OakBranchBlock(WoodBlock):
@@ -620,6 +621,7 @@ class JungleWoodBlock(WoodBlock):
     hardness = 2
     id = 17,1
     name = "Jungle wood"
+    burning_time = 15
 
 
 class BirchWoodBlock(WoodBlock):
@@ -631,6 +633,7 @@ class BirchWoodBlock(WoodBlock):
     id = 17,2
     amount_label_color = 0, 0, 0, 255
     name = "Birch wood"
+    burning_time = 15
 
 
 class CactusBlock(Block):
@@ -1070,11 +1073,12 @@ amount_label_color = 0, 0, 0, 255
 
 # moreplants
 class RoseBlock(Block):
-    top_texture = 0, -15
-    bottom_texture = 10, 0
+    top_texture = -1, -1
+    bottom_texture = -1, -1
     side_texture = 10, 0
-    hardness = .08
+    hardness = 0.0
     density = 0.8
+    transparent = True
     id = 38
     name = "Rose"
 amount_label_color = 0, 0, 0, 255
