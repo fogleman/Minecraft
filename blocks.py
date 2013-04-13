@@ -1119,14 +1119,18 @@ amount_label_color = 0, 0, 0, 255
 
 # moreplants
 class RoseBlock(Block):
+    width = 0.5
+    height = 0.7
     top_texture = -1, -1
     bottom_texture = -1, -1
     side_texture = 10, 0
+    vertex_mode = G.VERTEX_CROSS
     hardness = 0.0
-    density = 0.8
     transparent = True
+    density = 0.3
     id = 38
     name = "Rose"
+    break_sound = sounds.leaves_break
     amount_label_color = 0, 0, 0, 255
 
 class ReedBlock(Block):
@@ -1135,6 +1139,7 @@ class ReedBlock(Block):
     side_texture = 10, 1
     hardness = 0.0
     transparent = True
+    vertex_mode = G.VERTEX_CROSS
     id = 83
     density = 0.8
     name = "Reed"
