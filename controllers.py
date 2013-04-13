@@ -13,7 +13,7 @@ from gui import *
 from model import *
 from player import *
 from savingsystem import *
-from commands import CommandParser, CommandException, UnknownCommandException
+from commands import CommandParser, COMMAND_HANDLED, COMMAND_ERROR_COLOR, CommandException, UnknownCommandException
 from utils import load_image, image_sprite
 
 # Define a simple function to create GLfloat arrays of floats:
@@ -194,10 +194,18 @@ class GameController(Controller):
         self.inventory_list = InventorySelector(self, self.player, self.model)
         self.item_list.on_resize(self.window.width, self.window.height)
         self.inventory_list.on_resize(self.window.width, self.window.height)
-        self.text_input = TextWidget(self, '', 0, self.window.height, 100,
-                                     visible=False,
-                                     key_released=self.text_input_callback,
-                                     anchor_style=globals.ANCHOR_LEFT|globals.ANCHOR_RIGHT|globals.ANCHOR_BOTTOM)
+        self.text_input = TextWidget(self.window, '',
+                                     0, 0,
+                                     self.window.width,
+                                     visible=False)
+        self.text_input.push_handlers(on_toggled=self.on_text_input_toggled, key_released=self.text_input_callback)
+        self.chat_box = TextWidget(self.window, '',
+                                   0, self.text_input.y + self.text_input.height + 50,
+                                   self.window.width / 2, height=min(300, self.window.height / 3),
+                                   visible=False, multi_line=True, readonly=True,
+                                   font_size=14,
+                                   text_color=(255, 255, 255, 255),
+                                   background_color=(64,64,64,200))
         self.command_parser = CommandParser()
         self.camera = Camera3D(target=self.player)
         if globals.HUD_ENABLED:
@@ -357,7 +365,9 @@ class GameController(Controller):
     def on_resize(self, width, height):
         if globals.HUD_ENABLED:
             self.label.y = height - 10
-        self.text_input._on_resize()
+        self.text_input.resize(x=0, y=0, width=self.window.width)
+        self.chat_box.resize(x=0, y=self.text_input.y + self.text_input.height + 50,
+                             width=self.window.width / 2, height=min(300, self.window.height/3))
 
     def set_3d(self):
         width, height = self.window.get_size()
@@ -404,6 +414,7 @@ class GameController(Controller):
             self.item_list.draw()
             self.inventory_list.draw()
         self.text_input.draw()
+        self.chat_box.draw()
 
     def show_cracks(self, hit_block, vertex_data):
         if self.block_damage:  # also show the cracks
@@ -447,15 +458,31 @@ class GameController(Controller):
                len(self.model._shown), len(self.model))
         self.label.draw()
 
-    def text_input_callback(self, text_input, symbol, modifier):
+    def write_line(self, text, **kwargs):
+        self.chat_box.write_line(text, **kwargs)
+
+    def text_input_callback(self, symbol, modifier):
         if symbol == globals.VALIDATE_KEY:
-            txt = text_input.text.replace('\n', '')
+            txt = self.text_input.text.replace('\n', '')
             try:
-                self.command_parser.execute(txt, controller=self, user=self.player, world=self.model)
-                self.toggle_text_input()
+                ex = self.command_parser.execute(txt, controller=self, user=self.player, world=self.model)
+                if ex != COMMAND_HANDLED:
+                    # Not a command
+                    self.write_line("> %s" % txt, color=(255, 255, 255, 255))
+                self.text_input.clear()
             except CommandException, e:
-                print e
+                error = str(e)
+                self.write_line(error, color=COMMAND_ERROR_COLOR)
             return pyglet.event.EVENT_HANDLED
+
+    def on_text_input_toggled(self):
+        self.chat_box.toggle()
+        if self.chat_box.visible:
+            self.chat_box.focused = True # Allow scrolling
+            self.window.push_handlers(self.chat_box)
+        else:
+            self.chat_box.focused = False
+            self.window.remove_handlers(self.chat_box)
 
     def toggle_text_input(self):
         self.text_input.toggle()

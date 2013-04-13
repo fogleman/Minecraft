@@ -106,30 +106,26 @@ class Button(pyglet.event.EventDispatcher, Rectangle):
         
 Button.register_event_type('on_click')
 
-class Control(object):
-    def __init__(self, parent, anchor_style=globals.ANCHOR_NONE, visible=True, *args, **kwargs):
+
+class Control(pyglet.event.EventDispatcher):
+    def __init__(self, parent, visible=True, *args, **kwargs):
         self.parent = parent
         self.visible = visible
-        self.anchor_style = anchor_style
-        self._anchor_points = (None,) * 4
+        self.focused = False
+        self.x, self.y, self.width, self.height = 0, 0, 0, 0
 
     def toggle(self):
         self.visible = not self.visible
+        self.focused = not self.focused
         self._on_toggled()
+        self.dispatch_event('on_toggled')
 
     def draw(self):
         if self.visible:
             self._on_draw()
 
-    def _on_resize(self):
-        pw, ph = self.parent.window.get_size()
-        al, at, ar, ab = None, None, None, None
-        if (self.anchor_style & globals.ANCHOR_RIGHT) == globals.ANCHOR_RIGHT:
-            ar = pw
-        if (self.anchor_style & globals.ANCHOR_BOTTOM) == globals.ANCHOR_BOTTOM:
-            ab = 0
-        # TODO: Implement ANCHOR_LEFT and ANCHOR_TOP
-        self._anchor_points = (al, at, ar, ab)
+    def focus(self):
+        self.focused = True
 
     def _on_toggled(self):
         pass
@@ -137,10 +133,13 @@ class Control(object):
     def _on_draw(self):
         pass
 
+Control.register_event_type('on_toggled')
+Control.register_event_type('key_released')
+
 class AbstractInventory(Control):
     def __init__(self, parent, *args, **kwargs):
+        super(AbstractInventory, self).__init__(parent, *args, **kwargs)
         self._current_index = 0
-        self.parent = parent
 
     @property
     def current_index(self):
@@ -728,34 +727,61 @@ class InventorySelector(AbstractInventory):
             self.crafting_outcome_label.draw()
 
 
+# TODO: This is a total hack. The issue seen here: https://code.google.com/p/pyglet/issues/detail?id=471
+# Makes it impossible to set styles to a FormattedDocument (font family, font size, color, etc) because if the document
+# text ever becomes empty, exceptions are thrown. There is a fix below from 2012 but it apparently does not exist
+# in 1.1.4? So I apply it by rewriting the RunIterator.__getitem__ method.
+# https://code.google.com/p/pyglet/source/diff?spec=svn64e3a450c83bd2245f047bb96fdacd79208d8b6a&r=64e3a450c83bd2245f047bb96fdacd79208d8b6a&format=side&path=/pyglet/text/runlist.py
+def __run_iterator_fix(self, index):
+    while index >= self.end and index > self.start:
+        # condition has special case for 0-length run (fixes issue 471)
+        self.start, self.end, self.value = self.next()
+    return self.value
+from pyglet.text.runlist import RunIterator
+RunIterator.__getitem__ = __run_iterator_fix
+
+
 class TextWidget(Control):
     """
     Variation of this example: http://www.pyglet.org/doc/programming_guide/text_input.py
     """
-    def __init__(self, parent, text, x, y, width, multi_line=False, key_released=None, *args, **kwargs):
+    def __init__(self, parent, text, x, y, width, height=None, multi_line=False,
+                 font_size=12,
+                 text_color=(0, 0, 0, 255),
+                 background_color=(200, 200, 200, 128),
+                 readonly=False,
+                 *args, **kwargs):
         super(TextWidget, self).__init__(parent, *args, **kwargs)
         self.batch = pyglet.graphics.Batch()
         self.vertex_list = None
-        self.document = pyglet.text.document.UnformattedDocument(text)
+        blank_text = text or True
+        self.document = pyglet.text.document.FormattedDocument(text if not blank_text else ' ')
         self.document.set_style(0, len(self.document.text),
-                                dict(color=(0, 0, 0, 255))
+                                dict(color=text_color,
+                                     font_size=font_size,
+                                     font_name="ChunkFive Roman")
         )
-        font = self.document.get_font()
+        font = self.document.get_font(0)
+        if blank_text:
+            self.clear()
         self.padding = 10
-        self.height = (font.ascent - font.descent) + self.padding
-        self.x, self.y, self.width = x, y + self.height, width
+        self.height = height or (font.ascent - font.descent) + self.padding
+        self.x, self.y, self.width = x, y, width
+        self.multi_line = multi_line
+        self.background_color = background_color
 
         self.layout = pyglet.text.layout.IncrementalTextLayout(
-            self.document, self.width, self.height, multiline=False, batch=self.batch)
+            self.document, self.width, self.height, multiline=self.multi_line, batch=self.batch)
         self.caret = pyglet.text.caret.Caret(self.layout)
+        self.caret.visible = not readonly
+        self.readonly = readonly
 
         self.layout.x = x
         self.layout.y = y
-        self._on_resize()
-        self._key_released = key_released
-        self.multi_line = multi_line
+        self.resize()
 
     def focus(self):
+        super(TextWidget, self).focus()
         self.caret.visible = True
         self.caret.mark = 0
         self.caret.position = len(self.document.text)
@@ -772,13 +798,31 @@ class TextWidget(Control):
     def text(self, text):
         self.document.text = text
 
-    def _on_resize(self):
-        super(TextWidget, self)._on_resize()
-        # Check if anchor points have been set
-        if any(self._anchor_points):
-            al, at, ar, ab = self._anchor_points
-            self.width = ar
-            self.y = ab
+    def clear(self):
+        self.text = ''
+
+    def write(self, text, **kwargs):
+        """
+        Write the text to the widget.
+        """
+        start = len(self.text)
+        end = start + len(text)
+        self.document.insert_text(start, text)
+        self.document.set_style(start, end, kwargs)
+        if self.multi_line:
+            self.layout.view_y = -self.layout.content_height # Scroll to the bottom
+
+    def write_line(self, text, **kwargs):
+        """
+        Write the text followed by a newline. Only effective if multi_line is True.
+        """
+        self.write("%s\n" % text, **kwargs)
+
+    def resize(self, x=None, y=None, width=None, height=None):
+        self.x = x or self.x
+        self.y = y or self.y
+        self.width = width or self.width
+        self.height = height or self.height
         # Recreate the bounding box
         self.rectangle = Rectangle(self.x - self.padding, self.y - self.padding,
                                    self.width + self.padding, self.height + self.padding)
@@ -791,14 +835,14 @@ class TextWidget(Control):
             self.vertex_list.delete()
         self.vertex_list = self.batch.add(4, pyglet.gl.GL_QUADS, None,
                                           ('v2i', self.rectangle.vertex_list()),
-                                          ('c4B', [200, 200, 200, 128] * 4)
+                                          ('c4B', self.background_color * 4)
         )
 
     def _on_draw(self):
         self.batch.draw()
 
     def _on_toggled(self):
-        self.parent.window.set_exclusive_mouse(not self.visible)
+        self.parent.set_exclusive_mouse(not self.visible)
 
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         if self.visible:
@@ -827,12 +871,21 @@ class TextWidget(Control):
             return pyglet.event.EVENT_HANDLED
 
     def on_key_release(self, symbol, modifier):
-        if self.visible:
+        if self.visible and not self.readonly:
             if symbol == globals.ESCAPE_KEY:
                 self.toggle()
-                self.parent.window.pop_handlers()
-            if self._key_released:
-                ret = self._key_released(self, symbol, modifier)
-                if ret:
-                    return ret
+                self.parent.pop_handlers()
+            dispatched = self.dispatch_event('key_released', symbol, modifier)
+            if dispatched is not None:
+                return dispatched
             return pyglet.event.EVENT_HANDLED
+
+    def on_mouse_release(self, x, y, button, modifiers):
+        if self.visible:
+            return pyglet.event.EVENT_HANDLED
+
+    def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
+        if self.visible and self.focused and self.multi_line:
+            self.layout.view_y += scroll_y * 15
+            return pyglet.event.EVENT_HANDLED
+

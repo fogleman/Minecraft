@@ -1,9 +1,12 @@
 import re
 from blocks import BlockID
+from items import get_item
 
 
 COMMAND_HANDLED = True
 COMMAND_NOT_HANDLED = None
+COMMAND_INFO_COLOR = (41, 125, 255, 255)
+COMMAND_ERROR_COLOR = (255, 0, 0, 255)
 
 
 class CommandException(Exception):
@@ -88,6 +91,12 @@ class Command(object):
     def execute(self, *args, **kwargs):
         pass
 
+    def send_info(self, text):
+        self.controller.write_line(text, color=COMMAND_INFO_COLOR)
+
+    def send_error(self, text):
+        self.controller.write_line(text, color=COMMAND_ERROR_COLOR)
+
 
 class GiveBlockCommand(Command):
     command = r"^give (\d+(?:[\.,]\d+)?)(?:\s+(\d+))?$"
@@ -95,7 +104,12 @@ class GiveBlockCommand(Command):
 
     def execute(self, block_id, amount=1, *args, **kwargs):
         try:
-            self.user.inventory.add_item(BlockID(block_id), quantity=int(amount))
+            bid = BlockID(block_id)
+            item_or_block = get_item(float("%s.%s" % (bid.main, bid.sub)))
+            self.send_info("Giving %s of '%s'." % (amount, item_or_block.name))
+            self.user.inventory.add_item(bid, quantity=int(amount))
+            self.controller.item_list.update_items()
+            self.controller.inventory_list.update_items()
         except KeyError:
             raise CommandException(self.command_text, message="ID %s unknown." % block_id)
         except ValueError:
@@ -110,6 +124,7 @@ class SetTimeCommand(Command):
         try:
             tod = int(time)
             if 0 <= tod <= 24:
+                self.send_info("Setting time to %s" % tod)
                 self.controller.time_of_day = tod
             else:
                 raise ValueError
@@ -124,6 +139,6 @@ class GetIDCommand(Command):
     def execute(self, *args, **kwargs):
         current = self.controller.item_list.get_current_block()
         if current:
-            print("ID: %s" % current.id)
+            self.send_info("ID: %s" % current.id)
         else:
-            print("ID: None")
+            self.send_info("ID: None")

@@ -18,6 +18,18 @@ ITEM_ID_MIN = 256
 # * Weapons
 # * Armor
 
+def get_item(item_or_block_id):
+    """
+    Get the Block or Item with the specified id, which must either be an instance
+    of BlockID, or a string format BlockID knows how to parse.
+    """
+    if not isinstance(item_or_block_id, BlockID):
+        item_or_block_id = BlockID(str(item_or_block_id))
+    if item_or_block_id.main >= ITEM_ID_MIN:
+        return globals.ITEMS_DIR[item_or_block_id]
+    else:
+        return globals.BLOCKS_DIR[item_or_block_id]
+
 class Item(object):
     id = None
     max_stack_size = 0
@@ -45,10 +57,7 @@ class ItemStack(object):
         self.amount = amount
         self.durability = durability
         self.data = data
-        if type >= ITEM_ID_MIN:
-            self.max_stack_size = globals.ITEMS_DIR[type].max_stack_size
-        else:
-            self.max_stack_size = globals.BLOCKS_DIR[type].max_stack_size
+        self.max_stack_size = get_item(type).max_stack_size
 
     # for debugging
     def __repr__(self):
@@ -77,10 +86,7 @@ class ItemStack(object):
         return self.get_object().name
 
     def get_object(self):
-        if self.id >= ITEM_ID_MIN:
-            return globals.ITEMS_DIR[self.id]
-        else:
-            return globals.BLOCKS_DIR[self.id]
+        return get_item(self.id)
 
 class CoalItem(Item):
     id = 263
