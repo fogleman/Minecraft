@@ -149,6 +149,7 @@ TERRAIN = TERRAIN_CHOICES[DEFAULT_TERRAIN_CHOICE]
 # Graphical rendering
 #
 
+FULLSCREEN = False
 WINDOW_WIDTH = 850  # Screen width (in pixels)
 WINDOW_HEIGHT = 480  # Screen height (in pixels)
 
