@@ -1129,7 +1129,6 @@ class ReedBlock(Block):
     amount_label_color = 0, 0, 0, 255
 
 class PotatoBlock(Block):
-    height = 0.5
     top_texture = -1, -1
     bottom_texture = -1, -1
     side_texture = 10, 3
@@ -1143,7 +1142,6 @@ class PotatoBlock(Block):
     amount_label_color = 0, 0, 0, 255
 
 class CarrotBlock(Block):
-    height = 0.5
     top_texture = -1, -1
     bottom_texture = -1, -1
     side_texture = 10, 2
