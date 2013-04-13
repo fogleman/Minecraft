@@ -1,4 +1,5 @@
 from gui import *
+from savingsystem import *
 
 class View(pyglet.event.EventDispatcher):
     def __init__(self, controller):
@@ -64,13 +65,23 @@ class MainMenuView(View):
         self.frame = image_sprite(image, self.batch, 1)
         button_image = load_image('resources', 'textures', 'button.png')
         button_highlighted = load_image('resources', 'textures', 'button_highlighted.png')
-        self.start_game = Button(self, 0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Start game", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
-        self.start_game.push_handlers(on_click=self.controller.start_game_func)
+#            open_world(self, globals.game_dir, globals.SAVE_FILENAME)
+        self.buttons = []
+        if globals.DISABLE_SAVE \
+                and world_exists(globals.game_dir, globals.SAVE_FILENAME):
+            self.continue_game = Button(self, 0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Continue...", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
+            self.continue_game.push_handlers(on_click=self.controller.start_game_func)
+            self.buttons.append(self.continue_game)
+            
+        self.new_game = Button(self, 0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="New game", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
+        self.new_game.push_handlers(on_click=self.controller.new_game_func)
+        self.buttons.append(self.new_game)
         self.game_options = Button(self, 0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Options...", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
         self.game_options.push_handlers(on_click=self.controller.game_options_func)
+        self.buttons.append(self.game_options)
         self.exit_game = Button(self, 0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Exit game", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
         self.exit_game.push_handlers(on_click=self.controller.exit_game_func)
-        self.buttons = [self.start_game, self.game_options, self.exit_game]
+        self.buttons.append(self.exit_game)
         self.label = Label(globals.APP_NAME, font_name='ChunkFive Roman', font_size=50, x=width/2, y=self.frame.y + self.frame.height,
             anchor_x='center', anchor_y='top', color=(255, 255, 255, 255), batch=self.batch,
             group=self.labels_group)
@@ -84,13 +95,11 @@ class MainMenuView(View):
         self.frame.x, self.frame.y = (width - self.frame.width) / 2, (height - self.frame.height) / 2
         self.label.y = self.frame.y + self.frame.height - 55
         self.label.x = width / 2
-        button_x = self.frame.x + (self.frame.width - self.start_game.width) / 2
-        button_y = self.frame.y + (self.frame.height - self.start_game.height) / 2 + 10
-        self.start_game.position = button_x, button_y
-        button_y -= self.start_game.height + 20
-        self.game_options.position = button_x, button_y
-        button_y -= self.game_options.height + 20
-        self.exit_game.position = button_x, button_y
+        button_x, button_y = 0, self.frame.y + (self.frame.height) / 2 + 10
+        for button in self.buttons:
+            button_x = self.frame.x + (self.frame.width - button.width) / 2
+            button.position = button_x, button_y
+            button_y -= button.height + 10
         
         
 class OptionsView(View):

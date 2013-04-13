@@ -66,6 +66,12 @@ class MainMenuController(Controller):
         self.window.switch_controller(GameController(self.window))
         return pyglet.event.EVENT_HANDLED
 
+    def new_game_func(self):
+        if globals.DISABLE_SAVE:
+            remove_world(globals.game_dir, globals.SAVE_FILENAME)
+        self.window.switch_controller(GameController(self.window))
+        return pyglet.event.EVENT_HANDLED
+
     def exit_game_func(self):
         pyglet.app.exit()
         return pyglet.event.EVENT_HANDLED

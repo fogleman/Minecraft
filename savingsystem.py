@@ -58,6 +58,12 @@ def world_exists(game_dir, world=None):
     return os.path.lexists(os.path.join(game_dir, world))
 
 
+def remove_world(game_dir, world=None):
+    if world is None: world = "world"
+    if world_exists(game_dir, world):
+        import shutil
+        shutil.rmtree(os.path.join(game_dir, world))
+
 @performance_info
 def open_world(gamecontroller, game_dir, world=None):
     if world is None: world = "world"
