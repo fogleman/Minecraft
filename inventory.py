@@ -22,7 +22,6 @@ class Inventory(object):
         else:
             max_size = globals.BLOCKS_DIR[item_id].max_stack_size
 
-
         retval = False
         while quantity > 0:
             # can't find an unfilled slot
