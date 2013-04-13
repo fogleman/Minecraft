@@ -85,11 +85,12 @@ def open_world(gamecontroller, game_dir, world=None):
         blocks = gamecontroller.model
         SECTOR_SIZE = G.SECTOR_SIZE
         BLOCKS_DIR = G.BLOCKS_DIR
+        print bool(BlockID(0, 0))
         with open(os.path.join(game_dir, world, "blocks.dat"), "rb") as f:
             for i in xrange(struct.unpack("Q",f.read(8))[0]):
                 bx, by, bz, blockid, dataid = structvecBB.unpack(f.read(8))
                 position = bx,by,bz
-                blocks[position] = BLOCKS_DIR[BlockID(blockid, dataid)]
+                blocks[position] = BLOCKS_DIR[(blockid, dataid)]
                 sectors[(bx/SECTOR_SIZE, 0, bz/SECTOR_SIZE)].append(position)
     else:
         file = open(os.path.join(game_dir, world, "blocks.pkl"), "rb")
