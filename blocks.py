@@ -6,7 +6,6 @@
 from __future__ import unicode_literals
 
 # Python packages
-from math import sqrt
 import os
 
 # Third-party packages
@@ -146,7 +145,7 @@ class Block(object):
     top_texture = ()
     bottom_texture = ()
     side_texture = ()
-    crossed_sides = False
+    vertex_mode = G.VERTEX_CUBE
     group = None  # The texture (group) the block renders from
     texture_name = None  # A list of block faces, named what Mojang names their blocks/"file".png
 
@@ -198,21 +197,24 @@ class Block(object):
     def get_texture_data(self):
         textures = self.top_texture + self.bottom_texture \
                    + self.side_texture * 2
-        if not self.crossed_sides:
+        if self.vertex_mode != G.VERTEX_CROSS:
             textures += (self.side_texture * 2)
         return list(textures)
 
     def get_vertices(self, x, y, z):
         w = self.width / 2.0
         h = self.height / 2.0
+
         y_offset = (1.0 - self.height) / 2
         y -= y_offset
+
         xm = x - w
         xp = x + w
         ym = y - h
         yp = y + h
         zm = z - w
         zp = z + w
+
         ret = []
         if len(self.top_texture) > 0 or len(self.side_texture) == 0:
             ret.extend([
@@ -222,10 +224,21 @@ class Block(object):
             ret.extend([
                 xm, ym, zm,   xp, ym, zm,   xp, ym, zp,   xm, ym, zp  # bottom
             ])
-        if self.crossed_sides:
+        if self.vertex_mode == G.VERTEX_CROSS:
             ret.extend([
                 xm, ym, zm,   xp, ym, zp,   xp, yp, zp,   xm, yp, zm,
                 xm, ym, zp,   xp, ym, zm,   xp, yp, zm,   xm, yp, zp,
+            ])
+        elif self.vertex_mode == G.VERTEX_GRID:
+            xm2 = x - w / 2.0
+            xp2 = x + w / 2.0
+            zm2 = z - w / 2.0
+            zp2 = z + w / 2.0
+            ret.extend([
+                xm2, ym, zm,   xm2, ym, zp,   xm2, yp, zp,   xm2, yp, zm,  # left
+                xp2, ym, zp,   xp2, ym, zm,   xp2, yp, zm,   xp2, yp, zp,  # right
+                xm, ym, zp2,   xp, ym, zp2,   xp, yp, zp2,   xm, yp, zp2,  # front
+                xp, ym, zm2,   xm, ym, zm2,   xm, yp, zm2,   xp, yp, zm2,  # back
             ])
         else:
             ret.extend([
@@ -777,7 +790,7 @@ class YFlowersBlock(Block):
     top_texture = 6, 6
     bottom_texture = -1, -1
     side_texture = 6, 5
-    crossed_sides = True
+    vertex_mode = G.VERTEX_CROSS
     hardness = 0.0
     transparent = True
     density = 0.3
@@ -1130,12 +1143,11 @@ class ReedBlock(Block):
     amount_label_color = 0, 0, 0, 255
 
 class PotatoBlock(Block):
-    width = 1.0 / sqrt(2)
     height = 0.5
     top_texture = -1, -1
     bottom_texture = -1, -1
     side_texture = 10, 3
-    crossed_sides = True
+    vertex_mode = G.VERTEX_GRID
     hardness = 0.0
     transparent = True
     id = 142
@@ -1145,12 +1157,11 @@ class PotatoBlock(Block):
     amount_label_color = 0, 0, 0, 255
 
 class CarrotBlock(Block):
-    width = 1.0 / sqrt(2)
     height = 0.5
     top_texture = -1, -1
     bottom_texture = -1, -1
     side_texture = 10, 2
-    crossed_sides = True
+    vertex_mode = G.VERTEX_GRID
     hardness = 0.0
     transparent = True
     id = 141
