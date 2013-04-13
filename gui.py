@@ -448,7 +448,12 @@ class InventorySelector(AbstractInventory):
                 self.set_crafting_outcome(outcome)
             elif self.crafting_outcome:
                 self.remove_crafting_outcome()
-
+        elif len(crafting_ingredients) > 0 and self.mode == 2:
+            outcome = globals.smelting_recipes.smelt(crafting_ingredients[0][0])
+            if outcome:
+                self.set_crafting_outcome(outcome)
+            elif self.crafting_outcome:
+                self.remove_crafting_outcome()
         self.update_current()
 
     def update_current(self):
@@ -570,8 +575,8 @@ class InventorySelector(AbstractInventory):
             self.crafting_outcome_icon.x = self.frame.x + 225
         elif self.mode == 2:
             self.crafting_outcome_icon.scale = 0.5
-            self.crafting_outcome_icon.y = inventory_y + inventory_height + 127
-            self.crafting_outcome_icon.x = self.frame.x + 225
+            self.crafting_outcome_icon.y = inventory_y + inventory_height + 67
+            self.crafting_outcome_icon.x = self.frame.x + 222
         self.crafting_outcome_label = pyglet.text.Label(
             str(item.amount), font_name=globals.DEFAULT_FONT, font_size=9,
             x= self.crafting_outcome_icon.x + 3, y= self.crafting_outcome_icon.y, anchor_x='left', anchor_y='bottom',
@@ -618,7 +623,7 @@ class InventorySelector(AbstractInventory):
                 self.selected_item_icon.y = inventory_y + inventory_height + (60 if self.mode == 0 else 42 if self.mode == 1 else 57)
                 self.selected_item_icon.x = self.frame.x + (270 if self.mode == 0 else 222)
                 # cost
-                current_panel = self.crafting_panel if self.mode == 0 else self.crafting_table_panel
+                current_panel = self.crafting_panel if self.mode == 0 else self.crafting_table_panel if self.mode == 1 else self.furnace_panel
                 for ingre in current_panel.slots:
                     if ingre :
                         ingre.change_amount(-1)
