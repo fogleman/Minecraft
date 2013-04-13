@@ -236,3 +236,4 @@ ANCHOR_BOTTOM = 1 << 3
 
 ICONS_PATH = os.path.join('resources', 'textures', 'icons')
 TEXTURES_PATH = os.path.join('resources', 'textures')
+DEFAULT_FONT = 'ChunkFive Roman'

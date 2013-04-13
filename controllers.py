@@ -14,7 +14,7 @@ from model import *
 from player import *
 from savingsystem import *
 from commands import CommandParser, CommandException, UnknownCommandException
-from utils import load_image, image_sprite
+from utils import load_image, image_sprite, init_resources
 
 # Define a simple function to create GLfloat arrays of floats:
 def vec(*args):
@@ -24,6 +24,7 @@ class Controller(object):
     def __init__(self, window):
         self.window = window
         self.current_view = None
+        init_resources()
 
     def setup(self):
         pass

@@ -1,5 +1,6 @@
 import pyglet
 import os
+import globals
 
 def load_image(*args):
 	path = os.path.join(*args)
@@ -35,3 +36,18 @@ def fast_floor(value):
 
 def fast_abs(value):
 	return -value if value < 0 else value
+
+def init_resources():
+	init_font('resources/fonts/Chunkfive.ttf', 'ChunkFive Roman')
+
+def init_font(filename, fontname):
+	pyglet.font.add_file(filename)
+	pyglet.font.load(fontname)
+
+def get_block_icon(block, icon_size, model):
+    block_icon = load_image(globals.ICONS_PATH, block.id.filename() + ".png") or (block.group or model.group).texture.get_region(
+        int(block.texture_data[2*8] * globals.TILESET_SIZE) * icon_size,
+        int(block.texture_data[2*8+1] * globals.TILESET_SIZE) * icon_size, icon_size,
+        icon_size)
+    return block_icon
+
