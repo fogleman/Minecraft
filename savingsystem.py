@@ -34,13 +34,6 @@ def save_world(window, game_dir, world=None):
             for blockpos in blocks:
                 id = blocks[blockpos].id
                 f.write(structvec.pack(*blockpos) + structuchar2.pack(id.main, id.sub))
-        sectors = window.model.sectors
-        with open(os.path.join(game_dir, world, "sectors.dat"), "wb", 1024*1024) as f:
-            f.write(struct.pack("Q",len(sectors)))
-            for secpos in sectors:
-                f.write(structvec.pack(*secpos) + structushort.pack(len(sectors[secpos])))
-                for blockpos in sectors[secpos]:
-                    f.write(structvec.pack(*blockpos))
     elif globals.LAUNCH_OPTIONS.save_mode == globals.PICKLE_COMPRESSED_SAVE_MODE:
         worldsave = (window.model.items(), window.model.sectors)
         save_string = zlib.compress(pickle.dumps(worldsave), 9)
@@ -72,16 +65,16 @@ def open_world(gamecontroller, game_dir, world=None):
     #blocks and sectors (window.model and window.model.sectors)
     if globals.LAUNCH_OPTIONS.save_mode == globals.FLATFILE_SAVE_MODE:
         sectors = gamecontroller.model.sectors
-        with open(os.path.join(game_dir, world, "sectors.dat"), "rb") as f:
-            for i in xrange(struct.unpack("Q",f.read(8))[0]):
-                sector = sectors[structvec.unpack(f.read(6))]
-                for i2 in xrange(structushort.unpack(f.read(2))[0]):
-                    sector.append(structvec.unpack(f.read(6)))
         blocks = gamecontroller.model
+        SECTOR_SIZE = globals.SECTOR_SIZE
+        BLOCKS_DIR = globals.BLOCKS_DIR
         with open(os.path.join(game_dir, world, "blocks.dat"), "rb") as f:
             for i in xrange(struct.unpack("Q",f.read(8))[0]):
                 bx, by, bz, blockid, dataid = structvecBB.unpack(f.read(8))
-                blocks[(bx,by,bz)] = globals.BLOCKS_DIR[BlockID(blockid, dataid)]
+                #blocks[(bx,by,bz)] = globals.BLOCKS_DIR[BlockID(blockid, dataid)]
+                position = bx,by,bz
+                blocks[position] = BLOCKS_DIR[BlockID(blockid, dataid)]
+                sectors[(bx/SECTOR_SIZE, 0, bz/SECTOR_SIZE)].append(position)
     else:
         file = open(os.path.join(game_dir, world, "blocks.pkl"), "rb")
         fileversion = struct.unpack("B",file.read(1))[0]
