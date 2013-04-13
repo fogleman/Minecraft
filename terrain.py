@@ -222,7 +222,7 @@ class TerrainGenerator(object):
                             first_block = y
 
                         if self.cave_density(c.world_block_xpos(x), y, c.world_block_zpos(z)) > -0.7:
-                            c = self.gen_outer_layer(x, y, z, first_block, c);
+                            c = self.gen_outer_layer(x, y, z, first_block, c)
                         else:
                             c.set_block(x, y, z, air_block)
 
@@ -233,7 +233,7 @@ class TerrainGenerator(object):
                             first_block = y
 
                         if self.cave_density(c.world_block_xpos(x), y, c.world_block_zpos(z)) > -0.6:
-                            c = self.gen_inner_layer(x, y, z, c);
+                            c = self.gen_inner_layer(x, y, z, c)
                         else:
                             c.set_block(x, y, z, air_block)
 
