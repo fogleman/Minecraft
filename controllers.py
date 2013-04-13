@@ -287,6 +287,11 @@ class GameController(Controller):
                         self.inventory_list.toggle(False)
                         return
 
+                    if hit_block.id == furnace_block.id:
+                        self.inventory_list.mode = 2
+                        self.inventory_list.toggle(False)
+                        return
+
                     if hit_block.density >= 1:
                         current_block = self.item_list.get_current_block()
                         if current_block is not None:
