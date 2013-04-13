@@ -404,7 +404,7 @@ class InventorySelector(AbstractInventory):
             self.icons.append(icon)
         self.update_current()
 
-        crafting_y = inventory_y + inventory_height + (42 if self.mode == 0 else 14 if self.mode == 1 else 35)
+        crafting_y = inventory_y + inventory_height + (42 if self.mode == 0 else 14 if self.mode == 1 else 32)
         crafting_rows = (2 if self.mode == 0 else 3 if self.mode == 1 else 2)
         crafting_height = (crafting_rows * (self.icon_size * 0.5)) + (crafting_rows * 3)
         x = self.frame.x + (165 if self.mode == 0 else 72 if self.mode == 1 else 63)
@@ -480,7 +480,7 @@ class InventorySelector(AbstractInventory):
         inventory_y = quick_slots_y + 42
         inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
         crafting_items_per_row = (2 if self.mode == 0 else 3 if self.mode == 1 else 1)
-        crafting_y = inventory_y + inventory_height + (42 if self.mode == 0 else 14 if self.mode == 1 else 35)
+        crafting_y = inventory_y + inventory_height + (42 if self.mode == 0 else 14 if self.mode == 1 else 32)
         crafting_x = self.frame.x + (165 if self.mode == 0 else 72 if self.mode == 1 else 63)
         crafting_height = (crafting_rows * (self.icon_size * 0.5)) + (crafting_rows * 3)
         crafting_width = (crafting_items_per_row * (self.icon_size * 0.5)) + (crafting_items_per_row-1) * 3
@@ -559,7 +559,7 @@ class InventorySelector(AbstractInventory):
         inventory_rows = floor(self.max_items / 9)
         inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
         quick_slots_y = self.frame.y + 4
-        inventory_y = quick_slots_y + (42 if self.mode == 0 else 14 if self.mode == 1 else 35)
+        inventory_y = quick_slots_y + (42 if self.mode == 0 else 14 if self.mode == 1 else 32)
         if self.mode == 0:
             self.crafting_outcome_icon.scale = 0.5
             self.crafting_outcome_icon.y = inventory_y + inventory_height + 62
@@ -614,7 +614,7 @@ class InventorySelector(AbstractInventory):
                 inventory_rows = floor(self.max_items / 9)
                 inventory_height = (inventory_rows * (self.icon_size * 0.5)) + (inventory_rows * 3)
                 quick_slots_y = self.frame.y + 4
-                inventory_y = quick_slots_y + (42 if self.mode == 0 else 14 if self.mode == 1 else 35)
+                inventory_y = quick_slots_y + (42 if self.mode == 0 else 14 if self.mode == 1 else 32)
                 self.selected_item_icon.y = inventory_y + inventory_height + (60 if self.mode == 0 else 42 if self.mode == 1 else 57)
                 self.selected_item_icon.x = self.frame.x + (270 if self.mode == 0 else 222)
                 # cost
