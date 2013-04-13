@@ -19,15 +19,8 @@ class Model(World):
             self.initialize()
             print('Terrain successfully built in %f seconds.' % (time.time() - start))
 
-        print('Preparing game...')
-
-        # Convert dirt to grass if no block or a transparent one is above.
-        for position, block in ((p, b) for p, b in self.items()
-                                if b is dirt_block):
-            x, y, z = position
-            above_position = x, y + 1, z
-            if above_position not in self or self[above_position].transparent:
-                self[position] = grass_block
+            print('Preparing game...')
+            self.post_initialize()
 
     def initialize(self):
         world_size = globals.config.getint('World', 'size')
@@ -56,20 +49,13 @@ class Model(World):
             'snow': (OakTree, BirchTree, WaterMelon, YFlowers, Potato, Rose),
         }
 
-        ore_type_blocks = (stone_block,) * 75 + (gravel_block,) * 10 \
-            + (coalore_block,) * 5 + (ironore_block,) * 5 \
-            + (goldore_block,) * 3 + (diamondore_block,) * 2 \
-            + (emeraldore_block,) * 2 + (rubyore_block,) * 2 \
-            + (sapphireore_block,) * 2 + (lapisore_block,) * 8 \
-            + (quartz_block,) * 3
-
         # ores avaliable on the lowest level, closet to bedrock
         lowlevel_ores = ((stone_block,) * 75 + (diamondore_block,) * 2 + (sapphireore_block,) * 2)
         #  ores in the 'mid-level' .. also, the common ore blockes
-        midlevel_ores = ((stone_block,) * 80 + (rubyore_block,) * 2 + (coalore_block,) * 4 + (gravel_block,) * 5 + (ironore_block,) * 5 + (lapisore_block,) * 2)
+        midlevel_ores = ((stone_block,) * 80 + (rubyore_block,) * 2 + (coalore_block,) * 4 + (gravel_block,) * 5 +
+(ironore_block,) * 5 + (lapisore_block,) * 2)
         # ores closest to the top level dirt and ground
         highlevel_ores = ((stone_block,) * 85 + (gravel_block,) * 5 + (coalore_block,) * 3 + (quartz_block,) * 5)
-
 
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
@@ -80,7 +66,7 @@ class Model(World):
                         self.init_block((x, y + dy, z), stone_block)
                     continue
 
-                # Generation of the ground
+ # Generation of the ground
 
                 block = worldtypes_grounds[world_type]
                 levelcount=0
@@ -93,37 +79,11 @@ class Model(World):
                     # ores and filler...
                     #oblock = random.choice(ore_type_blocks)
                     levelcount = levelcount +1
-                    if levelcount == 1:
+                    if levelcount < 4:
                         blockset = lowlevel_ores
-                    if levelcount == 2:
-                        blockset = lowlevel_ores
-                    if levelcount == 3:
-                        blockset = lowlevel_ores
-                    if levelcount == 4:
+                    if levelcount >= 5 and levelcount <= 13:
                         blockset = midlevel_ores
-                    if levelcount == 5:
-                        blockset = midlevel_ores
-                    if levelcount == 6:
-                        blockset = midlevel_ores
-                    if levelcount == 7:
-                        blockset = midlevel_ores
-                    if levelcount == 8:
-                        blockset = midlevel_ores
-                    if levelcount == 9:
-                        blockset = midlevel_ores
-                    if levelcount == 10:
-                        blockset = midlevel_ores
-                    if levelcount == 11:
-                        blockset = highlevel_ores
-                    if levelcount == 12:
-                        blockset = highlevel_ores
-                    if levelcount == 13:
-                        blockset = highlevel_ores
-                    if levelcount == 14:
-                        blockset = highlevel_ores
-                    if levelcount == 15:
-                        blockset = highlevel_ores
-                    if levelcount == 16:
+                    if levelcount >= 14:
                         blockset = highlevel_ores
                     oblock = random.choice(blockset)
                     self.init_block((x, yy, z), oblock)
@@ -175,20 +135,7 @@ class Model(World):
                             continue
                         if (x, y, z) in self:
                             continue
-
-                        randomOre = random.randrange(1,100)
-                        if randomOre <= 5:
-                            oblock = random.choice(ore_type_blocks)
-                            self.init_block((x, y +1 , z), block) #cover up the ore block top
-                            self.init_block((x, y , z -1), block) #cover up the ore block back
-                            self.init_block((x, y , z +1), block) #cover up the ore block front
-                            self.init_block((x -1, y , z), block) #cover up the ore block left
-                            self.init_block((x +1, y , z), block) #cover up the ore block right
-                            self.init_block((x, y , z), oblock)
-                        elif randomOre > 5:
-                            self.init_block((x, y, z), block)
-
-                        #self.init_block((x, y, z), block)
+                        self.init_block((x, y, z), block)
 
                         # Perhaps a tree
                         if self.max_trees > 0:
@@ -219,3 +166,12 @@ class Model(World):
 
     def init_block(self, position, block):
         self.add_block(position, block, sync=False, force=False)
+
+    def post_initialize(self):
+        # Convert dirt to grass if no block or a transparent one is above.
+        for position, block in ((p, b) for p, b in self.items()
+                                if b is dirt_block):
+            x, y, z = position
+            above_position = x, y + 1, z
+            if above_position not in self or self[above_position].transparent:
+                self[position] = grass_block

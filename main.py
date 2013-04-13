@@ -29,7 +29,7 @@ class InvalidChoice(Exception):
 def get_or_update_config(section, option, default_value, conv=str, choices=()):
     try:
         if conv is bool:
-            user_value = globals.config.getboolean(section, option.lower())
+            user_value = globals.config.getboolean(section, option)
         else:
             user_value = conv(globals.config.get(section, option))
     except NoSectionError:
@@ -42,7 +42,7 @@ def get_or_update_config(section, option, default_value, conv=str, choices=()):
             raise InvalidChoice('%s.%s must be in %s' %
                                 (section, option, repr(tuple(choices))))
         return user_value
-    globals.config.set(section, option, default_value)
+    globals.config.set(section, option, str(default_value))
     return default_value
 
 
@@ -61,6 +61,11 @@ def get_key(key_name):
 
 
 def initialize_config():
+    general = 'General'
+
+    globals.DEBUG = get_or_update_config(
+        general, 'debug', globals.DEBUG, conv=bool)
+
     graphics = 'Graphics'
 
     globals.WINDOW_WIDTH = get_or_update_config(

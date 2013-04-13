@@ -7,6 +7,7 @@ from pyglet.text import Label
 from pyglet.gl import *
 # Modules from this project
 from cameras import *
+from views import *
 import globals
 from gui import *
 from model import *
@@ -22,12 +23,21 @@ def vec(*args):
 class Controller(object):
     def __init__(self, window):
         self.window = window
+        self.current_view = None
 
     def setup(self):
         pass
 
     def update(self, dt):
-        pass
+        if self.current_view:
+            self.current_view.update(dt)
+        
+    def switch_view(self, new_view):
+        if self.current_view:
+            self.current_view.pop_handlers()
+            self.current_view = None
+        self.current_view = new_view
+        self.current_view.add_handlers()
 
     def set_2d(self):
         width, height = self.window.get_size()
@@ -40,86 +50,43 @@ class Controller(object):
         glLoadIdentity()
 
     def push_handlers(self):
-        self.setup()
         self.window.push_handlers(self)
+        self.setup()
 
     def pop_handlers(self):
+        if self.current_view:
+            self.current_view.pop_handlers()
         self.window.pop_handlers()
 
 class MainMenuController(Controller):
-    def __init__(self, window):
-        super(MainMenuController, self).__init__(window)
-        self.batch = pyglet.graphics.Batch()
-        self.group = pyglet.graphics.OrderedGroup(2)
-        self.labels_group = pyglet.graphics.OrderedGroup(3)
-
-        background = load_image('resources', 'textures', 'main_menu_background.png')
-        image = load_image('resources', 'textures', 'frame.png')
-        self.frame_rect = Rectangle(0, 0, image.width, image.height)
-        self.background = image_sprite(background, self.batch, 0)
-        self.background.scale = max(float(window.get_size()[0]) / self.background.width, float(window.get_size()[1]) / self.background.height)
-        self.frame = image_sprite(image, self.batch, 1)
-        button_image = load_image('resources', 'textures', 'button.png')
-        button_highlighted = load_image('resources', 'textures', 'button_highlighted.png')
-        pyglet.font.add_file('resources/fonts/Chunkfive.ttf')
-        pyglet.font.load('ChunkFive Roman')
-        self.start_game = Button(0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Start game", batch=self.batch, group=self.group, label_group=self.labels_group, on_click=self.start_game_func, font_name='ChunkFive Roman')
-        self.exit_game = Button(0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Exit game", batch=self.batch, group=self.group, label_group=self.labels_group, on_click=self.exit_game_func, font_name='ChunkFive Roman')
-        self.buttons = [self.start_game, self.exit_game]
-        self.label = Label(globals.APP_NAME, font_name='ChunkFive Roman', font_size=50, x=window.width/2, y=self.frame.y + self.frame.height,
-            anchor_x='center', anchor_y='top', color=(255, 255, 255, 255), batch=self.batch,
-            group=self.labels_group)
+    def setup(self):
+        self.switch_view(MainMenuView(self))
 
     def start_game_func(self):
-        controller = GameController(self.window)
-        self.window.switch_controller(controller)
+        self.window.switch_controller(GameController(self.window))
+        return pyglet.event.EVENT_HANDLED
+
+    def new_game_func(self):
+        if globals.DISABLE_SAVE:
+            remove_world(globals.game_dir, globals.SAVE_FILENAME)
+        self.window.switch_controller(GameController(self.window))
         return pyglet.event.EVENT_HANDLED
 
     def exit_game_func(self):
         pyglet.app.exit()
         return pyglet.event.EVENT_HANDLED
 
-    def clear(self):
-        glClearColor(0.0, 0.0, 0.0, 1.0)
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    def game_options_func(self):
+        self.switch_view(OptionsView(self))
+        return pyglet.event.EVENT_HANDLED
 
-    def on_mouse_press(self, x, y, button, modifiers):
-        # maybe we can add a GUIManager to do the hit test automatically
-        for button in self.buttons:
-            if button.hit_test(x, y):
-                button.on_mouse_click()
+    def main_menu_func(self):
+        self.switch_view(MainMenuView(self))
+        return pyglet.event.EVENT_HANDLED
 
-    def on_mouse_motion(self, x, y, dx, dy):
-        cursor = None
-        for button in self.buttons:
-            if button.highlighted:
-                button.highlighted = False
-                button.draw()
-            if button.hit_test(x, y):
-                button.highlighted = True
-                button.draw()
-                cursor = self.window.get_system_mouse_cursor(pyglet.window.Window.CURSOR_HAND)
-        self.window.set_mouse_cursor(cursor)
-
-    def on_resize(self, width, height):
-        self.background.scale = 1.0
-        self.background.scale = max(float(width) / self.background.width, float(height) / self.background.height)
-        self.background.x = 0
-        self.background.y = 0
-        self.frame.x, self.frame.y = (width - self.frame.width) / 2, (height - self.frame.height) / 2
-        self.label.y = self.frame.y + self.frame.height - 55
-        self.label.x = width / 2
-        button_x = self.frame.x + (self.frame.width - self.start_game.width) / 2
-        button_y = self.frame.y + (self.frame.height - self.start_game.height) / 2
-        self.start_game.position = button_x, button_y - 10
-        self.exit_game.position = button_x, button_y - self.start_game.height - 30
-
-    def on_draw(self):
-        self.clear()
-        glColor3d(1, 1, 1)
-        self.set_2d()
-        self.batch.draw()
-
+    def controls_func(self):
+        self.switch_view(ControlsView(self))
+        return pyglet.event.EVENT_HANDLED
 
 class GameController(Controller):
     def __init__(self, window):

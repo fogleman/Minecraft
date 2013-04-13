@@ -6,10 +6,11 @@ import struct
 import math
 
 # Modules from this project
+from blocks import BlockID
+from debug import performance_info
+import globals
 from model import *
 from player import *
-from blocks import BlockID
-import globals
 
 
 structvec = struct.Struct("hhh")
@@ -17,6 +18,8 @@ structushort = struct.Struct("H")
 structuchar2 = struct.Struct("BB")
 structvecBB = struct.Struct("hhhBB")
 
+
+@performance_info
 def save_world(window, game_dir, world=None):
     if world is None: world = "world"
     if not os.path.exists(os.path.join(game_dir, world)):
@@ -49,10 +52,19 @@ def save_world(window, game_dir, world=None):
         file.write(save_string)
         file.close()
 
+
 def world_exists(game_dir, world=None):
     if world is None: world = "world"
     return os.path.lexists(os.path.join(game_dir, world))
 
+
+def remove_world(game_dir, world=None):
+    if world is None: world = "world"
+    if world_exists(game_dir, world):
+        import shutil
+        shutil.rmtree(os.path.join(game_dir, world))
+
+@performance_info
 def open_world(gamecontroller, game_dir, world=None):
     if world is None: world = "world"
     gamecontroller.model = Model(initialize=False)
@@ -71,7 +83,6 @@ def open_world(gamecontroller, game_dir, world=None):
         with open(os.path.join(game_dir, world, "blocks.dat"), "rb") as f:
             for i in xrange(struct.unpack("Q",f.read(8))[0]):
                 bx, by, bz, blockid, dataid = structvecBB.unpack(f.read(8))
-                #blocks[(bx,by,bz)] = globals.BLOCKS_DIR[BlockID(blockid, dataid)]
                 position = bx,by,bz
                 blocks[position] = BLOCKS_DIR[BlockID(blockid, dataid)]
                 sectors[(bx/SECTOR_SIZE, 0, bz/SECTOR_SIZE)].append(position)
@@ -88,3 +99,5 @@ def open_world(gamecontroller, game_dir, world=None):
             for item in loaded_world[0]:
                 gamecontroller.model[item[0]] = item[1]
             gamecontroller.model.sectors = loaded_world[1]
+
+    gamecontroller.model.post_initialize()

@@ -111,11 +111,6 @@ class World(dict):
         self.spreading_mutable_blocks = deque()
         self.spreading_time = 0.0
 
-    def __setitem__(self, position, block):
-        super(World, self).__setitem__(position, block)
-
-        self.check_spreading_mutable(position, block)
-
     def __delitem__(self, position):
         super(World, self).__delitem__(position)
 
