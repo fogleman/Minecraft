@@ -266,7 +266,7 @@ class ItemSelector(AbstractInventory):
         if self.visible:
             if symbol in self.num_keys:
                 index = (symbol - self.num_keys[0])
-                self.set_index(index)
+                self.current_index = index
                 return pyglet.event.EVENT_HANDLED
             elif symbol == globals.VALIDATE_KEY:
                 current_block = self.get_current_block_item_and_amount()
