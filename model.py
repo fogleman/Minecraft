@@ -54,8 +54,9 @@ class Model(World):
         # ores avaliable on the lowest level, closet to bedrock
         lowlevel_ores = ((stone_block,) * 75 + (diamondore_block,) * 2 + (sapphireore_block,) * 2)
         #  ores in the 'mid-level' .. also, the common ore blockes
-        midlevel_ores = ((stone_block,) * 80 + (rubyore_block,) * 2 + (coalore_block,) * 4 + (gravel_block,) * 5 +
-(ironore_block,) * 5 + (lapisore_block,) * 2)
+        midlevel_ores = ((stone_block,) * 80 + (rubyore_block,) * 2 +
+                         (coalore_block,) * 4 + (gravel_block,) * 5 +
+                         (ironore_block,) * 5 + (lapisore_block,) * 2)
         # ores closest to the top level dirt and ground
         highlevel_ores = ((stone_block,) * 85 + (gravel_block,) * 5 + (coalore_block,) * 3 + (quartz_block,) * 5)
 
@@ -68,7 +69,7 @@ class Model(World):
                         self.init_block((x, y + dy, z), stone_block)
                     continue
 
- # Generation of the ground
+                # Generation of the ground
 
                 block = worldtypes_grounds[world_type]
                 levelcount=0
