@@ -657,7 +657,7 @@ class OakLeafBlock(LeafBlock):
     bottom_texture = 7, 2
     side_texture = 7, 2
     texture_name = "leaves",
-    hardness = 0.2
+    hardness = 0.3
     id = 18,0
     name = "Oak Leaves"
 
@@ -667,7 +667,7 @@ class JungleLeafBlock(LeafBlock):
     bottom_texture = 6, 2
     side_texture = 6, 2
     texture_name = "leaves_jungle",
-    hardness = 0.2
+    hardness = 0.3
     id = 18,1
     name = "Jungle Leaves"
 
@@ -677,7 +677,7 @@ class BirchLeafBlock(LeafBlock):
     bottom_texture = 5, 2
     side_texture = 5, 2
     texture_name = "leaves",
-    hardness = 0.2
+    hardness = 0.3
     id = 18,2
     name = "Birch Leaves"
 
@@ -729,7 +729,7 @@ class YFlowersBlock(Block):
     top_texture = 6, 6
     bottom_texture = -1, -1
     side_texture = 6, 5
-    hardness = 0.1
+    hardness = 0.0
     transparent = True
     width = 0.5
     id = 37
