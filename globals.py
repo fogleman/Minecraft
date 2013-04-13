@@ -17,6 +17,8 @@ from pyglet.resource import get_settings_path
 
 APP_NAME = 'pyCraftr'  # should I stay or should I go?
 
+DEBUG = False
+
 
 #
 # Game modes

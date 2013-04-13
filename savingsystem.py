@@ -6,10 +6,11 @@ import struct
 import math
 
 # Modules from this project
+from blocks import BlockID
+from debug import performance_info
+import globals
 from model import *
 from player import *
-from blocks import BlockID
-import globals
 
 
 structvec = struct.Struct("hhh")
@@ -17,6 +18,8 @@ structushort = struct.Struct("H")
 structuchar2 = struct.Struct("BB")
 structvecBB = struct.Struct("hhhBB")
 
+
+@performance_info
 def save_world(window, game_dir, world=None):
     if world is None: world = "world"
     if not os.path.exists(os.path.join(game_dir, world)):
@@ -49,10 +52,13 @@ def save_world(window, game_dir, world=None):
         file.write(save_string)
         file.close()
 
+
 def world_exists(game_dir, world=None):
     if world is None: world = "world"
     return os.path.lexists(os.path.join(game_dir, world))
 
+
+@performance_info
 def open_world(gamecontroller, game_dir, world=None):
     if world is None: world = "world"
     gamecontroller.model = Model(initialize=False)

@@ -61,6 +61,11 @@ def get_key(key_name):
 
 
 def initialize_config():
+    general = 'General'
+
+    globals.DEBUG = get_or_update_config(
+        general, 'debug', globals.DEBUG, conv=bool)
+
     graphics = 'Graphics'
 
     globals.WINDOW_WIDTH = get_or_update_config(
