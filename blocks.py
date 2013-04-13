@@ -55,13 +55,18 @@ class TextureGroupIndividual(pyglet.graphics.Group):
     def unset_state(self):
         glDisable(self.texture.target)
 
-"""
-The Datatype for Block and Item ID's
-Creation: BlockID(1)   BlockID(35)   BlockID(35, 3)   BlockID((35,3))   BlockID("35.3")
-str(id) : "1.0"        "35.0"        "35.3"           "35.3"            "35.3"
-Typical uses: id == 1    id == BlockID(35, 3)   id < 255
-"""
+
 class BlockID(object):
+    """
+    Datatype for Block and Item IDs
+
+    Creation: BlockID(1)   BlockID(35)   BlockID(35, 3)   BlockID((35,
+    3))   BlockID("35.3")
+    str(id) : "1.0"        "35.0"        "35.3"           "35.3"
+    "35.3"
+    Typical uses: id == 1    id == BlockID(35, 3)   id < 255
+    """
+
     main = 0
     sub = 0 #Aka DataID, damageID, etc
 
