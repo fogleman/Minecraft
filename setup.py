@@ -22,5 +22,5 @@ ext_modules = [
 setup(
     name=G.APP_NAME,
     cmdclass={'build_ext': build_ext},
-    ext_modules=ext_modules
+    ext_modules=ext_modules, requires=['pyglet', 'Cython']
 )
