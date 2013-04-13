@@ -61,10 +61,21 @@ def get_key(key_name):
 
 
 def initialize_config():
+    #
+    # General
+    #
+
     general = 'General'
 
     globals.DEBUG = get_or_update_config(
         general, 'debug', globals.DEBUG, conv=bool)
+
+    get_or_update_config(
+        general, 'save_mode', globals.SAVE_MODE, choices=globals.SAVE_MODES)
+
+    #
+    # Graphics
+    #
 
     graphics = 'Graphics'
 
@@ -84,20 +95,34 @@ def initialize_config():
     globals.MOTION_BLUR = get_or_update_config(
         graphics, 'motion_blur', globals.MOTION_BLUR, conv=bool)
 
+    #
+    # World
+    #
+
     world = 'World'
 
     # TODO: This setting must be removed when terrain generation will improve.
     get_or_update_config(world, 'size', 64, conv=int)
 
+    #
+    # Controls
+    #
+
+    controls = 'Controls'
+
     # Adds missing keys to configuration file and converts to pyglet keys.
     for control, default_key_name in globals.KEY_BINDINGS.items():
-        key_name = get_or_update_config('Controls', control, default_key_name)
+        key_name = get_or_update_config(controls, control, default_key_name)
         try:
             pyglet_key = get_key(key_name)
         except InvalidKey:
             pyglet_key = get_key(default_key_name)
-            globals.config.set('Controls', control, default_key_name)
+            globals.config.set(controls, control, default_key_name)
         setattr(globals, control.upper() + '_KEY', pyglet_key)
+
+    #
+    # Save config file
+    #
 
     with open(globals.config_file, 'wb') as handle:
         globals.config.write(handle)
@@ -221,7 +246,6 @@ if __name__ == '__main__':
     save_group.add_argument("--disable-auto-save", action="store_false", default=True, help="Do not save world on exit.")
     save_group.add_argument("--save", default=globals.SAVE_FILENAME, help="Type a name for the world to be saved as.")
     save_group.add_argument("--disable-save", action="store_false", default=True, help="Disables saving.")
-    save_group.add_argument("--save-mode", choices=globals.SAVE_MODES, default=globals.SAVE_MODE, help="Flatfile Struct (flatfile) is the smallest and fastest")
 
     parser.add_argument("--seed", default=None)
 
