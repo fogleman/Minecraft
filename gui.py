@@ -451,7 +451,7 @@ class InventorySelector(AbstractInventory):
             elif self.crafting_outcome:
                 self.remove_crafting_outcome()
         elif len(crafting_ingredients) > 0 and self.mode == 2:
-            outcome = globals.smelting_recipes.smelt(crafting_ingredients[0][0])
+            outcome = G.smelting_recipes.smelt(crafting_ingredients[0][0])
             if outcome:
                 self.set_crafting_outcome(outcome)
             elif self.crafting_outcome:

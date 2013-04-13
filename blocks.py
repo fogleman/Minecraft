@@ -145,6 +145,7 @@ class Block(object):
     top_texture = ()
     bottom_texture = ()
     side_texture = ()
+    crossed_sides = False
     group = None  # The texture (group) the block renders from
     texture_name = None  # A list of block faces, named what Mojang names their blocks/"file".png
 
@@ -194,8 +195,11 @@ class Block(object):
         return self.name
 
     def get_texture_data(self):
-        return list(self.top_texture + self.bottom_texture
-                    + self.side_texture * 4)
+        textures = self.top_texture + self.bottom_texture \
+                   + self.side_texture * 2
+        if not self.crossed_sides:
+            textures += (self.side_texture * 2)
+        return list(textures)
 
     def get_vertices(self, x, y, z):
         w = self.width / 2.0
@@ -208,15 +212,25 @@ class Block(object):
         zp = z + w
         ret = []
         if len(self.top_texture) > 0 or len(self.side_texture) == 0:
-            ret.extend([xm,yp,zm, xm,yp,zp, xp,yp,zp, xp,yp,zm])  # top
+            ret.extend([
+                xm, yp, zm,   xm, yp, zp,   xp, yp, zp,   xp, yp, zm  # top
+            ])
         if len(self.bottom_texture) > 0 or len(self.side_texture) == 0:
-            ret.extend([xm,ym,zm, xp,ym,zm, xp,ym,zp, xm,ym,zp])  # bottom
-        ret.extend([
-            xm,ym,zm, xm,ym,zp, xm,yp,zp, xm,yp,zm,  # left
-            xp,ym,zp, xp,ym,zm, xp,yp,zm, xp,yp,zp,  # right
-            xm,ym,zp, xp,ym,zp, xp,yp,zp, xm,yp,zp,  # front
-            xp,ym,zm, xm,ym,zm, xm,yp,zm, xp,yp,zm,  # back
-        ])
+            ret.extend([
+                xm, ym, zm,   xp, ym, zm,   xp, ym, zp,   xm, ym, zp  # bottom
+            ])
+        if self.crossed_sides:
+            ret.extend([
+                xm, ym, zm,   xp, ym, zp,   xp, yp, zp,   xm, yp, zm,
+                xm, ym, zp,   xp, ym, zm,   xp, yp, zm,   xm, yp, zp,
+            ])
+        else:
+            ret.extend([
+                xm, ym, zm,   xm, ym, zp,   xm, yp, zp,   xm, yp, zm,  # left
+                xp, ym, zp,   xp, ym, zm,   xp, yp, zm,   xp, yp, zp,  # right
+                xm, ym, zp,   xp, ym, zp,   xp, yp, zp,   xm, yp, zp,  # front
+                xp, ym, zm,   xm, ym, zm,   xm, yp, zm,   xp, yp, zm,  # back
+            ])
         return ret
 
     def play_break_sound(self, player=None, position=None):
@@ -748,6 +762,7 @@ class YFlowersBlock(Block):
     top_texture = 6, 6
     bottom_texture = -1, -1
     side_texture = 6, 5
+    crossed_sides = True
     hardness = 0.0
     transparent = True
     width = 0.5
@@ -1097,6 +1112,7 @@ class PotatoBlock(Block):
     top_texture = -1, -1
     bottom_texture = -1, -1
     side_texture = 10, 3
+    crossed_sides = True
     hardness = 0.0
     transparent = True
     id = 142
@@ -1109,6 +1125,7 @@ class CarrotBlock(Block):
     top_texture = -1, -1
     bottom_texture = -1, -1
     side_texture = 10, 2
+    crossed_sides = True
     hardness = 0.0
     transparent = True
     id = 141
