@@ -757,6 +757,7 @@ class TextWidget(Control):
     """
     def __init__(self, parent, text, x, y, width, height=None, multi_line=False,
                  font_size=12,
+                 font_name=G.DEFAULT_FONT,
                  text_color=(0, 0, 0, 255),
                  background_color=(200, 200, 200, 128),
                  readonly=False,
@@ -769,7 +770,7 @@ class TextWidget(Control):
         self.document.set_style(0, len(self.document.text),
                                 dict(color=text_color,
                                      font_size=font_size,
-                                     font_name="ChunkFive Roman")
+                                     font_name=font_name)
         )
         font = self.document.get_font(0)
         if blank_text:

@@ -203,14 +203,15 @@ class GameController(Controller):
         self.text_input = TextWidget(self.window, '',
                                      0, 0,
                                      self.window.width,
-                                     visible=False)
+                                     visible=False,
+                                     font_name='Arial')
         self.text_input.push_handlers(on_toggled=self.on_text_input_toggled, key_released=self.text_input_callback)
         self.chat_box = TextWidget(self.window, '',
                                    0, self.text_input.y + self.text_input.height + 50,
                                    self.window.width / 2, height=min(300, self.window.height / 3),
                                    visible=False, multi_line=True, readonly=True,
                                    font_size=14,
-                                   text_color=(255, 255, 255, 255),
+                                   font_name='Arial',
                                    background_color=(64,64,64,200))
         self.command_parser = CommandParser()
         self.camera = Camera3D(target=self.player)
