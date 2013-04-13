@@ -49,12 +49,13 @@ class Model(World):
             'snow': (OakTree, BirchTree, WaterMelon, YFlowers, Potato, Rose),
         }
 
-        ore_type_blocks = (stone_block,) * 75 + (gravel_block,) * 10 \
-            + (coalore_block,) * 5 + (ironore_block,) * 5 \
-            + (goldore_block,) * 3 + (diamondore_block,) * 2 \
-            + (emeraldore_block,) * 2 + (rubyore_block,) * 2 \
-            + (sapphireore_block,) * 2 + (lapisore_block,) * 8 \
-            + (quartz_block,) * 3
+        # ores avaliable on the lowest level, closet to bedrock
+        lowlevel_ores = ((stone_block,) * 75 + (diamondore_block,) * 2 + (sapphireore_block,) * 2)
+        #  ores in the 'mid-level' .. also, the common ore blockes
+        midlevel_ores = ((stone_block,) * 80 + (rubyore_block,) * 2 + (coalore_block,) * 4 + (gravel_block,) * 5 +
+(ironore_block,) * 5 + (lapisore_block,) * 2)
+        # ores closest to the top level dirt and ground
+        highlevel_ores = ((stone_block,) * 85 + (gravel_block,) * 5 + (coalore_block,) * 3 + (quartz_block,) * 5)
 
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
@@ -65,17 +66,27 @@ class Model(World):
                         self.init_block((x, y + dy, z), stone_block)
                     continue
 
-                # Generation of the ground
+ # Generation of the ground
 
                 block = worldtypes_grounds[world_type]
+                levelcount=0
+
 
                 if isinstance(block, (tuple, list)):
                     block = random.choice(block)
                 self.init_block((x, y - 2, z), block)
                 for yy in xrange(-16, -2):
                     # ores and filler...
-                    oblock = random.choice(ore_type_blocks)
-                    self.init_block((x, yy , z), oblock)
+                    #oblock = random.choice(ore_type_blocks)
+                    levelcount = levelcount +1
+                    if levelcount < 4:
+                        blockset = lowlevel_ores
+                    if levelcount >= 5 and levelcount <= 13:
+                        blockset = midlevel_ores
+                    if levelcount >= 14:
+                        blockset = highlevel_ores
+                    oblock = random.choice(blockset)
+                    self.init_block((x, yy, z), oblock)
 
                 for yy in xrange(-18, -16):
                     self.init_block((x, yy , z), bed_block)
@@ -124,20 +135,7 @@ class Model(World):
                             continue
                         if (x, y, z) in self:
                             continue
-
-                        randomOre = random.randrange(1,100)
-                        if randomOre <= 5:
-                            oblock = random.choice(ore_type_blocks)
-                            self.init_block((x, y +1 , z), block) #cover up the ore block top
-                            self.init_block((x, y , z -1), block) #cover up the ore block back
-                            self.init_block((x, y , z +1), block) #cover up the ore block front
-                            self.init_block((x -1, y , z), block) #cover up the ore block left
-                            self.init_block((x +1, y , z), block) #cover up the ore block right
-                            self.init_block((x, y , z), oblock)
-                        elif randomOre > 5:
-                            self.init_block((x, y, z), block)
-
-                        #self.init_block((x, y, z), block)
+                        self.init_block((x, y, z), block)
 
                         # Perhaps a tree
                         if self.max_trees > 0:
