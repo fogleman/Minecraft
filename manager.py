@@ -8,11 +8,17 @@ There is functionalities to commit and push/pull.
 
 """
 
+# Imports, sorted alphabetically.
 
-import sys
+# Python packages
 import subprocess
-import os
-import os.path
+import sys
+
+# Third-party packages
+# Nothing for now...
+
+# Modules from this project
+# Nothing for now...
 
 
 src = 'src'

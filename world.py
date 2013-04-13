@@ -1,14 +1,17 @@
+# Imports, sorted alphabetically.
+
+# Python packages
 from collections import deque, defaultdict
-import random
-import time
 import os
 import warnings
 
+# Third-party packages
 import pyglet
 from pyglet.gl import *
 
+# Modules from this project
 from blocks import *
-import globals
+import globals as G
 
 
 FACES = (
@@ -70,9 +73,9 @@ def normalize(position):
 
 def sectorize(position):
     x, y, z = normalize(position)
-    x, y, z = (x / globals.SECTOR_SIZE,
-               y / globals.SECTOR_SIZE,
-               z / globals.SECTOR_SIZE)
+    x, y, z = (x / G.SECTOR_SIZE,
+               y / G.SECTOR_SIZE,
+               z / G.SECTOR_SIZE)
     return x, 0, z
 
 
@@ -283,7 +286,7 @@ class World(dict):
     def change_sectors(self, before, after):
         before_set = set()
         after_set = set()
-        pad = globals.VISIBLE_SECTORS_RADIUS
+        pad = G.VISIBLE_SECTORS_RADIUS
         for dx in xrange(-pad, pad + 1):
             for dy in (0,):  # xrange(-pad, pad + 1):
                 for dz in xrange(-pad, pad + 1):
@@ -331,7 +334,7 @@ class World(dict):
         # Updates spreading
         # TODO: This is too simple
         self.spreading_time += dt
-        if self.spreading_time >= globals.SPREADING_MUTATION_DELAY:
+        if self.spreading_time >= G.SPREADING_MUTATION_DELAY:
             self.spreading_time = 0.0
             if self.spreading_mutable_blocks:
                 position = self.spreading_mutable_blocks.pop()

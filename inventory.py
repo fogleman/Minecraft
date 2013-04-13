@@ -1,6 +1,15 @@
-from items import *
+# Imports, sorted alphabetically.
+
+# Python packages
 import sys
-import globals
+
+# Third-party packages
+# Nothing for now...
+
+# Modules from this project
+import globals as G
+from items import *
+
 
 class Inventory(object):
     sort_mode = 0
@@ -17,10 +26,10 @@ class Inventory(object):
             return False
 
         item_stack = self.get_item(item_id)
-        if item_id >= globals.ITEM_ID_MIN:
-            max_size = globals.ITEMS_DIR[item_id].max_stack_size
+        if item_id >= G.ITEM_ID_MIN:
+            max_size = G.ITEMS_DIR[item_id].max_stack_size
         else:
-            max_size = globals.BLOCKS_DIR[item_id].max_stack_size
+            max_size = G.BLOCKS_DIR[item_id].max_stack_size
 
         retval = False
         while quantity > 0:
