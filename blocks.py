@@ -466,6 +466,7 @@ class CraftTableBlock(WoodBlock):
     hardness = 2.5
     id = 58
     name = "Crafting Table"
+    burning_time = 15
 
 class MetaBlock(WoodBlock): # this is a experimental block.
     top_texture = 9, 0
@@ -574,6 +575,7 @@ class BirchWoodPlankBlock(WoodBlock):
     texture_name = "wood_birch",
     hardness = 2
     id = 5,0
+    burning_time = 15
     name = "Birch Wood Planks"
 
 
@@ -584,6 +586,7 @@ class OakWoodPlankBlock(WoodBlock):
     texture_name = "wood",
     hardness = 2
     id = 5,1
+    burning_time = 15
     name = "Oak Wood Planks"
 
 
@@ -594,6 +597,7 @@ class JungleWoodPlankBlock(WoodBlock):
     texture_name = "wood_jungle",
     hardness = 2
     id = 5,3
+    burning_time = 15
     name = "Jungle Wood Planks"
 
 
@@ -621,6 +625,7 @@ class OakWoodBlock(WoodBlock):
     hardness = 2
     id = 17,0
     name = "Oak wood"
+    burning_time = 15
 
 
 class OakBranchBlock(WoodBlock):
@@ -644,6 +649,7 @@ class JungleWoodBlock(WoodBlock):
     hardness = 2
     id = 17,1
     name = "Jungle wood"
+    burning_time = 15
 
 
 class BirchWoodBlock(WoodBlock):
@@ -655,6 +661,7 @@ class BirchWoodBlock(WoodBlock):
     id = 17,2
     amount_label_color = 0, 0, 0, 255
     name = "Birch wood"
+    burning_time = 15
 
 
 class CactusBlock(Block):
@@ -773,6 +780,7 @@ class YFlowersBlock(Block):
     crossed_sides = True
     hardness = 0.0
     transparent = True
+    density = 0.3
     id = 37
     name = "Dandelion"
     break_sound = sounds.leaves_break
@@ -828,6 +836,7 @@ class BookshelfBlock(WoodBlock):
     hardness = 1.5
     id = 47
     name = "Bookshelf"
+    burning_time = 15
 
 
 class FurnaceBlock(HardBlock):
@@ -946,6 +955,7 @@ class ChestBlock(Block):
     hardness = 2
     id = 54
     name = "Chest"
+    burning_time = 15
 
 # Wool blocks
 
@@ -1096,13 +1106,15 @@ amount_label_color = 0, 0, 0, 255
 
 # moreplants
 class RoseBlock(Block):
-    top_texture = 0, -15
-    bottom_texture = 10, 0
+    top_texture = -1, -1
+    bottom_texture = -1, -1
     side_texture = 10, 0
-    hardness = .08
+    hardness = 0.0
+    density = 0.8
+    transparent = True
     id = 38
     name = "Rose"
-amount_label_color = 0, 0, 0, 255
+    amount_label_color = 0, 0, 0, 255
 
 class ReedBlock(Block):
     top_texture = -1, -1
@@ -1111,7 +1123,9 @@ class ReedBlock(Block):
     hardness = 0.0
     transparent = True
     id = 83
+    density = 0.8
     name = "Reed"
+    crossed_sides = True
     max_stack_size = 16
     amount_label_color = 0, 0, 0, 255
 

@@ -179,7 +179,7 @@ class Carrot(object):
 
 class Reed(object):
     trunk_block = yflowers_block
-    trunk_height_range = 1, 2
+    trunk_height_range = 1, 4
     grows_on = sand_block, dirt_block
 
     @classmethod
