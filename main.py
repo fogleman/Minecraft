@@ -106,6 +106,9 @@ def initialize_config():
 class Window(pyglet.window.Window):
     def __init__(self, launch_fullscreen=False,
                  **kwargs):
+        kwargs.update(
+            caption=globals.APP_NAME,
+        )
         super(Window, self).__init__(
             globals.WINDOW_WIDTH, globals.WINDOW_HEIGHT, **kwargs)
         self.exclusive = False
@@ -192,11 +195,10 @@ def main(options):
 
     # try:
         # window_config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
-        # window = Window(caption='pyCraftr', resizable=True, config=window_config)
+        # window = Window(resizable=True, config=window_config)
     # except pyglet.window.NoSuchConfigException:
     window = Window(
-        launch_fullscreen=options.fullscreen, caption=globals.APP_NAME,
-        resizable=True, vsync=False)
+        launch_fullscreen=options.fullscreen, resizable=True, vsync=False)
 
     globals.main_timer = Timer()
     pyglet.clock.schedule_interval(globals.main_timer.schedule, globals.TIMER_INTERVAL)
