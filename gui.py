@@ -59,8 +59,9 @@ class Rectangle(object):
         return (self.x + self.width, self.y + self.height)
 
 class Button(pyglet.event.EventDispatcher, Rectangle):
-    def __init__(self, x, y, width, height, image=None, image_highlighted=None, caption=None, batch=None, group=None, label_group=None, font_name='Arial'):
+    def __init__(self, parent, x, y, width, height, image=None, image_highlighted=None, caption=None, batch=None, group=None, label_group=None, font_name='Arial'):
         super(Button, self).__init__(x, y, width, height)
+        parent.push_handlers(self)
         self.batch, self.group, self.label_group = batch, group, label_group
         self.sprite = image_sprite(image, self.batch, self.group)
         self.sprite_highlighted = hidden_image_sprite(image_highlighted, self.batch, self.group)
@@ -99,8 +100,9 @@ class Button(pyglet.event.EventDispatcher, Rectangle):
         if self.label:
             self.label.draw()
             
-    def on_mouse_click(self):
-        self.dispatch_event('on_click')
+    def on_mouse_click(self, x, y, button, modifiers):
+        if self.hit_test(x, y):
+            self.dispatch_event('on_click')
         
 Button.register_event_type('on_click')
 

@@ -1,14 +1,16 @@
 from gui import *
 
-class View(object):
+class View(pyglet.event.EventDispatcher):
     def __init__(self, controller):
+        super(View, self).__init__()
+        
         self.controller = controller
         self.batch = pyglet.graphics.Batch()
 
     def setup(self):
         pass
 
-    def push_handlers(self):
+    def add_handlers(self):
         self.setup()
         self.controller.window.push_handlers(self)
 
@@ -24,10 +26,7 @@ class View(object):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
     def on_mouse_press(self, x, y, button, modifiers):
-        # maybe we can add a GUIManager to do the hit test automatically
-        for button in self.buttons:
-            if button.hit_test(x, y):
-                button.on_mouse_click()
+        self.dispatch_event('on_mouse_click', x, y, button, modifiers)
 
     def on_mouse_motion(self, x, y, dx, dy):
         cursor = None
@@ -47,6 +46,8 @@ class View(object):
         self.controller.set_2d()
         self.batch.draw()
         
+View.register_event_type('on_mouse_click')
+        
         
 class MainMenuView(View):
     def setup(self):
@@ -63,11 +64,11 @@ class MainMenuView(View):
         self.frame = image_sprite(image, self.batch, 1)
         button_image = load_image('resources', 'textures', 'button.png')
         button_highlighted = load_image('resources', 'textures', 'button_highlighted.png')
-        self.start_game = Button(0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Start game", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
+        self.start_game = Button(self, 0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Start game", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
         self.start_game.push_handlers(on_click=self.controller.start_game_func)
-        self.game_options = Button(0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Options...", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
+        self.game_options = Button(self, 0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Options...", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
         self.game_options.push_handlers(on_click=self.controller.game_options_func)
-        self.exit_game = Button(0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Exit game", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
+        self.exit_game = Button(self, 0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Exit game", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
         self.exit_game.push_handlers(on_click=self.controller.exit_game_func)
         self.buttons = [self.start_game, self.game_options, self.exit_game]
         self.label = Label(globals.APP_NAME, font_name='ChunkFive Roman', font_size=50, x=width/2, y=self.frame.y + self.frame.height,
@@ -107,9 +108,9 @@ class OptionsView(View):
         self.frame = image_sprite(image, self.batch, 1)
         button_image = load_image('resources', 'textures', 'button.png')
         button_highlighted = load_image('resources', 'textures', 'button_highlighted.png')
-        self.button_return = Button(0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Done", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
+        self.button_return = Button(self, 0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Done", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
         self.button_return.push_handlers(on_click=self.controller.main_menu_func)
-        self.controls_button = Button(0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Controls...", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
+        self.controls_button = Button(self, 0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Controls...", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
         self.controls_button.push_handlers(on_click=self.controller.controls_func)
         self.buttons = [self.controls_button, self.button_return]
             
@@ -142,9 +143,9 @@ class ControlsView(View):
         self.frame = image_sprite(image, self.batch, 1)
         button_image = load_image('resources', 'textures', 'button.png')
         button_highlighted = load_image('resources', 'textures', 'button_highlighted.png')
-        self.button_attack = Button(0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Attack", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
+        self.button_attack = Button(self, 0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Attack", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
         self.button_attack.push_handlers(on_click=self.capture_key_func)
-        self.button_return = Button(0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Done", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
+        self.button_return = Button(self, 0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Done", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
         self.button_return.push_handlers(on_click=self.controller.game_options_func)
         self.buttons = [self.button_attack, self.button_return]
             

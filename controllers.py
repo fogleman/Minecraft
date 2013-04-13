@@ -37,7 +37,7 @@ class Controller(object):
             self.current_view.pop_handlers()
             self.current_view = None
         self.current_view = new_view
-        self.current_view.push_handlers()
+        self.current_view.add_handlers()
 
     def set_2d(self):
         width, height = self.window.get_size()
