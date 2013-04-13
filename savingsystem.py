@@ -93,3 +93,5 @@ def open_world(gamecontroller, game_dir, world=None):
             for item in loaded_world[0]:
                 gamecontroller.model[item[0]] = item[1]
             gamecontroller.model.sectors = loaded_world[1]
+
+    gamecontroller.model.post_initialize()

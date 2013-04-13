@@ -19,15 +19,8 @@ class Model(World):
             self.initialize()
             print('Terrain successfully built in %f seconds.' % (time.time() - start))
 
-        print('Preparing game...')
-
-        # Convert dirt to grass if no block or a transparent one is above.
-        for position, block in ((p, b) for p, b in self.items()
-                                if b is dirt_block):
-            x, y, z = position
-            above_position = x, y + 1, z
-            if above_position not in self or self[above_position].transparent:
-                self[position] = grass_block
+            print('Preparing game...')
+            self.post_initialize()
 
     def initialize(self):
         world_size = globals.config.getint('World', 'size')
@@ -175,3 +168,12 @@ class Model(World):
 
     def init_block(self, position, block):
         self.add_block(position, block, sync=False, force=False)
+
+    def post_initialize(self):
+        # Convert dirt to grass if no block or a transparent one is above.
+        for position, block in ((p, b) for p, b in self.items()
+                                if b is dirt_block):
+            x, y, z = position
+            above_position = x, y + 1, z
+            if above_position not in self or self[above_position].transparent:
+                self[position] = grass_block
