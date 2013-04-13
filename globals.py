@@ -6,13 +6,19 @@ Since these global variables are modified during runtime, using `import *`
 would lead to unpredictable consequences.
 """
 
+# Imports, sorted alphabetically.
+
 # Python packages
-import argparse
 from ConfigParser import ConfigParser
+import argparse
 from math import pi
 import os
+
 # Third-party packages
 from pyglet.resource import get_settings_path
+
+# Modules from this project
+# Nothing for now...
 
 
 APP_NAME = 'pyCraftr'  # should I stay or should I go?

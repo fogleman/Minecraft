@@ -1,6 +1,15 @@
+# Imports, sorted alphabetically.
+
+# Python packages
+# Nothing for now...
+
+# Third-party packages
+# Nothing for now...
+
+# Modules from this project
 from blocks import *
-from items import *
 import globals
+from items import *
 
 
 class Recipe(object):
