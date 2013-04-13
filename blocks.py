@@ -71,14 +71,14 @@ class BlockID(object):
     """
 
     main = 0
-    sub = 0 #Aka DataID, damageID, etc
+    sub = 0  # A.k.a. DataID, damageID, etc
 
     def __init__(self, main, sub=0):
         if isinstance(main, tuple):
             self.main, self.sub = main
         elif isinstance(main, basestring):
             # Allow "35", "35.0", or "35,0"
-            spl = main.split(".") if "." in main else main.split(",") if "," in main else (main,)
+            spl = main.split(".") if "." in main else main.split(",") if "," in main else (main, 0)
             if len(spl) == 2:
                 a, b = spl
             elif len(spl) == 1:
@@ -94,23 +94,34 @@ class BlockID(object):
         else:
             self.main = int(main)
             self.sub = int(sub)
+
     def __repr__(self):
         return '%d.%d' % (self.main, self.sub)
+
     def __hash__(self):
-        return hash(repr(self))
-    def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return self.main == other.main and self.sub == other.sub
-        else: #For int's
-            return self.main == other
+        return hash((self.main, self.sub))
+
+    def __cmp__(self, other):
+        if isinstance(other, tuple):
+            return cmp((self.main, self.sub), other)
+        if isinstance(other, float):
+            return cmp(float(repr(self.main)), other)
+        if isinstance(other, int):
+            return cmp(self.main, other)
+        if isinstance(other, BlockID):
+            return cmp(self.main, other.main) or cmp(self.sub, other.sub)
+
     def __nonzero__(self):
-        return self.main is not 0
-    def __cmp__(self,other):
-        return cmp(self.main, other)
-    def is_item(self): return self.main > 255
+        """Checks whether it is an AirBlock."""
+        return self.main != 0
+
+    def is_item(self):
+        return self.main > 255
+
     def filename(self):
         if self.sub == 0: return str(self.main)
         return '%d.%d' % (self.main, self.sub)
+
 
 class Block(object):
     id = None  # Original minecraft id (also called data value).
