@@ -106,6 +106,17 @@ class Command(object):
         self.controller.write_line(text, color=COMMAND_ERROR_COLOR)
 
 
+class HelpCommand(Command):
+    command = r"^help$"
+    help_text = "help: Show this help information"
+
+    def execute(self, *args, **kwargs):
+        self.send_info("****** Available Commands ******")
+        for command_type in Command.__subclasses__():
+            if hasattr(command_type, 'help_text') and command_type.help_text:
+                self.send_info(command_type.help_text)
+
+
 class GiveBlockCommand(Command):
     command = r"^give (\d+(?:[\.,]\d+)?)(?:\s+(\d+))?$"
     help_text = "give <block_id> [amount]: Give a specified amount (default of 1) of the item to the player"
