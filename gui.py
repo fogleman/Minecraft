@@ -13,6 +13,9 @@ from inventory import *
 from items import *
 from utils import load_image, image_sprite, hidden_image_sprite
 
+pyglet.font.add_file('resources/fonts/Chunkfive.ttf')
+pyglet.font.load('ChunkFive Roman')
+
 class Rectangle(object):
     def __init__(self, x, y, width, height):
         self.position = x, y
@@ -63,7 +66,7 @@ class Button(Rectangle):
         self.sprite_highlighted = hidden_image_sprite(image_highlighted, self.batch, self.group)
         self.on_mouse_click = on_click
         self.highlighted = False
-        self.label = Label(caption, font_name, 12, anchor_x='center', anchor_y='center',
+        self.label = Label(str(caption), font_name, 12, anchor_x='center', anchor_y='center',
             color=(255, 255, 255, 255), batch=self.batch, group=self.label_group) if caption else None
         self.position = x, y
 	
