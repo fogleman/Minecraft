@@ -291,7 +291,7 @@ class GameController(Controller):
                         if current_block is not None:
                             # if current block is an item,
                             # call its on_right_click() method to handle this event
-                            if current_block.id >= ITEM_ID_MIN:
+                            if current_block.id >= globals.ITEM_ID_MIN:
                                 current_block.on_right_click()
                             else:
                                 localx, localy, localz = map(operator.sub,previous,normalize(self.player.position))

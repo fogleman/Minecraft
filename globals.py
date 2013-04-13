@@ -105,6 +105,11 @@ TILESET_SIZE = 16  # The tileset therefore contains TILESET_SIZE ** 2 tiles.
 
 BLOCKS_DIR = {}  # Block ID => block object
 ITEMS_DIR = {}  # Item ID => item object
+
+# items and blocks share a common id table
+# ids of items should be >= ITEM_ID_MIN
+ITEM_ID_MIN = 256
+
 TIME_RATE = 240 * 10  # Rate of change (steps per hour).
 SPREADING_MUTATION_DELAY = 4  # in seconds
 

@@ -17,7 +17,7 @@ class Inventory(object):
             return False
 
         item_stack = self.get_item(item_id)
-        if item_id >= ITEM_ID_MIN:
+        if item_id >= globals.ITEM_ID_MIN:
             max_size = globals.ITEMS_DIR[item_id].max_stack_size
         else:
             max_size = globals.BLOCKS_DIR[item_id].max_stack_size
