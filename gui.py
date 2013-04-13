@@ -306,14 +306,14 @@ class InventorySelector(AbstractInventory):
         self.icon_size = self.model.group.texture.width / globals.TILESET_SIZE
         self.selected_item = None
         self.selected_item_icon = None
-        self.mode = 0 # 0 - Normal inventory, 1 - Crafting Table, 2 - Furnance
+        self.mode = 0 # 0 - Normal inventory, 1 - Crafting Table, 2 - Furnace
         self.change_image()
         self.crafting_panel = Inventory(4)
         self.crafting_outcome = None  # should be an item stack
         self.crafting_outcome_icon = None
         self.crafting_outcome_label = None
         self.crafting_table_panel = Inventory(9)
-        self.furnance_panel = Inventory(2)
+        self.furnace_panel = Inventory(2)
         self.visible = False
 
     def change_image(self):
@@ -322,7 +322,7 @@ class InventorySelector(AbstractInventory):
         elif self.mode == 1:
             image = load_image('resources', 'textures', 'inventory_when_crafting_table.png')
         elif self.mode == 2:
-            image = load_image('resources', 'textures', 'inventory_when_furnance.png')
+            image = load_image('resources', 'textures', 'inventory_when_furnace.png')
         self.frame = image_sprite(image, self.batch, 0)
         self.frame.x = (self.parent.window.width - self.frame.width) / 2
         self.frame.y = self.icon_size / 2 - 4
@@ -409,8 +409,8 @@ class InventorySelector(AbstractInventory):
         crafting_height = (crafting_rows * (self.icon_size * 0.5)) + (crafting_rows * 3)
         x = self.frame.x + (165 if self.mode == 0 else 72 if self.mode == 1 else 63)
         y = self.frame.y + crafting_y + crafting_height
-        items = self.crafting_panel.get_items() if self.mode == 0 else self.crafting_table_panel.get_items() if self.mode == 1 else self.furnance_panel.get_items()
-        items = items[:self.crafting_panel.slot_count] if self.mode == 0 else items[:self.crafting_table_panel.slot_count] if self.mode == 1 else items[:self.furnance_panel.slot_count]
+        items = self.crafting_panel.get_items() if self.mode == 0 else self.crafting_table_panel.get_items() if self.mode == 1 else self.furnace_panel.get_items()
+        items = items[:self.crafting_panel.slot_count] if self.mode == 0 else items[:self.crafting_table_panel.slot_count] if self.mode == 1 else items[:self.furnace_panel.slot_count]
         # NOTE: each line in the crafting panel should be a sub-list in the crafting ingredient list
         crafting_ingredients = [[], []] if self.mode == 0 else [[], [], []] if self.mode == 1 else [[], []]
         for i, item in enumerate(items):
@@ -512,7 +512,7 @@ class InventorySelector(AbstractInventory):
             elif self.mode == 1:
                 self.crafting_table_panel.remove_unnecessary_stacks()
             elif self.mode == 2:
-                self.furnance_panel.remove_unnecessary_stacks()
+                self.furnace_panel.remove_unnecessary_stacks()
             inventory = self.player.inventory
             items_per_row = 9
         elif crafting_y <= y <= crafting_y + crafting_height and x >= crafting_x \
@@ -526,8 +526,8 @@ class InventorySelector(AbstractInventory):
                 self.crafting_table_panel.remove_unnecessary_stacks()
                 inventory = self.crafting_table_panel
             elif self.mode == 2:
-                self.furnance_panel.remove_unnecessary_stacks()
-                inventory = self.furnance_panel
+                self.furnace_panel.remove_unnecessary_stacks()
+                inventory = self.furnace_panel
             x_offset = x - crafting_x
             items_per_row = crafting_items_per_row
         elif crafting_outcome_y <= y <= crafting_outcome_y + crafting_outcome_height and \
