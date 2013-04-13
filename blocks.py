@@ -416,6 +416,7 @@ class WaterBlock(Block):
     transparent = True
     hardness = -1  # Unobtainable
     density = 0.5
+    height = 0.8
     id = 8
     name = "Water"
     break_sound = sounds.water_break
