@@ -95,6 +95,8 @@ To do so, you have to install Cython and Python dev files
 `python setup.py build_ext --inplace --force`.  You will have
 to run this last command each time you update the game.
 
+### Pyglet compilation
+
 You can even automatically compile pyglet using Cython.  To do so, download
 the pyglet source code and put the *pyglet* folder inside the game repository.
 Compile the game as mentionned before, pyglet will be compiled and you should
