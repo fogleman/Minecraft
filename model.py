@@ -44,9 +44,9 @@ class Model(World):
         }
 
         world_type_trees = {
-            'plains': (OakTree, BirchTree, WaterMelon, Pumpkin, YFlowers, Potato, Carrot),
+            'plains': (OakTree, BirchTree, WaterMelon, Pumpkin, YFlowers, Potato, Carrot, Rose),
             'desert': (Cactus, TallCactus, Rose),
-            'island': (OakTree, JungleTree, BirchTree, Cactus, TallCactus, WaterMelon, YFlowers, Reed),
+            'island': (OakTree, JungleTree, BirchTree, Cactus, TallCactus, WaterMelon, YFlowers, Reed, Rose),
             'mountains': (OakTree, BirchTree, Pumpkin, YFlowers, Potato, Carrot),
             'snow': (OakTree, BirchTree, WaterMelon, YFlowers, Potato, Rose),
         }

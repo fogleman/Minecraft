@@ -125,6 +125,7 @@ class StickItem(Item):
     id = 280
     max_stack_size = 64
     name = "Stick"
+    burning_time = 5
 
 class FlintItem(Item):
     id = 318
