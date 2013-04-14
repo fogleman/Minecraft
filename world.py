@@ -76,7 +76,7 @@ def sectorize(position):
     x, y, z = (x / G.SECTOR_SIZE,
                y / G.SECTOR_SIZE,
                z / G.SECTOR_SIZE)
-    return x, 0, z
+    return x, y, z
 
 
 class TextureGroup(pyglet.graphics.Group):
@@ -105,9 +105,12 @@ class World(dict):
         self.transparency_batch = pyglet.graphics.Batch()
         self.group = TextureGroup(os.path.join('resources', 'textures', 'texture.png'))
 
+        import savingsystem #This module doesn't like being imported at modulescope
+        self.savingsystem = savingsystem
         self.shown = {}
         self._shown = {}
         self.sectors = defaultdict(list)
+        self.before_set = set()
         self.urgent_queue = deque()
         self.lazy_queue = deque()
 
@@ -269,7 +272,23 @@ class World(dict):
             self.enqueue(self._show_sector, sector, urgent=True)
 
     def _show_sector(self, sector):
-        for position in self.sectors.get(sector, ()):
+        if G.SAVE_MODE == G.REGION_SAVE_MODE and not sector in self.sectors:
+            #The sector is not in memory, load or create it
+            if self.savingsystem.sector_exists(sector):
+                #If its on disk, load it
+                self.savingsystem.load_region(self, sector=sector)
+            else:
+                #The sector doesn't exist yet, generate it!
+                #self.generate_region(key) #<-- TODO
+
+                #Temporary region generation function to show that the world grows
+                cx, cy, cz = self.savingsystem.sector_to_blockpos(sector)
+                rx, ry, rz = cx/32*32, cy/32*32, cz/32*32 #
+                for x in xrange(rx, rx+32):
+                    for z in xrange(rz, rz+32):
+                        self.init_block((x, ry, z), grass_block) #Flat layer of grass at the base of the region
+
+        for position in self.sectors[sector]:
             if position not in self.shown and self.is_exposed(position):
                 self.show_block(position)
 
@@ -286,27 +305,22 @@ class World(dict):
             if position in self.shown:
                 self.hide_block(position)
 
-    def change_sectors(self, before, after):
-        before_set = set()
+    def change_sectors(self, after):
+        before_set = self.before_set
         after_set = set()
         pad = G.VISIBLE_SECTORS_RADIUS
+        x, y, z = after
         for dx in xrange(-pad, pad + 1):
-            for dy in (0,):  # xrange(-pad, pad + 1):
+            for dy in xrange(-2, 2):
                 for dz in xrange(-pad, pad + 1):
                     if dx ** 2 + dy ** 2 + dz ** 2 > (pad + 1) ** 2:
                         continue
-                    if before:
-                        x, y, z = before
-                        before_set.add((x + dx, y + dy, z + dz))
-                    if after:
-                        x, y, z = after
-                        after_set.add((x + dx, y + dy, z + dz))
-        show = after_set - before_set
-        hide = before_set - after_set
-        for sector in show:
+                    after_set.add((x + dx, y + dy, z + dz))
+        for sector in (after_set - before_set):
             self.show_sector(sector)
-        for sector in hide:
+        for sector in (before_set - after_set):
             self.hide_sector(sector)
+        self.before_set = after_set
 
     def enqueue(self, func, *args, **kwargs):
         task = func, args, kwargs
