@@ -152,18 +152,18 @@ G.recipes.add_recipe(["   ", "   ", "###"], {'#': quartz_block},
 
 #9 ores to blocks
 
-globals.recipes.add_recipe(["###", "###", "###"], {'#': iron_ingot_item},
+G.recipes.add_recipe(["###", "###", "###"], {'#': iron_ingot_item},
                    ItemStack(iron_block.id, amount=1))
-globals.recipes.add_recipe(["###", "###", "###"], {'#': gold_ingot_item},
+G.recipes.add_recipe(["###", "###", "###"], {'#': gold_ingot_item},
                    ItemStack(gold_block.id, amount=1))
-globals.recipes.add_recipe(["###", "###", "###"], {'#': diamond_item},
+G.recipes.add_recipe(["###", "###", "###"], {'#': diamond_item},
                    ItemStack(diamond_block.id, amount=1))
 #  block back to 9 ores
-globals.recipes.add_shapeless_recipe((diamond_block,),
+G.recipes.add_shapeless_recipe((diamond_block,),
                     ItemStack(diamond_item.id, amount=9))
-globals.recipes.add_shapeless_recipe((iron_block,),
+G.recipes.add_shapeless_recipe((iron_block,),
                     ItemStack(iron_ingot_item.id, amount=9))
-globals.recipes.add_shapeless_recipe((gold_block,),
+G.recipes.add_shapeless_recipe((gold_block,),
                     ItemStack(gold_ingot_item.id, amount=9))
 # wood items
 
