@@ -117,7 +117,7 @@ class GameController(Controller):
     def update(self, dt):
         sector = sectorize(self.player.position)
         if sector != self.sector:
-            self.model.change_sectors(self.sector, sector)
+            self.model.change_sectors(sector)
             # When the world is loaded, show every visible sector.
             if self.sector is None:
                 self.model.process_entire_queue()

@@ -76,7 +76,7 @@ def sectorize(position):
     x, y, z = (x / G.SECTOR_SIZE,
                y / G.SECTOR_SIZE,
                z / G.SECTOR_SIZE)
-    return x, 0, z
+    return x, y, z
 
 
 class TextureGroup(pyglet.graphics.Group):
@@ -108,6 +108,7 @@ class World(dict):
         self.shown = {}
         self._shown = {}
         self.sectors = defaultdict(list)
+        self.before_set = set()
         self.urgent_queue = deque()
         self.lazy_queue = deque()
 
@@ -286,27 +287,22 @@ class World(dict):
             if position in self.shown:
                 self.hide_block(position)
 
-    def change_sectors(self, before, after):
-        before_set = set()
+    def change_sectors(self, after):
+        before_set = self.before_set
         after_set = set()
         pad = G.VISIBLE_SECTORS_RADIUS
+        x, y, z = after
         for dx in xrange(-pad, pad + 1):
-            for dy in (0,):  # xrange(-pad, pad + 1):
+            for dy in xrange(-2, 2):
                 for dz in xrange(-pad, pad + 1):
                     if dx ** 2 + dy ** 2 + dz ** 2 > (pad + 1) ** 2:
                         continue
-                    if before:
-                        x, y, z = before
-                        before_set.add((x + dx, y + dy, z + dz))
-                    if after:
-                        x, y, z = after
-                        after_set.add((x + dx, y + dy, z + dz))
-        show = after_set - before_set
-        hide = before_set - after_set
-        for sector in show:
+                    after_set.add((x + dx, y + dy, z + dz))
+        for sector in (after_set - before_set):
             self.show_sector(sector)
-        for sector in hide:
+        for sector in (before_set - after_set):
             self.hide_sector(sector)
+        self.before_set = after_set
 
     def enqueue(self, func, *args, **kwargs):
         task = func, args, kwargs
