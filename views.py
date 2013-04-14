@@ -76,7 +76,7 @@ class MainMenuView(View):
         self.frame = image_sprite(image, self.batch, 1)
         button_image = load_image('resources', 'textures', 'button.png')
         button_highlighted = load_image('resources', 'textures', 'button_highlighted.png')
-#            open_world(self, globals.game_dir, globals.SAVE_FILENAME)
+#            open_world(self, G.game_dir, G.SAVE_FILENAME)
         self.buttons = []
         if G.DISABLE_SAVE \
                 and world_exists(G.game_dir, G.SAVE_FILENAME):

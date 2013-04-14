@@ -160,7 +160,10 @@ class Player(Entity):
                     op[1] -= dy
                     op[i] += face[i]
                     op = tuple(op)
-                    if op not in parent.model:
+                    # If there is no block or if the block is not a cube,
+                    # we can walk there.
+                    if op not in parent.model \
+                            or parent.model[op].vertex_mode != G.VERTEX_CUBE:
                         continue
                     p[i] -= (d - pad) * face[i]
                     if face == (0, -1, 0) or face == (0, 1, 0):

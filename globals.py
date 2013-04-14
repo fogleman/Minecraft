@@ -112,6 +112,15 @@ TILESET_SIZE = 16  # The tileset therefore contains TILESET_SIZE ** 2 tiles.
 BLOCKS_DIR = {}  # Block ID => block object
 ITEMS_DIR = {}  # Item ID => item object
 
+VERTEX_CUBE = 'cube'
+VERTEX_CROSS = 'cross'
+VERTEX_GRID = 'grid'
+VERTEX_MODES = (
+    VERTEX_CUBE,
+    VERTEX_CROSS,
+    VERTEX_GRID,
+)
+
 # items and blocks share a common id table
 # ids of items should be >= ITEM_ID_MIN
 ITEM_ID_MIN = 256

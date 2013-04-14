@@ -145,7 +145,7 @@ class Block(object):
     top_texture = ()
     bottom_texture = ()
     side_texture = ()
-    crossed_sides = False
+    vertex_mode = G.VERTEX_CUBE
     group = None  # The texture (group) the block renders from
     texture_name = None  # A list of block faces, named what Mojang names their blocks/"file".png
 
@@ -197,19 +197,24 @@ class Block(object):
     def get_texture_data(self):
         textures = self.top_texture + self.bottom_texture \
                    + self.side_texture * 2
-        if not self.crossed_sides:
+        if self.vertex_mode != G.VERTEX_CROSS:
             textures += (self.side_texture * 2)
         return list(textures)
 
     def get_vertices(self, x, y, z):
         w = self.width / 2.0
         h = self.height / 2.0
+
+        y_offset = (1.0 - self.height) / 2
+        y -= y_offset
+
         xm = x - w
         xp = x + w
         ym = y - h
         yp = y + h
         zm = z - w
         zp = z + w
+
         ret = []
         if len(self.top_texture) > 0 or len(self.side_texture) == 0:
             ret.extend([
@@ -219,10 +224,21 @@ class Block(object):
             ret.extend([
                 xm, ym, zm,   xp, ym, zm,   xp, ym, zp,   xm, ym, zp  # bottom
             ])
-        if self.crossed_sides:
+        if self.vertex_mode == G.VERTEX_CROSS:
             ret.extend([
                 xm, ym, zm,   xp, ym, zp,   xp, yp, zp,   xm, yp, zm,
                 xm, ym, zp,   xp, ym, zm,   xp, yp, zm,   xm, yp, zp,
+            ])
+        elif self.vertex_mode == G.VERTEX_GRID:
+            xm2 = x - w / 2.0
+            xp2 = x + w / 2.0
+            zm2 = z - w / 2.0
+            zp2 = z + w / 2.0
+            ret.extend([
+                xm2, ym, zm,   xm2, ym, zp,   xm2, yp, zp,   xm2, yp, zm,  # left
+                xp2, ym, zp,   xp2, ym, zm,   xp2, yp, zm,   xp2, yp, zp,  # right
+                xm, ym, zp2,   xp, ym, zp2,   xp, yp, zp2,   xm, yp, zp2,  # front
+                xp, ym, zm2,   xm, ym, zm2,   xm, yp, zm2,   xp, yp, zm2,  # back
             ])
         else:
             ret.extend([
@@ -442,6 +458,7 @@ class BedrockBlock(HardBlock):
 
 
 class WaterBlock(Block):
+    height = 0.8
     top_texture = 0, 2
     bottom_texture = 6, 7
     side_texture = 6, 7
@@ -449,7 +466,6 @@ class WaterBlock(Block):
     transparent = True
     hardness = -1  # Unobtainable
     density = 0.5
-    height = 0.8
     id = 8
     name = "Water"
     break_sound = sounds.water_break
@@ -655,23 +671,23 @@ class BirchWoodBlock(WoodBlock):
 
 
 class CactusBlock(Block):
+    width = 0.8
     top_texture = 7, 5
     bottom_texture = 7, 3
     side_texture = 7, 4
     texture_name = "cactus_top","cactus_bottom","cactus_side"
-    width = 0.8
     hardness = 2
     id = 81,0
     name = "Cactus"
 
 
 class TallCactusBlock(Block):
+    width = 0.3
     top_texture = 7, 5
     bottom_texture = 7, 3
     side_texture = 7, 4
     texture_name = "cactus_top","cactus_bottom","cactus_side"
     transparent = True
-    width = 0.3
     hardness = 1
     id = 81,1  # not a real MC block, so the last possible # i think.
     name = "Thin Cactus"
@@ -720,13 +736,14 @@ class BirchLeafBlock(LeafBlock):
 
 
 class MelonBlock(Block):
+    width = 0.8
+    height = 0.8
     top_texture = 4, 3
     bottom_texture = 4, 3
     side_texture = 4, 2
     texture_name = "melon_top","melon_top","melon_side"
     transparent = True
     hardness = 1
-    width = 0.8
     id = 103
     name = "Melon"
     regenerated_health = 3
@@ -734,13 +751,14 @@ class MelonBlock(Block):
 
 
 class PumpkinBlock(Block):
+    width = 0.8
+    height = 0.8
     top_texture = 2, 5
     bottom_texture = 2, 5
     side_texture = 3, 5
     texture_name = "pumpkin_top","pumpkin_top","pumpkin_side"
     transparent = True
     hardness = 1
-    width = 0.8
     id = 86
     name = "Pumpkin"
     regenerated_health = 3 # pumpkin pie
@@ -748,24 +766,26 @@ class PumpkinBlock(Block):
 
 
 class TorchBlock(WoodBlock):
+    width = 0.1
+    height = 0.5
     top_texture = 5, 5
     bottom_texture = 0, 1
     side_texture = 4, 5
     texture_name = "torch",
     hardness = 1
     transparent = True
-    width = 0.2
     id = 50
     name = "Torch"
 
 class YFlowersBlock(Block):
+    width = 0.5
+    height = 0.7
     top_texture = 6, 6
     bottom_texture = -1, -1
     side_texture = 6, 5
-    crossed_sides = True
+    vertex_mode = G.VERTEX_CROSS
     hardness = 0.0
     transparent = True
-    width = 0.5
     id = 37
     name = "Dandelion"
     break_sound = sounds.leaves_break
@@ -802,13 +822,13 @@ class CobbleBlock(HardBlock):
 
 
 class CobbleFenceBlock(HardBlock):
+    width = 0.6
     top_texture = 6, 3
     bottom_texture = 6, 3
     side_texture = 6, 3
     texture_name = "stonebrick",
     transparent = True
     hardness = 2
-    width = 0.6
     id = 4,1
     name = "Cobblestone Fence Post"
 
@@ -1112,7 +1132,7 @@ class PotatoBlock(Block):
     top_texture = -1, -1
     bottom_texture = -1, -1
     side_texture = 10, 3
-    crossed_sides = True
+    vertex_mode = G.VERTEX_GRID
     hardness = 0.0
     transparent = True
     id = 142
@@ -1125,7 +1145,7 @@ class CarrotBlock(Block):
     top_texture = -1, -1
     bottom_texture = -1, -1
     side_texture = 10, 2
-    crossed_sides = True
+    vertex_mode = G.VERTEX_GRID
     hardness = 0.0
     transparent = True
     id = 141
