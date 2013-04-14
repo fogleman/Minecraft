@@ -130,7 +130,10 @@ class World(dict):
             if not force:
                 return
             self.remove_block(None, position, sync=sync)
-        self[position] = block
+        if block.id == furnace_block.id:
+            self[position] = FurnaceBlock()
+        else:
+            self[position] = block
         self.sectors[sectorize(position)].append(position)
         if sync:
             if self.is_exposed(position):

@@ -861,8 +861,47 @@ class FurnaceBlock(HardBlock):
     id = 61
     name = "Furnace"
 
-    fuel = None # fuel slot
-    smelt_stack = None # input slot
+    fuel = None
+    smelt_stack = None
+
+    # compatible with inventory
+    def set_slot(self, index, value):
+        i = int(index)
+        if i < 0 or i >= 2:
+            return None
+        if i == 0:
+            self.set_smelting_item(value)
+        else:
+            self.set_fuel(value)
+
+    def at(self, index):
+        i = int(index)
+        if i < 0 or i >= 2:
+            return None
+        return self.fuel if i == 1 else self.smelt_stack
+
+    def remove_all_by_index(self, index):
+        i = int(index)
+        if i < 0 or i >= 2:
+            return None
+        if i == 0:
+            self.smelt_stack = None
+        else:
+            self.fuel = None
+
+    def get_items(self):
+        return [self.smelt_stack, self.fuel]
+
+    def remove_unnecessary_stacks(self):
+        if self.fuel is not None:
+            if self.fuel.amount == 0:
+                self.fuel = None
+        if self.smelt_stack is not None:
+            if self.smelt_stack.amount == 0:
+                self.smelt_stack = None
+
+    slot_count = 2
+
     outcome_item = None
     smelt_outcome = None # output slot
 
@@ -898,6 +937,7 @@ class FurnaceBlock(HardBlock):
 
 
     def smelt_done(self):
+        print('outcome')
         self.smelt_task = None
         # outcome
         if self.smelt_outcome is None:
@@ -919,6 +959,7 @@ class FurnaceBlock(HardBlock):
         self.smelt_task = G.main_timer.add_task(self.smelt_stack.get_object().smelting_time, self.smelt_done)
 
     def remove_fuel(self):
+        print('remove fuel')
         self.fuel_task = None
         self.fuel.change_amount(-1)
         if self.fuel.amount <= 0:
@@ -941,6 +982,7 @@ class FurnaceBlock(HardBlock):
         if self.full():
             return
 
+        print('start smelting')
         burning_time = self.fuel.get_object().burning_time
         smelting_time = self.smelt_stack.get_object().smelting_time
         # fuel task: remove fuel

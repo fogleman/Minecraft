@@ -315,7 +315,7 @@ class InventorySelector(AbstractInventory):
         self.crafting_outcome_icon = None
         self.crafting_outcome_label = None
         self.crafting_table_panel = Inventory(9)
-        self.furnace_panel = Inventory(2)
+        self.furnace_panel = None   # should be a FurnaceBlock
         self.visible = False
 
     def change_image(self):
@@ -650,7 +650,10 @@ class InventorySelector(AbstractInventory):
                 if item:
                     remaining = item.change_amount(amount_to_change)
                 else:
-                    inventory.slots[index] = ItemStack(type=self.selected_item.type, amount=amount_to_change)
+                    if hasattr(inventory, 'set_slot'):
+                        inventory.set_slot(index, ItemStack(type=self.selected_item.type, amount=amount_to_change))
+                    else:
+                        inventory.slots[index] = ItemStack(type=self.selected_item.type, amount=amount_to_change)
                     remaining = self.selected_item.amount - amount_to_change
                 if remaining > 0:
                     self.selected_item.change_amount((self.selected_item.amount - remaining) * -1)
@@ -658,7 +661,10 @@ class InventorySelector(AbstractInventory):
                     self.set_selected_item(None)
                 self.update_items()
                 return pyglet.event.EVENT_HANDLED
-            inventory.slots[index] = self.selected_item
+            if hasattr(inventory, 'set_slot'):
+                inventory.set_slot(index, self.selected_item)
+            else:
+                inventory.slots[index] = self.selected_item
             self.set_selected_item(item)
             if self.selected_item_icon:
                 self.selected_item_icon.x = x - (self.selected_item_icon.width / 2)
