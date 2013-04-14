@@ -163,6 +163,7 @@ class GetIDCommand(Command):
         else:
             self.send_info("ID: None")
 
+
 class TakeScreencapCommand(Command):
     command = r"^screencap$"
     help_text = "screencap: saves current screen to a file"
@@ -175,4 +176,15 @@ class TakeScreencapCommand(Command):
         if not os.path.exists('screencaptures'):
             os.makedirs('screencaptures')
 
-        pyglet.image.get_buffer_manager().get_color_buffer().save('screencaptures/' + filename)
+        # Hide inputs so they're not on the screencapture
+        self.controller.text_input.visible = False
+        self.controller.chat_box.visible = False
+        self.controller.on_draw()
+
+        path = 'screencaptures/' + filename
+        pyglet.image.get_buffer_manager().get_color_buffer().save(path)
+        self.send_info("Screen capture saved to '%s'" % path)
+
+        # ...and then show them again
+        self.controller.text_input.visible = True
+        self.controller.chat_box.visible = True
