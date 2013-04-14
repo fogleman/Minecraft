@@ -2,12 +2,10 @@
 
 # Python packages
 import time
-
 # Third-party packages
-# Nothing for now...
-
+# Nothing for now..
 # Modules from this project
-import globals as G
+import globals
 from nature import *
 from world import *
 
@@ -25,12 +23,12 @@ class Model(World):
             self.post_initialize()
 
     def initialize(self):
-        world_size = G.config.getint('World', 'size')
-        world_type = G.TERRAIN_CHOICE  # FIXME: Unify names!
-        hill_height = G.TERRAIN['hill_height']
-        self.max_trees = G.TERRAIN['max_trees']
+        world_size = globals.config.getint('World', 'size')
+        world_type = globals.TERRAIN_CHOICE  # FIXME: Unify names!
+        hill_height = globals.TERRAIN['hill_height']
+        self.max_trees = globals.TERRAIN['max_trees']
         tree_chance = self.max_trees / float(world_size *
-                                             (G.SECTOR_SIZE ** 3))
+                                             (globals.SECTOR_SIZE ** 3))
         n = world_size / 2  # 80
         s = 1
         y = 0
@@ -44,9 +42,9 @@ class Model(World):
         }
 
         world_type_trees = {
-            'plains': (OakTree, BirchTree, WaterMelon, Pumpkin, YFlowers, Potato, Carrot),
+            'plains': (OakTree, BirchTree, WaterMelon, Pumpkin, YFlowers, Potato, Carrot, Rose),
             'desert': (Cactus, TallCactus, Rose),
-            'island': (OakTree, JungleTree, BirchTree, Cactus, TallCactus, WaterMelon, YFlowers, Reed),
+            'island': (OakTree, JungleTree, BirchTree, Cactus, TallCactus, WaterMelon, YFlowers, Reed, Rose),
             'mountains': (OakTree, BirchTree, Pumpkin, YFlowers, Potato, Carrot),
             'snow': (OakTree, BirchTree, WaterMelon, YFlowers, Potato, Rose),
         }
@@ -103,7 +101,7 @@ class Model(World):
                             tree_class = random.choice(tree_class)
                         self.generate_tree((x, y - 2, z), tree_class)
 
-        if G.FLAT_MODE:
+        if globals.FLAT_MODE:
             return
 
         o = n - 10 + hill_height - 6
