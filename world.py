@@ -105,6 +105,8 @@ class World(dict):
         self.transparency_batch = pyglet.graphics.Batch()
         self.group = TextureGroup(os.path.join('resources', 'textures', 'texture.png'))
 
+        import savingsystem #This module doesn't like being imported at modulescope
+        self.savingsystem = savingsystem
         self.shown = {}
         self._shown = {}
         self.sectors = defaultdict(list)
@@ -270,7 +272,23 @@ class World(dict):
             self.enqueue(self._show_sector, sector, urgent=True)
 
     def _show_sector(self, sector):
-        for position in self.sectors.get(sector, ()):
+        if G.SAVE_MODE == G.REGION_SAVE_MODE and not sector in self.sectors:
+            #The sector is not in memory, load or create it
+            if self.savingsystem.sector_exists(sector):
+                #If its on disk, load it
+                self.savingsystem.load_region(self, sector=sector)
+            else:
+                #The sector doesn't exist yet, generate it!
+                #self.generate_region(key) #<-- TODO
+
+                #Temporary region generation function to show that the world grows
+                cx, cy, cz = self.savingsystem.sector_to_blockpos(sector)
+                rx, ry, rz = cx/32*32, cy/32*32, cz/32*32 #
+                for x in xrange(rx, rx+32):
+                    for z in xrange(rz, rz+32):
+                        self.init_block((x, ry, z), grass_block) #Flat layer of grass at the base of the region
+
+        for position in self.sectors[sector]:
             if position not in self.shown and self.is_exposed(position):
                 self.show_block(position)
 

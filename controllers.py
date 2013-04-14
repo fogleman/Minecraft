@@ -195,6 +195,7 @@ class GameController(Controller):
             self.model = Model()
             self.player = Player((0, 0, 0), (-20, 0),
                                  game_mode=G.GAME_MODE)
+            self.save_to_file() #So the hardcoded spawn sectors aren't overwritten by the worldgen
         print('Game mode: ' + self.player.game_mode)
         self.item_list = ItemSelector(self, self.player, self.model)
         self.inventory_list = InventorySelector(self, self.player, self.model)
