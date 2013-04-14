@@ -1,18 +1,15 @@
 # Imports, sorted alphabetically.
 
 # Python packages
+import datetime
+import os
 import re
 
 # Third-party packages
-# Nothing for now...
+import pyglet
 
 # Modules from this project
 from blocks import BlockID
-import pyglet  # for screencap command
-import os #  also for screencap command
-import datetime
-
-now = datetime.datetime.now()
 
 COMMAND_HANDLED = True
 COMMAND_NOT_HANDLED = None
