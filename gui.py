@@ -451,7 +451,7 @@ class InventorySelector(AbstractInventory):
             elif self.crafting_outcome:
                 self.remove_crafting_outcome()
         elif len(crafting_ingredients) > 0 and self.mode == 2:
-            outcome = G.smelting_recipes.smelt(crafting_ingredients[0][0])
+            outcome = self.furnace_panel.smelt_outcome
             if outcome:
                 self.set_crafting_outcome(outcome)
             elif self.crafting_outcome:
@@ -475,6 +475,7 @@ class InventorySelector(AbstractInventory):
             self.update_items()
         if reset_mode:
             self.mode = 0
+            self.reset_furnace()
         self.change_image()
         self.parent.item_list.toggle()
         self.parent.window.set_exclusive_mouse(self.visible)
@@ -555,6 +556,20 @@ class InventorySelector(AbstractInventory):
         #print(row)
         #print(col)
         return inventory, int(row * items_per_row + col)
+
+    def set_furnace(self, furnace):
+        self.furnace_panel = furnace
+        # install callback
+        self.furnace_panel.outcome_callback = self.update_items
+        self.furnace_panel.fuel_callback = self.update_items
+
+    def reset_furnace(self):
+        # remove callback
+        if self.furnace_panel is None:
+            return
+        self.furnace_panel.outcome_callback = None
+        self.furnace_panel.fuel_callback = None
+        self.furnace_panel = None
 
     def set_crafting_outcome(self, item):
         if not item:

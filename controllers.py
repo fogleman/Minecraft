@@ -303,7 +303,7 @@ class GameController(Controller):
 
                     if hit_block.id == furnace_block.id:
                         self.inventory_list.mode = 2
-                        self.inventory_list.furnace_panel = hit_block
+                        self.inventory_list.set_furnace(hit_block)
                         self.inventory_list.toggle(False)
                         return
 

@@ -908,6 +908,9 @@ class FurnaceBlock(HardBlock):
     fuel_task = None
     smelt_task = None
 
+    outcome_callback = None
+    fuel_callback = None
+
     def set_smelting_item(self, item):
         if item is None:
             return
@@ -941,17 +944,22 @@ class FurnaceBlock(HardBlock):
         self.smelt_task = None
         # outcome
         if self.smelt_outcome is None:
-            self.smelting_outcome = self.outcome_item
+            self.smelt_outcome = self.outcome_item
         else:
-            self.smelting_outcome.change_amount(self.outcome_item.amount)
+            self.smelt_outcome.change_amount(self.outcome_item.amount)
         # cost
         self.smelt_stack.change_amount(-1)
         # input slot has been empty
         if self.smelt_stack.amount <= 0:
             self.smelt_stack = None
             self.outcome_item = None
+        if self.outcome_callback is not None:
+            if callable(self.outcome_callback):
+                self.outcome_callback()
         # stop
-        if self.full(self.outcome_item.amount) or self.smelt_stack is None:
+        if self.smelt_stack is None:
+            return
+        if self.full(self.outcome_item.amount):
             return
         if self.fuel is None or self.fuel_task is None:
             return
@@ -960,12 +968,16 @@ class FurnaceBlock(HardBlock):
 
     def remove_fuel(self):
         print('remove fuel')
+        if self.fuel_callback is not None:
+            if callable(self.fuel_callback):
+                self.fuel_callback()
         self.fuel_task = None
         self.fuel.change_amount(-1)
         if self.fuel.amount <= 0:
             self.fuel = None
             # stop smelting task
-            G.main_timer.remove_task(self.smelt_task)
+            if self.smelt_task is not None:
+                G.main_timer.remove_task(self.smelt_task)
             self.smelt_task = None
             return
 
