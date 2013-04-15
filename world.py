@@ -11,6 +11,7 @@ from pyglet.gl import *
 
 # Modules from this project
 from blocks import *
+from terrain import *
 import globals as G
 
 
@@ -272,25 +273,35 @@ class World(dict):
             self.enqueue(self._show_sector, sector, urgent=True)
 
     def _show_sector(self, sector):
-        if G.SAVE_MODE == G.REGION_SAVE_MODE and not sector in self.sectors:
-            #The sector is not in memory, load or create it
-            if self.savingsystem.sector_exists(sector):
-                #If its on disk, load it
-                self.savingsystem.load_region(self, sector=sector)
-            else:
-                #The sector doesn't exist yet, generate it!
-                #self.generate_region(key) #<-- TODO
+        #if G.SAVE_MODE == G.REGION_SAVE_MODE and not sector in self.sectors:
+            ##The sector is not in memory, load or create it
+            #if self.savingsystem.sector_exists(sector):
+                ##If its on disk, load it
+                #self.savingsystem.load_region(self, sector=sector)
+            #else:
+                ##The sector doesn't exist yet, generate it!
+                ##self.generate_region(key) #<-- TODO
 
-                #Temporary region generation function to show that the world grows
-                cx, cy, cz = self.savingsystem.sector_to_blockpos(sector)
-                rx, ry, rz = cx/32*32, cy/32*32, cz/32*32 #
-                for x in xrange(rx, rx+32):
-                    for z in xrange(rz, rz+32):
-                        self.init_block((x, ry, z), grass_block) #Flat layer of grass at the base of the region
+        if G.USE_PERLIN == True:
 
-        for position in self.sectors[sector]:
-            if position not in self.shown and self.is_exposed(position):
-                self.show_block(position)
+            tg = TerrainGenerator(G.PERLIN_SEED)
+            c = tg.generate_chunk(0, 0, 0) # generate the chunk at (0, 0, 0)
+            for x in range(0, CHUNK_X_SIZE):
+                  for z in range(0, CHUNK_Z_SIZE):
+                       for y in range(0, CHUNK_Y_SIZE):  # set blocks
+                            self.init_block((c.world_block_xpos(x), y, c.world_block_zpos(z)), c.get_block(world_block_xpos(x), y, world_block_pos(z)))
+
+                ##Temporary region generation function to show that the world grows
+                #cx, cy, cz = self.savingsystem.sector_to_blockpos(sector)
+                #rx, ry, rz = cx/32*32, cy/32*32, cz/32*32 #
+                #for x in xrange(rx, rx+32):
+                    #for z in xrange(rz, rz+32):
+                        #self.init_block((x, ry, z), grass_block) #Flat layer of grass at the base of the region
+
+        if G.USE_PERLIN == False:
+            for position in self.sectors[sector]:
+                if position not in self.shown and self.is_exposed(position):
+                    self.show_block(position)
 
     def hide_sector(self, sector, immediate=False):
         self.delete_opposite_task(self._show_sector, sector)

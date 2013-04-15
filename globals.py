@@ -255,3 +255,10 @@ ANCHOR_BOTTOM = 1 << 3
 ICONS_PATH = os.path.join('resources', 'textures', 'icons')
 TEXTURES_PATH = os.path.join('resources', 'textures')
 DEFAULT_FONT = 'ChunkFive Roman'
+
+
+#
+# Seed, for the new perlin terrain generation
+#
+PERLIN_SEED = 0
+USE_PERLIN = False

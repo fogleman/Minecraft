@@ -241,7 +241,7 @@ class TerrainGenerator(object):
 
                     first_block = -1
         return c
- 
+
     def gen_inner_layer(self, x, y, z, c):
         # Mineral generation should be here also
         c.set_block(x, y, z, stone_block)
@@ -253,7 +253,7 @@ class TerrainGenerator(object):
 
         if depth == 0 and 32 < y < 128:
             c.set_block(x, y, z, grass_block)
-        elif depth > 32: 
+        elif depth > 32:
             c.set_block(x, y, z, stone_block)
         else:
             c.set_block(x, y, z, dirt_block)
@@ -280,9 +280,9 @@ class TerrainGenerator(object):
                         offsetX = int((x / SAMPLE_RATE_HOR) * SAMPLE_RATE_HOR)
                         offsetY = int((y / SAMPLE_RATE_VER) * SAMPLE_RATE_VER)
                         offsetZ = int((z / SAMPLE_RATE_HOR) * SAMPLE_RATE_HOR)
-                        d_map[x][y][z] = self.tri_lerp(x, y, z, d_map[offsetX][offsetY][offsetZ], d_map[offsetX][SAMPLE_RATE_VER + offsetY][offsetZ], d_map[offsetX][offsetY][offsetZ + SAMPLE_RATE_HOR], 
-                                                                d_map[offsetX][offsetY + SAMPLE_RATE_VER][offsetZ + SAMPLE_RATE_HOR], d_map[SAMPLE_RATE_HOR + offsetX][offsetY][offsetZ], d_map[SAMPLE_RATE_HOR + offsetX][offsetY + SAMPLE_RATE_VER][offsetZ], 
-                                                                d_map[SAMPLE_RATE_HOR + offsetX][offsetY][offsetZ + SAMPLE_RATE_HOR], d_map[SAMPLE_RATE_HOR + offsetX][offsetY + SAMPLE_RATE_VER][offsetZ + SAMPLE_RATE_HOR], offsetX, SAMPLE_RATE_HOR + offsetX, offsetY, 
+                        d_map[x][y][z] = self.tri_lerp(x, y, z, d_map[offsetX][offsetY][offsetZ], d_map[offsetX][SAMPLE_RATE_VER + offsetY][offsetZ], d_map[offsetX][offsetY][offsetZ + SAMPLE_RATE_HOR],
+                                                                d_map[offsetX][offsetY + SAMPLE_RATE_VER][offsetZ + SAMPLE_RATE_HOR], d_map[SAMPLE_RATE_HOR + offsetX][offsetY][offsetZ], d_map[SAMPLE_RATE_HOR + offsetX][offsetY + SAMPLE_RATE_VER][offsetZ],
+                                                                d_map[SAMPLE_RATE_HOR + offsetX][offsetY][offsetZ + SAMPLE_RATE_HOR], d_map[SAMPLE_RATE_HOR + offsetX][offsetY + SAMPLE_RATE_VER][offsetZ + SAMPLE_RATE_HOR], offsetX, SAMPLE_RATE_HOR + offsetX, offsetY,
                                                                 SAMPLE_RATE_VER + offsetY, offsetZ, offsetZ + SAMPLE_RATE_HOR)
 
     def _clamp(self, a):
@@ -313,7 +313,7 @@ class TerrainGenerator(object):
 
     def rive_terrain(self, x, z):
         return self._clamp((sqrt(fast_abs(self.river_gen.fBm(0.0008 * x, 0, 0.0008 * z))) - 0.1) * 7.0)
-    
+
     def mount_density(self, x, y, z):
         ret = self.mount_gen.fBm(x * 0.002, y * 0.001, z * 0.002)
         return ret if ret > 0 else 0

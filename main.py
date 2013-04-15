@@ -209,6 +209,7 @@ def main(options):
             import time
             seed = long(time.time() * 256)  # use fractional seconds
         # Then convert it to a string so all seeds have the same type.
+        G.PERLIN_SEED = seed  # save before making it a string
         seed = str(seed)
 
         print('Random seed: ' + seed)
@@ -219,6 +220,7 @@ def main(options):
         seeds.write(datetime.datetime.now().strftime(
             'Seed used the %d %m %Y at %H:%M:%S\n'))
         seeds.write('%s\n\n' % seed)
+
 
     # try:
         # window_config = Config(sample_buffers=1, samples=4) #, depth_size=8)  #, double_buffer=True) #TODO Break anti-aliasing/multisampling into an explicit menu option
