@@ -37,7 +37,7 @@ class Controller(object):
     def update(self, dt):
         if self.current_view:
             self.current_view.update(dt)
-        
+
     def switch_view(self, new_view):
         if self.current_view:
             self.current_view.pop_handlers()
