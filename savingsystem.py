@@ -15,7 +15,7 @@ import time
 from blocks import BlockID
 from debug import performance_info
 import globals as G
-from model import *
+from model import Model
 from player import *
 
 

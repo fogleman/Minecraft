@@ -6,9 +6,11 @@ Terrain generating algorithm
 
 # Python packages
 from math import sqrt
+import random
 
 # Third-party packages
 # Nothing for now
+from perlin import SimplexNoise
 
 # Modules from this project
 from blocks import *
@@ -324,3 +326,66 @@ class TerrainGenerator(object):
 
     def cave_density(self, x, y, z):
         return self.cave_gen.fBm(x * 0.02, y * 0.02, z * 0.02)
+
+class TerrainGeneratorSimple(object):
+    """
+    A simple and fast use of (Simplex) Perlin Noise to generate a heightmap
+    Based on Jimx's work on the above TerrainGenerator class
+    See http://code.google.com/p/fractalterraingeneration/wiki/Fractional_Brownian_Motion for more info
+    """
+    def __init__(self, world, seed):
+        self.world = world
+        rand = random.Random(seed)
+        perm = range(255)
+        rand.shuffle(perm)
+        self.noise = SimplexNoise(permutation_table=perm).noise2
+        #self.noise = PerlinNoise(seed).noise
+        self.PERSISTENCE = 2.1379201 #AKA lacunarity
+        self.H = 0.836281
+
+        #Fun things to adjust
+        self.OCTAVES = 9        #Higher linearly increases calc time; increases apparent 'randomness'
+        self.height_range = 32  #If you raise this, you should shrink zoom_level equally
+        self.zoom_level = 0.002 #Smaller will create gentler, softer transitions. Larger is more mountainy
+
+        self.weights = [self.PERSISTENCE ** (-self.H * n) for n in xrange(self.OCTAVES)]
+    def _clamp(self, a):
+        if a > 1:
+            return 1
+        elif a < 0:
+            return 0
+        else:
+            return a
+    def get_height(self,x,z):
+        """ Given block coordinates, returns a block coordinate height """
+        x *= self.zoom_level
+        z *= self.zoom_level
+        y = 0
+        for weight in self.weights:
+            y += self.noise(x, z) * weight
+
+            x *= self.PERSISTENCE
+            z *= self.PERSISTENCE
+
+        return int(self._clamp((y+1)/2)*self.height_range)
+    def generate_sector(self, sector):
+        #For ease of saving/loading, generates a whole region (4x4x4 sectors) at once
+        world = self.world
+        cx, cy, cz = world.savingsystem.sector_to_blockpos(sector)
+        rx, ry, rz = cx/32*32, cy/32*32, cz/32*32
+
+        #Create the sector so even if the worldgen says its air, it'll still prevent future generation attempts
+        for secx in xrange(rx/8,rx/8+4):
+            for secy in xrange(ry/8,ry/8+4):
+                for secz in xrange(rz/8,rz/8+4):
+                    world.sectors[(secx,secy,secz)] = []
+
+        if 0 >= ry < 32:
+            #The current terraingen doesn't build higher than 32.
+            rytop = ry + 31
+            world_init_block, self_get_height = world.init_block, self.get_height #Localize for speed
+            for x in xrange(rx, rx+32):
+                for z in xrange(rz, rz+32):
+                    y = self_get_height(x,z)
+                    if ry <= y <= rytop:
+                        world_init_block((x, y, z), grass_block)

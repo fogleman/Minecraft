@@ -12,6 +12,7 @@ from pyglet.gl import *
 # Modules from this project
 from blocks import *
 import globals as G
+import terrain
 
 
 FACES = (
@@ -113,6 +114,7 @@ class World(dict):
         self.before_set = set()
         self.urgent_queue = deque()
         self.lazy_queue = deque()
+        self.terraingen = terrain.TerrainGeneratorSimple(self, G.SEED)
 
         self.spreading_mutable_blocks = deque()
         self.spreading_time = 0.0
@@ -279,14 +281,7 @@ class World(dict):
                 self.savingsystem.load_region(self, sector=sector)
             else:
                 #The sector doesn't exist yet, generate it!
-                #self.generate_region(key) #<-- TODO
-
-                #Temporary region generation function to show that the world grows
-                cx, cy, cz = self.savingsystem.sector_to_blockpos(sector)
-                rx, ry, rz = cx/32*32, cy/32*32, cz/32*32 #
-                for x in xrange(rx, rx+32):
-                    for z in xrange(rz, rz+32):
-                        self.init_block((x, ry, z), grass_block) #Flat layer of grass at the base of the region
+                self.terraingen.generate_sector(sector)
 
         for position in self.sectors[sector]:
             if position not in self.shown and self.is_exposed(position):
