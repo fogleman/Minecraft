@@ -5,7 +5,7 @@ Terrain generating algorithm
 # Imports, sorted alphabetically.
 
 # Python packages
-from math import sqrt
+from math import sqrt, floor
 import random
 
 # Third-party packages
@@ -14,7 +14,7 @@ from perlin import SimplexNoise
 
 # Modules from this project
 from blocks import *
-from utils import FastRandom, fast_floor, fast_abs
+from utils import FastRandom, fast_abs
 
 
 # Improved Perlin Noise based on Improved Noise reference implementation by Ken Perlin
@@ -62,13 +62,13 @@ class PerlinNoise(object):
         return (u if (h & 1) == 0 else - u) + (v if (h & 2) == 0 else -v)
 
     def noise(self, x, y, z):
-        X = int(fast_floor(x) & 255)
-        Y = int(fast_floor(y) & 255)
-        Z = int(fast_floor(z) & 255)
+        X = int(floor(x) & 255)
+        Y = int(floor(y) & 255)
+        Z = int(floor(z) & 255)
 
-        x -= fast_floor(x)
-        y -= fast_floor(y)
-        z -= fast_floor(z)
+        x -= floor(x)
+        y -= floor(y)
+        z -= floor(z)
 
         u = self.fade(x)
         v = self.fade(y)
