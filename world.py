@@ -3,6 +3,7 @@
 # Python packages
 from collections import deque, defaultdict, OrderedDict
 import os
+from time import time
 import warnings
 
 # Third-party packages
@@ -342,10 +343,15 @@ class World(dict):
             self.lazy_queue.remove(opposite_task)
 
     def process_queue(self, dt):
-        if self.sector_queue:
-            self.dequeue_sector()
-        elif self.urgent_queue or self.lazy_queue:
-            self.dequeue()
+        stoptime=time() + G.QUEUE_PROCESS_SPEED
+        while time() < stoptime:
+            #Process as much of the queues as we can
+            if self.sector_queue:
+                self.dequeue_sector()
+            elif self.urgent_queue or self.lazy_queue:
+                self.dequeue()
+            else:
+                break
 
     def process_entire_queue(self):
         while self.sector_queue:
