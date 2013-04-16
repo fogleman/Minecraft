@@ -485,11 +485,11 @@ class GameController(Controller):
 
     def draw_label(self):
         x, y, z = self.player.position
-        self.label.text = '%.1f %02d (%.2f, %.2f, %.2f) %d / %d' \
-            % (self.time_of_day if (self.time_of_day < 12.0)
+        self.label.text = 'Time:%.1f Inaccurate FPS:%02d (%.2f, %.2f, %.2f) Blocks Shown: %d / %d sector_queue:%d'\
+                          % (self.time_of_day if (self.time_of_day < 12.0)
                else (24.0 - self.time_of_day),
                pyglet.clock.get_fps(), x, y, z,
-               len(self.model._shown), len(self.model))
+               len(self.model._shown), len(self.model), len(self.model.sector_queue))
         self.label.draw()
 
     def write_line(self, text, **kwargs):

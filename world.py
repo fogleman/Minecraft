@@ -1,7 +1,7 @@
 # Imports, sorted alphabetically.
 
 # Python packages
-from collections import deque, defaultdict
+from collections import deque, defaultdict, OrderedDict
 import os
 import warnings
 
@@ -114,6 +114,7 @@ class World(dict):
         self.before_set = set()
         self.urgent_queue = deque()
         self.lazy_queue = deque()
+        self.sector_queue = OrderedDict()
         self.terraingen = terrain.TerrainGeneratorSimple(self, G.SEED)
 
         self.spreading_mutable_blocks = deque()
@@ -266,12 +267,10 @@ class World(dict):
                                           ('t2f/static', texture_data))
 
     def show_sector(self, sector, immediate=False):
-        self.delete_opposite_task(self._hide_sector, sector)
-
         if immediate:
             self._show_sector(sector)
         else:
-            self.enqueue(self._show_sector, sector, urgent=True)
+            self.enqueue_sector(True, sector)
 
     def _show_sector(self, sector):
         if G.SAVE_MODE == G.REGION_SAVE_MODE and not sector in self.sectors:
@@ -288,12 +287,10 @@ class World(dict):
                 self.show_block(position)
 
     def hide_sector(self, sector, immediate=False):
-        self.delete_opposite_task(self._show_sector, sector)
-
         if immediate:
             self._hide_sector(sector)
         else:
-            self.enqueue(self._hide_sector, sector)
+            self.enqueue_sector(False, sector)
 
     def _hide_sector(self, sector):
         for position in self.sectors.get(sector, ()):
@@ -317,6 +314,16 @@ class World(dict):
             self.hide_sector(sector)
         self.before_set = after_set
 
+    def enqueue_sector(self, state, sector): #State=True to show, False to hide
+        self.sector_queue[sector] = state
+
+    def dequeue_sector(self):
+        sector, state = self.sector_queue.popitem(False)
+        if state:
+            self._show_sector(sector)
+        else:
+            self._hide_sector(sector)
+
     def enqueue(self, func, *args, **kwargs):
         task = func, args, kwargs
         urgent = kwargs.pop('urgent', False)
@@ -335,10 +342,14 @@ class World(dict):
             self.lazy_queue.remove(opposite_task)
 
     def process_queue(self, dt):
-        if self.urgent_queue or self.lazy_queue:
+        if self.sector_queue:
+            self.dequeue_sector()
+        elif self.urgent_queue or self.lazy_queue:
             self.dequeue()
 
     def process_entire_queue(self):
+        while self.sector_queue:
+            self.dequeue_sector()
         while self.urgent_queue or self.lazy_queue:
             self.dequeue()
 
