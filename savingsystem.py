@@ -6,6 +6,7 @@ import cStringIO as StringIO
 import os
 import struct
 import zlib
+import time
 
 # Third-party packages
 # Nothing for now...
@@ -14,7 +15,7 @@ import zlib
 from blocks import BlockID
 from debug import performance_info
 import globals as G
-from model import *
+from model import Model
 from player import *
 
 
@@ -49,7 +50,7 @@ def save_world(window, game_dir, world=None):
         os.makedirs(os.path.join(game_dir, world))
 
     #Non block related data
-    save = (3,window.player, window.time_of_day)
+    save = (4,window.player, window.time_of_day, G.SEED)
     pickle.dump(save, open(os.path.join(game_dir, world, "save.pkl"), "wb"))
 
     #blocks and sectors (window.model and window.model.sectors)
@@ -59,7 +60,7 @@ def save_world(window, game_dir, world=None):
         for secpos in window.model.sectors: #TODO: only save dirty sectors
             if not window.model.sectors[secpos]:
                 continue #Skip writing empty sectors
-            file = os.path.join(game_dir, world, sector_to_filename(secpos)) 
+            file = os.path.join(game_dir, world, sector_to_filename(secpos))
             if not os.path.exists(file):
                 with open(file, "w") as f:
                     f.truncate(64*1024) #Preallocate the file to be 64kb
@@ -145,13 +146,24 @@ def load_region(model, world=None, region=None, sector=None):
 @performance_info
 def open_world(gamecontroller, game_dir, world=None):
     if world is None: world = "world"
-    gamecontroller.model = Model(initialize=False)
 
     #Non block related data
     loaded_save = pickle.load(open(os.path.join(game_dir, world, "save.pkl"), "rb"))
-    if loaded_save[0] == 3: #Version 3
+    if loaded_save[0] == 4:
         if isinstance(loaded_save[1], Player): gamecontroller.player = loaded_save[1]
         if isinstance(loaded_save[2], float): gamecontroller.time_of_day = loaded_save[2]
+        if isinstance(loaded_save[3], str):
+            G.SEED = loaded_save[3]
+            random.seed(G.SEED)
+            print('Loaded seed from save: ' + G.SEED)
+    elif loaded_save[0] == 3: #Version 3
+        if isinstance(loaded_save[1], Player): gamecontroller.player = loaded_save[1]
+        if isinstance(loaded_save[2], float): gamecontroller.time_of_day = loaded_save[2]
+        G.SEED = str(long(time.time() * 256))
+        random.seed(G.SEED)
+        print('No seed in save, generated random seed: ' + G.SEED)
+
+    gamecontroller.model = Model(initialize=False)
 
     #blocks and sectors (window.model and window.model.sectors)
     if G.SAVE_MODE == G.REGION_SAVE_MODE:

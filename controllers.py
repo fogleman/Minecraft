@@ -3,6 +3,8 @@
 # Python packages
 from math import cos, sin, pi, fmod
 import operator
+from binascii import hexlify
+import datetime
 
 # Third-party packages
 from pyglet.gl import *
@@ -37,7 +39,7 @@ class Controller(object):
     def update(self, dt):
         if self.current_view:
             self.current_view.update(dt)
-
+        
     def switch_view(self, new_view):
         if self.current_view:
             self.current_view.pop_handlers()
@@ -188,10 +190,30 @@ class GameController(Controller):
         self.ambient = vec(1.0, 1.0, 1.0, 1.0)
         self.polished = GLfloat(100.0)
         self.crack_batch = pyglet.graphics.Batch()
-        if G.DISABLE_SAVE \
-                and world_exists(G.game_dir, G.SAVE_FILENAME):
+
+        if G.DISABLE_SAVE and world_exists(G.game_dir, G.SAVE_FILENAME):
             open_world(self, G.game_dir, G.SAVE_FILENAME)
         else:
+            seed = G.LAUNCH_OPTIONS.seed
+            if seed is None:
+                # Generates pseudo-random number.
+                try:
+                    seed = long(hexlify(os.urandom(16)), 16)
+                except NotImplementedError:
+                    import time
+                    seed = long(time.time() * 256)  # use fractional seconds
+                # Then convert it to a string so all seeds have the same type.
+                seed = str(seed)
+
+                print('No seed set, generated random seed: ' + seed)
+            G.SEED = seed
+            random.seed(seed)
+
+            with open(os.path.join(G.game_dir, 'seeds.txt'), 'a') as seeds:
+                seeds.write(datetime.datetime.now().strftime(
+                    'Seed used the %d %m %Y at %H:%M:%S\n'))
+                seeds.write('%s\n\n' % seed)
+
             self.model = Model()
             self.player = Player((0, 0, 0), (-20, 0),
                                  game_mode=G.GAME_MODE)
@@ -463,11 +485,11 @@ class GameController(Controller):
 
     def draw_label(self):
         x, y, z = self.player.position
-        self.label.text = '%.1f %02d (%.2f, %.2f, %.2f) %d / %d' \
-            % (self.time_of_day if (self.time_of_day < 12.0)
+        self.label.text = 'Time:%.1f Inaccurate FPS:%02d (%.2f, %.2f, %.2f) Blocks Shown: %d / %d sector_queue:%d'\
+                          % (self.time_of_day if (self.time_of_day < 12.0)
                else (24.0 - self.time_of_day),
                pyglet.clock.get_fps(), x, y, z,
-               len(self.model._shown), len(self.model))
+               len(self.model._shown), len(self.model), len(self.model.sector_queue))
         self.label.draw()
 
     def write_line(self, text, **kwargs):

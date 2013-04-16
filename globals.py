@@ -160,6 +160,8 @@ DEFAULT_TERRAIN_CHOICE = 'plains'
 TERRAIN_CHOICE = DEFAULT_TERRAIN_CHOICE
 TERRAIN = TERRAIN_CHOICES[DEFAULT_TERRAIN_CHOICE]
 
+SEED = None
+
 
 #
 # Graphical rendering
@@ -170,6 +172,7 @@ WINDOW_WIDTH = 850  # Screen width (in pixels)
 WINDOW_HEIGHT = 480  # Screen height (in pixels)
 
 MAX_FPS = 60  # Maximum frames per second.
+QUEUE_PROCESS_SPEED = 0.2 / MAX_FPS #Try shrinking this if chunk loading is laggy, higher loads chunks faster
 
 VISIBLE_SECTORS_RADIUS = 8
 DELOAD_SECTORS_RADIUS = 16
@@ -255,10 +258,3 @@ ANCHOR_BOTTOM = 1 << 3
 ICONS_PATH = os.path.join('resources', 'textures', 'icons')
 TEXTURES_PATH = os.path.join('resources', 'textures')
 DEFAULT_FONT = 'ChunkFive Roman'
-
-
-#
-# Seed, for the new perlin terrain generation
-#
-PERLIN_SEED = 0
-USE_PERLIN = False

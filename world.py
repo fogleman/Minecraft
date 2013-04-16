@@ -1,8 +1,9 @@
 # Imports, sorted alphabetically.
 
 # Python packages
-from collections import deque, defaultdict
+from collections import deque, defaultdict, OrderedDict
 import os
+from time import time
 import warnings
 
 # Third-party packages
@@ -11,8 +12,8 @@ from pyglet.gl import *
 
 # Modules from this project
 from blocks import *
-from terrain import *
 import globals as G
+import terrain
 
 
 FACES = (
@@ -114,6 +115,8 @@ class World(dict):
         self.before_set = set()
         self.urgent_queue = deque()
         self.lazy_queue = deque()
+        self.sector_queue = OrderedDict()
+        self.terraingen = terrain.TerrainGeneratorSimple(self, G.SEED)
 
         self.spreading_mutable_blocks = deque()
         self.spreading_time = 0.0
@@ -265,51 +268,30 @@ class World(dict):
                                           ('t2f/static', texture_data))
 
     def show_sector(self, sector, immediate=False):
-        self.delete_opposite_task(self._hide_sector, sector)
-
         if immediate:
             self._show_sector(sector)
         else:
-            self.enqueue(self._show_sector, sector, urgent=True)
+            self.enqueue_sector(True, sector)
 
     def _show_sector(self, sector):
-        #if G.SAVE_MODE == G.REGION_SAVE_MODE and not sector in self.sectors:
-            ##The sector is not in memory, load or create it
-            #if self.savingsystem.sector_exists(sector):
-                ##If its on disk, load it
-                #self.savingsystem.load_region(self, sector=sector)
-            #else:
-                ##The sector doesn't exist yet, generate it!
-                ##self.generate_region(key) #<-- TODO
+        if G.SAVE_MODE == G.REGION_SAVE_MODE and not sector in self.sectors:
+            #The sector is not in memory, load or create it
+            if self.savingsystem.sector_exists(sector):
+                #If its on disk, load it
+                self.savingsystem.load_region(self, sector=sector)
+            else:
+                #The sector doesn't exist yet, generate it!
+                self.terraingen.generate_sector(sector)
 
-        if G.USE_PERLIN == True:
-
-            tg = TerrainGenerator(G.PERLIN_SEED)
-            c = tg.generate_chunk(0, 0, 0) # generate the chunk at (0, 0, 0)
-            for x in range(0, CHUNK_X_SIZE):
-                  for z in range(0, CHUNK_Z_SIZE):
-                       for y in range(0, CHUNK_Y_SIZE):  # set blocks
-                            self.init_block((c.world_block_xpos(x), y, c.world_block_zpos(z)), c.get_block(world_block_xpos(x), y, world_block_pos(z)))
-
-                ##Temporary region generation function to show that the world grows
-                #cx, cy, cz = self.savingsystem.sector_to_blockpos(sector)
-                #rx, ry, rz = cx/32*32, cy/32*32, cz/32*32 #
-                #for x in xrange(rx, rx+32):
-                    #for z in xrange(rz, rz+32):
-                        #self.init_block((x, ry, z), grass_block) #Flat layer of grass at the base of the region
-
-        if G.USE_PERLIN == False:
-            for position in self.sectors[sector]:
-                if position not in self.shown and self.is_exposed(position):
-                    self.show_block(position)
+        for position in self.sectors[sector]:
+            if position not in self.shown and self.is_exposed(position):
+                self.show_block(position)
 
     def hide_sector(self, sector, immediate=False):
-        self.delete_opposite_task(self._show_sector, sector)
-
         if immediate:
             self._hide_sector(sector)
         else:
-            self.enqueue(self._hide_sector, sector)
+            self.enqueue_sector(False, sector)
 
     def _hide_sector(self, sector):
         for position in self.sectors.get(sector, ()):
@@ -333,6 +315,16 @@ class World(dict):
             self.hide_sector(sector)
         self.before_set = after_set
 
+    def enqueue_sector(self, state, sector): #State=True to show, False to hide
+        self.sector_queue[sector] = state
+
+    def dequeue_sector(self):
+        sector, state = self.sector_queue.popitem(False)
+        if state:
+            self._show_sector(sector)
+        else:
+            self._hide_sector(sector)
+
     def enqueue(self, func, *args, **kwargs):
         task = func, args, kwargs
         urgent = kwargs.pop('urgent', False)
@@ -351,10 +343,19 @@ class World(dict):
             self.lazy_queue.remove(opposite_task)
 
     def process_queue(self, dt):
-        if self.urgent_queue or self.lazy_queue:
-            self.dequeue()
+        stoptime=time() + G.QUEUE_PROCESS_SPEED
+        while time() < stoptime:
+            #Process as much of the queues as we can
+            if self.sector_queue:
+                self.dequeue_sector()
+            elif self.urgent_queue or self.lazy_queue:
+                self.dequeue()
+            else:
+                break
 
     def process_entire_queue(self):
+        while self.sector_queue:
+            self.dequeue_sector()
         while self.urgent_queue or self.lazy_queue:
             self.dequeue()
 

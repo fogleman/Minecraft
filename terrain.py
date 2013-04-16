@@ -6,9 +6,11 @@ Terrain generating algorithm
 
 # Python packages
 from math import sqrt
+import random
 
 # Third-party packages
 # Nothing for now
+from perlin import SimplexNoise
 
 # Modules from this project
 from blocks import *
@@ -241,7 +243,7 @@ class TerrainGenerator(object):
 
                     first_block = -1
         return c
-
+ 
     def gen_inner_layer(self, x, y, z, c):
         # Mineral generation should be here also
         c.set_block(x, y, z, stone_block)
@@ -253,7 +255,7 @@ class TerrainGenerator(object):
 
         if depth == 0 and 32 < y < 128:
             c.set_block(x, y, z, grass_block)
-        elif depth > 32:
+        elif depth > 32: 
             c.set_block(x, y, z, stone_block)
         else:
             c.set_block(x, y, z, dirt_block)
@@ -280,9 +282,9 @@ class TerrainGenerator(object):
                         offsetX = int((x / SAMPLE_RATE_HOR) * SAMPLE_RATE_HOR)
                         offsetY = int((y / SAMPLE_RATE_VER) * SAMPLE_RATE_VER)
                         offsetZ = int((z / SAMPLE_RATE_HOR) * SAMPLE_RATE_HOR)
-                        d_map[x][y][z] = self.tri_lerp(x, y, z, d_map[offsetX][offsetY][offsetZ], d_map[offsetX][SAMPLE_RATE_VER + offsetY][offsetZ], d_map[offsetX][offsetY][offsetZ + SAMPLE_RATE_HOR],
-                                                                d_map[offsetX][offsetY + SAMPLE_RATE_VER][offsetZ + SAMPLE_RATE_HOR], d_map[SAMPLE_RATE_HOR + offsetX][offsetY][offsetZ], d_map[SAMPLE_RATE_HOR + offsetX][offsetY + SAMPLE_RATE_VER][offsetZ],
-                                                                d_map[SAMPLE_RATE_HOR + offsetX][offsetY][offsetZ + SAMPLE_RATE_HOR], d_map[SAMPLE_RATE_HOR + offsetX][offsetY + SAMPLE_RATE_VER][offsetZ + SAMPLE_RATE_HOR], offsetX, SAMPLE_RATE_HOR + offsetX, offsetY,
+                        d_map[x][y][z] = self.tri_lerp(x, y, z, d_map[offsetX][offsetY][offsetZ], d_map[offsetX][SAMPLE_RATE_VER + offsetY][offsetZ], d_map[offsetX][offsetY][offsetZ + SAMPLE_RATE_HOR], 
+                                                                d_map[offsetX][offsetY + SAMPLE_RATE_VER][offsetZ + SAMPLE_RATE_HOR], d_map[SAMPLE_RATE_HOR + offsetX][offsetY][offsetZ], d_map[SAMPLE_RATE_HOR + offsetX][offsetY + SAMPLE_RATE_VER][offsetZ], 
+                                                                d_map[SAMPLE_RATE_HOR + offsetX][offsetY][offsetZ + SAMPLE_RATE_HOR], d_map[SAMPLE_RATE_HOR + offsetX][offsetY + SAMPLE_RATE_VER][offsetZ + SAMPLE_RATE_HOR], offsetX, SAMPLE_RATE_HOR + offsetX, offsetY, 
                                                                 SAMPLE_RATE_VER + offsetY, offsetZ, offsetZ + SAMPLE_RATE_HOR)
 
     def _clamp(self, a):
@@ -313,7 +315,7 @@ class TerrainGenerator(object):
 
     def rive_terrain(self, x, z):
         return self._clamp((sqrt(fast_abs(self.river_gen.fBm(0.0008 * x, 0, 0.0008 * z))) - 0.1) * 7.0)
-
+    
     def mount_density(self, x, y, z):
         ret = self.mount_gen.fBm(x * 0.002, y * 0.001, z * 0.002)
         return ret if ret > 0 else 0
@@ -324,3 +326,66 @@ class TerrainGenerator(object):
 
     def cave_density(self, x, y, z):
         return self.cave_gen.fBm(x * 0.02, y * 0.02, z * 0.02)
+
+class TerrainGeneratorSimple(object):
+    """
+    A simple and fast use of (Simplex) Perlin Noise to generate a heightmap
+    Based on Jimx's work on the above TerrainGenerator class
+    See http://code.google.com/p/fractalterraingeneration/wiki/Fractional_Brownian_Motion for more info
+    """
+    def __init__(self, world, seed):
+        self.world = world
+        rand = random.Random(seed)
+        perm = range(255)
+        rand.shuffle(perm)
+        self.noise = SimplexNoise(permutation_table=perm).noise2
+        #self.noise = PerlinNoise(seed).noise
+        self.PERSISTENCE = 2.1379201 #AKA lacunarity
+        self.H = 0.836281
+
+        #Fun things to adjust
+        self.OCTAVES = 9        #Higher linearly increases calc time; increases apparent 'randomness'
+        self.height_range = 32  #If you raise this, you should shrink zoom_level equally
+        self.zoom_level = 0.002 #Smaller will create gentler, softer transitions. Larger is more mountainy
+
+        self.weights = [self.PERSISTENCE ** (-self.H * n) for n in xrange(self.OCTAVES)]
+    def _clamp(self, a):
+        if a > 1:
+            return 1
+        elif a < 0:
+            return 0
+        else:
+            return a
+    def get_height(self,x,z):
+        """ Given block coordinates, returns a block coordinate height """
+        x *= self.zoom_level
+        z *= self.zoom_level
+        y = 0
+        for weight in self.weights:
+            y += self.noise(x, z) * weight
+
+            x *= self.PERSISTENCE
+            z *= self.PERSISTENCE
+
+        return int(self._clamp((y+1)/2)*self.height_range)
+    def generate_sector(self, sector):
+        #For ease of saving/loading, generates a whole region (4x4x4 sectors) at once
+        world = self.world
+        cx, cy, cz = world.savingsystem.sector_to_blockpos(sector)
+        rx, ry, rz = cx/32*32, cy/32*32, cz/32*32
+
+        #Create the sector so even if the worldgen says its air, it'll still prevent future generation attempts
+        for secx in xrange(rx/8,rx/8+4):
+            for secy in xrange(ry/8,ry/8+4):
+                for secz in xrange(rz/8,rz/8+4):
+                    world.sectors[(secx,secy,secz)] = []
+
+        if 0 >= ry < 32:
+            #The current terraingen doesn't build higher than 32.
+            rytop = ry + 31
+            world_init_block, self_get_height = world.init_block, self.get_height #Localize for speed
+            for x in xrange(rx, rx+32):
+                for z in xrange(rz, rz+32):
+                    y = self_get_height(x,z)
+                    if ry <= y <= rytop:
+                        world_init_block((x, y, z), grass_block)
