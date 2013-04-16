@@ -1,7 +1,7 @@
 # Imports, sorted alphabetically.
 
 # Python packages
-import time
+from time import time
 
 # Third-party packages
 # Nothing for now...
@@ -17,9 +17,9 @@ class Model(World):
         super(Model, self).__init__()
         if initialize:
             print('Building terrain...')
-            start = time.time()
+            start = time()
             self.initialize()
-            print('Terrain successfully built in %f seconds.' % (time.time() - start))
+            print('Terrain successfully built in %f seconds.' % (time() - start))
 
             print('Preparing game...')
             self.post_initialize()
