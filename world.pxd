@@ -86,7 +86,7 @@ cdef class World(dict):
                    dx=int, dy=int, dz=int,
                    x=int, y=int, z=int,
                    show=set, hide=set, sector=tuple)
-    cpdef object change_sectors(self, tuple before, tuple after)
+    cpdef object change_sectors(self, tuple after)
 
     @cython.locals(queue=object)
     cpdef object dequeue(self)
