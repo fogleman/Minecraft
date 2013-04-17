@@ -5,7 +5,7 @@ Terrain generating algorithm
 # Imports, sorted alphabetically.
 
 # Python packages
-from math import sqrt
+from math import sqrt, floor
 import random
 
 # Third-party packages
@@ -14,7 +14,10 @@ from perlin import SimplexNoise
 
 # Modules from this project
 from blocks import *
-from utils import FastRandom, fast_floor, fast_abs
+from utils import FastRandom, fast_abs
+from nature import *
+from world import *
+
 
 
 # Improved Perlin Noise based on Improved Noise reference implementation by Ken Perlin
@@ -62,13 +65,13 @@ class PerlinNoise(object):
         return (u if (h & 1) == 0 else - u) + (v if (h & 2) == 0 else -v)
 
     def noise(self, x, y, z):
-        X = int(fast_floor(x) & 255)
-        Y = int(fast_floor(y) & 255)
-        Z = int(fast_floor(z) & 255)
+        X = int(floor(x) & 255)
+        Y = int(floor(y) & 255)
+        Z = int(floor(z) & 255)
 
-        x -= fast_floor(x)
-        y -= fast_floor(y)
-        z -= fast_floor(z)
+        x -= floor(x)
+        y -= floor(y)
+        z -= floor(z)
 
         u = self.fade(x)
         v = self.fade(y)
@@ -243,7 +246,7 @@ class TerrainGenerator(object):
 
                     first_block = -1
         return c
- 
+
     def gen_inner_layer(self, x, y, z, c):
         # Mineral generation should be here also
         c.set_block(x, y, z, stone_block)
@@ -255,7 +258,7 @@ class TerrainGenerator(object):
 
         if depth == 0 and 32 < y < 128:
             c.set_block(x, y, z, grass_block)
-        elif depth > 32: 
+        elif depth > 32:
             c.set_block(x, y, z, stone_block)
         else:
             c.set_block(x, y, z, dirt_block)
@@ -282,9 +285,9 @@ class TerrainGenerator(object):
                         offsetX = int((x / SAMPLE_RATE_HOR) * SAMPLE_RATE_HOR)
                         offsetY = int((y / SAMPLE_RATE_VER) * SAMPLE_RATE_VER)
                         offsetZ = int((z / SAMPLE_RATE_HOR) * SAMPLE_RATE_HOR)
-                        d_map[x][y][z] = self.tri_lerp(x, y, z, d_map[offsetX][offsetY][offsetZ], d_map[offsetX][SAMPLE_RATE_VER + offsetY][offsetZ], d_map[offsetX][offsetY][offsetZ + SAMPLE_RATE_HOR], 
-                                                                d_map[offsetX][offsetY + SAMPLE_RATE_VER][offsetZ + SAMPLE_RATE_HOR], d_map[SAMPLE_RATE_HOR + offsetX][offsetY][offsetZ], d_map[SAMPLE_RATE_HOR + offsetX][offsetY + SAMPLE_RATE_VER][offsetZ], 
-                                                                d_map[SAMPLE_RATE_HOR + offsetX][offsetY][offsetZ + SAMPLE_RATE_HOR], d_map[SAMPLE_RATE_HOR + offsetX][offsetY + SAMPLE_RATE_VER][offsetZ + SAMPLE_RATE_HOR], offsetX, SAMPLE_RATE_HOR + offsetX, offsetY, 
+                        d_map[x][y][z] = self.tri_lerp(x, y, z, d_map[offsetX][offsetY][offsetZ], d_map[offsetX][SAMPLE_RATE_VER + offsetY][offsetZ], d_map[offsetX][offsetY][offsetZ + SAMPLE_RATE_HOR],
+                                                                d_map[offsetX][offsetY + SAMPLE_RATE_VER][offsetZ + SAMPLE_RATE_HOR], d_map[SAMPLE_RATE_HOR + offsetX][offsetY][offsetZ], d_map[SAMPLE_RATE_HOR + offsetX][offsetY + SAMPLE_RATE_VER][offsetZ],
+                                                                d_map[SAMPLE_RATE_HOR + offsetX][offsetY][offsetZ + SAMPLE_RATE_HOR], d_map[SAMPLE_RATE_HOR + offsetX][offsetY + SAMPLE_RATE_VER][offsetZ + SAMPLE_RATE_HOR], offsetX, SAMPLE_RATE_HOR + offsetX, offsetY,
                                                                 SAMPLE_RATE_VER + offsetY, offsetZ, offsetZ + SAMPLE_RATE_HOR)
 
     def _clamp(self, a):
@@ -315,7 +318,7 @@ class TerrainGenerator(object):
 
     def rive_terrain(self, x, z):
         return self._clamp((sqrt(fast_abs(self.river_gen.fBm(0.0008 * x, 0, 0.0008 * z))) - 0.1) * 7.0)
-    
+
     def mount_density(self, x, y, z):
         ret = self.mount_gen.fBm(x * 0.002, y * 0.001, z * 0.002)
         return ret if ret > 0 else 0
@@ -349,6 +352,9 @@ class TerrainGeneratorSimple(object):
         self.zoom_level = 0.002 #Smaller will create gentler, softer transitions. Larger is more mountainy
 
         self.weights = [self.PERSISTENCE ** (-self.H * n) for n in xrange(self.OCTAVES)]
+        self.max_trees = 1000000
+        self.tree_chance = 1
+
     def _clamp(self, a):
         if a > 1:
             return 1
@@ -380,6 +386,18 @@ class TerrainGeneratorSimple(object):
                 for secz in xrange(rz/8,rz/8+4):
                     world.sectors[(secx,secy,secz)] = []
 
+        # ores avaliable on the lowest level, closet to bedrock
+        lowlevel_ores = ((stone_block,) * 75 + (diamondore_block,) * 2 + (sapphireore_block,) * 2)
+        #  ores in the 'mid-level' .. also, the common ore blockes
+        midlevel_ores = ((stone_block,) * 80 + (rubyore_block,) * 2 +
+                         (coalore_block,) * 4 + (gravel_block,) * 5 +
+                         (ironore_block,) * 5 + (lapisore_block,) * 2)
+        # ores closest to the top level dirt and ground
+        highlevel_ores = ((stone_block,) * 85 + (gravel_block,) * 5 + (coalore_block,) * 3 + (quartz_block,) * 5)
+        levelcount=0
+
+        #world_type_trees = (OakTree, BirchTree, WaterMelon, Pumpkin, YFlowers, Potato, Carrot, Rose)
+
         if 0 >= ry < 32:
             #The current terraingen doesn't build higher than 32.
             rytop = ry + 31
@@ -389,3 +407,65 @@ class TerrainGeneratorSimple(object):
                     y = self_get_height(x,z)
                     if ry <= y <= rytop:
                         world_init_block((x, y, z), grass_block)
+                        world_init_block((x, y -1, z), dirt_block)
+                        world_init_block((x, y -2, z), dirt_block)
+                        world_init_block((x, y -3, z), dirt_block)
+                        world_init_block((x, y -4, z), dirt_block)
+                        #'random ores, from 0 to (height)'
+                    for yy in xrange(0, y -4):
+                        # ores and filler...
+                        #oblock = random.choice(ore_type_blocks)
+                        levelcount = levelcount +1
+                        if levelcount < 4:
+                            blockset = lowlevel_ores
+                        if levelcount >= 5 and levelcount <= 13:
+                            blockset = midlevel_ores
+                        if levelcount >= 14:
+                            blockset = highlevel_ores
+                        oblock = random.choice(blockset)
+                        world_init_block((x, yy, z), oblock)
+                        world_init_block((x, yy-1, z), bed_block)
+
+## Treegen code that i cant get to work.. still need to learn more python i think
+
+                        #if self.max_trees > 0:
+                            #showtree = random.random()
+                            #if showtree <= 1: #  tree_chance:
+                                #tree_class = world_type_trees#  world_type_trees[world_type]
+                                #if isinstance(tree_class, (tuple, list)):
+                                    #tree_class = random.choice(tree_class)
+                                #self.generate_tree((x, y - 2, z), tree_class)
+
+
+    #def generate_tree(self, position, tree_class):
+        #x, y, z = position
+
+        ## Avoids a tree from touching another.
+        #if self.has_neighbors((x, y + 1, z), is_in=TREE_BLOCKS,
+                              #diagonals=True):
+            #return
+
+        ## A tree can't grow on anything.
+        #if self[position] not in tree_class.grows_on:
+            #return
+
+        #tree_class.add_to_world(self, position)
+
+        #self.max_trees -= 1
+
+    #def has_neighbors(self, position, is_in=None, diagonals=False,
+                      #faces=None):
+        #if faces is None:
+            #faces = FACES_WITH_DIAGONALS if diagonals else FACES
+        #for other_position in self.neighbors_iterator(
+                #position, relative_neighbors_positions=faces):
+            #if other_position in self:
+                #if is_in is None or self[other_position] in is_in:
+                    #return True
+        #return False
+
+    #def neighbors_iterator(self, position, relative_neighbors_positions=FACES):
+        #x, y, z = position
+        #for dx, dy, dz in relative_neighbors_positions:
+            #yield x + dx, y + dy, z + dz
+#

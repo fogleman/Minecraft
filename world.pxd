@@ -1,5 +1,7 @@
 import cython
 
+#cython: boundscheck=False
+#cython: wraparound=False
 
 @cython.locals(int_f=int)
 cpdef int normalize_float(float f)
@@ -19,10 +21,14 @@ cdef class World(dict):
         batch
         transparency_batch
         group
+        savingsystem
         dict shown
         dict _shown
         sectors
         urgent_queue, lazy_queue
+        sector_queue
+        terraingen
+        set before_set
         spreading_mutable_blocks
         double spreading_time
 
@@ -65,11 +71,8 @@ cdef class World(dict):
     @cython.locals(block=object)
     cpdef object show_block(self, tuple position, bint immediate=?)
 
-    @cython.locals(x=float, y=float, z=float,
-                   index=int, count=int,
-                   vertex_data=list, texture_data=list,
-                   dx=float, dy=float, dz=float,
-                   i=int, j=int, batch=object)
+    @cython.locals(vertex_data=list, texture_data=list,
+                   count=int, batch=object)
     cpdef object _show_block(self, tuple position, object block)
 
     cpdef object show_sector(self, tuple sector, bint immediate=?)
@@ -82,11 +85,16 @@ cdef class World(dict):
     @cython.locals(position=tuple)
     cpdef object _hide_sector(self, tuple sector)
 
+    cpdef object enqueue_sector(self, bint state, tuple sector)
+
+    @cython.locals(state=bint, sector=tuple)
+    cpdef object dequeue_sector(self)
+
     @cython.locals(before_set=set, after_set=set, pad=int,
                    dx=int, dy=int, dz=int,
                    x=int, y=int, z=int,
                    show=set, hide=set, sector=tuple)
-    cpdef object change_sectors(self, tuple before, tuple after)
+    cpdef object change_sectors(self, tuple after)
 
     @cython.locals(queue=object)
     cpdef object dequeue(self)
@@ -97,3 +105,6 @@ cdef class World(dict):
 
     @cython.locals(position=tuple)
     cpdef object content_update(self, double dt)
+
+    @cython.locals(stoptime=double)
+    cpdef object process_queue(self, double dt)
