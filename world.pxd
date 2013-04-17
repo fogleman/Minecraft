@@ -25,6 +25,7 @@ cdef class World(dict):
         urgent_queue, lazy_queue
         sector_queue
         terraingen
+        set before_set
         spreading_mutable_blocks
         double spreading_time
 
