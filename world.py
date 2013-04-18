@@ -115,10 +115,7 @@ class World(dict):
         self.before_set = set()
         self.urgent_queue = deque()
         self.lazy_queue = deque()
-<<<<<<< HEAD
         self.sector_queue = OrderedDict()
-=======
->>>>>>> Added TerrainGeneratorSimple, using (Simplex) Perlin Noise
         self.terraingen = terrain.TerrainGeneratorSimple(self, G.SEED)
 
         self.spreading_mutable_blocks = deque()

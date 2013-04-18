@@ -11,6 +11,7 @@ import pyglet
 # Modules from this project
 from blocks import BlockID
 from items import get_item
+from player import *
 
 COMMAND_HANDLED = True
 COMMAND_NOT_HANDLED = None
@@ -188,3 +189,19 @@ class TakeScreencapCommand(Command):
         # ...and then show them again
         self.controller.text_input.visible = True
         self.controller.chat_box.visible = True
+
+#class TeleportCommand(Command):
+    #command = r"^tp (\d+) (\d+) (\d+)$"
+    #help_text = "tp <x y z>: Teleport to x y z"
+
+    #def execute(self, tpx, tpy, tpz, *args, **kwargs):
+        #try:
+            #tx = int(tpx)
+            #ty = int(tpy)
+            #tz = int(tpz)
+            #print tx, ty, tz
+
+            #self.position = (tx, ty, tz)
+            #self.send_info("Teleported.")
+        #except ValueError:
+            #raise CommandException(self.command_text, message="x y and z should be integers.")

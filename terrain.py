@@ -5,11 +5,9 @@ Terrain generating algorithm
 # Imports, sorted alphabetically.
 
 # Python packages
-<<<<<<< HEAD
+
 from math import sqrt, floor
-=======
-from math import sqrt
->>>>>>> Added TerrainGeneratorSimple, using (Simplex) Perlin Noise
+
 import random
 
 # Third-party packages
@@ -356,12 +354,8 @@ class TerrainGeneratorSimple(object):
         self.zoom_level = 0.002 #Smaller will create gentler, softer transitions. Larger is more mountainy
 
         self.weights = [self.PERSISTENCE ** (-self.H * n) for n in xrange(self.OCTAVES)]
-<<<<<<< HEAD
         self.max_trees = 1000000
         self.tree_chance = 1
-
-=======
->>>>>>> Added TerrainGeneratorSimple, using (Simplex) Perlin Noise
     def _clamp(self, a):
         if a > 1:
             return 1
@@ -393,7 +387,6 @@ class TerrainGeneratorSimple(object):
                 for secz in xrange(rz/8,rz/8+4):
                     world.sectors[(secx,secy,secz)] = []
 
-<<<<<<< HEAD
         # ores avaliable on the lowest level, closet to bedrock
         lowlevel_ores = ((stone_block,) * 75 + (diamondore_block,) * 2 + (sapphireore_block,) * 2)
         #  ores in the 'mid-level' .. also, the common ore blockes
@@ -406,8 +399,6 @@ class TerrainGeneratorSimple(object):
 
         #world_type_trees = (OakTree, BirchTree, WaterMelon, Pumpkin, YFlowers, Potato, Carrot, Rose)
 
-=======
->>>>>>> Added TerrainGeneratorSimple, using (Simplex) Perlin Noise
         if 0 >= ry < 32:
             #The current terraingen doesn't build higher than 32.
             rytop = ry + 31
@@ -416,7 +407,7 @@ class TerrainGeneratorSimple(object):
                 for z in xrange(rz, rz+32):
                     y = self_get_height(x,z)
                     if ry <= y <= rytop:
-<<<<<<< HEAD
+
                         world_init_block((x, y, z), grass_block)
                         world_init_block((x, y -1, z), dirt_block)
                         world_init_block((x, y -2, z), dirt_block)
@@ -437,49 +428,4 @@ class TerrainGeneratorSimple(object):
                         world_init_block((x, yy, z), oblock)
                         world_init_block((x, yy-1, z), bed_block)
 
-## Treegen code that i cant get to work.. still need to learn more python i think
 
-                        #if self.max_trees > 0:
-                            #showtree = random.random()
-                            #if showtree <= 1: #  tree_chance:
-                                #tree_class = world_type_trees#  world_type_trees[world_type]
-                                #if isinstance(tree_class, (tuple, list)):
-                                    #tree_class = random.choice(tree_class)
-                                #self.generate_tree((x, y - 2, z), tree_class)
-
-
-    #def generate_tree(self, position, tree_class):
-        #x, y, z = position
-
-        ## Avoids a tree from touching another.
-        #if self.has_neighbors((x, y + 1, z), is_in=TREE_BLOCKS,
-                              #diagonals=True):
-            #return
-
-        ## A tree can't grow on anything.
-        #if self[position] not in tree_class.grows_on:
-            #return
-
-        #tree_class.add_to_world(self, position)
-
-        #self.max_trees -= 1
-
-    #def has_neighbors(self, position, is_in=None, diagonals=False,
-                      #faces=None):
-        #if faces is None:
-            #faces = FACES_WITH_DIAGONALS if diagonals else FACES
-        #for other_position in self.neighbors_iterator(
-                #position, relative_neighbors_positions=faces):
-            #if other_position in self:
-                #if is_in is None or self[other_position] in is_in:
-                    #return True
-        #return False
-
-    #def neighbors_iterator(self, position, relative_neighbors_positions=FACES):
-        #x, y, z = position
-        #for dx, dy, dz in relative_neighbors_positions:
-            #yield x + dx, y + dy, z + dz
-#
-=======
-                        world_init_block((x, y, z), grass_block)
->>>>>>> Added TerrainGeneratorSimple, using (Simplex) Perlin Noise
