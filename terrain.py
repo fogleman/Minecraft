@@ -5,7 +5,11 @@ Terrain generating algorithm
 # Imports, sorted alphabetically.
 
 # Python packages
+<<<<<<< HEAD
 from math import sqrt, floor
+=======
+from math import sqrt
+>>>>>>> Added TerrainGeneratorSimple, using (Simplex) Perlin Noise
 import random
 
 # Third-party packages
@@ -352,9 +356,12 @@ class TerrainGeneratorSimple(object):
         self.zoom_level = 0.002 #Smaller will create gentler, softer transitions. Larger is more mountainy
 
         self.weights = [self.PERSISTENCE ** (-self.H * n) for n in xrange(self.OCTAVES)]
+<<<<<<< HEAD
         self.max_trees = 1000000
         self.tree_chance = 1
 
+=======
+>>>>>>> Added TerrainGeneratorSimple, using (Simplex) Perlin Noise
     def _clamp(self, a):
         if a > 1:
             return 1
@@ -386,6 +393,7 @@ class TerrainGeneratorSimple(object):
                 for secz in xrange(rz/8,rz/8+4):
                     world.sectors[(secx,secy,secz)] = []
 
+<<<<<<< HEAD
         # ores avaliable on the lowest level, closet to bedrock
         lowlevel_ores = ((stone_block,) * 75 + (diamondore_block,) * 2 + (sapphireore_block,) * 2)
         #  ores in the 'mid-level' .. also, the common ore blockes
@@ -398,6 +406,8 @@ class TerrainGeneratorSimple(object):
 
         #world_type_trees = (OakTree, BirchTree, WaterMelon, Pumpkin, YFlowers, Potato, Carrot, Rose)
 
+=======
+>>>>>>> Added TerrainGeneratorSimple, using (Simplex) Perlin Noise
         if 0 >= ry < 32:
             #The current terraingen doesn't build higher than 32.
             rytop = ry + 31
@@ -406,6 +416,7 @@ class TerrainGeneratorSimple(object):
                 for z in xrange(rz, rz+32):
                     y = self_get_height(x,z)
                     if ry <= y <= rytop:
+<<<<<<< HEAD
                         world_init_block((x, y, z), grass_block)
                         world_init_block((x, y -1, z), dirt_block)
                         world_init_block((x, y -2, z), dirt_block)
@@ -469,3 +480,6 @@ class TerrainGeneratorSimple(object):
         #for dx, dy, dz in relative_neighbors_positions:
             #yield x + dx, y + dy, z + dz
 #
+=======
+                        world_init_block((x, y, z), grass_block)
+>>>>>>> Added TerrainGeneratorSimple, using (Simplex) Perlin Noise
