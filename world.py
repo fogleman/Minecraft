@@ -116,6 +116,7 @@ class World(dict):
         self.urgent_queue = deque()
         self.lazy_queue = deque()
         self.sector_queue = OrderedDict()
+        self.generation_queue = deque()
         self.terraingen = terrain.TerrainGeneratorSimple(self, G.SEED)
 
         self.spreading_mutable_blocks = deque()
@@ -274,13 +275,23 @@ class World(dict):
             self.enqueue_sector(True, sector)
 
     def _show_sector(self, sector):
-        if G.SAVE_MODE == G.REGION_SAVE_MODE and not sector in self.sectors:
+        if not sector in self.sectors and G.SAVE_MODE == G.REGION_SAVE_MODE:
             #The sector is not in memory, load or create it
             if self.savingsystem.sector_exists(sector):
                 #If its on disk, load it
                 self.savingsystem.load_region(self, sector=sector)
             else:
                 #The sector doesn't exist yet, generate it!
+                bx, by, bz = self.savingsystem.sector_to_blockpos(sector)
+                rx, ry, rz = bx/32*32, by/32*32, bz/32*32
+
+                #For ease of saving/loading, queue up generation of a whole region (4x4x4 sectors) at once
+                yiter, ziter = xrange(ry/8,ry/8+4), xrange(rz/8,rz/8+4)
+                for secx in xrange(rx/8,rx/8+4):
+                    for secy in yiter:
+                        for secz in ziter:
+                            self.generation_queue.append((secx,secy,secz))
+                #Generate the requested sector immediately, so the following show_block's work
                 self.terraingen.generate_sector(sector)
 
         for position in self.sectors[sector]:
@@ -325,6 +336,9 @@ class World(dict):
         else:
             self._hide_sector(sector)
 
+    def dequeue_generation(self):
+        self.terraingen.generate_sector(self.generation_queue.popleft())
+
     def enqueue(self, func, *args, **kwargs):
         task = func, args, kwargs
         urgent = kwargs.pop('urgent', False)
@@ -346,7 +360,9 @@ class World(dict):
         stoptime=time() + G.QUEUE_PROCESS_SPEED
         while time() < stoptime:
             #Process as much of the queues as we can
-            if self.sector_queue:
+            if self.generation_queue:
+                self.dequeue_generation()
+            elif self.sector_queue:
                 self.dequeue_sector()
             elif self.urgent_queue or self.lazy_queue:
                 self.dequeue()
@@ -355,6 +371,8 @@ class World(dict):
 
     def process_entire_queue(self):
         while self.sector_queue:
+            while self.generation_queue:
+                self.dequeue_generation()
             self.dequeue_sector()
         while self.urgent_queue or self.lazy_queue:
             self.dequeue()
