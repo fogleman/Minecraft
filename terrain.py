@@ -396,36 +396,31 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
 
         return int(self.height_base + self._clamp((y+1.0)/2.0)*self.height_range)
     def generate_sector(self, sector):
-        #For ease of saving/loading, generates a whole region (4x4x4 sectors) at once
         world = self.world
-        cx, cy, cz = world.savingsystem.sector_to_blockpos(sector)
-        rx, ry, rz = cx/32*32, cy/32*32, cz/32*32
+        if sector in world.sectors: return #Its already generated
+        world.sectors[sector] = [] #Precache it incase it ends up being solid air, so it doesn't get regenerated indefinitely
+        bx, by, bz = world.savingsystem.sector_to_blockpos(sector)
 
-        #Create the sector so even if the worldgen says its air, it'll still prevent future generation attempts
-        for secx in xrange(rx/8,rx/8+4):
-            for secy in xrange(ry/8,ry/8+4):
-                for secz in xrange(rz/8,rz/8+4):
-                    world.sectors[(secx,secy,secz)] = []
-
-        if 0 <= ry < (self.height_base + self.height_range):
-            #The current terraingen doesn't build higher than 32.
-            rytop = ry + 31
+        if 0 <= by < (self.height_base + self.height_range):
+            bytop = by + 8
             world_init_block, self_get_height = world.init_block, self.get_height #Localize for speed
-            self.rand.seed(self.seed + "(%d,%d,%d)" % (rx,ry,rz))
-            for x in xrange(rx, rx+32):
-                for z in xrange(rz, rz+32):
-                    if ry < self.height_base:
+            self.rand.seed(self.seed + "(%d,%d,%d)" % (bx,by,bz))
+            for x in xrange(bx, bx+8):
+                for z in xrange(bz, bz+8):
+                    if by < self.height_base:
                         #For sectors outside of the height_range, no point checking the heightmap
                         y = self.height_base
                     else:
                         y = self_get_height(x,z)
-                    if ry <= y <= rytop:
+                        if y > bytop:
+                            y = bytop
+                    if y < bytop:
                         world_init_block((x, y, z), grass_block)
                         world_init_block((x, y -1, z), dirt_block)
                         world_init_block((x, y -2, z), dirt_block)
                         world_init_block((x, y -3, z), dirt_block)
                         y -= 3
-                    for yy in xrange(ry, y):
+                    for yy in xrange(by, y):
                         # ores and filler...
                         if yy < 8:
                             blockset = self.lowlevel_ores
@@ -434,4 +429,4 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                         else:
                             blockset = self.highlevel_ores
                         world_init_block((x, yy, z), self.rand.choice(blockset))
-                    if ry == 0: world_init_block((x, 0, z), bed_block)
+                    if by == 0: world_init_block((x, 0, z), bed_block)

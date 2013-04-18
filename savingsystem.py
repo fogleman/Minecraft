@@ -57,6 +57,9 @@ def save_world(window, game_dir, world=None):
     if G.SAVE_MODE == G.REGION_SAVE_MODE:
         #Saves individual sectors in region files (4x4x4 sectors)
         blocks = window.model
+
+        while blocks.generation_queue: #This must be empty or it'll save queued sectors as all air
+            blocks.dequeue_generation()
         for secpos in window.model.sectors: #TODO: only save dirty sectors
             if not window.model.sectors[secpos]:
                 continue #Skip writing empty sectors
