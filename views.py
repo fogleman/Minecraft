@@ -163,24 +163,53 @@ class ControlsView(View):
         self.frame = image_sprite(image, self.batch, 1)
         button_image = load_image('resources', 'textures', 'button.png')
         button_highlighted = load_image('resources', 'textures', 'button_highlighted.png')
-        self.button_attack = Button(self, 0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Attack", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
-        self.button_attack.push_handlers(on_click=self.capture_key_func)
+        self.buttons = []
+        self.key_buttons = []
+        key_buttons = ['move_backward', 'move_forward', 'move_left', 'move_right']
+        for identifier in key_buttons:
+            button = ToggleButton(self, 0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption=pyglet.window.key.symbol_string(getattr(G, identifier.upper() + '_KEY')), batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
+            button.id = identifier
+            self.buttons.append(button)
+            self.key_buttons.append(button)
         self.button_return = Button(self, 0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Done", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
         self.button_return.push_handlers(on_click=self.controller.game_options_func)
-        self.buttons = [self.button_attack, self.button_return]
+        self.buttons.append(self.button_return)
             
         self.on_resize(width, height)
-
-    def capture_key_func(self):
-        pass
 
     def on_resize(self, width, height):
         self.background.scale = 1.0
         self.background.scale = max(float(width) / self.background.width, float(height) / self.background.height)
         self.background.x, self.background.y = 0, 0
         self.frame.x, self.frame.y = (width - self.frame.width) / 2, (height - self.frame.height) / 2
-        button_x = self.frame.x + (self.frame.width - self.button_attack.width) / 2
-        button_y = self.frame.y + (self.frame.height - self.button_attack.height) / 2 + 10
-        self.button_attack.position = button_x, button_y
-        button_y -= self.button_attack.height + 20
+        default_button_x = button_x = self.frame.x + 30
+        button_y = self.frame.y + (self.frame.height) / 2 + 10
+        i = 0
+        for button in self.key_buttons:
+            button.position = button_x, button_y
+            if i%2 == 0:
+                button_x += button.width + 20
+            else:
+                button_x = default_button_x
+                button_y -= button.height + 20
+            i += 1
+        button_x = self.frame.x + (self.frame.width - self.button_return.width) / 2
         self.button_return.position = button_x, button_y
+
+    def on_key_press(self, symbol, modifiers):
+        active_button = None
+        for button in self.buttons:
+            if isinstance(button, ToggleButton) and button.toggled:
+                active_button = button
+                break
+                
+        if not active_button:
+            return
+            
+        active_button.caption = pyglet.window.key.symbol_string(symbol)
+        active_button.toggled = False
+
+        G.config.set("Controls", active_button.id, pyglet.window.key.symbol_string(symbol))
+
+        with open(G.config_file, 'wb') as handle:
+            G.config.write(handle)
