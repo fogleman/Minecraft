@@ -162,6 +162,10 @@ TERRAIN = TERRAIN_CHOICES[DEFAULT_TERRAIN_CHOICE]
 
 SEED = None
 
+#
+# Biome
+#
+DESERT, PLAINS, MOUNTAINS, SNOW, FOREST = range(5)
 
 #
 # Graphical rendering

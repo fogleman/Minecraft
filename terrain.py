@@ -18,6 +18,8 @@ from nature import *
 from world import *
 
 
+import globals as G
+
 
 # Improved Perlin Noise based on Improved Noise reference implementation by Ken Perlin
 class PerlinNoise(object):
@@ -64,9 +66,9 @@ class PerlinNoise(object):
         return (u if (h & 1) == 0 else - u) + (v if (h & 2) == 0 else -v)
 
     def noise(self, x, y, z):
-        X = int(floor(x) & 255)
-        Y = int(floor(y) & 255)
-        Z = int(floor(z) & 255)
+        X = int(floor(x)) & 255
+        Y = int(floor(y)) & 255
+        Z = int(floor(z)) & 255
 
         x -= floor(x)
         y -= floor(y)
@@ -120,8 +122,8 @@ class PerlinNoise(object):
         self.OCTAVES = value
         self.regen_weight = True
 
-CHUNK_X_SIZE = 80
-CHUNK_Z_SIZE = 80
+CHUNK_X_SIZE = 16
+CHUNK_Z_SIZE = 16
 CHUNK_Y_SIZE = 256
 
 # create a array with size x_size*y_size*z_size
@@ -164,6 +166,42 @@ class Chunk(object):
 SAMPLE_RATE_HOR = 4
 SAMPLE_RATE_VER = 4
 
+class BiomeGenerator(object):
+    def __init__(self, seed):
+        self.temperature_gen = PerlinNoise(seed + 97)
+        self.humidity_gen = PerlinNoise(seed + 147)
+
+    def _clamp(self, a):
+        if a > 1:
+            return 1
+        elif a < 0:
+            return 0
+        else:
+            return a
+
+    def get_humidity(self, x, z):
+        return float(self._clamp((self.humidity_gen.fBm(x * 0.0005, 0, 0.0005 * z) + 1.0) / 2.0))
+
+    def get_temperature(self,x, z):
+        return float(self._clamp((self.temperature_gen.fBm(x * 0.0005, 0, 0.0005 * z) + 1.0) / 2.0))
+
+    def get_biome_type(self, x, z):
+        x = int(x)
+        z = int(z)
+        temp = self.get_temperature(x, z)
+        humidity = self.get_humidity(x, z) * temp
+
+        if temp >= 0.5 and humidity < 0.3:
+            return G.DESERT
+        elif 0.3 <= humidity <= 0.6 and temp >= 0.5:
+            return G.PLAINS
+        elif temp <= 0.3 and humidity > 0.5:
+            return G.SNOW
+        elif 0.2 <= humidity <= 0.6 and temp < 0.5:
+            return G.MOUNTAINS
+
+        return G.FOREST
+
 class TerrainGeneratorBase(object):
     def __init__(self, seed):
         self.seed = seed
@@ -186,6 +224,7 @@ class TerrainGenerator(TerrainGeneratorBase):
         self.mount_gen = PerlinNoise(seed + 41)
         self.hill_gen = PerlinNoise(seed + 71)
         self.cave_gen = PerlinNoise(seed + 141)
+        self.biome_gen = BiomeGenerator(seed)
 
     def set_seed(self, seed):
         self.base_gen = PerlinNoise(seed)
@@ -197,6 +236,7 @@ class TerrainGenerator(TerrainGeneratorBase):
         self.mount_gen = PerlinNoise(seed + 41)
         self.hill_gen = PerlinNoise(seed + 71)
         self.cave_gen = PerlinNoise(seed + 141)
+        self.biome_gen = BiomeGenerator(seed)
         self.seed = seed
 
     def generate_chunk(self, chunk_x, chunk_y, chunk_z):
@@ -214,22 +254,18 @@ class TerrainGenerator(TerrainGeneratorBase):
         # interpolate the missing values
         self.tri_lerp_d_map(d_map)
 
-        for x in range(0, c.x_size):
-            for z in range(0, c.z_size):
-                for y in range(0, c.y_size):
-                    pass
-                    #print d_map[x][y][z]
-
         for x in range(0, CHUNK_X_SIZE):
             for z in range(0, CHUNK_Z_SIZE):
+                biome_type = self.biome_gen.get_biome_type(x, z)
                 first_block = -1
                 for y in range(CHUNK_Y_SIZE - 1, 0, -1):
                     if y == 0:
                         c.set_block(x, y, z, bed_block)
                         break
 
-                    #if 0 < y <= 32:
-                    #    c.set_block(x, y, z, water_block);
+                    # 32: sea level
+                    if 0 < y <= 32:
+                        c.set_block(x, y, z, water_block)
 
                     den = d_map[x][y][z]
 
@@ -238,7 +274,7 @@ class TerrainGenerator(TerrainGeneratorBase):
                             first_block = y
 
                         if self.cave_density(c.world_block_xpos(x), y, c.world_block_zpos(z)) > -0.7:
-                            c = self.gen_outer_layer(x, y, z, first_block, c)
+                            c = self.gen_outer_layer(x, y, z, first_block, c, biome_type)
                         else:
                             c.set_block(x, y, z, air_block)
 
@@ -263,16 +299,31 @@ class TerrainGenerator(TerrainGeneratorBase):
         c.set_block(x, y, z, stone_block)
         return c
 
-    def gen_outer_layer(self, x, y, z, first_block, c):
+    def gen_outer_layer(self, x, y, z, first_block, c, biome_type):
 
         depth = int(first_block - y)
 
-        if depth == 0 and 32 < y < 128:
-            c.set_block(x, y, z, grass_block)
-        elif depth > 32: 
-            c.set_block(x, y, z, stone_block)
-        else:
-            c.set_block(x, y, z, dirt_block)
+        if biome_type == G.PLAINS or biome_type == G.MOUNTAINS or biome_type == G.FOREST:
+            if 28 <= y <= 34:
+                c.set_block(x, y, z, sand_block)
+            elif depth == 0 and 32 < y < 128:
+                c.set_block(x, y, z, grass_block)
+            elif depth > 32: 
+                c.set_block(x, y, z, stone_block)
+            else:
+                c.set_block(x, y, z, dirt_block)
+        elif biome_type == G.SNOW:
+            if depth == 0 and y >= 32:
+                    c.set_block(x, y, z, snow_block)
+            elif depth > 32:
+                c.set_block(x, y, z, stone_block)
+            else:
+                c.set_block(x, y, z, dirt_block)
+        elif biome_type == G.DESERT:
+            if depth > 8: 
+                c.set_block(x, y, z, stone_block)
+            else:
+                c.set_block(x, y, z, sand_block)
 
         return c
 
