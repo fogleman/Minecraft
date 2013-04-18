@@ -2,6 +2,8 @@ import cython
 
 #cython: boundscheck=False
 #cython: wraparound=False
+#cython: cdivision=True
+
 
 @cython.locals(int_f=int)
 cpdef int normalize_float(float f)
