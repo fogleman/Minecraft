@@ -143,6 +143,8 @@ class Window(pyglet.window.Window):
         self.switch_controller(controller)
         if G.FULLSCREEN:
             self.set_fullscreen()
+        self.total_fps = 0.0
+        self.iterations = 0
         pyglet.clock.schedule_interval(self.update, 1.0 / G.MAX_FPS)
 
     def set_exclusive_mouse(self, exclusive):
@@ -151,6 +153,8 @@ class Window(pyglet.window.Window):
 
     def update(self, dt):
         self.controller.update(dt)
+        self.total_fps += pyglet.clock.get_fps()
+        self.iterations += 1
 
     def switch_controller(self, new_controller):
         if self.controller:
@@ -182,6 +186,11 @@ class Window(pyglet.window.Window):
             4,
             ('v2i', (x - n, y, x + n, y, x, y - n, x, y + n))
         )
+
+    def on_close(self):
+        print('Average FPS: %f' % (self.total_fps / self.iterations))
+        super(Window, self).on_close()
+
 
 def main(options):
     G.GAME_MODE = options.game_mode
