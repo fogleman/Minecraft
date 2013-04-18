@@ -27,6 +27,7 @@ class Player(Entity):
         self.game_mode = game_mode
         self.strafe = [0, 0]
         self.dy = 0
+        self.current_density = 1 # Current density of the block we're colliding with
 
         initial_items = [torch_block, stick_item]
 
@@ -127,7 +128,7 @@ class Player(Entity):
 
     def update(self, dt, parent):
         # walking
-        speed = 15 if self.flying else 5
+        speed = 15 if self.flying else 5*self.current_density
         d = dt * speed
         dx, dy, dz = self.get_motion_vector()
         dx, dy, dz = dx * d, dy * d, dz * d
@@ -148,6 +149,7 @@ class Player(Entity):
         pad = 0.25
         p = list(position)
         np = normalize(position)
+        self.current_density = 1 # Reset it, incase we don't hit any water
         for face in FACES:  # check all surrounding blocks
             for i in xrange(3):  # check each dimension independently
                 if not face[i]:
@@ -166,8 +168,8 @@ class Player(Entity):
                             or parent.model[op].vertex_mode != G.VERTEX_CUBE:
                         continue
                     # if density <= 1 then we can walk through it. (water)
-                    if op not in parent.model \
-                            or parent.model[op].density < 1:
+                    if parent.model[op].density < 1:
+                        self.current_density = parent.model[op].density
                         continue
                     p[i] -= (d - pad) * face[i]
                     if face == (0, -1, 0) or face == (0, 1, 0):
