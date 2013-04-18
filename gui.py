@@ -83,6 +83,14 @@ class Button(pyglet.event.EventDispatcher, Rectangle):
             self.sprite_highlighted.x, self.sprite_highlighted.y = position
         if hasattr(self, 'label') and self.label:
             self.label.x, self.label.y = self.center
+            
+    @property
+    def caption(self):
+        return self.label.text
+
+    @caption.setter
+    def caption(self, text):
+        self.label.text = text
 
     def draw(self):
         self.draw_sprite()
@@ -105,6 +113,17 @@ class Button(pyglet.event.EventDispatcher, Rectangle):
             self.dispatch_event('on_click')
 
 Button.register_event_type('on_click')
+
+
+class ToggleButton(Button):
+    def __init__(self, parent, x, y, width, height, image=None, image_highlighted=None, caption=None, batch=None, group=None, label_group=None, font_name=G.DEFAULT_FONT):
+        super(ToggleButton, self).__init__(parent, x, y, width, height, image=image, image_highlighted=image_highlighted, caption=caption, batch=batch, group=group, label_group=label_group, font_name=font_name)
+        self.toggled = False
+
+    def on_mouse_click(self, x, y, button, modifiers):
+        if self.hit_test(x, y):
+            self.toggled = not self.toggled
+        super(ToggleButton, self).on_mouse_click( x, y, button, modifiers)
 
 
 class Control(pyglet.event.EventDispatcher):
