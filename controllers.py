@@ -215,7 +215,7 @@ class GameController(Controller):
                 seeds.write('%s\n\n' % seed)
 
             self.model = Model()
-            self.player = Player((0, 0, 0), (-20, 0),
+            self.player = Player((0,self.model.terraingen.get_height(0,0)+2,0), (-20, 0),
                                  game_mode=G.GAME_MODE)
             self.save_to_file() #So the hardcoded spawn sectors aren't overwritten by the worldgen
         print('Game mode: ' + self.player.game_mode)
