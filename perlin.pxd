@@ -17,7 +17,7 @@ cdef class BaseNoise:
 cdef class SimplexNoise(BaseNoise):
 
     @cython.locals(s=double, i=double, j=double, t=double, x0=double, y0=double,
-                   i1=int, j1=int, x1=double, y1=double, x2=double, y2=double, 
-                   perm=tuple, ii=int, jj=int, gi0=int, gi1=int, gi2=int, 
+                   i1=int, j1=int, x1=double, y1=double, x2=double, y2=double,
+                   perm=tuple, ii=int, jj=int, gi0=int, gi1=int, gi2=int,
                    tt=double, g=tuple, noise=double)
     cpdef double noise2(self, double x, double y)

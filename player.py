@@ -165,6 +165,10 @@ class Player(Entity):
                     if op not in parent.model \
                             or parent.model[op].vertex_mode != G.VERTEX_CUBE:
                         continue
+                    # if density <= 1 then we can walk through it. (water)
+                    if op not in parent.model \
+                            or parent.model[op].density < 1:
+                        continue
                     p[i] -= (d - pad) * face[i]
                     if face == (0, -1, 0) or face == (0, 1, 0):
                         # jump damage
