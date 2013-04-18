@@ -162,6 +162,10 @@ TERRAIN = TERRAIN_CHOICES[DEFAULT_TERRAIN_CHOICE]
 
 SEED = None
 
+#
+# Biome
+#
+DESERT, PLAINS, MOUNTAINS, SNOW, FOREST = range(5)
 
 #
 # Graphical rendering
@@ -172,7 +176,7 @@ WINDOW_WIDTH = 850  # Screen width (in pixels)
 WINDOW_HEIGHT = 480  # Screen height (in pixels)
 
 MAX_FPS = 60  # Maximum frames per second.
-QUEUE_PROCESS_SPEED = 0.2 / MAX_FPS #Try shrinking this if chunk loading is laggy, higher loads chunks faster
+QUEUE_PROCESS_SPEED = 0.3 / MAX_FPS #Try shrinking this if chunk loading is laggy, higher loads chunks faster
 
 VISIBLE_SECTORS_RADIUS = 8
 DELOAD_SECTORS_RADIUS = 16

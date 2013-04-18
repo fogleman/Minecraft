@@ -5,13 +5,10 @@ Terrain generating algorithm
 # Imports, sorted alphabetically.
 
 # Python packages
-
 from math import sqrt, floor
-
 import random
 
 # Third-party packages
-# Nothing for now
 from perlin import SimplexNoise
 
 # Modules from this project
@@ -20,6 +17,8 @@ from utils import FastRandom, fast_abs
 from nature import *
 from world import *
 
+
+import globals as G
 
 
 # Improved Perlin Noise based on Improved Noise reference implementation by Ken Perlin
@@ -67,9 +66,9 @@ class PerlinNoise(object):
         return (u if (h & 1) == 0 else - u) + (v if (h & 2) == 0 else -v)
 
     def noise(self, x, y, z):
-        X = int(floor(x) & 255)
-        Y = int(floor(y) & 255)
-        Z = int(floor(z) & 255)
+        X = int(floor(x)) & 255
+        Y = int(floor(y)) & 255
+        Z = int(floor(z)) & 255
 
         x -= floor(x)
         y -= floor(y)
@@ -123,8 +122,8 @@ class PerlinNoise(object):
         self.OCTAVES = value
         self.regen_weight = True
 
-CHUNK_X_SIZE = 80
-CHUNK_Z_SIZE = 80
+CHUNK_X_SIZE = 16
+CHUNK_Z_SIZE = 16
 CHUNK_Y_SIZE = 256
 
 # create a array with size x_size*y_size*z_size
@@ -167,8 +166,55 @@ class Chunk(object):
 SAMPLE_RATE_HOR = 4
 SAMPLE_RATE_VER = 4
 
-class TerrainGenerator(object):
+class BiomeGenerator(object):
     def __init__(self, seed):
+        self.temperature_gen = PerlinNoise(seed + 97)
+        self.humidity_gen = PerlinNoise(seed + 147)
+
+    def _clamp(self, a):
+        if a > 1:
+            return 1
+        elif a < 0:
+            return 0
+        else:
+            return a
+
+    def get_humidity(self, x, z):
+        return float(self._clamp((self.humidity_gen.fBm(x * 0.0005, 0, 0.0005 * z) + 1.0) / 2.0))
+
+    def get_temperature(self,x, z):
+        return float(self._clamp((self.temperature_gen.fBm(x * 0.0005, 0, 0.0005 * z) + 1.0) / 2.0))
+
+    def get_biome_type(self, x, z):
+        x = int(x)
+        z = int(z)
+        temp = self.get_temperature(x, z)
+        humidity = self.get_humidity(x, z) * temp
+
+        if temp >= 0.5 and humidity < 0.3:
+            return G.DESERT
+        elif 0.3 <= humidity <= 0.6 and temp >= 0.5:
+            return G.PLAINS
+        elif temp <= 0.3 and humidity > 0.5:
+            return G.SNOW
+        elif 0.2 <= humidity <= 0.6 and temp < 0.5:
+            return G.MOUNTAINS
+
+        return G.FOREST
+
+class TerrainGeneratorBase(object):
+    def __init__(self, seed):
+        self.seed = seed
+
+    def generate_chunk(self, chunk_x, chunk_y, chunk_z):
+        pass
+
+    def generate_sector(self, sector):
+        pass
+
+class TerrainGenerator(TerrainGeneratorBase):
+    def __init__(self, seed):
+        super(TerrainGenerator, self).__init__(seed)
         self.base_gen = PerlinNoise(seed)
         self.base_gen.octave = 8
         self.ocean_gen = PerlinNoise(seed + 11)
@@ -178,6 +224,7 @@ class TerrainGenerator(object):
         self.mount_gen = PerlinNoise(seed + 41)
         self.hill_gen = PerlinNoise(seed + 71)
         self.cave_gen = PerlinNoise(seed + 141)
+        self.biome_gen = BiomeGenerator(seed)
 
     def set_seed(self, seed):
         self.base_gen = PerlinNoise(seed)
@@ -189,6 +236,8 @@ class TerrainGenerator(object):
         self.mount_gen = PerlinNoise(seed + 41)
         self.hill_gen = PerlinNoise(seed + 71)
         self.cave_gen = PerlinNoise(seed + 141)
+        self.biome_gen = BiomeGenerator(seed)
+        self.seed = seed
 
     def generate_chunk(self, chunk_x, chunk_y, chunk_z):
         c = Chunk(position=(chunk_x, chunk_y, chunk_z))
@@ -205,22 +254,18 @@ class TerrainGenerator(object):
         # interpolate the missing values
         self.tri_lerp_d_map(d_map)
 
-        for x in range(0, c.x_size):
-            for z in range(0, c.z_size):
-                for y in range(0, c.y_size):
-                    pass
-                    #print d_map[x][y][z]
-
         for x in range(0, CHUNK_X_SIZE):
             for z in range(0, CHUNK_Z_SIZE):
+                biome_type = self.biome_gen.get_biome_type(x, z)
                 first_block = -1
                 for y in range(CHUNK_Y_SIZE - 1, 0, -1):
                     if y == 0:
                         c.set_block(x, y, z, bed_block)
                         break
 
-                    #if 0 < y <= 32:
-                    #    c.set_block(x, y, z, water_block);
+                    # 32: sea level
+                    if 0 < y <= 32:
+                        c.set_block(x, y, z, water_block)
 
                     den = d_map[x][y][z]
 
@@ -229,7 +274,7 @@ class TerrainGenerator(object):
                             first_block = y
 
                         if self.cave_density(c.world_block_xpos(x), y, c.world_block_zpos(z)) > -0.7:
-                            c = self.gen_outer_layer(x, y, z, first_block, c)
+                            c = self.gen_outer_layer(x, y, z, first_block, c, biome_type)
                         else:
                             c.set_block(x, y, z, air_block)
 
@@ -254,16 +299,31 @@ class TerrainGenerator(object):
         c.set_block(x, y, z, stone_block)
         return c
 
-    def gen_outer_layer(self, x, y, z, first_block, c):
+    def gen_outer_layer(self, x, y, z, first_block, c, biome_type):
 
         depth = int(first_block - y)
 
-        if depth == 0 and 32 < y < 128:
-            c.set_block(x, y, z, grass_block)
-        elif depth > 32:
-            c.set_block(x, y, z, stone_block)
-        else:
-            c.set_block(x, y, z, dirt_block)
+        if biome_type == G.PLAINS or biome_type == G.MOUNTAINS or biome_type == G.FOREST:
+            if 28 <= y <= 34:
+                c.set_block(x, y, z, sand_block)
+            elif depth == 0 and 32 < y < 128:
+                c.set_block(x, y, z, grass_block)
+            elif depth > 32:
+                c.set_block(x, y, z, stone_block)
+            else:
+                c.set_block(x, y, z, dirt_block)
+        elif biome_type == G.SNOW:
+            if depth == 0 and y >= 32:
+                    c.set_block(x, y, z, snow_block)
+            elif depth > 32:
+                c.set_block(x, y, z, stone_block)
+            else:
+                c.set_block(x, y, z, dirt_block)
+        elif biome_type == G.DESERT:
+            if depth > 8:
+                c.set_block(x, y, z, stone_block)
+            else:
+                c.set_block(x, y, z, sand_block)
 
         return c
 
@@ -332,17 +392,19 @@ class TerrainGenerator(object):
     def cave_density(self, x, y, z):
         return self.cave_gen.fBm(x * 0.02, y * 0.02, z * 0.02)
 
-class TerrainGeneratorSimple(object):
+class TerrainGeneratorSimple(TerrainGeneratorBase):
     """
     A simple and fast use of (Simplex) Perlin Noise to generate a heightmap
     Based on Jimx's work on the above TerrainGenerator class
     See http://code.google.com/p/fractalterraingeneration/wiki/Fractional_Brownian_Motion for more info
     """
     def __init__(self, world, seed):
+        super(TerrainGeneratorSimple, self).__init__(seed)
         self.world = world
-        rand = random.Random(seed)
+        self.seed = seed
+        self.rand = random.Random(seed)
         perm = range(255)
-        rand.shuffle(perm)
+        self.rand.shuffle(perm)
         self.noise = SimplexNoise(permutation_table=perm).noise2
         #self.noise = PerlinNoise(seed).noise
         self.PERSISTENCE = 2.1379201 #AKA lacunarity
@@ -351,14 +413,23 @@ class TerrainGeneratorSimple(object):
         #Fun things to adjust
         self.OCTAVES = 9        #Higher linearly increases calc time; increases apparent 'randomness'
         self.height_range = 32  #If you raise this, you should shrink zoom_level equally
+        self.height_base = 32   #The lowest point the perlin terrain will generate (below is "underground")
         self.zoom_level = 0.002 #Smaller will create gentler, softer transitions. Larger is more mountainy
 
+        # ores avaliable on the lowest level, closet to bedrock
+        self.lowlevel_ores = ((stone_block,) * 75 + (diamondore_block,) * 2 + (sapphireore_block,) * 2)
+        #  ores in the 'mid-level' .. also, the common ore blocks
+        self.midlevel_ores = ((stone_block,) * 80 + (rubyore_block,) * 2 +
+                         (coalore_block,) * 4 + (gravel_block,) * 5 +
+                         (ironore_block,) * 5 + (lapisore_block,) * 2)
+        # ores closest to the top level dirt and ground
+        self.highlevel_ores = ((stone_block,) * 85 + (gravel_block,) * 5 + (coalore_block,) * 3 + (quartz_block,) * 5)
+        self.world_type_trees = (OakTree, BirchTree, WaterMelon, Pumpkin, YFlowers, Potato, Carrot, Rose)
+
         self.weights = [self.PERSISTENCE ** (-self.H * n) for n in xrange(self.OCTAVES)]
-        self.max_trees = 1000000
-        self.tree_chance = 1
     def _clamp(self, a):
         if a > 1:
-            return 1
+            return 0.9999 #So int rounds down properly and keeps it within the right sector
         elif a < 0:
             return 0
         else:
@@ -374,58 +445,45 @@ class TerrainGeneratorSimple(object):
             x *= self.PERSISTENCE
             z *= self.PERSISTENCE
 
-        return int(self._clamp((y+1)/2)*self.height_range)
+        return int(self.height_base + self._clamp((y+1.0)/2.0)*self.height_range)
     def generate_sector(self, sector):
-        #For ease of saving/loading, generates a whole region (4x4x4 sectors) at once
         world = self.world
-        cx, cy, cz = world.savingsystem.sector_to_blockpos(sector)
-        rx, ry, rz = cx/32*32, cy/32*32, cz/32*32
+        if sector in world.sectors: return #Its already generated
+        world.sectors[sector] = [] #Precache it incase it ends up being solid air, so it doesn't get regenerated indefinitely
+        bx, by, bz = world.savingsystem.sector_to_blockpos(sector)
 
-        #Create the sector so even if the worldgen says its air, it'll still prevent future generation attempts
-        for secx in xrange(rx/8,rx/8+4):
-            for secy in xrange(ry/8,ry/8+4):
-                for secz in xrange(rz/8,rz/8+4):
-                    world.sectors[(secx,secy,secz)] = []
-
-        # ores avaliable on the lowest level, closet to bedrock
-        lowlevel_ores = ((stone_block,) * 75 + (diamondore_block,) * 2 + (sapphireore_block,) * 2)
-        #  ores in the 'mid-level' .. also, the common ore blockes
-        midlevel_ores = ((stone_block,) * 80 + (rubyore_block,) * 2 +
-                         (coalore_block,) * 4 + (gravel_block,) * 5 +
-                         (ironore_block,) * 5 + (lapisore_block,) * 2)
-        # ores closest to the top level dirt and ground
-        highlevel_ores = ((stone_block,) * 85 + (gravel_block,) * 5 + (coalore_block,) * 3 + (quartz_block,) * 5)
-        levelcount=0
-
-        #world_type_trees = (OakTree, BirchTree, WaterMelon, Pumpkin, YFlowers, Potato, Carrot, Rose)
-
-        if 0 >= ry < 32:
-            #The current terraingen doesn't build higher than 32.
-            rytop = ry + 31
+        if 0 <= by < (self.height_base + self.height_range):
+            bytop = by + 8
             world_init_block, self_get_height = world.init_block, self.get_height #Localize for speed
-            for x in xrange(rx, rx+32):
-                for z in xrange(rz, rz+32):
-                    y = self_get_height(x,z)
-                    if ry <= y <= rytop:
-
-                        world_init_block((x, y, z), grass_block)
-                        world_init_block((x, y -1, z), dirt_block)
-                        world_init_block((x, y -2, z), dirt_block)
+            self.rand.seed(self.seed + "(%d,%d,%d)" % (bx,by,bz))
+            for x in xrange(bx, bx+8):
+                for z in xrange(bz, bz+8):
+                    if by < self.height_base:
+                        #For sectors outside of the height_range, no point checking the heightmap
+                        y = self.height_base
+                    else:
+                        y = self_get_height(x,z)
+                        if y > bytop:
+                            y = bytop
+                    if y < bytop:
+                        if y <= 32:
+                            world_init_block((x, y, z), water_block)
+                            world_init_block((x, y -1, z), water_block)
+                            world_init_block((x, y -2, z), sand_block)
+                        else:
+                            world_init_block((x, y, z), grass_block)
+                            world_init_block((x, y -1, z), dirt_block)
+                            world_init_block((x, y -2, z), grass_block)
+                        # atleast a layer of dirt under, reguardless of top two blocks
                         world_init_block((x, y -3, z), dirt_block)
-                        world_init_block((x, y -4, z), dirt_block)
-                        #'random ores, from 0 to (height)'
-                    for yy in xrange(0, y -4):
+                        y -= 3
+                    for yy in xrange(by, y):
                         # ores and filler...
-                        #oblock = random.choice(ore_type_blocks)
-                        levelcount = levelcount +1
-                        if levelcount < 4:
-                            blockset = lowlevel_ores
-                        if levelcount >= 5 and levelcount <= 13:
-                            blockset = midlevel_ores
-                        if levelcount >= 14:
-                            blockset = highlevel_ores
-                        oblock = random.choice(blockset)
-                        world_init_block((x, yy, z), oblock)
-                        world_init_block((x, yy-1, z), bed_block)
-
-
+                        if yy < 8:
+                            blockset = self.lowlevel_ores
+                        elif yy < 32:
+                            blockset = self.midlevel_ores
+                        else:
+                            blockset = self.highlevel_ores
+                        world_init_block((x, yy, z), self.rand.choice(blockset))
+                    if by == 0: world_init_block((x, 0, z), bed_block)

@@ -36,8 +36,6 @@ class Player(Entity):
                 self.inventory.add_item(item.id, quantity)
             #else:
             #    self.quick_slots.add_item(item.id, quantity)
-        #perlin tends to be about y=16 to 18, so we set the player at 18...
-        self.position = 0,18,0
 
     def add_item(self, item_id):
         if self.quick_slots.add_item(item_id):
@@ -166,6 +164,10 @@ class Player(Entity):
                     # we can walk there.
                     if op not in parent.model \
                             or parent.model[op].vertex_mode != G.VERTEX_CUBE:
+                        continue
+                    # if density <= 1 then we can walk through it. (water)
+                    if op not in parent.model \
+                            or parent.model[op].density < 1:
                         continue
                     p[i] -= (d - pad) * face[i]
                     if face == (0, -1, 0) or face == (0, 1, 0):

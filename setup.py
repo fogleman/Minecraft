@@ -16,13 +16,16 @@ import globals as G
 excluded_modules = (
     'globals',
     'gui',
-    'pyglet.event',
-    'pyglet.image.codecs',
-    'pyglet.image.codecs.pypng',
     'pyglet.canvas.base',
+    'pyglet.event',
     'pyglet.gl.glext_arb',
     'pyglet.gl.glext_nv',
+    'pyglet.image.codecs',
+    'pyglet.image.codecs.pypng',
+    'pyglet.media',
+    'pyglet.media.drivers.alsa.asound',
     'pyglet.window',
+    'pyglet.window.xlib.xlib',
 )
 
 
