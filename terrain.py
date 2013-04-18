@@ -9,7 +9,6 @@ from math import sqrt, floor
 import random
 
 # Third-party packages
-# Nothing for now
 from perlin import SimplexNoise
 
 # Modules from this project
@@ -162,8 +161,19 @@ class Chunk(object):
 SAMPLE_RATE_HOR = 4
 SAMPLE_RATE_VER = 4
 
-class TerrainGenerator(object):
+class TerrainGeneratorBase(object):
     def __init__(self, seed):
+        self.seed = seed
+
+    def generate_chunk(self, chunk_x, chunk_y, chunk_z):
+        pass
+
+    def generate_sector(self, sector):
+        pass
+
+class TerrainGenerator(TerrainGeneratorBase):
+    def __init__(self, seed):
+        super(TerrainGenerator, self).__init__(seed)
         self.base_gen = PerlinNoise(seed)
         self.base_gen.octave = 8
         self.ocean_gen = PerlinNoise(seed + 11)
@@ -184,6 +194,7 @@ class TerrainGenerator(object):
         self.mount_gen = PerlinNoise(seed + 41)
         self.hill_gen = PerlinNoise(seed + 71)
         self.cave_gen = PerlinNoise(seed + 141)
+        self.seed = seed
 
     def generate_chunk(self, chunk_x, chunk_y, chunk_z):
         c = Chunk(position=(chunk_x, chunk_y, chunk_z))
@@ -327,13 +338,14 @@ class TerrainGenerator(object):
     def cave_density(self, x, y, z):
         return self.cave_gen.fBm(x * 0.02, y * 0.02, z * 0.02)
 
-class TerrainGeneratorSimple(object):
+class TerrainGeneratorSimple(TerrainGeneratorBase):
     """
     A simple and fast use of (Simplex) Perlin Noise to generate a heightmap
     Based on Jimx's work on the above TerrainGenerator class
     See http://code.google.com/p/fractalterraingeneration/wiki/Fractional_Brownian_Motion for more info
     """
     def __init__(self, world, seed):
+        super(TerrainGeneratorSimple, self).__init__(seed)
         self.world = world
         rand = random.Random(seed)
         perm = range(255)
