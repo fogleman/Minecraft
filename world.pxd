@@ -64,7 +64,7 @@ cdef class World(dict):
                    dx=float, dy=float, dz=float,
                    previous=tuple, key=tuple)
     cpdef tuple hit_test(self, tuple position, tuple vector,
-                         int max_distance=?)
+                         int max_distance=?, bint hitwater=?)
 
     cpdef object hide_block(self, tuple position, bint immediate=?)
 
