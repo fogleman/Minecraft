@@ -350,9 +350,10 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
     def __init__(self, world, seed):
         super(TerrainGeneratorSimple, self).__init__(seed)
         self.world = world
-        rand = random.Random(seed)
+        self.seed = seed
+        self.rand = random.Random(seed)
         perm = range(255)
-        rand.shuffle(perm)
+        self.rand.shuffle(perm)
         self.noise = SimplexNoise(permutation_table=perm).noise2
         #self.noise = PerlinNoise(seed).noise
         self.PERSISTENCE = 2.1379201 #AKA lacunarity
@@ -362,6 +363,16 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
         self.OCTAVES = 9        #Higher linearly increases calc time; increases apparent 'randomness'
         self.height_range = 32  #If you raise this, you should shrink zoom_level equally
         self.zoom_level = 0.002 #Smaller will create gentler, softer transitions. Larger is more mountainy
+
+        # ores avaliable on the lowest level, closet to bedrock
+        self.lowlevel_ores = ((stone_block,) * 75 + (diamondore_block,) * 2 + (sapphireore_block,) * 2)
+        #  ores in the 'mid-level' .. also, the common ore blocks
+        self.midlevel_ores = ((stone_block,) * 80 + (rubyore_block,) * 2 +
+                         (coalore_block,) * 4 + (gravel_block,) * 5 +
+                         (ironore_block,) * 5 + (lapisore_block,) * 2)
+        # ores closest to the top level dirt and ground
+        self.highlevel_ores = ((stone_block,) * 85 + (gravel_block,) * 5 + (coalore_block,) * 3 + (quartz_block,) * 5)
+        self.world_type_trees = (OakTree, BirchTree, WaterMelon, Pumpkin, YFlowers, Potato, Carrot, Rose)
 
         self.weights = [self.PERSISTENCE ** (-self.H * n) for n in xrange(self.OCTAVES)]
     def _clamp(self, a):
@@ -395,22 +406,11 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                 for secz in xrange(rz/8,rz/8+4):
                     world.sectors[(secx,secy,secz)] = []
 
-        # ores avaliable on the lowest level, closet to bedrock
-        lowlevel_ores = ((stone_block,) * 75 + (diamondore_block,) * 2 + (sapphireore_block,) * 2)
-        #  ores in the 'mid-level' .. also, the common ore blockes
-        midlevel_ores = ((stone_block,) * 80 + (rubyore_block,) * 2 +
-                         (coalore_block,) * 4 + (gravel_block,) * 5 +
-                         (ironore_block,) * 5 + (lapisore_block,) * 2)
-        # ores closest to the top level dirt and ground
-        highlevel_ores = ((stone_block,) * 85 + (gravel_block,) * 5 + (coalore_block,) * 3 + (quartz_block,) * 5)
-        levelcount=0
-
-        #world_type_trees = (OakTree, BirchTree, WaterMelon, Pumpkin, YFlowers, Potato, Carrot, Rose)
-
         if 0 >= ry < 32:
             #The current terraingen doesn't build higher than 32.
             rytop = ry + 31
             world_init_block, self_get_height = world.init_block, self.get_height #Localize for speed
+            self.rand.seed(self.seed + "(%d,%d,%d)" % (rx,ry,rz))
             for x in xrange(rx, rx+32):
                 for z in xrange(rz, rz+32):
                     y = self_get_height(x,z)
@@ -422,15 +422,11 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                         world_init_block((x, y -4, z), dirt_block)
                         #'random ores, from 0 to (height)'
                     for yy in xrange(0, y -4):
-                        # ores and filler...
-                        #oblock = random.choice(ore_type_blocks)
-                        levelcount = levelcount +1
-                        if levelcount < 4:
-                            blockset = lowlevel_ores
-                        if levelcount >= 5 and levelcount <= 13:
-                            blockset = midlevel_ores
-                        if levelcount >= 14:
-                            blockset = highlevel_ores
-                        oblock = random.choice(blockset)
-                        world_init_block((x, yy, z), oblock)
-                        world_init_block((x, yy-1, z), bed_block)
+                        if yy < 4:
+                            blockset = self.lowlevel_ores
+                        elif yy < 14:
+                            blockset = self.midlevel_ores
+                        else:
+                            blockset = self.highlevel_ores
+                        world_init_block((x, yy, z), self.rand.choice(blockset))
+                    if ry == 0: world_init_block((x, 0, z), bed_block)
