@@ -212,7 +212,7 @@ class World(dict):
                 return True
         return False
 
-    def hit_test(self, position, vector, max_distance=8):
+    def hit_test(self, position, vector, max_distance=8, hitwater=False):
         m = 8
         x, y, z = position
         dx, dy, dz = vector
@@ -220,7 +220,7 @@ class World(dict):
         previous = ()
         for _ in xrange(max_distance * m):
             key = normalize((x, y, z))
-            if key != previous and key in self:
+            if key != previous and key in self and (self[key].density != 0.5 or hitwater):
                 return key, previous
             previous = key
             x, y, z = x + dx, y + dy, z + dz
