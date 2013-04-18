@@ -14,6 +14,9 @@ from perlin import SimplexNoise
 # Modules from this project
 from blocks import *
 from utils import FastRandom, fast_abs
+from nature import *
+from world import *
+
 
 
 # Improved Perlin Noise based on Improved Noise reference implementation by Ken Perlin
@@ -392,6 +395,18 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                 for secz in xrange(rz/8,rz/8+4):
                     world.sectors[(secx,secy,secz)] = []
 
+        # ores avaliable on the lowest level, closet to bedrock
+        lowlevel_ores = ((stone_block,) * 75 + (diamondore_block,) * 2 + (sapphireore_block,) * 2)
+        #  ores in the 'mid-level' .. also, the common ore blockes
+        midlevel_ores = ((stone_block,) * 80 + (rubyore_block,) * 2 +
+                         (coalore_block,) * 4 + (gravel_block,) * 5 +
+                         (ironore_block,) * 5 + (lapisore_block,) * 2)
+        # ores closest to the top level dirt and ground
+        highlevel_ores = ((stone_block,) * 85 + (gravel_block,) * 5 + (coalore_block,) * 3 + (quartz_block,) * 5)
+        levelcount=0
+
+        #world_type_trees = (OakTree, BirchTree, WaterMelon, Pumpkin, YFlowers, Potato, Carrot, Rose)
+
         if 0 >= ry < 32:
             #The current terraingen doesn't build higher than 32.
             rytop = ry + 31
@@ -401,3 +416,21 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                     y = self_get_height(x,z)
                     if ry <= y <= rytop:
                         world_init_block((x, y, z), grass_block)
+                        world_init_block((x, y -1, z), dirt_block)
+                        world_init_block((x, y -2, z), dirt_block)
+                        world_init_block((x, y -3, z), dirt_block)
+                        world_init_block((x, y -4, z), dirt_block)
+                        #'random ores, from 0 to (height)'
+                    for yy in xrange(0, y -4):
+                        # ores and filler...
+                        #oblock = random.choice(ore_type_blocks)
+                        levelcount = levelcount +1
+                        if levelcount < 4:
+                            blockset = lowlevel_ores
+                        if levelcount >= 5 and levelcount <= 13:
+                            blockset = midlevel_ores
+                        if levelcount >= 14:
+                            blockset = highlevel_ores
+                        oblock = random.choice(blockset)
+                        world_init_block((x, yy, z), oblock)
+                        world_init_block((x, yy-1, z), bed_block)

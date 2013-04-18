@@ -17,6 +17,10 @@ class Model(World):
         super(Model, self).__init__()
         if initialize:
             print('Building terrain...')
+            print('using Perlin...')
+            return
+
+            #skip all of this, using perlin now.
             start = time()
             self.initialize()
             print('Terrain successfully built in %f seconds.' % (time() - start))
