@@ -362,6 +362,7 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
         #Fun things to adjust
         self.OCTAVES = 9        #Higher linearly increases calc time; increases apparent 'randomness'
         self.height_range = 32  #If you raise this, you should shrink zoom_level equally
+        self.height_base = 32   #The lowest point the perlin terrain will generate (below is "underground")
         self.zoom_level = 0.002 #Smaller will create gentler, softer transitions. Larger is more mountainy
 
         # ores avaliable on the lowest level, closet to bedrock
@@ -377,7 +378,7 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
         self.weights = [self.PERSISTENCE ** (-self.H * n) for n in xrange(self.OCTAVES)]
     def _clamp(self, a):
         if a > 1:
-            return 1
+            return 0.9999 #So int rounds down properly and keeps it within the right sector
         elif a < 0:
             return 0
         else:
@@ -393,7 +394,7 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
             x *= self.PERSISTENCE
             z *= self.PERSISTENCE
 
-        return int(self._clamp((y+1)/2)*self.height_range)
+        return int(self.height_base + self._clamp((y+1.0)/2.0)*self.height_range)
     def generate_sector(self, sector):
         #For ease of saving/loading, generates a whole region (4x4x4 sectors) at once
         world = self.world
@@ -406,25 +407,29 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                 for secz in xrange(rz/8,rz/8+4):
                     world.sectors[(secx,secy,secz)] = []
 
-        if 0 >= ry < 32:
+        if 0 <= ry < (self.height_base + self.height_range):
             #The current terraingen doesn't build higher than 32.
             rytop = ry + 31
             world_init_block, self_get_height = world.init_block, self.get_height #Localize for speed
             self.rand.seed(self.seed + "(%d,%d,%d)" % (rx,ry,rz))
             for x in xrange(rx, rx+32):
                 for z in xrange(rz, rz+32):
-                    y = self_get_height(x,z)
+                    if ry < self.height_base:
+                        #For sectors outside of the height_range, no point checking the heightmap
+                        y = self.height_base
+                    else:
+                        y = self_get_height(x,z)
                     if ry <= y <= rytop:
                         world_init_block((x, y, z), grass_block)
                         world_init_block((x, y -1, z), dirt_block)
                         world_init_block((x, y -2, z), dirt_block)
                         world_init_block((x, y -3, z), dirt_block)
-                        world_init_block((x, y -4, z), dirt_block)
-                        #'random ores, from 0 to (height)'
-                    for yy in xrange(0, y -4):
-                        if yy < 4:
+                        y -= 3
+                    for yy in xrange(ry, y):
+                        # ores and filler...
+                        if yy < 8:
                             blockset = self.lowlevel_ores
-                        elif yy < 14:
+                        elif yy < 32:
                             blockset = self.midlevel_ores
                         else:
                             blockset = self.highlevel_ores
