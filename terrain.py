@@ -468,22 +468,23 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                         y = self_get_height(x,z)
                         if y > bytop:
                             y = bytop
-                        if y <= 32:
+                        if y == self.height_base:
                             #requested -- level water--
                             world_init_block((x, y +1, z), water_block)
                             #end request ...
                             world_init_block((x, y, z), water_block)
                             world_init_block((x, y -1, z), water_block)
                             world_init_block((x, y -2, z), sand_block)
-                        else:
+                            world_init_block((x, y -3, z), dirt_block)
+                            y -= 3
+                        elif y < bytop:
                             world_init_block((x, y, z), grass_block)
                             if self.rand.random() < 0.04:
                                 world.generate_tree((x,y,z), self.rand.choice(self.world_type_trees))
                             world_init_block((x, y -1, z), dirt_block)
                             world_init_block((x, y -2, z), dirt_block)
-                        # atleast a layer of dirt under, reguardless of top two blocks
-                        world_init_block((x, y -3, z), dirt_block)
-                        y -= 3
+                            world_init_block((x, y -3, z), dirt_block)
+                            y -= 3
                     for yy in xrange(by, y):
                         # ores and filler...
                         if yy < 8:
