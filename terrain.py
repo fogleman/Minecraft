@@ -479,7 +479,7 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                         world_init_block((x, yy, z), self.rand.choice(blockset))
                     if by == 0: world_init_block((x, 0, z), bed_block)
 
-                    if self.max_trees > 0:
+                 '''   if self.max_trees > 0:
                         showtree = random.randrange(1,50)
                         #print str(showtree)
                         if showtree == 1:
@@ -494,5 +494,5 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                                 world_init_block((x, y + t, z), tree_class)
 
                             self.max_trees = self.max_trees - 1
-
+'''
 
