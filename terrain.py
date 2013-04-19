@@ -6,16 +6,43 @@ Terrain generating algorithm
 
 # Python packages
 from math import sqrt, floor
+
 import random
 
 # Third-party packages
 from perlin import SimplexNoise
 
 # Modules from this project
+
 from blocks import *
 from utils import FastRandom, fast_abs
-from nature import *
 from world import *
+
+from nature import *
+
+FACES = (
+    ( 0,  1,  0),
+    ( 0, -1,  0),
+    (-1,  0,  0),
+    ( 1,  0,  0),
+    ( 0,  0,  1),
+    ( 0,  0, -1),
+)
+
+FACES_WITH_DIAGONALS = FACES + (
+    (-1, -1,  0),
+    (-1,  0, -1),
+    ( 0, -1, -1),
+    ( 1,  1,  0),
+    ( 1,  0,  1),
+    ( 0,  1,  1),
+    ( 1, -1,  0),
+    ( 1,  0, -1),
+    ( 0,  1, -1),
+    (-1,  1,  0),
+    (-1,  0,  1),
+    ( 0, -1,  1),
+)
 
 
 
@@ -373,8 +400,8 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                          (ironore_block,) * 5 + (lapisore_block,) * 2)
         # ores closest to the top level dirt and ground
         self.highlevel_ores = ((stone_block,) * 85 + (gravel_block,) * 5 + (coalore_block,) * 3 + (quartz_block,) * 5)
-        self.world_type_trees = (OakTree, BirchTree, WaterMelon, Pumpkin, YFlowers, Potato, Carrot, Rose)
-
+        self.world_type_trees = (oakwood_block, birchwood_block, junglewood_block) #(OakTree, BirchTree, WaterMelon, Pumpkin, YFlowers, Potato, Carrot, Rose)
+        self.max_trees = 100000
 
         self.weights = [self.PERSISTENCE ** (-self.H * n) for n in xrange(self.OCTAVES)]
     def _clamp(self, a):
@@ -429,8 +456,9 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                             world_init_block((x, y -1, z), dirt_block)
                             world_init_block((x, y -2, z), dirt_block)
                             water_area = False
-                        # atleast a layer of dirt under, reguardless of top two blocks
+                        # atleast a layer of dirt under, regardless of top two blocks
                         world_init_block((x, y -3, z), dirt_block)
+
                         y -= 3
                     for yy in xrange(by, y):
                         # ores and filler...
@@ -450,3 +478,21 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                             blockset = self.highlevel_ores
                         world_init_block((x, yy, z), self.rand.choice(blockset))
                     if by == 0: world_init_block((x, 0, z), bed_block)
+
+                    if self.max_trees > 0:
+                        showtree = random.randrange(1,50)
+                        #print str(showtree)
+                        if showtree == 1:
+                          #  tree_chance
+                            tree_class = self.world_type_trees # world_type_trees[world_type]
+                            #if isinstance(tree_class, (tuple, list)):
+                            tree_class = random.choice(tree_class)
+                            print tree_class
+
+                            tree_height = random.randrange(3, 12)
+                            for t in xrange(1, tree_height):
+                                world_init_block((x, y + t, z), tree_class)
+
+                            self.max_trees = self.max_trees - 1
+
+
