@@ -940,3 +940,41 @@ class TextWidget(Control):
             self.layout.view_y += scroll_y * 15
             return pyglet.event.EVENT_HANDLED
 
+
+class ProgressBarWidget(Control):
+    def __init__(self, parent, background_pic, foreground_pic,
+                x, y, width, height, progress_updater = None, progress = 0, text_color = (0, 0, 0, 255), 
+                *args, **kwargs):
+        super(ProgressBarWidget, self).__init__(parent, *args, **kwargs)
+        self.batch = pyglet.graphics.Batch()
+        self.group = pyglet.graphics.OrderedGroup(1)
+        self.background_pic = image_sprite(background_pic, self.batch, self.group)
+        self.foreground_pic = foreground_pic
+        self.progress_pic = None
+        self.progress_pic.x = x
+        self.progress_pic.y = y
+        self.text_color = text_color
+        self.x = x
+        self.y = y
+        self.height = height
+        self.width = width
+        self.progress_updater = progress_updater
+        self.progress = progress
+
+    def set_progress(self, progress):
+        self.progress = progress
+        self.update_progress
+
+    def update_progress(self):
+        if self.progress_updater is not None:
+            self.progress = self.progress_updater()
+
+        self.progress_pic = image_sprite(self.foreground_pic, self.batch, self.group, x=0, y=0,
+                width=floor(self.width * progress), height=self.height)
+
+    def _on_draw(self):
+        self.update_progress()
+        self.batch.draw()
+
+
+

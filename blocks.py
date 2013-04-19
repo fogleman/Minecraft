@@ -461,7 +461,7 @@ class WaterBlock(Block):
     height = 0.8
     top_texture = 0, 2
     bottom_texture = 6, 7
-    side_texture = 0, 2 # 6, 7
+    side_texture = 0, 2
     texture_name = "Water",
     transparent = True
     hardness = -1  # Unobtainable
