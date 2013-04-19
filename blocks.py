@@ -1244,9 +1244,20 @@ class WildGrassBlock(Block):
     break_sound = sounds.leaves_break
     amount_label_color = 0, 0, 0, 255
 
-    def __init__(self):
-        super(WildGrassBlock, self).__init__()
-        self.drop_id = BlockID(295) ## seed
+   # def __init__(self):
+    #    super(WildGrassBlock, self).__init__()
+    #    self.drop_id = BlockID(295) ## seed
+    @property
+    def drop_id(self):
+        # 10% chance of dropping flint
+        if randint(0, 10) == 0:
+            return BlockID(295)
+        else:
+            return self._drop_id
+
+    @drop_id.setter
+    def drop_id(self, value):
+        self._drop_id = value
 
 class DiamondBlock(HardBlock):
     top_texture = 11, 0
