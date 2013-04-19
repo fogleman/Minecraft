@@ -425,8 +425,12 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
         # ores closest to the top level dirt and ground
         self.highlevel_ores = ((stone_block,) * 85 + (gravel_block,) * 5 + (coalore_block,) * 3 + (quartz_block,) * 5)
         self.underwater_blocks = ((sand_block,) * 70 + (gravel_block,) * 20 + ( clay_block,) * 10) 
-        self.world_type_trees = (OakTree, BirchTree, WaterMelon, Pumpkin, YFlowers, Potato, Carrot, Rose)
-        self.leaf_blocks = (birchleaf_block, birchwood_block, oakleaf_block, oakwood_block, melon_block, pumpkin_block, yflowers_block, potato_block, carrot_block, rose_block)
+        #self.world_type_trees = (OakTree, BirchTree, WaterMelon, Pumpkin, YFlowers, Potato, Carrot, Rose)
+        #self.leaf_blocks = (birchleaf_block, birchwood_block, oakleaf_block, oakwood_block, melon_block, pumpkin_block, yflowers_block, potato_block, carrot_block, rose_block)
+        self.world_type_trees = (OakTree, BirchTree, JungleTree)
+        self.world_type_plants = (Pumpkin, Potato, Carrot, WaterMelon)
+        self.world_type_grass = (YFlowers, Rose, Fern)
+        self.leaf_blocks = (birchleaf_block, birchwood_block, oakleaf_block, oakwood_block, jungleleaf_block, junglewood_block)
 
         self.weights = [self.PERSISTENCE ** (-self.H * n) for n in xrange(self.OCTAVES)]
     def _clamp(self, a):
@@ -450,6 +454,7 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
         return int(self.height_base + self._clamp((y+1.0)/2.0)*self.height_range)
 
     def generate_sector(self, sector):
+        skip = 0  # skip over flag. if 0, dont skip, if 1, skip
         world = self.world
         if sector in world.sectors and any(world[pos] not in self.leaf_blocks for pos in world.sectors[sector]): return #Its already generated
         world.sectors[sector] = [] #Precache it incase it ends up being solid air, so it doesn't get regenerated indefinitely
@@ -457,6 +462,7 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
 
         if 0 <= by < (self.height_base + self.height_range):
             bytop = by + 8
+            self.skip_over = False
             world_init_block, self_get_height = world.init_block, self.get_height #Localize for speed
             self.rand.seed(self.seed + "(%d,%d,%d)" % (bx,by,bz))
             for x in xrange(bx, bx+8):
@@ -480,12 +486,27 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                             y -= 3
                         elif y < bytop:
                             world_init_block((x, y, z), grass_block)
-                            if self.rand.random() < 0.04:
-                                world.generate_tree((x,y,z), self.rand.choice(self.world_type_trees))
+                            if self.rand.random() < G.TREE_CHANCE:
+                                if skip == 0:
+                                    skip == 1
+                                    world.generate_tree((x,y,z), self.rand.choice(self.world_type_trees))
+
+                            if self.rand.random() < G.WILDFOOD_CHANCE:
+                                if skip == 0:
+                                    skip == 1
+                                    world.generate_tree((x,y,z), self.rand.choice(self.world_type_plants))
+
+                            if self.rand.random() < G.GRASS_CHANCE:
+                                if skip == 0:
+                                    skip == 1
+                                    world.generate_tree((x,y,z), self.rand.choice(self.world_type_grass))
+
                             world_init_block((x, y -1, z), dirt_block)
                             world_init_block((x, y -2, z), dirt_block)
                             world_init_block((x, y -3, z), dirt_block)
+
                             y -= 3
+
                     for yy in xrange(by, y):
                         # ores and filler...
                         if yy < 8:
@@ -495,4 +516,7 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                         else:
                             blockset = self.highlevel_ores
                         world_init_block((x, yy, z), self.rand.choice(blockset))
-                    if by == 0: world_init_block((x, 0, z), bed_block)
+                    if by == 0:
+                        world_init_block((x, 0, z), bed_block)
+                        #  reset skip after base later is made
+                        skip == 0
