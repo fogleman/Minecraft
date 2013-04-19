@@ -424,6 +424,7 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                          (ironore_block,) * 5 + (lapisore_block,) * 2)
         # ores closest to the top level dirt and ground
         self.highlevel_ores = ((stone_block,) * 85 + (gravel_block,) * 5 + (coalore_block,) * 3 + (quartz_block,) * 5)
+        self.underwater_blocks = ((sand_block,) * 70 + (gravel_block,) * 20 + ( clay_block,) * 10) 
         self.world_type_trees = (OakTree, BirchTree, WaterMelon, Pumpkin, YFlowers, Potato, Carrot, Rose)
         self.leaf_blocks = (birchleaf_block, birchwood_block, oakleaf_block, oakwood_block, melon_block, pumpkin_block, yflowers_block, potato_block, carrot_block, rose_block)
 
@@ -474,7 +475,7 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                             #end request ...
                             world_init_block((x, y, z), water_block)
                             world_init_block((x, y -1, z), water_block)
-                            world_init_block((x, y -2, z), sand_block)
+                            world_init_block((x, y -2, z), self.rand.choice(self.underwater_blocks))
                             world_init_block((x, y -3, z), dirt_block)
                             y -= 3
                         elif y < bytop:
