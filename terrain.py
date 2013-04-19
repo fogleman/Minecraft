@@ -425,6 +425,7 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
         # ores closest to the top level dirt and ground
         self.highlevel_ores = ((stone_block,) * 85 + (gravel_block,) * 5 + (coalore_block,) * 3 + (quartz_block,) * 5)
         self.world_type_trees = (OakTree, BirchTree, WaterMelon, Pumpkin, YFlowers, Potato, Carrot, Rose)
+        self.leaf_blocks = (birchleaf_block, birchwood_block, oakleaf_block, oakwood_block, melon_block, pumpkin_block, yflowers_block, potato_block, carrot_block, rose_block)
 
         self.weights = [self.PERSISTENCE ** (-self.H * n) for n in xrange(self.OCTAVES)]
     def _clamp(self, a):
@@ -446,9 +447,10 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
             z *= self.PERSISTENCE
 
         return int(self.height_base + self._clamp((y+1.0)/2.0)*self.height_range)
+
     def generate_sector(self, sector):
         world = self.world
-        if sector in world.sectors: return #Its already generated
+        if sector in world.sectors and any(world[pos] not in self.leaf_blocks for pos in world.sectors[sector]): return #Its already generated
         world.sectors[sector] = [] #Precache it incase it ends up being solid air, so it doesn't get regenerated indefinitely
         bx, by, bz = world.savingsystem.sector_to_blockpos(sector)
 
@@ -462,6 +464,7 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                         #For sectors outside of the height_range, no point checking the heightmap
                         y = self.height_base
                     else:
+                        #The heightmap falls within our sector, generate surface stuff
                         y = self_get_height(x,z)
                         if y > bytop:
                             y = bytop
@@ -474,6 +477,8 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                             world_init_block((x, y -2, z), sand_block)
                         else:
                             world_init_block((x, y, z), grass_block)
+                            if self.rand.random() < 0.04:
+                                world.generate_tree((x,y,z), self.rand.choice(self.world_type_trees))
                             world_init_block((x, y -1, z), dirt_block)
                             world_init_block((x, y -2, z), dirt_block)
                         # atleast a layer of dirt under, reguardless of top two blocks

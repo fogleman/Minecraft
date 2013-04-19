@@ -169,8 +169,6 @@ class Model(World):
 
         tree_class.add_to_world(self, position)
 
-        self.max_trees -= 1
-
     def init_block(self, position, block):
         self.add_block(position, block, sync=False, force=False)
 

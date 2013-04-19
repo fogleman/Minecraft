@@ -40,7 +40,7 @@ class Tree(object):
                       height_range=cls.trunk_height_range)
 
         for item in trunk.blocks.items():
-            world.init_block(*item)
+            world.add_block(*item, force=False)
 
         x, y, z = position
         height = trunk.height
@@ -65,7 +65,7 @@ class Tree(object):
                     # the least leaves we can find.
                     if random.uniform(0, dx + dz) > 0.6:
                         continue
-                    world.init_block((xl, yl, zl), cls.leaf_block)
+                    world.add_block((xl, yl, zl), cls.leaf_block, force=False)
 
 
 class OakTree(Tree):
