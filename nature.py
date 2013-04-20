@@ -102,7 +102,7 @@ class Cactus(object):
 class TallCactus(object):
     trunk_block = tallcactus_block
     trunk_height_range = 1, 10
-    grows_on = sand_block, sandstone_block, grass_block, dirt_block
+    grows_on = sand_block, sandstone_block
 
     @classmethod
     def add_to_world(cls, world, position):

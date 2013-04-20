@@ -414,6 +414,8 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
         self.OCTAVES = 9        #Higher linearly increases calc time; increases apparent 'randomness'
         self.height_range = 32  #If you raise this, you should shrink zoom_level equally
         self.height_base = 32   #The lowest point the perlin terrain will generate (below is "underground")
+        self.island_shore = 38  #below this is sand, above is grass .. island only
+        self.water_level = 34 # have water 2 block higher than base, allowing for some rivers...
         self.zoom_level = 0.002 #Smaller will create gentler, softer transitions. Larger is more mountainy
 
         # ores avaliable on the lowest level, closet to bedrock
@@ -429,7 +431,8 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
         #self.leaf_blocks = (birchleaf_block, birchwood_block, oakleaf_block, oakwood_block, melon_block, pumpkin_block, yflowers_block, potato_block, carrot_block, rose_block)
         self.world_type_trees = (OakTree, BirchTree, JungleTree)
         self.world_type_plants = (Pumpkin, Potato, Carrot, WaterMelon)
-        self.world_type_grass = (YFlowers, Rose, Fern)
+        self.world_type_grass = (YFlowers, Rose, Fern, Cactus, TallCactus)
+        self.island_type_grass = (YFlowers, Rose, Fern)
         self.leaf_blocks = (birchleaf_block, birchwood_block, oakleaf_block, oakwood_block, jungleleaf_block, junglewood_block)
 
         self.weights = [self.PERSISTENCE ** (-self.H * n) for n in xrange(self.OCTAVES)]
@@ -454,6 +457,25 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
         return int(self.height_base + self._clamp((y+1.0)/2.0)*self.height_range)
 
     def generate_sector(self, sector):
+        mainblock = grass_block
+        islandheight = 0
+        if G.TERRAIN_CHOICE == "plain":
+            mainblock = grass_block
+            islandheight = self.height_base + 8
+        if G.TERRAIN_CHOICE == "snow":
+            mainblock = snowgrass_block
+            islandheight = 0
+        if G.TERRAIN_CHOICE == "desert":
+            mainblock = sand_block
+            islandheight = 0
+        if G.TERRAIN_CHOICE == "island":
+            mainblock = grass_block
+            islandheight = 0
+        if G.TERRAIN_CHOICE == "mountains":
+            mainblock = stone_block
+            islandheight = 0
+
+
         skip = 0  # skip over flag. if 0, dont skip, if 1, skip
         world = self.world
         if sector in world.sectors and any(world[pos] not in self.leaf_blocks for pos in world.sectors[sector]): return #Its already generated
@@ -475,17 +497,31 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                         y = self_get_height(x,z)
                         if y > bytop:
                             y = bytop
-                        if y == self.height_base:
-                            #requested -- level water--
-                            world_init_block((x, y +1, z), water_block)
-                            #end request ...
-                            world_init_block((x, y, z), water_block)
-                            world_init_block((x, y -1, z), water_block)
-                            world_init_block((x, y -2, z), self.rand.choice(self.underwater_blocks))
-                            world_init_block((x, y -3, z), dirt_block)
+                        if G.TERRAIN_CHOICE == "island":#  always sand by the water, grass above
+                            if y <= self.island_shore:
+                                mainblock = sand_block
+                            if y > self.island_shore:
+                                mainblock =  grass_block
+
+                        if y <= self.water_level:
+                            if G.TERRAIN_CHOICE != "desert":# was y == self.height_base -- you can have water!
+                                if G.TERRAIN_CHOICE == "snow":  # top block is ice
+                                    world_init_block((x, y +1, z), ice_block)
+                                if G.TERRAIN_CHOICE != "snow:": #  top block is water
+                                    world_init_block((x, y +1, z), water_block)
+                                world_init_block((x, y, z), water_block)
+                                world_init_block((x, y -1, z), water_block)
+                                world_init_block((x, y -2, z), self.rand.choice(self.underwater_blocks))
+                                world_init_block((x, y -3, z), dirt_block)
+                            if G.TERRAIN_CHOICE == "desert":  #  no water for you!
+                                world_init_block((x, y +1, z), sand_block)
+                                world_init_block((x, y, z), sand_block)
+                                world_init_block((x, y -1, z), sand_block)
+                                world_init_block((x, y -2, z), sandstone_block)
+                                world_init_block((x, y -3, z), sandstone_block)
                             y -= 3
                         elif y < bytop:
-                            world_init_block((x, y, z), grass_block)
+                            world_init_block((x, y, z), mainblock)  # grass_block)
                             if self.rand.random() < G.TREE_CHANCE:
                                 if skip == 0:
                                     skip == 1
@@ -499,11 +535,31 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                             if self.rand.random() < G.GRASS_CHANCE:
                                 if skip == 0:
                                     skip == 1
-                                    world.generate_tree((x,y,z), self.rand.choice(self.world_type_grass))
+                                    if G.TERRAIN_CHOICE == "island":
+                                        rndgrass = self.rand.choice(self.island_type_grass)# some grass that cant be on sand, for a clean beach
+                                    else:
+                                        rndgrass = self.rand.choice((self.world_type_grass))
 
-                            world_init_block((x, y -1, z), dirt_block)
-                            world_init_block((x, y -2, z), dirt_block)
-                            world_init_block((x, y -3, z), dirt_block)
+                                    world.generate_tree((x,y,z), rndgrass)
+
+                            if mainblock == grass_block or snowgrass_block:
+                                world_init_block((x, y -1, z), dirt_block)
+                                world_init_block((x, y -2, z), dirt_block)
+                                world_init_block((x, y -3, z), dirt_block)
+
+                            if mainblock == sand_block:
+                                world_init_block((x, y -1, z), sand_block)
+                                world_init_block((x, y -2, z), sand_block)
+                                world_init_block((x, y -3, z), sandstone_block)
+
+                            if mainblock == stone_block:
+                                world_init_block((x, y -1, z), stone_block)
+                                world_init_block((x, y -2, z), stone_block)
+                                world_init_block((x, y -3, z), stone_block)
+
+                            #world_init_block((x, y -1, z), dirt_block)
+                            #world_init_block((x, y -2, z), dirt_block)
+                            #world_init_block((x, y -3, z), dirt_block)
 
                             y -= 3
 

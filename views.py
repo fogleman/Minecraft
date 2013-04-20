@@ -10,6 +10,7 @@
 import globals as G
 from gui import *
 from savingsystem import *
+import random
 
 
 class View(pyglet.event.EventDispatcher):
@@ -67,8 +68,11 @@ class MainMenuView(View):
         self.labels_group = pyglet.graphics.OrderedGroup(3)
 
         width, height = self.controller.window.width, self.controller.window.height
+        rnd_backdrops = ('main_menu_background.png', 'main_menu_background_2.png', 'main_menu_background_3.png'
+        'main_menu_background_4.png', 'main_menu_background_5.png', 'main_menu_background_6.png')
+        thisbackdrop = random.choice(rnd_backdrops)
 
-        background = load_image('resources', 'textures', 'main_menu_background.png')
+        background = load_image('resources', 'textures', thisbackdrop) #  'main_menu_background.png')
         image = load_image('resources', 'textures', 'frame.png')
         self.frame_rect = Rectangle(0, 0, image.width, image.height)
         self.background = image_sprite(background, self.batch, 0)
