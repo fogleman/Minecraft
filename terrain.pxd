@@ -1,4 +1,5 @@
 import cython
+cimport world
 
 #cython: boundscheck=False
 #cython: wraparound=False
@@ -52,7 +53,7 @@ cdef class TerrainGenerator(TerrainGeneratorBase):
 
 cdef class TerrainGeneratorSimple(TerrainGeneratorBase):
 	cdef public:
-		object world
+		world.World world
 		object rand
 		object weights
 		object noise
@@ -80,7 +81,7 @@ cdef class TerrainGeneratorSimple(TerrainGeneratorBase):
 	@cython.locals(y=double, weight=double)
 	cpdef int get_height(self, double x, double z)
 
-	@cython.locals(islandheight=int, skip=bint, bx=int,
+	@cython.locals(world=world.World, islandheight=int, skip=bint, bx=int,
 					by=int, bz=int, bytop=int, x=int, z=int, y=int,
 					yy=int)
 	cpdef object generate_sector(self, object sector)
