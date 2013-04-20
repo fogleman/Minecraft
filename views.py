@@ -68,7 +68,7 @@ class MainMenuView(View):
         self.labels_group = pyglet.graphics.OrderedGroup(3)
 
         width, height = self.controller.window.width, self.controller.window.height
-        rnd_backdrops = ('main_menu_background.png', 'main_menu_background_2.png', 'main_menu_background_3.png'
+        rnd_backdrops = ('main_menu_background.png', 'main_menu_background_2.png', 'main_menu_background_3.png',
         'main_menu_background_4.png', 'main_menu_background_5.png', 'main_menu_background_6.png')
         thisbackdrop = random.choice(rnd_backdrops)
 
