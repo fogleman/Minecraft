@@ -102,7 +102,7 @@ class Cactus(object):
 class TallCactus(object):
     trunk_block = tallcactus_block
     trunk_height_range = 1, 10
-    grows_on = sand_block, sandstone_block, grass_block, dirt_block
+    grows_on = sand_block, sandstone_block
 
     @classmethod
     def add_to_world(cls, world, position):
@@ -203,6 +203,19 @@ class Rose(object):
         for item in trunk.blocks.items():
             world.init_block(*item)
 
+class Fern(object):
+    trunk_block = fern_block
+    trunk_height_range = 1, 2
+    grows_on = grass_block, dirt_block
+
+    @classmethod
+    def add_to_world(cls, world, position):
+        trunk = Trunk(position, block=cls.trunk_block,
+                      height_range=cls.trunk_height_range)
+
+        for item in trunk.blocks.items():
+            world.init_block(*item)
+
 TREES = (
     OakTree,
     JungleTree,
@@ -216,6 +229,7 @@ TREES = (
     Carrot,
     Reed,
     Rose,
+    Fern,
 )
 
 TREE_BLOCKS = tuple(tree.trunk_block for tree in TREES)

@@ -1211,6 +1211,7 @@ class PotatoBlock(Block):
     id = 142
     name = "Potato"
     max_stack_size = 16
+    break_sound = sounds.leaves_break
     regenerated_health = 1
     amount_label_color = 0, 0, 0, 255
 
@@ -1224,8 +1225,39 @@ class CarrotBlock(Block):
     id = 141
     name = "Carrot"
     regenerated_health = 2
+    break_sound = sounds.leaves_break
     max_stack_size = 16
     amount_label_color = 0, 0, 0, 255
+
+class WildGrassBlock(Block):
+    width = 0.9
+    height = 0.9
+    top_texture = -1, -1
+    bottom_texture = -1, -1
+    side_texture = 10, 4
+    vertex_mode = G.VERTEX_CROSS
+    hardness = 0.0
+    transparent = True
+    density = 0.3
+    id = 31
+    name = "Fern"
+    break_sound = sounds.leaves_break
+    amount_label_color = 0, 0, 0, 255
+
+   # def __init__(self):
+    #    super(WildGrassBlock, self).__init__()
+    #    self.drop_id = BlockID(295) ## seed
+    @property
+    def drop_id(self):
+        # 10% chance of dropping flint
+        if randint(0, 10) == 0:
+            return BlockID(295)
+        else:
+            return self._drop_id
+
+    @drop_id.setter
+    def drop_id(self, value):
+        self._drop_id = value
 
 class DiamondBlock(HardBlock):
     top_texture = 11, 0
@@ -1404,3 +1436,4 @@ emeraldore_block = EmeraldOreBlock()
 lapisore_block = LapisOreBlock()
 rubyore_block = RubyOreBlock()
 sapphireore_block = SapphireOreBlock()
+fern_block = WildGrassBlock()

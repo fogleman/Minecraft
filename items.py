@@ -152,6 +152,11 @@ class SugarItem(Item):
     max_stack_size = 64
     name = "Sugar"
 
+class SeedItem(Item):
+    id = 295
+    max_stack_size = 64
+    name = "Seed"
+
 class PaperItem(Item):
     id = 339
     max_stack_size = 64
@@ -445,3 +450,4 @@ ladder_item = LadderItem()
 reddye_item = RedDyeItem()
 sugar_item = SugarItem()
 paper_item = PaperItem()
+seed_item = SeedItem()
