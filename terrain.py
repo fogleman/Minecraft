@@ -528,6 +528,7 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                             if y >= 43 and y <= 57: # mid level = rock
                                 mainblock = stone_block
 
+
                         if y <= self.water_level:
                             if G.TERRAIN_CHOICE != "desert":# was y == self.height_base -- you can have water!
                                 if G.TERRAIN_CHOICE == "snow":  # top block is ice
