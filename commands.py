@@ -11,6 +11,7 @@ import pyglet
 # Modules from this project
 from blocks import BlockID
 from items import get_item
+import globals as G
 
 COMMAND_HANDLED = True
 COMMAND_NOT_HANDLED = None
@@ -166,7 +167,8 @@ class GetIDCommand(Command):
 
 class TakeScreencapCommand(Command):
     command = r"^screencap$"
-    help_text = "screencap: saves current screen to a file"
+    help_text = "screencap: saves current screen to a file. Press " + G.SCREENCAP_KEY + " for instant screencap."
+
 
     def execute(self, *args, **kwargs):
         now = datetime.datetime.now()

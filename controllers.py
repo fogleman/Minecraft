@@ -391,6 +391,16 @@ class GameController(Controller):
             G.EFFECT_VOLUME = min(G.EFFECT_VOLUME + .1, 1)
         elif symbol == G.SOUND_DOWN_KEY:
             G.EFFECT_VOLUME = max(G.EFFECT_VOLUME - .1, 0)
+        elif symbol == G.SCREENCAP_KEY:  # dedicated screencap key
+            now = datetime.datetime.now()
+            dt = datetime.datetime(now.year, now.month, now.day, now.hour, now.minute, now.second)
+            st = dt.strftime('%Y-%m-%d_%H.%M.%S')
+            filename = str(st) + '.png'
+            if not os.path.exists('screencaptures'):
+                os.makedirs('screencaptures')
+            path = 'screencaptures/' + filename
+            pyglet.image.get_buffer_manager().get_color_buffer().save(path)
+           # self.send_info("Screen capture saved to '%s'" % path)
         self.last_key = symbol
 
     def on_key_release(self, symbol, modifiers):
