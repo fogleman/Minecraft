@@ -463,7 +463,7 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
         if G.TERRAIN_CHOICE == "plains":
             mainblock = grass_block
             self.height_range = 24
-            self.height_base = 24
+            self.height_base = 32
             self.island_shore = 0
             self.water_level = 0
             self.zoom_level = 0.002
@@ -477,9 +477,9 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
         elif G.TERRAIN_CHOICE == "desert":
             mainblock = sand_block
             self.height_range = 32
-            self.height_base = 16
+            self.height_base = 32
             self.island_shore = 32
-            self.water_level = 31
+            self.water_level = 0
             self.zoom_level = 0.004
         elif G.TERRAIN_CHOICE == "island":
             mainblock = grass_block
@@ -494,7 +494,7 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
             self.height_base = 16
             self.island_shore = 18
             self.water_level = 20
-            self.zoom_level = 0.002
+            self.zoom_level = 0.001
 
         world = self.world
         if sector in world.sectors:
@@ -521,12 +521,12 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                             y = bytop
 
                         if G.TERRAIN_CHOICE == "mountains":
-                            if y >= 58: # top level = snow
-                                mainblock = snow_block
-                            if y >= 16 and y <= 42: # bottom level = grass
+                            if y >= 0 and y <= 42: # bottom level = grass
                                 mainblock = grass_block
                             if y >= 43 and y <= 57: # mid level = rock
                                 mainblock = stone_block
+                            if y >= 58: # top level = snow
+                                mainblock = snow_block
 
                         if y <= self.water_level:
                             if G.TERRAIN_CHOICE != "desert":# was y == self.height_base -- you can have water!
