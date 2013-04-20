@@ -17,6 +17,7 @@ excluded_modules = (
     'globals',
     'gui',
     'views',
+    'server',
     'controllers',
     'pyglet.canvas.base',
     'pyglet.event',
