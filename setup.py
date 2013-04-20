@@ -16,6 +16,8 @@ import globals as G
 excluded_modules = (
     'globals',
     'gui',
+    'views',
+    'controllers',
     'pyglet.canvas.base',
     'pyglet.event',
     'pyglet.gl.glext_arb',

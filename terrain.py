@@ -478,7 +478,12 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
 
         skip = 0  # skip over flag. if 0, dont skip, if 1, skip
         world = self.world
-        if sector in world.sectors and any(world[pos] not in self.leaf_blocks for pos in world.sectors[sector]): return #Its already generated
+        current_sector = world.sectors[sector]
+        if sector in world.sectors:
+            for pos in current_sector:
+                if world[pos] not in self.leaf_blocks:
+                    return
+        # if sector in world.sectors and any(world[pos] not in self.leaf_blocks ): return #Its already generated
         world.sectors[sector] = [] #Precache it incase it ends up being solid air, so it doesn't get regenerated indefinitely
         bx, by, bz = world.savingsystem.sector_to_blockpos(sector)
 
