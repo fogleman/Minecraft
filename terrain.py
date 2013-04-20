@@ -459,28 +459,25 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
     def generate_sector(self, sector):
         mainblock = grass_block
         islandheight = 0
-        if G.TERRAIN_CHOICE == "plain":
+        if G.TERRAIN_CHOICE == "plains":
             mainblock = grass_block
             islandheight = self.height_base + 8
-        if G.TERRAIN_CHOICE == "snow":
+        elif G.TERRAIN_CHOICE == "snow":
             mainblock = snowgrass_block
             islandheight = 0
-        if G.TERRAIN_CHOICE == "desert":
+        elif G.TERRAIN_CHOICE == "desert":
             mainblock = sand_block
             islandheight = 0
-        if G.TERRAIN_CHOICE == "island":
+        elif G.TERRAIN_CHOICE == "island":
             mainblock = grass_block
             islandheight = 0
-        if G.TERRAIN_CHOICE == "mountains":
+        elif G.TERRAIN_CHOICE == "mountains":
             mainblock = stone_block
             islandheight = 0
 
-
-        skip = 0  # skip over flag. if 0, dont skip, if 1, skip
         world = self.world
-        current_sector = world.sectors[sector]
         if sector in world.sectors:
-            for pos in current_sector:
+            for pos in world.sectors[sector]:
                 if world[pos] not in self.leaf_blocks:
                     return
         # if sector in world.sectors and any(world[pos] not in self.leaf_blocks ): return #Its already generated
@@ -489,8 +486,7 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
 
         if 0 <= by < (self.height_base + self.height_range):
             bytop = by + 8
-            self.skip_over = False
-            world_init_block, self_get_height = world.init_block, self.get_height #Localize for speed
+            world_init_block, self_get_height, self_rand_choice = world.init_block, self.get_height, self.rand.choice #Localize for speed
             self.rand.seed(self.seed + "(%d,%d,%d)" % (bx,by,bz))
             for x in xrange(bx, bx+8):
                 for z in xrange(bz, bz+8):
@@ -502,12 +498,6 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                         y = self_get_height(x,z)
                         if y > bytop:
                             y = bytop
-                            
-                        if G.TERRAIN_CHOICE == "island":#  always sand by the water, grass above
-                            if y <= self.island_shore:
-                                mainblock = sand_block
-                            if y > self.island_shore:
-                                mainblock =  grass_block
 
                         if y <= self.water_level:
                             if G.TERRAIN_CHOICE != "desert":# was y == self.height_base -- you can have water!
@@ -517,7 +507,7 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                                     world_init_block((x, y +1, z), water_block)
                                 world_init_block((x, y, z), water_block)
                                 world_init_block((x, y -1, z), water_block)
-                                world_init_block((x, y -2, z), self.rand.choice(self.underwater_blocks))
+                                world_init_block((x, y -2, z), self_rand_choice(self.underwater_blocks))
                                 world_init_block((x, y -3, z), dirt_block)
                             if G.TERRAIN_CHOICE == "desert":  #  no water for you!
                                 world_init_block((x, y +1, z), sand_block)
@@ -527,58 +517,46 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                                 world_init_block((x, y -3, z), sandstone_block)
                             y -= 3
                         elif y < bytop:
+                            if G.TERRAIN_CHOICE == "island":#  always sand by the water, grass above
+                                if y > self.island_shore:
+                                    mainblock = grass_block
+                                else:
+                                    mainblock = sand_block
                             world_init_block((x, y, z), mainblock)  # grass_block)
                             if self.rand.random() < G.TREE_CHANCE:
-                                if skip == 0:
-                                    skip == 1
-                                    world.generate_tree((x,y,z), self.rand.choice(self.world_type_trees))
+                                world.generate_tree((x,y,z), self_rand_choice(self.world_type_trees))
+                            elif self.rand.random() < G.WILDFOOD_CHANCE:
+                                world.generate_tree((x,y,z), self_rand_choice(self.world_type_plants))
+                            elif self.rand.random() < G.GRASS_CHANCE:
+                                if G.TERRAIN_CHOICE == "island":
+                                    rndgrass = self_rand_choice(self.island_type_grass)# some grass that cant be on sand, for a clean beach
+                                else:
+                                    rndgrass = self_rand_choice((self.world_type_grass))
+                                world.generate_tree((x,y,z), rndgrass)
 
-                            if self.rand.random() < G.WILDFOOD_CHANCE:
-                                if skip == 0:
-                                    skip == 1
-                                    world.generate_tree((x,y,z), self.rand.choice(self.world_type_plants))
-
-                            if self.rand.random() < G.GRASS_CHANCE:
-                                if skip == 0:
-                                    skip == 1
-                                    if G.TERRAIN_CHOICE == "island":
-                                        rndgrass = self.rand.choice(self.island_type_grass)# some grass that cant be on sand, for a clean beach
-                                    else:
-                                        rndgrass = self.rand.choice((self.world_type_grass))
-
-                                    world.generate_tree((x,y,z), rndgrass)
-
-                            if mainblock == grass_block or snowgrass_block:
+                            if mainblock == grass_block or mainblock == snowgrass_block:
                                 world_init_block((x, y -1, z), dirt_block)
                                 world_init_block((x, y -2, z), dirt_block)
                                 world_init_block((x, y -3, z), dirt_block)
-
-                            if mainblock == sand_block:
+                            elif mainblock == sand_block:
                                 world_init_block((x, y -1, z), sand_block)
                                 world_init_block((x, y -2, z), sand_block)
                                 world_init_block((x, y -3, z), sandstone_block)
-
-                            if mainblock == stone_block:
+                            elif mainblock == stone_block:
                                 world_init_block((x, y -1, z), stone_block)
                                 world_init_block((x, y -2, z), stone_block)
                                 world_init_block((x, y -3, z), stone_block)
-
-                            #world_init_block((x, y -1, z), dirt_block)
-                            #world_init_block((x, y -2, z), dirt_block)
-                            #world_init_block((x, y -3, z), dirt_block)
 
                             y -= 3
 
                     for yy in xrange(by, y):
                         # ores and filler...
-                        if yy < 8:
-                            blockset = self.lowlevel_ores
-                        elif yy < 32:
+                        if yy >= 32:
+                            blockset = self.highlevel_ores
+                        elif yy > 8:
                             blockset = self.midlevel_ores
                         else:
-                            blockset = self.highlevel_ores
-                        world_init_block((x, yy, z), self.rand.choice(blockset))
+                            blockset = self.lowlevel_ores
+                        world_init_block((x, yy, z), self_rand_choice(blockset))
                     if by == 0:
                         world_init_block((x, 0, z), bed_block)
-                        #  reset skip after base later is made
-                        skip == 0
