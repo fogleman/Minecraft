@@ -77,8 +77,8 @@ cdef class TerrainGeneratorSimple(TerrainGeneratorBase):
 
 	cpdef double _clamp(self, double a)
 
-#	@cython.locals(y=int, weight=double)
-	cpdef object get_height(self, double x, double z)
+	@cython.locals(y=double, weight=double)
+	cpdef int get_height(self, double x, double z)
 
 #	@cython.locals(islandheight=int, skip=bint, bx=int,
 #					by=int, bz=int, bytop=int, x=double, z=double, y=int,
