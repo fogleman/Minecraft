@@ -80,7 +80,7 @@ cdef class TerrainGeneratorSimple(TerrainGeneratorBase):
 	@cython.locals(y=double, weight=double)
 	cpdef int get_height(self, double x, double z)
 
-#	@cython.locals(islandheight=int, skip=bint, bx=int,
-#					by=int, bz=int, bytop=int, x=double, z=double, y=int,
-#					yy=int)
+	@cython.locals(islandheight=int, skip=bint, bx=int,
+					by=int, bz=int, bytop=int, x=int, z=int, y=int,
+					yy=int)
 	cpdef object generate_sector(self, object sector)
