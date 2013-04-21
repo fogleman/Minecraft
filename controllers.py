@@ -179,15 +179,6 @@ class GameController(Controller):
         glClampColorARB(GL_CLAMP_VERTEX_COLOR_ARB, GL_FALSE)
         glClampColorARB(GL_CLAMP_FRAGMENT_COLOR_ARB, GL_FALSE)
         glClampColorARB(GL_CLAMP_READ_COLOR_ARB, GL_FALSE)
-
-        if G.FOG_ENABLED:
-            glEnable(GL_FOG)
-            glFogfv(GL_FOG_COLOR, vec(self.bg_red, self.bg_green, self.bg_blue, 1))
-            glHint(GL_FOG_HINT, GL_DONT_CARE)
-            glFogi(GL_FOG_MODE, GL_LINEAR)
-            glFogf(GL_FOG_DENSITY, 0.35)
-            glFogf(GL_FOG_START, 20.0)
-            glFogf(GL_FOG_END, G.DRAW_DISTANCE)
             
         glClearColor(0, 0, 0, 0)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
@@ -432,8 +423,6 @@ class GameController(Controller):
 
     def set_3d(self):
         width, height = self.window.get_size()
-        if G.FOG_ENABLED:
-            glFogfv(GL_FOG_COLOR, vec(self.bg_red, self.bg_green, self.bg_blue, 1.0))
         glEnable(GL_DEPTH_TEST)
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)

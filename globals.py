@@ -195,9 +195,7 @@ DRAW_DISTANCE = DRAW_DISTANCE_CHOICES[DRAW_DISTANCE_CHOICE]
 FOV = 65.0  # TODO: add menu option to change FOV
 NEAR_CLIP_DISTANCE = 0.1  # TODO: make min and max clip distance dynamic
 FAR_CLIP_DISTANCE = 200.0  # Maximum render distance,
-                           # ignoring effects of sector_size and fog
-
-FOG_ENABLED = True
+                           # ignoring effects of sector_size
 
 MOTION_BLUR = False
 

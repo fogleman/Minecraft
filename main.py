@@ -90,9 +90,6 @@ def initialize_config():
         choices=G.DRAW_DISTANCE_CHOICES)
     G.DRAW_DISTANCE = G.DRAW_DISTANCE_CHOICES[G.DRAW_DISTANCE_CHOICE]
 
-    G.FOG_ENABLED = get_or_update_config(
-        graphics, 'fog_enabled', G.FOG_ENABLED, conv=bool)
-
     G.MOTION_BLUR = get_or_update_config(
         graphics, 'motion_blur', G.MOTION_BLUR, conv=bool)
 
