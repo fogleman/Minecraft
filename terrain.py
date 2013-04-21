@@ -491,7 +491,7 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
             self.height_base = 32
             self.island_shore = 32
             self.water_level = 0
-            self.zoom_level = 0.004
+            self.zoom_level = 0.002
         elif G.TERRAIN_CHOICE == "island":
             mainblock = grass_block
             self.height_range = 32
@@ -505,7 +505,7 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
             self.height_base = 32
             self.island_shore = 18
             self.water_level = 20
-            self.zoom_level = 0.01
+            self.zoom_level = 0.002
 
         world = self.world
         if sector in world.sectors:
@@ -532,11 +532,11 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                             y = bytop
 
                         if G.TERRAIN_CHOICE == "mountains":
-                            if y >= 0 and y <= 42: # bottom level = grass
+                            if y >= 0 and y <= 20: # bottom level = grass
                                 mainblock = grass_block
-                            if y >= 43 and y <= 57: # mid level = rock
+                            if y >= 21 and y <= 28: # mid level = rock
                                 mainblock = stone_block
-                            if y >= 58: # top level = snow
+                            if y >= 29: # top level = snow
                                 mainblock = snow_block
 
                         if y <= self.water_level:
