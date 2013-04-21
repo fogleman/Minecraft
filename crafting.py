@@ -197,20 +197,23 @@ G.recipes.add_recipe(["##", "##"], {'#': junglewoodplank_block},
 G.recipes.add_recipe(["# #", "###", "# #"], {'#': stick_item},
                            ItemStack(ladder_item.id, amount=4))
 
-for material, toolset in [(diamond_item, [diamond_pickaxe, diamond_axe, diamond_shovel]),
-                            (cobble_block, [stone_pickaxe, stone_axe, stone_shovel]),
-                            (iron_ingot_item, [iron_pickaxe, iron_axe, iron_shovel]),
-                            (emeraldore_block, [emerald_pickaxe, emerald_axe, emerald_shovel]),
-                            (rubyore_block, [ruby_pickaxe, ruby_axe, ruby_shovel]),
-                            (sapphireore_block, [sapphire_pickaxe, sapphire_axe, sapphire_shovel]),
-                            (gold_ingot_item, [golden_pickaxe, golden_axe, golden_shovel])]:
+for material, toolset in [(diamond_item, [diamond_pickaxe, diamond_axe, diamond_shovel, diamond_hoe]),
+                            (cobble_block, [stone_pickaxe, stone_axe, stone_shovel, stone_hoe]),
+                            (iron_ingot_item, [iron_pickaxe, iron_axe, iron_shovel, iron_hoe]),
+                            #  we don't have emerald_hoe, so...
+                            (emeraldore_block, [emerald_pickaxe, emerald_axe, emerald_shovel, emerald_shovel]),
+                            (rubyore_block, [ruby_pickaxe, ruby_axe, ruby_shovel, ruby_shovel]),
+                            (sapphireore_block, [sapphire_pickaxe, sapphire_axe, sapphire_shovel, sapphire_shovel]),
+                            (gold_ingot_item, [golden_pickaxe, golden_axe, golden_shovel, golden_hoe])]:
 
     G.recipes.add_recipe(["###", " @ ", " @ "], {'#': material, '@': stick_item},
                    ItemStack(toolset[0].id, amount=1))
     G.recipes.add_recipe(["## ", "#@ ", " @ "], {'#': material, '@': stick_item},
                    ItemStack(toolset[1].id, amount=1))
     G.recipes.add_recipe([" # ", " @ ", " @ "], {'#': material, '@': stick_item},
-                    ItemStack(toolset[-1].id, amount=1))
+                    ItemStack(toolset[2].id, amount=1))
+    G.recipes.add_recipe(["## ", " @ ", " @ "], {'#': material, '@': stick_item},
+                   ItemStack(toolset[-1].id, amount=1))
 
 # armors
 for material, armors in [(iron_ingot_item, [iron_helmet, iron_chestplate, iron_leggings, iron_boots])]:
@@ -248,10 +251,13 @@ G.recipes.add_recipe(["#"], {'#': yflowers_block}, ItemStack(yellowdye_item.id, 
 G.recipes.add_recipe(["#"], {'#': rose_block}, ItemStack(reddye_item.id, amount=2))
 G.recipes.add_recipe(["#"], {'#': reed_block}, ItemStack(sugar_item.id, amount=1))
 G.recipes.add_recipe(["   ","   ", "###"], {'#': reed_block}, ItemStack(paper_item.id, amount=4))
+G.recipes.add_recipe(["###"], {'#': wheat_item},
+                   ItemStack(bread_item.id, amount=1))
 
 # combined items
 G.recipes.add_recipe(["#", "@"], {'#': coal_item, '@': stick_item},
                    ItemStack(torch_block.id, amount=4))
+
 
 G.smelting_recipes.add_recipe(ironore_block, ItemStack(iron_ingot_item.id, amount=1))
 G.smelting_recipes.add_recipe(cobble_block, ItemStack(stone_block.id, amount=1))

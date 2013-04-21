@@ -22,7 +22,7 @@ class Inventory(object):
         return next((index for index,value in enumerate(self.slots) if not value), -1)
 
     def add_item(self, item_id, quantity = 1):
-        if quantity < 1:
+        if quantity < 1 or item_id == 0:
             return False
 
         item_stack = self.get_item(item_id)
