@@ -169,7 +169,11 @@ GRASS_CHANCE = 0.05
 # Biome
 #
 DESERT, PLAINS, MOUNTAINS, SNOW, FOREST = range(5)
-
+OLD_BIOME = DEFAULT_TERRAIN_CHOICE
+NEW_BIOME = 'plains'
+BIOME_BLOCK_TRIGGER = 128
+BIOME_NEGATIVE_BLOCK_TRIGGER = -128
+BIOME_BLOCK_COUNT = 0
 #
 # Graphical rendering
 #
@@ -265,3 +269,4 @@ ANCHOR_BOTTOM = 1 << 3
 ICONS_PATH = os.path.join('resources', 'textures', 'icons')
 TEXTURES_PATH = os.path.join('resources', 'textures')
 DEFAULT_FONT = 'ChunkFive Roman'
+

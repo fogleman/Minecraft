@@ -417,6 +417,10 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
         self.island_shore = 38  #below this is sand, above is grass .. island only
         self.water_level = 36 # have water 2 block higher than base, allowing for some rivers...
         self.zoom_level = 0.002 #Smaller will create gentler, softer transitions. Larger is more mountainy
+        #self.negative_biome_trigger = G.BIOME_BLOCK_TRIGGER - G.BIOME_BLOCK_TRIGGER - G.BIOME_BLOCK_TRIGGER  #  negative version of the biome trigger
+        #print(self.negative_biome_trigger)
+        self.negative_biome_trigger = -215
+
 
         # ores avaliable on the lowest level, closet to bedrock
         self.lowlevel_ores = ((stone_block,) * 75 + (diamondore_block,) * 2 + (sapphireore_block,) * 2)
@@ -460,9 +464,16 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
 
     def generate_sector(self, sector):
         mainblock = grass_block
+        if G.BIOME_BLOCK_COUNT >= G.BIOME_BLOCK_TRIGGER or G.BIOME_BLOCK_COUNT <= G.BIOME_NEGATIVE_BLOCK_TRIGGER: #  or self.negative_biome_trigger:  # 215 or -215
+            G.BIOME_BLOCK_COUNT = 0
+            new_biomes = ('plains', 'desert', 'mountains', 'snow')
+            print ('old biome was ' + G.TERRAIN_CHOICE)
+            G.TERRAIN_CHOICE = self.rand.choice(new_biomes)
+            print ('new biome is ' + G.TERRAIN_CHOICE)
+
         if G.TERRAIN_CHOICE == "plains":
             mainblock = grass_block
-            self.height_range = 24
+            self.height_range = 32
             self.height_base = 32
             self.island_shore = 0
             self.water_level = 0
@@ -490,11 +501,11 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
             self.zoom_level = 0.002
         elif G.TERRAIN_CHOICE == "mountains":
             mainblock = stone_block
-            self.height_range = 64
-            self.height_base = 16
+            self.height_range = 32
+            self.height_base = 32
             self.island_shore = 18
             self.water_level = 20
-            self.zoom_level = 0.001
+            self.zoom_level = 0.01
 
         world = self.world
         if sector in world.sectors:

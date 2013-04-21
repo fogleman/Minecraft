@@ -56,8 +56,11 @@ class Player(Entity):
     def on_key_release(self, symbol, modifiers):
         if symbol == G.MOVE_FORWARD_KEY:
             self.strafe[0] += 1
+            G.BIOME_BLOCK_COUNT +=1
+            print ('north' + str(G.BIOME_BLOCK_COUNT))
         elif symbol == G.MOVE_BACKWARD_KEY:
             self.strafe[0] -= 1
+            G.BIOME_BLOCK_COUNT -=1
         elif symbol == G.MOVE_LEFT_KEY:
             self.strafe[1] += 1
         elif symbol == G.MOVE_RIGHT_KEY:
