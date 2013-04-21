@@ -336,13 +336,16 @@ class GameController(Controller):
                             # if current block is an item,
                             # call its on_right_click() method to handle this event
                             if current_block.id >= G.ITEM_ID_MIN:
-                                current_block.on_right_click(self.model, self.player)
+                                if current_block.on_right_click(self.model, self.player):
+                                    self.item_list.get_current_block_item().change_amount(-1)
+                                    self.item_list.update_health()
+                                    self.item_list.update_items()
                             else:
                                 localx, localy, localz = map(operator.sub,previous,normalize(self.player.position))
                                 if localx != 0 or localz != 0 or (localy != 0 and localy != -1):
                                     self.model.add_block(previous, current_block)
                                     self.item_list.remove_current_block()
-                elif self.item_list.get_current_block() and self.item_list.get_current_block().regenerated_health != 0 and self.player.health < self.player.max_health:
+                elif self.item_list.get_current_block() and hasattr(self.item_list.get_current_block(), 'regenerated_health') and self.item_list.get_current_block().regenerated_health != 0 and self.player.health < self.player.max_health:
                     self.player.change_health(self.item_list.get_current_block().regenerated_health)
                     self.item_list.get_current_block_item().change_amount(-1)
                     self.item_list.update_health()

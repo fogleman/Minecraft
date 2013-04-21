@@ -542,13 +542,12 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
                         if y <= self.water_level:
                             if G.TERRAIN_CHOICE != "desert":# was y == self.height_base -- you can have water!
                                 if G.TERRAIN_CHOICE == "snow":  # top block is ice
-                                    world_init_block((x, y +1, z), ice_block)
-                                if G.TERRAIN_CHOICE != "snow:": #  top block is water
-                                    world_init_block((x, y +1, z), water_block)
-                                world_init_block((x, y, z), water_block)
-                                world_init_block((x, y -1, z), water_block)
-                                world_init_block((x, y -2, z), self_rand_choice(self.underwater_blocks))
-                                world_init_block((x, y -3, z), dirt_block)
+                                    world_init_block((x, self.water_level, z), ice_block)
+                                else:
+                                    world_init_block((x, self.water_level, z), water_block)
+                                # world_init_block((x, y -1, z), water_block)
+                                world_init_block((x, self.water_level -2, z), self_rand_choice(self.underwater_blocks))
+                                world_init_block((x, self.water_level -3, z), dirt_block)
                             if G.TERRAIN_CHOICE == "desert":  #  no water for you!
                                 world_init_block((x, y +1, z), sand_block)
                                 world_init_block((x, y, z), sand_block)
