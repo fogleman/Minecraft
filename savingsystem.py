@@ -76,6 +76,8 @@ def save_world(window, game_dir, world=None):
                         for z in xrange(cz, cz+8):
                             blk = blocks.get((x,y,z), air).id
                             if blk:
+                                if isinstance(blk, int):
+                                    blk = BlockID(blk)
                                 fstr += structuchar2.pack(blk.main, blk.sub)
                             else:
                                 fstr += null2
@@ -141,9 +143,10 @@ def load_region(model, world=None, region=None, sector=None):
                                 for z in xrange(cz, cz+8):
                                     read = fstr[fpos:fpos+2]
                                     fpos += 2
-                                    if read != null2:
+                                    unpacked = structuchar2.unpack(read)
+                                    if read != null2 and unpacked in BLOCKS_DIR:
                                         position = x,y,z
-                                        blocks[position] = BLOCKS_DIR[structuchar2.unpack(read)]
+                                        blocks[position] = BLOCKS_DIR[unpacked]
                                         sectors[(x/SECTOR_SIZE, y/SECTOR_SIZE, z/SECTOR_SIZE)].append(position)
 
 @performance_info
