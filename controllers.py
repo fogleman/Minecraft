@@ -20,7 +20,7 @@ from savingsystem import *
 from commands import CommandParser, COMMAND_HANDLED, COMMAND_ERROR_COLOR, CommandException, UnknownCommandException
 from utils import init_resources
 from views import *
-
+from skydome import Skydome
 
 def vec(*args):
     """Creates GLfloat arrays of floats"""
@@ -163,26 +163,39 @@ class GameController(Controller):
                             self.inventory_list.update_items()
         self.update_time()
         self.camera.update(dt)
-
-    def setup(self):
-        glClearColor(self.bg_red, self.bg_green, self.bg_blue, 1)
-        glEnable(GL_LIGHTING)
-        glEnable(GL_LIGHT0)
-        glEnable(GL_LIGHT1)
-        glEnable(GL_LIGHT2)
+        
+    def init_gl(self):
         glEnable(GL_ALPHA_TEST)
         glAlphaFunc(GL_GREATER, 0.1)
+        glEnable(GL_COLOR_MATERIAL)
         glEnable(GL_BLEND)
+        glEnable(GL_TEXTURE_2D)
+        
         glEnable(GL_LINE_SMOOTH)
+        glEnable(GL_POLYGON_SMOOTH)
+        glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST)
+        glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
 
-        if G.FOG_ENABLED:
-            glEnable(GL_FOG)
-            glFogfv(GL_FOG_COLOR, vec(self.bg_red, self.bg_green, self.bg_blue, 1))
-            glHint(GL_FOG_HINT, GL_DONT_CARE)
-            glFogi(GL_FOG_MODE, GL_LINEAR)
-            glFogf(GL_FOG_DENSITY, 0.35)
-            glFogf(GL_FOG_START, 20.0)
-            glFogf(GL_FOG_END, G.DRAW_DISTANCE)  # 80)
+        glClampColorARB(GL_CLAMP_VERTEX_COLOR_ARB, GL_FALSE)
+        glClampColorARB(GL_CLAMP_FRAGMENT_COLOR_ARB, GL_FALSE)
+        glClampColorARB(GL_CLAMP_READ_COLOR_ARB, GL_FALSE)
+            
+        glClearColor(0, 0, 0, 0)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
+    def setup(self):
+        self.init_gl()
+        
+        sky_rotation = -20.0  # -20.0
+        print 'loading sky'
+        self.skydome = Skydome(
+            'resources/skydome.jpg',
+            0.7,
+            100.0,
+            sky_rotation,
+        )
+
+        lux = 600.0
 
         self.focus_block = Block(width=1.05, height=1.05)
         self.earth = vec(0.8, 0.8, 0.8, 1.0)
@@ -420,8 +433,6 @@ class GameController(Controller):
 
     def set_3d(self):
         width, height = self.window.get_size()
-        if G.FOG_ENABLED:
-            glFogfv(GL_FOG_COLOR, vec(self.bg_red, self.bg_green, self.bg_blue, 1.0))
         glEnable(GL_DEPTH_TEST)
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
@@ -431,17 +442,11 @@ class GameController(Controller):
                        G.FAR_CLIP_DISTANCE)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
+        glPushMatrix()
+        self.camera.look()
+        self.skydome.draw()
+        glPopMatrix()
         self.camera.transform()
-        glEnable(GL_LIGHTING)
-        glLightfv(GL_LIGHT0, GL_DIFFUSE, vec(0.9, 0.9, 0.9, 1.0))
-        glLightfv(GL_LIGHT0, GL_SPECULAR, vec(0.9, 0.9, 0.9, 1.0))
-        glLightfv(GL_LIGHT0, GL_POSITION,
-                  vec(1.0, self.light_y, self.light_z, 1.0))
-        glLightfv(GL_LIGHT1, GL_AMBIENT, self.ambient)
-        glLightfv(GL_LIGHT2, GL_AMBIENT, self.ambient)
-        glMaterialfv(GL_FRONT, GL_AMBIENT, self.earth)
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, self.white)
-        glMaterialfv(GL_FRONT, GL_SHININESS, self.polished)
 
     def clear(self):
         glClearColor(self.bg_red, self.bg_green, self.bg_blue, 1.0)
@@ -449,8 +454,9 @@ class GameController(Controller):
 
     def on_draw(self):
         self.clear()
+        #self.window.clear()
         self.set_3d()
-        glColor3d(1, 1, 1)
+        #glColor3d(1, 1, 1)
         self.model.batch.draw()
         self.model.transparency_batch.draw()
         self.crack_batch.draw()
