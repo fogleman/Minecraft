@@ -169,11 +169,10 @@ class GameController(Controller):
         glAlphaFunc(GL_GREATER, 0.1)
         glEnable(GL_COLOR_MATERIAL)
         glEnable(GL_BLEND)
-        glEnable(GL_TEXTURE_2D)
         
         glEnable(GL_LINE_SMOOTH)
-        glEnable(GL_POLYGON_SMOOTH)
-        glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST)
+        #glEnable(GL_POLYGON_SMOOTH)
+        #glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST)
         glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
 
         glClampColorARB(GL_CLAMP_VERTEX_COLOR_ARB, GL_FALSE)
