@@ -1260,6 +1260,7 @@ class WheatCropBlock(Block):
     texture_list = []
     # second per stage
     grow_time = 10
+    grow_task = None
 
     def __init__(self, grow=True):
         self.top_texture = get_texture_coordinates(-1, -1)
@@ -1269,13 +1270,23 @@ class WheatCropBlock(Block):
             self.texture_list.append(self.get_texture_data())
         # start to grow
         if grow:
-            G.main_timer.add_task(self.grow_time, self.grow_callback)
+            self.grow_task = G.main_timer.add_task(self.grow_time, self.grow_callback)
+
+    def __del__(self):
+        if self.grow_task is not None:
+            G.main_timer.remove_task(self.grow_task)
+        if self.position in self.world:
+            self.world.hide_block(self.position)
 
     def grow_callback(self):
         self.growth_stage = self.growth_stage + 1
-        self.world.show_block(self.position)
+        if self.position in self.world:
+            self.world.hide_block(self.position)
+            self.world.show_block(self.position)
         if self.growth_stage < 7:
-            G.main_timer.add_task(self.grow_time, self.grow_callback)
+            self.grow_task = G.main_timer.add_task(self.grow_time, self.grow_callback)
+        else:
+            self.grow_task = None
 
     # special hack to return different texture, which depends on the growth stage
     @property
@@ -1320,6 +1331,8 @@ class WildGrassBlock(Block):
         # 10% chance of dropping seed
         if randint(0, 10) == 0:
             return BlockID(295)
+        else:
+            return BlockID(0)
 
     @drop_id.setter
     def drop_id(self, value):

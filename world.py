@@ -138,6 +138,7 @@ class World(dict):
             if not force:
                 return
             self.remove_block(None, position, sync=sync)
+        block_set = False
         for blk in data_blocks:
             if block.id == blk.id:
                 self[position] = blk()
@@ -145,7 +146,8 @@ class World(dict):
                 if hasattr(self[position], 'position'):
                     self[position].world = self
                     self[position].position = position
-        else:
+                block_set = True
+        if not block_set:
             self[position] = block
         self.sectors[sectorize(position)].append(position)
         if sync:
