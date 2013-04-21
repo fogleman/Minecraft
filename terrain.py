@@ -482,8 +482,8 @@ class TerrainGeneratorSimple(TerrainGeneratorBase):
             mainblock = snowgrass_block
             self.height_range = 32
             self.height_base = 32
-            self.island_shore = 32
-            self.water_level = 31
+            self.island_shore = 34
+            self.water_level = 33
             self.zoom_level = 0.002
         elif G.TERRAIN_CHOICE == "desert":
             mainblock = sand_block
