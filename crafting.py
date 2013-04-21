@@ -251,10 +251,13 @@ G.recipes.add_recipe(["#"], {'#': yflowers_block}, ItemStack(yellowdye_item.id, 
 G.recipes.add_recipe(["#"], {'#': rose_block}, ItemStack(reddye_item.id, amount=2))
 G.recipes.add_recipe(["#"], {'#': reed_block}, ItemStack(sugar_item.id, amount=1))
 G.recipes.add_recipe(["   ","   ", "###"], {'#': reed_block}, ItemStack(paper_item.id, amount=4))
+G.recipes.add_recipe(["###"], {'#': wheat_item},
+                   ItemStack(bread_item.id, amount=1))
 
 # combined items
 G.recipes.add_recipe(["#", "@"], {'#': coal_item, '@': stick_item},
                    ItemStack(torch_block.id, amount=4))
+
 
 G.smelting_recipes.add_recipe(ironore_block, ItemStack(iron_ingot_item.id, amount=1))
 G.smelting_recipes.add_recipe(cobble_block, ItemStack(stone_block.id, amount=1))

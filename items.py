@@ -127,6 +127,12 @@ class StickItem(Item):
     name = "Stick"
     burning_time = 5
 
+class BreadItem(Item):
+    id = 297
+    max_stack_size = 64
+    name = "Bread"
+    regenerated_health = 3
+
 class FlintItem(Item):
     id = 318
     max_stack_size = 64
@@ -513,3 +519,4 @@ sugar_item = SugarItem()
 paper_item = PaperItem()
 seed_item = SeedItem()
 wheat_item = WheatItem()
+bread_item = BreadItem()
