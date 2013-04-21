@@ -32,3 +32,10 @@ class Camera3D(object):
         x_r = radians(self.x_rotation)
         glRotatef(-self.y_rotation, cos(x_r), 0, sin(x_r))
         glTranslatef(-self.x, -self.y, -self.z)
+
+    def look(self):
+        glRotatef(self.x_rotation, 0, 1, 0)
+        x_r = radians(self.x_rotation)
+        glRotatef(-self.y_rotation, cos(x_r), 0, sin(x_r))
+        glTranslatef(0, -40.0, 0)
+        glRotatef(-90.0, 1, 0, 0)
