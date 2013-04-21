@@ -1249,11 +1249,9 @@ class WildGrassBlock(Block):
     #    self.drop_id = BlockID(295) ## seed
     @property
     def drop_id(self):
-        # 10% chance of dropping flint
+        # 10% chance of dropping seed
         if randint(0, 10) == 0:
             return BlockID(295)
-        else:
-            return self._drop_id
 
     @drop_id.setter
     def drop_id(self, value):

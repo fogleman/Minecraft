@@ -53,7 +53,7 @@ class Item(object):
         self.id = BlockID(self.id)
         G.ITEMS_DIR[self.id] = self
 
-    def on_right_click(self):
+    def on_right_click(self, model, player):
         pass
 
 class ItemStack(object):
@@ -156,6 +156,14 @@ class SeedItem(Item):
     id = 295
     max_stack_size = 64
     name = "Seed"
+
+    def on_right_click(self, model, player):
+        block, previous = model.hit_test(player.position, player.get_sight_vector(), player.attack_range)
+        print(block, previous)
+        if previous:
+            if model[block].id == farm_block: # plant wheat
+                pass
+
 
 class PaperItem(Item):
     id = 339
@@ -339,6 +347,52 @@ class GoldenShovel(Tool):
     id = 284
     name = "Golden Shovel"
 
+class Hoe(Tool):
+    def __init__(self):
+        super(Hoe, self).__init__()
+
+    def on_right_click(self, model, player):
+        block, previous = model.hit_test(player.position, player.get_sight_vector(), player.attack_range)
+        print(block, previous)
+        if previous:
+            if model[block].id == dirt_block.id or model[block].id == grass_block.id:
+                model.add_block(block, farm_block)
+
+class WoodHoe(Hoe):
+    material = G.WOODEN_TOOL
+    tool_type = G.HOE
+    max_stack_size = 1
+    id = 290
+    name = "Wooden Shovel"
+
+class StoneHoe(Hoe):
+    material = G.STONE_TOOL
+    tool_type = G.HOE
+    max_stack_size = 1
+    id = 291
+    name = "Stone Shovel"
+
+class IronHoe(Hoe):
+    material = G.IRON_TOOL
+    tool_type = G.HOE
+    max_stack_size = 1
+    id = 292
+    name = "Iron Shovel"
+
+class DiamondHoe(Hoe):
+    material = G.DIAMOND_TOOL
+    tool_type = G.HOE
+    max_stack_size = 1
+    id = 293
+    name = "Diamond Shovel"
+
+class GoldenHoe(Hoe):
+    material = G.GOLDEN_TOOL
+    tool_type = G.HOE
+    max_stack_size = 1
+    id = 294
+    name = "Golden Shovel"
+
 class Armor(Item):
     material = None
     defense_point = 0
@@ -430,6 +484,11 @@ iron_shovel = IronShovel()
 diamond_shovel = DiamondShovel()
 golden_shovel = GoldenShovel()
 emerald_shovel = EmeraldShovel()
+wood_hoe = WoodHoe()
+stone_hoe = StoneHoe()
+iron_hoe = IronHoe()
+diamond_hoe = DiamondHoe()
+golden_hoe = GoldenHoe()
 iron_helmet = IronHelmet()
 iron_chestplate = IronChestplate()
 iron_leggings = IronLeggings()
