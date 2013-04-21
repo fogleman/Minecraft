@@ -1400,8 +1400,8 @@ class MossyStonebrickBlock(HardBlock):
 
 class IceBlock(Block):
     top_texture = 8, 7
-    bottom_texture = 8, 7
-    side_texture = 8, 7
+    bottom_texture = 0, 6 # transparent
+    side_texture = 0, 6 # transparent
     texture_name = "ice",
     id = 79
     hardness = 0.5
