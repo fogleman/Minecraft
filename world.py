@@ -138,8 +138,13 @@ class World(dict):
             if not force:
                 return
             self.remove_block(None, position, sync=sync)
-        if block.id == furnace_block.id:
-            self[position] = FurnaceBlock()
+        for blk in data_blocks:
+            if block.id == blk.id:
+                self[position] = blk()
+                # some blocks keep their own position so that they can update themselves 
+                if hasattr(self[position], 'position'):
+                    self[position].world = self
+                    self[position].position = position
         else:
             self[position] = block
         self.sectors[sectorize(position)].append(position)

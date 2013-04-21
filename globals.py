@@ -241,7 +241,6 @@ smelting_recipes = None
 TIMER_INTERVAL = 1
 main_timer = None
 
-
 #
 # Global files & directories
 #

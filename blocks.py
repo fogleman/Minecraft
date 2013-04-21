@@ -138,6 +138,16 @@ class Block(object):
     def drop_id(self, value):
         self._drop_id = value
 
+    _texture_data = None
+
+    @property
+    def texture_data(self):
+        return self._texture_data
+
+    @texture_data.setter
+    def texture_data(self, value):
+        self._texture_data = value
+
     width = 1.0
     height = 1.0
 
@@ -1229,6 +1239,64 @@ class CarrotBlock(Block):
     max_stack_size = 16
     amount_label_color = 0, 0, 0, 255
 
+class WheatCropBlock(Block):
+    top_texture = -1, -1
+    bottom_texture = -1, -1
+    side_texture = -1, -1
+    vertex_mode = G.VERTEX_GRID
+    hardness = 0.0
+    transparent = True
+    id = 59
+    name = "Wheat Crop"
+    break_sound = sounds.leaves_break
+    max_stack_size = 16
+    amount_label_color = 0, 0, 0, 255
+
+    # used to update texture
+    position = None
+    world = None
+
+    growth_stage = 0
+    texture_list = []
+    # second per stage
+    grow_time = 10
+
+    def __init__(self, grow=True):
+        self.top_texture = get_texture_coordinates(-1, -1)
+        self.bottom_texture = get_texture_coordinates(-1, -1)
+        for i in range(0, 8):
+            self.side_texture = get_texture_coordinates(14, i)
+            self.texture_list.append(self.get_texture_data())
+        # start to grow
+        if grow:
+            G.main_timer.add_task(self.grow_time, self.grow_callback)
+
+    def grow_callback(self):
+        self.growth_stage = self.growth_stage + 1
+        self.world.show_block(self.position)
+        if self.growth_stage < 7:
+            G.main_timer.add_task(self.grow_time, self.grow_callback)
+
+    # special hack to return different texture, which depends on the growth stage
+    @property
+    def texture_data(self):
+        return self.texture_list[self.growth_stage]
+
+    @texture_data.setter
+    def texture_data(self, value):
+        self._texture_data = value
+
+    @property
+    def drop_id(self):
+        if self.growth_stage == 7:
+            return BlockID(296) # wheat
+        else:
+            return BlockID(295) #seed
+
+    @drop_id.setter
+    def drop_id(self, value):
+        self._drop_id = value
+
 class WildGrassBlock(Block):
     width = 0.9
     height = 0.9
@@ -1353,6 +1421,9 @@ class CrackTextureBlock(object):
 
 crack_textures = CrackTextureBlock()
 
+# blocks that have their own data
+data_blocks = [FurnaceBlock, WheatCropBlock]
+
 air_block = AirBlock()
 grass_block = GrassBlock()
 sand_block = SandBlock()
@@ -1435,3 +1506,4 @@ lapisore_block = LapisOreBlock()
 rubyore_block = RubyOreBlock()
 sapphireore_block = SapphireOreBlock()
 fern_block = WildGrassBlock()
+wheat_crop_block = WheatCropBlock(False)

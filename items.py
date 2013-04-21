@@ -159,11 +159,14 @@ class SeedItem(Item):
 
     def on_right_click(self, model, player):
         block, previous = model.hit_test(player.position, player.get_sight_vector(), player.attack_range)
-        print(block, previous)
         if previous:
-            if model[block].id == farm_block: # plant wheat
-                pass
+            if model[block].id == farm_block.id: # plant wheat
+                model.add_block(previous, wheat_crop_block)
 
+class WheatItem(Item):
+    id = 296
+    max_stack_size = 64
+    name = "Wheat"
 
 class PaperItem(Item):
     id = 339
@@ -353,7 +356,6 @@ class Hoe(Tool):
 
     def on_right_click(self, model, player):
         block, previous = model.hit_test(player.position, player.get_sight_vector(), player.attack_range)
-        print(block, previous)
         if previous:
             if model[block].id == dirt_block.id or model[block].id == grass_block.id:
                 model.add_block(block, farm_block)
