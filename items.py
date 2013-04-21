@@ -168,7 +168,6 @@ class SeedItem(Item):
         if previous:
             if model[block].id == farm_block.id: # plant wheat
                 model.add_block(previous, wheat_crop_block)
-                return True # remove from inventory
 
 class WheatItem(Item):
     id = 296
@@ -372,35 +371,56 @@ class WoodHoe(Hoe):
     tool_type = G.HOE
     max_stack_size = 1
     id = 290
-    name = "Wooden Shovel"
+    name = "Wooden Hoe"
 
 class StoneHoe(Hoe):
     material = G.STONE_TOOL
     tool_type = G.HOE
     max_stack_size = 1
     id = 291
-    name = "Stone Shovel"
+    name = "Stone Hoe"
 
 class IronHoe(Hoe):
     material = G.IRON_TOOL
     tool_type = G.HOE
     max_stack_size = 1
     id = 292
-    name = "Iron Shovel"
+    name = "Iron Hoe"
+
+class EmeraldHoe(Hoe):
+    material = G.IRON_TOOL
+    tool_type = G.HOE
+    max_stack_size = 1
+    id = 292,1
+    name = "Emerald Hoe"
+
+class RubyHoe(Hoe):
+    material = G.IRON_TOOL
+    tool_type = G.HOE
+    max_stack_size = 1
+    id = 292,2
+    name = "Ruby Hoe"
+
+class SapphireHoe(Hoe):
+    material = G.IRON_TOOL
+    tool_type = G.HOE
+    max_stack_size = 1
+    id = 292,3
+    name = "Sapphire Hoe"
 
 class DiamondHoe(Hoe):
     material = G.DIAMOND_TOOL
     tool_type = G.HOE
     max_stack_size = 1
     id = 293
-    name = "Diamond Shovel"
+    name = "Diamond Hoe"
 
 class GoldenHoe(Hoe):
     material = G.GOLDEN_TOOL
     tool_type = G.HOE
     max_stack_size = 1
     id = 294
-    name = "Golden Shovel"
+    name = "Golden Hoe"
 
 class Armor(Item):
     material = None
@@ -493,6 +513,7 @@ iron_shovel = IronShovel()
 diamond_shovel = DiamondShovel()
 golden_shovel = GoldenShovel()
 emerald_shovel = EmeraldShovel()
+emerald_hoe = EmeraldHoe()
 wood_hoe = WoodHoe()
 stone_hoe = StoneHoe()
 iron_hoe = IronHoe()
@@ -511,9 +532,11 @@ ladder_item = LadderItem()
 ruby_pickaxe = RubyPickaxe()
 ruby_shovel = RubyShovel()
 ruby_axe = RubyAxe()
+ruby_hoe = RubyHoe()
 sapphire_pickaxe = SapphirePickaxe()
 sapphire_shovel = SapphireShovel()
 sapphire_axe = SapphireAxe()
+sapphire_hoe = SapphireHoe()
 ladder_item = LadderItem()
 reddye_item = RedDyeItem()
 sugar_item = SugarItem()
