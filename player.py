@@ -57,7 +57,7 @@ class Player(Entity):
         if symbol == G.MOVE_FORWARD_KEY:
             self.strafe[0] += 1
             G.BIOME_BLOCK_COUNT +=1
-            print ('north' + str(G.BIOME_BLOCK_COUNT))
+            #print ('north' + str(G.BIOME_BLOCK_COUNT))
         elif symbol == G.MOVE_BACKWARD_KEY:
             self.strafe[0] -= 1
             G.BIOME_BLOCK_COUNT -=1
