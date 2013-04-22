@@ -1286,6 +1286,8 @@ class WheatCropBlock(Block):
     def __del__(self):
         if self.grow_task is not None:
             G.main_timer.remove_task(self.grow_task)
+        if self.world is None:
+            return
         if self.position in self.world:
             self.world.hide_block(self.position)
 
