@@ -247,6 +247,17 @@ class TexturesView(View):
             
         self.on_resize(width, height)
 
+    def on_mouse_press(self, x, y, button, modifiers):
+        super(TexturesView, self).on_mouse_press(x, y, button, modifiers)
+        for button in self.texture_buttons:
+            if button.toggled:
+                G.config.set("Graphics", "texture_pack", button.id)
+
+                with open(G.config_file, 'wb') as handle:
+                    G.config.write(handle)
+                    
+                button.toggled = False
+
     def on_resize(self, width, height):
         self.background.scale = 1.0
         self.background.scale = max(float(width) / self.background.width, float(height) / self.background.height)

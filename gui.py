@@ -124,6 +124,7 @@ class ToggleButton(Button):
     def on_mouse_click(self, x, y, button, modifiers):
         if self.hit_test(x, y):
             self.toggled = not self.toggled
+        print self.toggled
         super(ToggleButton, self).on_mouse_click( x, y, button, modifiers)
 
 
