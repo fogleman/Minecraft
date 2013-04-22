@@ -1,6 +1,7 @@
 # Imports, sorted alphabetically.
 
 # Python packages
+import random
 from math import floor, ceil
 
 # Third-party packages
@@ -978,3 +979,15 @@ class ProgressBarWidget(Control):
 
 
 
+frame_image = load_image('resources', 'textures', 'frame.png')
+button_image = load_image('resources', 'textures', 'button.png')
+button_highlighted = load_image('resources', 'textures', 'button_highlighted.png')
+background_image = load_image('resources', 'textures', 'main_menu_background.png')
+backdrop_images = []
+rnd_backdrops = ('main_menu_background.png', 'main_menu_background_2.png', 'main_menu_background_3.png',
+'main_menu_background_4.png', 'main_menu_background_5.png', 'main_menu_background_6.png')
+
+for backdrop in rnd_backdrops:
+    backdrop_images.append(load_image('resources', 'textures', backdrop))
+    
+backdrop = random.choice(backdrop_images)

@@ -8,9 +8,9 @@
 
 # Modules from this project
 import globals as G
+import os
 from gui import *
 from savingsystem import *
-import random
 
 
 class View(pyglet.event.EventDispatcher):
@@ -68,18 +68,12 @@ class MainMenuView(View):
         self.labels_group = pyglet.graphics.OrderedGroup(3)
 
         width, height = self.controller.window.width, self.controller.window.height
-        rnd_backdrops = ('main_menu_background.png', 'main_menu_background_2.png', 'main_menu_background_3.png',
-        'main_menu_background_4.png', 'main_menu_background_5.png', 'main_menu_background_6.png')
-        thisbackdrop = random.choice(rnd_backdrops)
 
-        background = load_image('resources', 'textures', thisbackdrop) #  'main_menu_background.png')
-        image = load_image('resources', 'textures', 'frame.png')
+        image = frame_image
         self.frame_rect = Rectangle(0, 0, image.width, image.height)
-        self.background = image_sprite(background, self.batch, 0)
+        self.background = image_sprite(backdrop, self.batch, 0)
         self.background.scale = max(float(self.controller.window.get_size()[0]) / self.background.width, float(self.controller.window.get_size()[1]) / self.background.height)
         self.frame = image_sprite(image, self.batch, 1)
-        button_image = load_image('resources', 'textures', 'button.png')
-        button_highlighted = load_image('resources', 'textures', 'button_highlighted.png')
 #            open_world(self, G.game_dir, G.SAVE_FILENAME)
         self.buttons = []
         if G.DISABLE_SAVE \
@@ -124,19 +118,18 @@ class OptionsView(View):
 
         width, height = self.controller.window.width, self.controller.window.height
 
-        background = load_image('resources', 'textures', 'main_menu_background.png')
-        image = load_image('resources', 'textures', 'frame.png')
+        image = frame_image
         self.frame_rect = Rectangle(0, 0, image.width, image.height)
-        self.background = image_sprite(background, self.batch, 0)
+        self.background = image_sprite(backdrop, self.batch, 0)
         self.background.scale = max(float(self.controller.window.get_size()[0]) / self.background.width, float(self.controller.window.get_size()[1]) / self.background.height)
         self.frame = image_sprite(image, self.batch, 1)
-        button_image = load_image('resources', 'textures', 'button.png')
-        button_highlighted = load_image('resources', 'textures', 'button_highlighted.png')
         self.button_return = Button(self, 0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Done", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
         self.button_return.push_handlers(on_click=self.controller.main_menu_func)
         self.controls_button = Button(self, 0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Controls...", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
         self.controls_button.push_handlers(on_click=self.controller.controls_func)
-        self.buttons = [self.controls_button, self.button_return]
+        self.textures_button = Button(self, 0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Textures", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
+        self.textures_button.push_handlers(on_click=self.controller.textures_func)
+        self.buttons = [self.controls_button, self.textures_button, self.button_return]
             
         self.on_resize(width, height)
 
@@ -149,6 +142,8 @@ class OptionsView(View):
         button_y = self.frame.y + (self.frame.height - self.controls_button.height) / 2 + 10
         self.controls_button.position = button_x, button_y
         button_y -= self.controls_button.height + 20
+        self.textures_button.position = button_x, button_y
+        button_y -= self.textures_button.height + 20
         self.button_return.position = button_x, button_y
         
         
@@ -159,14 +154,11 @@ class ControlsView(View):
 
         width, height = self.controller.window.width, self.controller.window.height
 
-        background = load_image('resources', 'textures', 'main_menu_background.png')
-        image = load_image('resources', 'textures', 'frame.png')
+        image = frame_image
         self.frame_rect = Rectangle(0, 0, image.width, image.height)
-        self.background = image_sprite(background, self.batch, 0)
+        self.background = image_sprite(backdrop, self.batch, 0)
         self.background.scale = max(float(self.controller.window.get_size()[0]) / self.background.width, float(self.controller.window.get_size()[1]) / self.background.height)
         self.frame = image_sprite(image, self.batch, 1)
-        button_image = load_image('resources', 'textures', 'button.png')
-        button_highlighted = load_image('resources', 'textures', 'button_highlighted.png')
         self.buttons = []
         self.key_buttons = []
         key_buttons = ['move_backward', 'move_forward', 'move_left', 'move_right']
@@ -198,6 +190,71 @@ class ControlsView(View):
                 button_y -= button.height + 20
             i += 1
         button_x = self.frame.x + (self.frame.width - self.button_return.width) / 2
+        self.button_return.position = button_x, button_y
+
+    def on_key_press(self, symbol, modifiers):
+        active_button = None
+        for button in self.buttons:
+            if isinstance(button, ToggleButton) and button.toggled:
+                active_button = button
+                break
+                
+        if not active_button:
+            return
+            
+        active_button.caption = pyglet.window.key.symbol_string(symbol)
+        active_button.toggled = False
+
+        G.config.set("Controls", active_button.id, pyglet.window.key.symbol_string(symbol))
+
+        with open(G.config_file, 'wb') as handle:
+            G.config.write(handle)
+        
+        
+class TexturesView(View):
+    def setup(self):
+        self.group = pyglet.graphics.OrderedGroup(2)
+        self.labels_group = pyglet.graphics.OrderedGroup(3)
+
+        width, height = self.controller.window.width, self.controller.window.height
+
+        image = frame_image
+        self.frame_rect = Rectangle(0, 0, image.width, image.height)
+        self.background = image_sprite(backdrop, self.batch, 0)
+        self.background.scale = max(float(self.controller.window.get_size()[0]) / self.background.width, float(self.controller.window.get_size()[1]) / self.background.height)
+        self.frame = image_sprite(image, self.batch, 1)
+        self.buttons = []
+        self.texture_buttons = []
+        
+        texturepacks_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'resources', 'texturepacks')
+        
+        for directories in os.listdir(texturepacks_dir): 
+            dir = os.path.join(texturepacks_dir, directories)
+            os.chdir(dir)
+            current = os.path.dirname(dir)
+            new = str(current).split("-")[0]
+            pack_name = os.path.basename(dir)
+        
+            button = ToggleButton(self, 0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption=pack_name, batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
+            button.id = pack_name
+            self.buttons.append(button)
+            self.texture_buttons.append(button)
+        self.button_return = Button(self, 0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption="Done", batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
+        self.button_return.push_handlers(on_click=self.controller.game_options_func)
+        self.buttons.append(self.button_return)
+            
+        self.on_resize(width, height)
+
+    def on_resize(self, width, height):
+        self.background.scale = 1.0
+        self.background.scale = max(float(width) / self.background.width, float(height) / self.background.height)
+        self.background.x, self.background.y = 0, 0
+        self.frame.x, self.frame.y = (width - self.frame.width) / 2, (height - self.frame.height) / 2
+        button_x = button_x = self.frame.x + (self.frame.width - self.texture_buttons[0].width) / 2
+        button_y = self.frame.y + (self.frame.height) / 2 + 10
+        for button in self.texture_buttons:
+            button.position = button_x, button_y
+            button_y -= button.height + 20
         self.button_return.position = button_x, button_y
 
     def on_key_press(self, symbol, modifiers):

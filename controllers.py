@@ -96,6 +96,10 @@ class MainMenuController(Controller):
         self.switch_view(ControlsView(self))
         return pyglet.event.EVENT_HANDLED
 
+    def textures_func(self):
+        self.switch_view(TexturesView(self))
+        return pyglet.event.EVENT_HANDLED
+
 class GameController(Controller):
     def __init__(self, window):
         super(GameController, self).__init__(window)
