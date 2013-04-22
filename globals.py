@@ -9,7 +9,7 @@ would lead to unpredictable consequences.
 # Imports, sorted alphabetically.
 
 # Python packages
-from ConfigParser import ConfigParser
+from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 import argparse
 from math import pi
 import os
@@ -317,8 +317,6 @@ def initialize_config():
     # General
     #
     global DEBUG, FULLSCREEN, WINDOW_WIDTH, WINDOW_HEIGHT, DRAW_DISTANCE_CHOICE, DRAW_DISTANCE_CHOICES, DRAW_DISTANCE, MOTION_BLUR, TEXTURE_PACK
-    
-    print "LADUJE"
 
     general = 'General'
 
