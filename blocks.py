@@ -499,7 +499,7 @@ class CraftTableBlock(WoodBlock):
     top_texture = 8, 1
     bottom_texture = 1, 1
     side_texture = 8, 0
-    texture_name = "workbench_top","wood","workbench_front","workbench_side",
+    texture_name = "workbench_top","wood","workbench_front" #,"workbench_side",
     hardness = 2.5
     id = 58
     name = "Crafting Table"
@@ -703,6 +703,7 @@ class CactusBlock(Block):
     top_texture = 7, 5
     bottom_texture = 7, 3
     side_texture = 7, 4
+    transparent = True
     texture_name = "cactus_top","cactus_bottom","cactus_side"
     hardness = 2
     id = 81,0
@@ -877,7 +878,7 @@ class FurnaceBlock(HardBlock):
     top_texture = 7, 7
     bottom_texture = 6, 3
     side_texture = 7, 6
-    texture_name = "furnace_top","stonebrick","furnace_front","furnace_side"
+    texture_name = "furnace_top","stonebrick","furnace_front" #,"furnace_side"
     hardness = 3.5
     id = 61
     name = "Furnace"
