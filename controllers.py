@@ -160,7 +160,7 @@ class GameController(Controller):
                         self.model.remove_block(self.player,
                                                 self.highlighted_block)
                         self.set_highlighted_block(None)
-                        if hasattr(self.item_list.get_current_block_item(), 'durability'):
+                        if hasattr(self.item_list.get_current_block_item(), 'durability') and self.item_list.get_current_block_item().durability != -1:
                             self.item_list.get_current_block_item().durability -= 1
                             if self.item_list.get_current_block_item().durability <= 0:
                                 self.item_list.remove_current_block()
