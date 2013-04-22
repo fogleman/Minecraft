@@ -252,6 +252,9 @@ class TexturesView(View):
         for button in self.texture_buttons:
             if button.toggled:
                 G.config.set("Graphics", "texture_pack", button.id)
+                G.TEXTURE_PACK = button.id
+                for block in G.BLOCKS_DIR.values():
+                    block.__init__() #Reload textures
 
                 with open(G.config_file, 'wb') as handle:
                     G.config.write(handle)
