@@ -302,12 +302,12 @@ def get_or_update_config(section, option, default_value, conv=str, choices=()):
     except NoOptionError:
         pass
         
-    # If the option is already set:
-    if choices and user_value not in choices:
-        raise InvalidChoice('%s.%s must be in %s' %
-                            (section, option, repr(tuple(choices))))
     if not user_value:
         user_value = default_value
+    # If the option is already set:
+    if choices and user_value not in choices:
+        raise InvalidChoice('"%s" %s.%s must be in %s' %
+                            (user_value, section, option, repr(tuple(choices))))
     config.set(section, option, str(user_value))
     return user_value
 

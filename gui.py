@@ -10,8 +10,6 @@ from pyglet.text import Label
 from pyglet.window import key
 
 # Modules from this project
-from blocks import *
-from crafting import *
 import globals as G
 from inventory import *
 from utils import load_image, image_sprite, hidden_image_sprite, get_block_icon
