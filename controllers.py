@@ -160,6 +160,11 @@ class GameController(Controller):
                         self.model.remove_block(self.player,
                                                 self.highlighted_block)
                         self.set_highlighted_block(None)
+                        if hasattr(self.item_list.get_current_block_item(), 'durability'):
+                            self.item_list.get_current_block_item().durability -= 1
+                            if self.item_list.get_current_block_item().durability <= 0:
+                                self.item_list.remove_current_block()
+                                self.item_list.update_items()
                         if hit_block.drop_id is not None \
                                 and self.player.add_item(hit_block.drop_id):
                             self.item_list.update_items()
@@ -373,7 +378,7 @@ class GameController(Controller):
             self.set_highlighted_block(None)
             self.mouse_pressed = False
 
-    def on_mouse_motion(self, x, y, dx, dy):
+    def on_mouse_motion(self, x, y, dx, dy): 
         if self.window.exclusive:
             m = 0.15
             x, y = self.player.rotation

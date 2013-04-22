@@ -21,14 +21,12 @@ class Inventory(object):
     def find_empty_slot(self):
         return next((index for index,value in enumerate(self.slots) if not value), -1)
 
-    def add_item(self, item_id, quantity = 1):
+    def add_item(self, item_id, quantity = 1, durability = -1):
         if quantity < 1 or item_id == 0:
             return False
 
         item_stack = self.get_item(item_id)
         max_size = get_item(item_id).max_stack_size
-
-
         retval = False
         while quantity > 0:
             # can't find an unfilled slot
@@ -42,9 +40,9 @@ class Inventory(object):
                 # overflow ?
                 if quantity > max_size:
                     quantity -= max_size
-                    item_stack = ItemStack(type=item_id, amount=max_size)
+                    item_stack = ItemStack(type=item_id, amount=max_size, durability=durability)
                 else:
-                    item_stack = ItemStack(type=item_id, amount=quantity)
+                    item_stack = ItemStack(type=item_id, amount=quantity, durability=durability)
                     quantity = 0
 
                 self.slots[index] = item_stack

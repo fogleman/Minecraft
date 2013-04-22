@@ -57,12 +57,16 @@ class Item(object):
         pass
 
 class ItemStack(object):
-    def __init__(self, type = 0, amount = 1, durability = 0, data = 0):
+    def __init__(self, type = 0, amount = 1, durability = -1, data = 0):
         if amount < 1:
             amount = 1
-        self.type = BlockID(type, durability)
+        self.type = BlockID(type)
         self.amount = amount
-        self.durability = durability
+        if durability == -1:
+            self.durability = -1 if not hasattr(self.get_object(), 'durability') else self.get_object().durability
+        else:
+            self.durability = durability
+        self.max_durability = get_item(type).durability if hasattr(get_item(type), 'durability') else -1
         self.data = data
         self.max_stack_size = get_item(type).max_stack_size
 
@@ -194,6 +198,7 @@ class WoodAxe(Tool):
     tool_type = G.AXE
     max_stack_size = 1
     id = 271
+    durability = 20
     name = "Wooden Axe"
 
 class StoneAxe(Tool):
@@ -201,6 +206,7 @@ class StoneAxe(Tool):
     tool_type = G.AXE
     max_stack_size = 1
     id = 275
+    durability = 40
     name = "Stone Axe"
 
 class IronAxe(Tool):
@@ -208,6 +214,7 @@ class IronAxe(Tool):
     tool_type = G.AXE
     max_stack_size = 1
     id = 258
+    durability = 60
     name = "Iron Axe"
 
 class EmeraldAxe(Tool):
@@ -215,6 +222,7 @@ class EmeraldAxe(Tool):
     tool_type = G.AXE
     max_stack_size = 1
     id = 258,1
+    durability = 70
     name = "Emerald Axe"
 
 class RubyAxe(Tool):
@@ -222,6 +230,7 @@ class RubyAxe(Tool):
     tool_type = G.AXE
     max_stack_size = 1
     id = 258,2
+    durability = 80
     name = "Ruby Axe"
 
 class SapphireAxe(Tool):
@@ -229,6 +238,7 @@ class SapphireAxe(Tool):
     tool_type = G.AXE
     max_stack_size = 1
     id = 258,3
+    durability = 80
     name = "Sapphire Axe"
 
 class DiamondAxe(Tool):
@@ -236,6 +246,7 @@ class DiamondAxe(Tool):
     tool_type = G.AXE
     max_stack_size = 1
     id = 279
+    durability = 100
     name = "Diamond Axe"
 
 class GoldenAxe(Tool):
@@ -243,6 +254,7 @@ class GoldenAxe(Tool):
     tool_type = G.AXE
     max_stack_size = 1
     id = 286
+    durability = 50
     name = "Golden Axe"
 
 class WoodPickaxe(Tool):
@@ -250,6 +262,7 @@ class WoodPickaxe(Tool):
     tool_type = G.PICKAXE
     max_stack_size = 1
     id = 270
+    durability = 10
     name = "Wooden Pickaxe"
 
 class StonePickaxe(Tool):
@@ -257,6 +270,7 @@ class StonePickaxe(Tool):
     tool_type = G.PICKAXE
     max_stack_size = 1
     id = 274
+    durability = 30
     name = "Stone Pickaxe"
 
 class IronPickaxe(Tool):
@@ -264,6 +278,7 @@ class IronPickaxe(Tool):
     tool_type = G.PICKAXE
     max_stack_size = 1
     id = 257
+    durability = 40
     name = "Iron Pickaxe"
 
 class EmeraldPickaxe(Tool):
@@ -271,6 +286,7 @@ class EmeraldPickaxe(Tool):
     tool_type = G.PICKAXE
     max_stack_size = 1
     id = 257,1
+    durability = 50
     name = "Emerald Pickaxe"
 
 class RubyPickaxe(Tool):
@@ -278,6 +294,7 @@ class RubyPickaxe(Tool):
     tool_type = G.PICKAXE
     max_stack_size = 1
     id = 257,2
+    durability = 100
     name = "Ruby Pickaxe"
 
 class SapphirePickaxe(Tool):
@@ -285,6 +302,7 @@ class SapphirePickaxe(Tool):
     tool_type = G.PICKAXE
     max_stack_size = 1
     id = 257,3
+    durability = 200
     name = "Sapphire Pickaxe"
 
 class DiamondPickaxe(Tool):
@@ -292,6 +310,7 @@ class DiamondPickaxe(Tool):
     tool_type = G.PICKAXE
     max_stack_size = 1
     id = 278
+    durability = 150
     name = "Diamond Pickaxe"
 
 class GoldenPickaxe(Tool):
@@ -299,6 +318,7 @@ class GoldenPickaxe(Tool):
     tool_type = G.PICKAXE
     max_stack_size = 1
     id = 285
+    durability = 30
     name = "Golden Pickaxe"
 
 class WoodShovel(Tool):
@@ -306,6 +326,7 @@ class WoodShovel(Tool):
     tool_type = G.SHOVEL
     max_stack_size = 1
     id = 269
+    durability = 10
     name = "Wooden Shovel"
 
 class StoneShovel(Tool):
@@ -313,6 +334,7 @@ class StoneShovel(Tool):
     tool_type = G.SHOVEL
     max_stack_size = 1
     id = 273
+    durability = 30
     name = "Stone Shovel"
 
 class IronShovel(Tool):
@@ -320,6 +342,7 @@ class IronShovel(Tool):
     tool_type = G.SHOVEL
     max_stack_size = 1
     id = 256
+    durability = 70
     name = "Iron Shovel"
 
 class EmeraldShovel(Tool):
@@ -327,6 +350,7 @@ class EmeraldShovel(Tool):
     tool_type = G.SHOVEL
     max_stack_size = 1
     id = 256,1
+    durability = 60
     name = "Emerald Shovel"
 
 class RubyShovel(Tool):
@@ -334,6 +358,7 @@ class RubyShovel(Tool):
     tool_type = G.SHOVEL
     max_stack_size = 1
     id = 256,2
+    durability = 40
     name = "Ruby Shovel"
 
 class SapphireShovel(Tool):
@@ -341,6 +366,7 @@ class SapphireShovel(Tool):
     tool_type = G.SHOVEL
     max_stack_size = 1
     id = 256,3
+    durability = 70
     name = "Sapphire Shovel"
 
 class DiamondShovel(Tool):
@@ -348,6 +374,7 @@ class DiamondShovel(Tool):
     tool_type = G.SHOVEL
     max_stack_size = 1
     id = 277
+    durability = 100
     name = "Diamond Shovel"
 
 class GoldenShovel(Tool):
@@ -355,6 +382,7 @@ class GoldenShovel(Tool):
     tool_type = G.SHOVEL
     max_stack_size = 1
     id = 284
+    durability = 30
     name = "Golden Shovel"
 
 class Hoe(Tool):
@@ -372,6 +400,7 @@ class WoodHoe(Hoe):
     tool_type = G.HOE
     max_stack_size = 1
     id = 290
+    durability = 60
     name = "Wooden Hoe"
 
 class StoneHoe(Hoe):
@@ -379,6 +408,7 @@ class StoneHoe(Hoe):
     tool_type = G.HOE
     max_stack_size = 1
     id = 291
+    durability = 40
     name = "Stone Hoe"
 
 class IronHoe(Hoe):
@@ -386,6 +416,7 @@ class IronHoe(Hoe):
     tool_type = G.HOE
     max_stack_size = 1
     id = 292
+    durability = 40
     name = "Iron Hoe"
 
 class EmeraldHoe(Hoe):
@@ -393,6 +424,7 @@ class EmeraldHoe(Hoe):
     tool_type = G.HOE
     max_stack_size = 1
     id = 292,1
+    durability = 50
     name = "Emerald Hoe"
 
 class RubyHoe(Hoe):
@@ -400,6 +432,7 @@ class RubyHoe(Hoe):
     tool_type = G.HOE
     max_stack_size = 1
     id = 292,2
+    durability = 60
     name = "Ruby Hoe"
 
 class SapphireHoe(Hoe):
@@ -407,6 +440,7 @@ class SapphireHoe(Hoe):
     tool_type = G.HOE
     max_stack_size = 1
     id = 292,3
+    durability = 80
     name = "Sapphire Hoe"
 
 class DiamondHoe(Hoe):
@@ -414,6 +448,7 @@ class DiamondHoe(Hoe):
     tool_type = G.HOE
     max_stack_size = 1
     id = 293
+    durability = 100
     name = "Diamond Hoe"
 
 class GoldenHoe(Hoe):
@@ -421,6 +456,7 @@ class GoldenHoe(Hoe):
     tool_type = G.HOE
     max_stack_size = 1
     id = 294
+    durability = 100
     name = "Golden Hoe"
 
 class Armor(Item):

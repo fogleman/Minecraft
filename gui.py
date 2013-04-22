@@ -216,6 +216,8 @@ class ItemSelector(AbstractInventory):
             item.quickslots_x = icon.x
             item.quickslots_y = icon.y
             x += (self.icon_size * 0.5) + 3
+            if item.max_durability != -1 and item.durability != -1:
+                icon.opacity = min(item.max_durability, item.durability + 1) * 255 / item.max_durability
             amount_label = pyglet.text.Label(
                 str(item.amount), font_name=G.DEFAULT_FONT, font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
@@ -294,9 +296,9 @@ class ItemSelector(AbstractInventory):
                 current_block = self.get_current_block_item_and_amount()
                 if current_block:
                     if not self.player.inventory.add_item(
-                            current_block[0].id, quantity=current_block[1]):
+                            current_block[0].id, quantity=current_block[1], durability=current_block[0].durability):
                         self.player.quick_slots.add_item(
-                            current_block[0].id, quantity=current_block[1])
+                            current_block[0].id, quantity=current_block[1], durability=current_block[0].durability)
                     self.update_items()
                     return pyglet.event.EVENT_HANDLED
 
@@ -376,6 +378,8 @@ class InventorySelector(AbstractInventory):
             if x >= (self.frame.x + self.frame.width) - 7:
                 x = self.frame.x + 7
                 y -= (self.icon_size * 0.5) + 3
+            if item.max_durability != -1 and item.durability != -1:
+                icon.opacity = min(item.max_durability, item.durability + 1) * 255 / item.max_durability
             amount_label = pyglet.text.Label(
                 str(item.amount), font_name=G.DEFAULT_FONT, font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
@@ -397,6 +401,8 @@ class InventorySelector(AbstractInventory):
             item.quickslots_x = icon.x
             item.quickslots_y = icon.y
             x += (self.icon_size * 0.5) + 3
+            if item.max_durability != -1 and item.durability != -1:
+                icon.opacity = min(item.max_durability, item.durability + 1) * 255 / item.max_durability
             amount_label = pyglet.text.Label(
                 str(item.amount), font_name=G.DEFAULT_FONT, font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
@@ -417,6 +423,8 @@ class InventorySelector(AbstractInventory):
             icon.scale = 0.5
             icon.x = x
             icon.y = y
+            if item.max_durability != -1 and item.durability != -1:
+                icon.opacity = min(item.max_durability, item.durability + 1) * 255 / item.max_durability
             amount_label = pyglet.text.Label(
                 str(item.amount), font_name=G.DEFAULT_FONT, font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
@@ -454,6 +462,8 @@ class InventorySelector(AbstractInventory):
             if x >= (self.frame.x + (165 if self.mode == 0 else 72 if self.mode == 1 else 63)) + 35 * ((2 if self.mode == 0 else 3 if self.mode == 1 else 1)):
                 x = self.frame.x + (165 if self.mode == 0 else 72 if self.mode == 1 else 63)
                 y -= (self.icon_size * 0.5) + 3
+            if item.max_durability != -1 and item.durability != -1:
+                icon.opacity = min(item.max_durability, item.durability + 1) * 255 / item.max_durability
             amount_label = pyglet.text.Label(
                 str(item.amount), font_name=G.DEFAULT_FONT, font_size=9,
                 x=icon.x + 3, y=icon.y, anchor_x='left', anchor_y='bottom',
@@ -686,9 +696,9 @@ class InventorySelector(AbstractInventory):
                     remaining = item.change_amount(amount_to_change)
                 else:
                     if hasattr(inventory, 'set_slot'):
-                        inventory.set_slot(index, ItemStack(type=self.selected_item.type, amount=amount_to_change))
+                        inventory.set_slot(index, ItemStack(type=self.selected_item.type, durability=self.selected_item.durability, amount=amount_to_change))
                     else:
-                        inventory.slots[index] = ItemStack(type=self.selected_item.type, amount=amount_to_change)
+                        inventory.slots[index] = ItemStack(type=self.selected_item.type, durability=self.selected_item.durability, amount=amount_to_change)
                     remaining = self.selected_item.amount - amount_to_change
                 if remaining > 0:
                     self.selected_item.change_amount((self.selected_item.amount - remaining) * -1)
@@ -713,7 +723,7 @@ class InventorySelector(AbstractInventory):
 
             if modifiers & pyglet.window.key.MOD_SHIFT:
                 add_to = self.player.quick_slots if inventory == self.player.inventory else self.player.inventory
-                add_to.add_item(item.type, item.amount)
+                add_to.add_item(item.type, item.amount, durability=item.durability)
                 inventory.remove_all_by_index(index)
                 self.update_items()
                 return pyglet.event.EVENT_HANDLED
