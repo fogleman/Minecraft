@@ -19,6 +19,8 @@ import globals as G
 from random import randint
 import sounds
 
+BLOCK_TEXTURE_DIR = {}
+
 
 def get_texture_coordinates(x, y, tileset_size=G.TILESET_SIZE):
     if x == -1 and y == -1:
@@ -39,7 +41,16 @@ class TextureGroupIndividual(pyglet.graphics.Group):
         self.texture_data = []
         i=0
         for name in names:
-            subtex = atlas.add(load_image('resources', 'texturepacks', 'textures', 'blocks', name+'.png').get_region(0,0,64,64))
+            if not name in BLOCK_TEXTURE_DIR:
+                if G.TEXTURE_PACK != 'default':
+                    BLOCK_TEXTURE_DIR[name] = load_image('resources', 'texturepacks', G.TEXTURE_PACK, 'textures', 'blocks', name + '.png')
+                else:
+                    BLOCK_TEXTURE_DIR[name] = load_image('resources', 'texturepacks', 'textures', 'blocks', name + '.png')
+
+            if not BLOCK_TEXTURE_DIR[name]:
+                return None
+
+            subtex = atlas.add(BLOCK_TEXTURE_DIR[name].get_region(0,0,64,64))
             for val in subtex.tex_coords:
                 i += 1
                 if i % 3 != 0: self.texture_data.append(val) #tex_coords has a z component we don't utilize
@@ -188,10 +199,13 @@ class Block(object):
         if height is not None:
             self.height = height
 
-        if self.texture_name and os.path.exists(os.path.join('resources', 'texturepacks', 'textures', 'blocks')):
+        if self.texture_name and G.TEXTURE_PACK != 'default':
             self.group = TextureGroupIndividual(self.texture_name)
-            self.texture_data = self.group.texture_data
-        else:
+
+            if self.group:
+                self.texture_data = self.group.texture_data
+        
+        if not self.texture_data:
             # Applies get_texture_coordinates to each of the faces to be textured.
             for k in ('top_texture', 'bottom_texture', 'side_texture'):
                 v = getattr(self, k)
@@ -472,7 +486,7 @@ class WaterBlock(Block):
     top_texture = 0, 2
     bottom_texture = 0, 6 # transparent
     side_texture = 0, 6 # transparent
-    texture_name = "Water",
+    texture_name = "water",
     transparent = True
     hardness = -1  # Unobtainable
     density = 0.5
@@ -518,9 +532,6 @@ class EmeraldOreBlock(HardBlock):
     hardness = 2
     id = 129,0
     name = "Emerald Ore"
-    #def __init__(self):
-        #super(EmeraldOreBlock, self).__init__()
-        #self.drop_id = 388
 
 class LapisOreBlock(HardBlock):
     top_texture = 8, 6

@@ -218,7 +218,7 @@ class SetMountainsCommand(Command):
 
 class TakeScreencapCommand(Command):
     command = r"^screencap$"
-    help_text = "screencap: saves current screen to a file. Press " + G.SCREENCAP_KEY + " for instant screencap."
+    help_text = "screencap: saves current screen to a file. Press " + str(G.SCREENCAP_KEY) + " for instant screencap."
 
 
     def execute(self, *args, **kwargs):

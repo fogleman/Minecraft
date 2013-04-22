@@ -226,13 +226,15 @@ class TexturesView(View):
         self.buttons = []
         self.texture_buttons = []
         
+        button = ToggleButton(self, 0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption='Default', batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
+        button.id = 'default'
+        self.buttons.append(button)
+        self.texture_buttons.append(button)
+            
         texturepacks_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'resources', 'texturepacks')
         
         for directories in os.listdir(texturepacks_dir): 
             dir = os.path.join(texturepacks_dir, directories)
-            os.chdir(dir)
-            current = os.path.dirname(dir)
-            new = str(current).split("-")[0]
             pack_name = os.path.basename(dir)
         
             button = ToggleButton(self, 0, 0, 160, 50, image=button_image, image_highlighted=button_highlighted, caption=pack_name, batch=self.batch, group=self.group, label_group=self.labels_group, font_name='ChunkFive Roman')
@@ -256,21 +258,3 @@ class TexturesView(View):
             button.position = button_x, button_y
             button_y -= button.height + 20
         self.button_return.position = button_x, button_y
-
-    def on_key_press(self, symbol, modifiers):
-        active_button = None
-        for button in self.buttons:
-            if isinstance(button, ToggleButton) and button.toggled:
-                active_button = button
-                break
-                
-        if not active_button:
-            return
-            
-        active_button.caption = pyglet.window.key.symbol_string(symbol)
-        active_button.toggled = False
-
-        G.config.set("Controls", active_button.id, pyglet.window.key.symbol_string(symbol))
-
-        with open(G.config_file, 'wb') as handle:
-            G.config.write(handle)
