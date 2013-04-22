@@ -168,6 +168,7 @@ class SeedItem(Item):
         if previous:
             if model[block].id == farm_block.id: # plant wheat
                 model.add_block(previous, wheat_crop_block)
+                return True # remove from inventory
 
 class WheatItem(Item):
     id = 296
