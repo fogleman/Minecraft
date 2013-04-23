@@ -703,6 +703,7 @@ class CactusBlock(Block):
     top_texture = 7, 5
     bottom_texture = 7, 3
     side_texture = 7, 4
+    transparent = True
     texture_name = "cactus_top","cactus_bottom","cactus_side"
     hardness = 2
     id = 81,0
