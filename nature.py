@@ -178,9 +178,9 @@ class Carrot(object):
             world.init_block(*item)
 
 class Reed(object):
-    trunk_block = yflowers_block
+    trunk_block = reed_block
     trunk_height_range = 1, 4
-    grows_on = sand_block, dirt_block
+    grows_on = sand_block, dirt_block, reed_block
 
     @classmethod
     def add_to_world(cls, world, position):
