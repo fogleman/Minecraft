@@ -3,7 +3,6 @@
 # Python packages
 from math import cos, sin, atan2, radians
 import random
-from skydome import Skydome
 
 
 # Third-party packages
