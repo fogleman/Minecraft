@@ -1193,6 +1193,169 @@ class WhiteWoolBlock(Block):
     name = "White Wool"
 amount_label_color = 0, 0, 0, 255
 
+# Carpet blocks
+
+class BlackCarpetBlock(Block):
+    height = 0.05
+    top_texture = 15, 0
+    bottom_texture = 15, 0
+    side_texture = 15, 0
+    texture_name = "cloth_15",
+    hardness = 1
+    id = 171,15
+    name = "Black Carpet"
+
+class RedCarpetBlock(Block):
+    height = 0.05
+    top_texture = 15, 1
+    bottom_texture = 15, 1
+    side_texture = 15, 1
+    texture_name = "cloth_14",
+    hardness = 1
+    id = 171,14
+    name = "Red Carpet"
+
+class GreenCarpetBlock(Block):
+    height = 0.05
+    top_texture = 15, 2
+    bottom_texture = 15, 2
+    side_texture = 15, 2
+    texture_name = "cloth_13",
+    hardness = 1
+    id = 171,13
+    name = "Green Carpet"
+
+class BrownCarpetBlock(Block):
+    height = 0.05
+    top_texture = 15, 3
+    bottom_texture = 15, 3
+    side_texture = 15, 3
+    texture_name = "cloth_12",
+    hardness = 1
+    id = 171,12
+    name = "Brown Carpet"
+
+class BlueCarpetBlock(Block):
+    height = 0.05
+    top_texture = 15, 4
+    bottom_texture = 15, 4
+    side_texture = 15, 4
+    texture_name = "cloth_11",
+    hardness = 1
+    id = 171,11
+    name = "Blue Carpet"
+
+class PurpleCarpetBlock(Block):
+    height = 0.05
+    top_texture = 15, 5
+    bottom_texture = 15, 5
+    side_texture = 15, 5
+    texture_name = "cloth_10",
+    hardness = 1
+    id = 171,10
+    name = "Purple Carpet"
+
+class CyanCarpetBlock(Block):
+    height = 0.05
+    top_texture = 15, 6
+    bottom_texture = 15, 6
+    side_texture = 15, 6
+    texture_name = "cloth_9",
+    hardness = 1
+    id = 171,9
+    name = "Cyan Carpet"
+
+class LightGreyCarpetBlock(Block):
+    height = 0.05
+    top_texture = 15, 7
+    bottom_texture = 15, 7
+    side_texture = 15, 7
+    texture_name = "cloth_8",
+    hardness = 1
+    id = 171,8
+    name = "Light Grey Carpet"
+
+class GreyCarpetBlock(Block):
+    height = 0.05
+    top_texture = 15, 8
+    bottom_texture = 15, 8
+    side_texture = 15, 8
+    texture_name = "cloth_7",
+    hardness = 1
+    id = 171,7
+    name = "Grey Carpet"
+
+class PinkCarpetBlock(Block):
+    height = 0.05
+    top_texture = 15, 9
+    bottom_texture = 15, 9
+    side_texture = 15, 9
+    texture_name = "cloth_6",
+    hardness = 1
+    id = 171,6
+    name = "Pink Carpet"
+
+class LimeCarpetBlock(Block):
+    height = 0.05
+    top_texture = 15, 10
+    bottom_texture = 15, 10
+    side_texture = 15, 10
+    texture_name = "cloth_5",
+    hardness = 1
+    id = 171,5
+    name = "Lime Carpet"
+
+class YellowCarpetBlock(Block):
+    height = 0.05
+    top_texture = 15, 11
+    bottom_texture = 15, 11
+    side_texture = 15, 11
+    texture_name = "cloth_4",
+    hardness = 1
+    id = 171,4
+    name = "Yellow Carpet"
+
+class LightBlueCarpetBlock(Block):
+    height = 0.05
+    top_texture = 15, 12
+    bottom_texture = 15, 12
+    side_texture = 15, 12
+    texture_name = "cloth_3",
+    hardness = 1
+    id = 171,3
+    name = "Light Blue Carpet"
+
+class MagentaCarpetBlock(Block):
+    height = 0.05
+    top_texture = 15, 13
+    bottom_texture = 15, 13
+    side_texture = 15, 13
+    texture_name = "cloth_2",
+    hardness = 1
+    id = 171,2
+    name = "Magenta Carpet"
+
+class OrangeCarpetBlock(Block):
+    height = 0.05
+    top_texture = 15, 14
+    bottom_texture = 15, 14
+    side_texture = 15, 14
+    texture_name = "cloth_1",
+    hardness = 1
+    id = 171,1
+    name = "Orange Carpet"
+
+class WhiteCarpetBlock(Block):
+    height = 0.05
+    top_texture = 15, 15
+    bottom_texture = 15, 15
+    side_texture = 15, 15
+    texture_name = "cloth_0",
+    hardness = 1
+    id = 171,0
+    name = "White Carpet"
+amount_label_color = 0, 0, 0, 255
+
 # moreplants
 class RoseBlock(Block):
     width = 0.5
@@ -1515,6 +1678,25 @@ lightbluewool_block = LightBlueWoolBlock()
 magentawool_block = MagentaWoolBlock()
 orangewool_block = OrangeWoolBlock()
 whitewool_block = WhiteWoolBlock()
+
+# carpet
+blackcarpet_block = BlackCarpetBlock()
+redcarpet_block = RedCarpetBlock()
+greencarpet_block = GreenCarpetBlock()
+browncarpet_block = BrownCarpetBlock()
+bluecarpet_block = BlueCarpetBlock()
+purplecarpet_block = PurpleCarpetBlock()
+cyancarpet_block = CyanCarpetBlock()
+lightgreycarpet_block = LightGreyCarpetBlock()
+greycarpet_block = GreyCarpetBlock()
+pinkcarpet_block = PinkCarpetBlock()
+limecarpet_block = LimeCarpetBlock()
+yellowcarpet_block = YellowCarpetBlock()
+lightbluecarpet_block = LightBlueCarpetBlock()
+magentacarpet_block = MagentaCarpetBlock()
+orangecarpet_block = OrangeCarpetBlock()
+whitecarpet_block = WhiteCarpetBlock()
+
 rose_block = RoseBlock()
 reed_block = ReedBlock()
 potato_block = PotatoBlock()

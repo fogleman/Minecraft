@@ -3,6 +3,8 @@
 # Python packages
 from math import cos, sin, atan2, radians
 import random
+from skydome import Skydome
+
 
 # Third-party packages
 # Nothing for now...
@@ -71,8 +73,6 @@ class Player(Entity):
               or symbol == G.CROUCH_KEY) and self.flying:
             self.dy = 0
 
-        #print G.BIOME_BLOCK_COUNT
-
     def on_key_press(self, symbol, modifiers):
         if symbol == G.MOVE_FORWARD_KEY:
             self.strafe[0] -= 1
@@ -97,8 +97,6 @@ class Player(Entity):
         elif symbol == G.FLY_KEY and self.game_mode == G.CREATIVE_MODE:
             self.dy = 0
             self.flying = not self.flying
-
-        #print G.BIOME_BLOCK_COUNT
 
     def get_motion_vector(self):
         if any(self.strafe):
@@ -163,6 +161,7 @@ class Player(Entity):
         p = list(position)
         np = normalize(position)
         self.current_density = 1 # Reset it, incase we don't hit any water
+        self.current_height = 1 # reset it, for height reasons
         for face in FACES:  # check all surrounding blocks
             for i in xrange(3):  # check each dimension independently
                 if not face[i]:
@@ -183,6 +182,13 @@ class Player(Entity):
                     # if density <= 1 then we can walk through it. (water)
                     if parent.model[op].density < 1:
                         self.current_density = parent.model[op].density
+                        continue
+                    # if height <= 1 then we can walk on top of it. (carpet, half-blocks, etc...)
+                    if parent.model[op].height < 0.5:
+                        self.current_height = parent.model[op].height
+                        x, y, z = self.position
+                        new_pos = (x, y + self.current_height, z)
+                        self.position = new_pos
                         continue
                     p[i] -= (d - pad) * face[i]
                     if face == (0, -1, 0) or face == (0, 1, 0):
