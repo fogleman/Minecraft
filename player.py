@@ -160,7 +160,6 @@ class Player(Entity):
         p = list(position)
         np = normalize(position)
         self.current_density = 1 # Reset it, incase we don't hit any water
-        self.current_height = 1 # reset it, for height reasons
         for face in FACES:  # check all surrounding blocks
             for i in xrange(3):  # check each dimension independently
                 if not face[i]:
@@ -184,10 +183,10 @@ class Player(Entity):
                         continue
                     # if height <= 1 then we can walk on top of it. (carpet, half-blocks, etc...)
                     if parent.model[op].height < 0.5:
-                        self.current_height = parent.model[op].height
-                        x, y, z = self.position
-                        new_pos = (x, y + self.current_height, z)
-                        self.position = new_pos
+                        #current_height = parent.model[op].height
+                        #x, y, z = self.position
+                        #new_pos = (x, y + current_height, z)
+                        #self.position = new_pos
                         continue
                     p[i] -= (d - pad) * face[i]
                     if face == (0, -1, 0) or face == (0, 1, 0):

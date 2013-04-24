@@ -105,7 +105,7 @@ class Model(World):
                         tree_class = world_type_trees[world_type]
                         if isinstance(tree_class, (tuple, list)):
                             tree_class = random.choice(tree_class)
-                        self.generate_tree((x, y - 2, z), tree_class)
+                        self.generate_vegetation((x, y - 2, z), tree_class)
 
         if G.FLAT_MODE:
             return
@@ -151,23 +151,27 @@ class Model(World):
                                 tree_class = world_type_trees[world_type]
                                 if isinstance(tree_class, (tuple, list)):
                                     tree_class = random.choice(tree_class)
-                                self.generate_tree((x, y, z), tree_class)
+                                self.generate_vegetation((x, y, z), tree_class)
 
                 s -= d
 
-    def generate_tree(self, position, tree_class):
-        x, y, z = position
+    def generate_vegetation(self, position, vegetation_class):
+        if position in self:
+            return
 
         # Avoids a tree from touching another.
-        if self.has_neighbors((x, y + 1, z), is_in=TREE_BLOCKS,
-                              diagonals=True):
+        if vegetation_class in TREES \
+            and self.has_neighbors(position, is_in=TREE_BLOCKS,
+                                   diagonals=True):
             return
 
-        # A tree can't grow on anything.
-        if self[position] not in tree_class.grows_on:
+        x, y, z = position
+
+        # Vegetation can't grow on anything.
+        if self[(x, y - 1, z)] not in vegetation_class.grows_on:
             return
 
-        tree_class.add_to_world(self, position)
+        vegetation_class.add_to_world(self, position)
 
     def init_block(self, position, block):
         self.add_block(position, block, sync=False, force=False)

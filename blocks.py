@@ -239,39 +239,39 @@ class Block(object):
         zm = z - w
         zp = z + w
 
-        ret = []
+        vertices = ()
         if len(self.top_texture) > 0 or len(self.side_texture) == 0:
-            ret.extend([
+            vertices += (
                 xm, yp, zm,   xm, yp, zp,   xp, yp, zp,   xp, yp, zm  # top
-            ])
+            )
         if len(self.bottom_texture) > 0 or len(self.side_texture) == 0:
-            ret.extend([
+            vertices += (
                 xm, ym, zm,   xp, ym, zm,   xp, ym, zp,   xm, ym, zp  # bottom
-            ])
+            )
         if self.vertex_mode == G.VERTEX_CROSS:
-            ret.extend([
+            vertices += (
                 xm, ym, zm,   xp, ym, zp,   xp, yp, zp,   xm, yp, zm,
                 xm, ym, zp,   xp, ym, zm,   xp, yp, zm,   xm, yp, zp,
-            ])
+            )
         elif self.vertex_mode == G.VERTEX_GRID:
             xm2 = x - w / 2.0
             xp2 = x + w / 2.0
             zm2 = z - w / 2.0
             zp2 = z + w / 2.0
-            ret.extend([
+            vertices += (
                 xm2, ym, zm,   xm2, ym, zp,   xm2, yp, zp,   xm2, yp, zm,  # left
                 xp2, ym, zp,   xp2, ym, zm,   xp2, yp, zm,   xp2, yp, zp,  # right
                 xm, ym, zp2,   xp, ym, zp2,   xp, yp, zp2,   xm, yp, zp2,  # front
                 xp, ym, zm2,   xm, ym, zm2,   xm, yp, zm2,   xp, yp, zm2,  # back
-            ])
+            )
         else:
-            ret.extend([
+            vertices += (
                 xm, ym, zm,   xm, ym, zp,   xm, yp, zp,   xm, yp, zm,  # left
                 xp, ym, zp,   xp, ym, zm,   xp, yp, zm,   xp, yp, zp,  # right
                 xm, ym, zp,   xp, ym, zp,   xp, yp, zp,   xm, yp, zp,  # front
                 xp, ym, zm,   xm, ym, zm,   xm, yp, zm,   xp, yp, zm,  # back
-            ])
-        return ret
+            )
+        return vertices
 
     def play_break_sound(self, player=None, position=None):
         if self.break_sound is not None:
@@ -593,9 +593,9 @@ class ColumnQuartzBlock(HardBlock):
     digging_tool = G.PICKAXE
 
 class QuartzBrickBlock(HardBlock):
-    top_texture = 9, 7
-    bottom_texture = 9, 7
-    side_texture = 9, 7
+    top_texture = 13, 0
+    bottom_texture = 13, 0
+    side_texture = 13, 0
     id = 155,3
     hardness = 2
     name = "Quartz Brick"
@@ -1414,6 +1414,8 @@ class CarrotBlock(Block):
     max_stack_size = 16
     amount_label_color = 0, 0, 0, 255
 
+
+# TODO: Rewrite this from scratch.
 class WheatCropBlock(Block):
     top_texture = -1, -1
     bottom_texture = -1, -1
@@ -1432,11 +1434,14 @@ class WheatCropBlock(Block):
     world = None
 
     growth_stage = 0
+    # FIXME: A class attribute should never be mutable.
     texture_list = []
     # second per stage
     grow_time = 10
     grow_task = None
 
+    # FIXME: This constructor contains many heresies.  The parent class
+    # constructor is not called and it contains hard-coded values.
     def __init__(self, grow=True):
         self.top_texture = get_texture_coordinates(-1, -1)
         self.bottom_texture = get_texture_coordinates(-1, -1)
@@ -1515,37 +1520,7 @@ class WildGrassBlock(Block):
     def drop_id(self, value):
         self._drop_id = value
 
-# desert grass
-
-class DesertGrassBlock(Block):
-    width = 0.9
-    height = 0.9
-    top_texture = -1, -1
-    bottom_texture = -1, -1
-    side_texture = 10, 6
-    vertex_mode = G.VERTEX_CROSS
-    hardness = 0.0
-    transparent = True
-    density = 0.3
-    id = 31
-    name = "Grass"
-    break_sound = sounds.leaves_break
-    amount_label_color = 0, 0, 0, 255
-
-   # def __init__(self):
-    #    super(WildGrassBlock, self).__init__()
-    #    self.drop_id = BlockID(295) ## seed
-    @property
-    def drop_id(self):
-        # 10% chance of dropping seed
-        if randint(0, 10) == 0:
-            return BlockID(295)
-        else:
-            return BlockID(0)
-
-    @drop_id.setter
-    def drop_id(self, value):
-        self._drop_id = value
+#more wild grass blocks
 
 #Wild grass of different heights...
 
@@ -1750,6 +1725,35 @@ class Grass7Block(Block):
     density = 0.7
     id = 31,8
     name = "Wild Grass"
+    break_sound = sounds.leaves_break
+    amount_label_color = 0, 0, 0, 255
+
+    @property
+    def drop_id(self):
+        # 10% chance of dropping seed
+        if randint(0, 10) == 0:
+            return BlockID(295)
+        else:
+            return BlockID(0)
+
+    @drop_id.setter
+    def drop_id(self, value):
+        self._drop_id = value
+
+# desert grass
+
+class DesertGrassBlock(Block):
+    width = 0.9
+    height = 0.9
+    top_texture = -1, -1
+    bottom_texture = -1, -1
+    side_texture = 10, 6
+    vertex_mode = G.VERTEX_CROSS
+    hardness = 0.0
+    transparent = True
+    density = 0.3
+    id = 31
+    name = "Grass"
     break_sound = sounds.leaves_break
     amount_label_color = 0, 0, 0, 255
 

@@ -10,9 +10,24 @@ import random
 from blocks import *
 
 
+#
+# Base
+#
+
+
+class SmallPlant(object):
+    block = None
+    grows_on = grass_block, dirt_block
+
+    @classmethod
+    def add_to_world(cls, world, position, sync=False):
+        world.add_block(position, cls.block, sync=sync)
+
+
 class Trunk(object):
     block = None
     height_range = 4, 8
+    grows_on = ()
 
     def __init__(self, position, block=None, height_range=None):
         if block is not None:
@@ -24,8 +39,14 @@ class Trunk(object):
 
         self.height = random.randint(*self.height_range)
         self.blocks = {}
-        for dy in range(1, self.height):
+        for dy in range(self.height):
             self.blocks[(x, y + dy, z)] = self.block
+
+    @classmethod
+    def add_to_world(cls, world, position, sync=False):
+        trunk = cls(position)
+        for item in trunk.blocks.items():
+            world.add_block(*item, sync=sync)
 
 
 class Tree(object):
@@ -35,12 +56,12 @@ class Tree(object):
     grows_on = grass_block, dirt_block, snowgrass_block
 
     @classmethod
-    def add_to_world(cls, world, position):
+    def add_to_world(cls, world, position, sync=False):
         trunk = Trunk(position, block=cls.trunk_block,
                       height_range=cls.trunk_height_range)
 
         for item in trunk.blocks.items():
-            world.add_block(*item, force=False)
+            world.add_block(*item, force=False, sync=sync)
 
         x, y, z = position
         height = trunk.height
@@ -65,7 +86,107 @@ class Tree(object):
                     # the least leaves we can find.
                     if random.uniform(0, dx + dz) > 0.6:
                         continue
-                    world.add_block((xl, yl, zl), cls.leaf_block, force=False)
+                    world.add_block((xl, yl, zl), cls.leaf_block, force=False,
+                                    sync=sync)
+
+
+#
+# Small plants
+#
+
+
+class WaterMelon(SmallPlant):
+    block = melon_block
+    grows_on = grass_block, dirt_block, snowgrass_block
+
+
+class Pumpkin(SmallPlant):
+    block = pumpkin_block
+    grows_on = grass_block, dirt_block, snowgrass_block
+
+
+class YFlowers(SmallPlant):
+    block = yflowers_block
+
+
+class Potato(SmallPlant):
+    block = potato_block
+
+
+class Carrot(SmallPlant):
+    block = carrot_block
+
+
+class Rose(SmallPlant):
+    block = rose_block
+
+
+class Fern(SmallPlant):
+    block = fern_block
+
+class WildGrass0(SmallPlant):
+    block = wildgrass0_block
+    grows_on = grass_block, dirt_block
+
+class WildGrass1(SmallPlant):
+    block = wildgrass1_block
+    grows_on = grass_block, dirt_block
+
+class WildGrass2(SmallPlant):
+    block = wildgrass2_block
+    grows_on = grass_block, dirt_block
+
+class WildGrass3(SmallPlant):
+    block = wildgrass3_block
+    grows_on = grass_block, dirt_block
+
+class WildGrass4(SmallPlant):
+    block = wildgrass4_block
+    grows_on = grass_block, dirt_block
+
+class WildGrass5(SmallPlant):
+    block = wildgrass5_block
+    grows_on = grass_block, dirt_block
+
+
+class WildGrass6(SmallPlant):
+    block = wildgrass6_block
+    grows_on = grass_block, dirt_block
+
+class WildGrass7(SmallPlant):
+    block = wildgrass7_block
+    grows_on = grass_block, dirt_block
+
+class DesertGrass(SmallPlant):
+    block = desertgrass_block
+    grows_on = sand_block, sandstone_block
+
+#
+# Tall plants
+#
+
+
+class Cactus(Trunk):
+    block = cactus_block
+    height_range = 1, 4
+    grows_on = sand_block, sandstone_block
+
+
+class TallCactus(Trunk):
+    block = tallcactus_block
+    height_range = 1, 10
+    grows_on = sand_block, sandstone_block
+
+
+class Reed(Trunk):
+    block = reed_block
+    height_range = 1, 4
+    grows_on = sand_block, dirt_block
+
+
+#
+# Trees
+#
 
 
 class OakTree(Tree):
@@ -84,265 +205,13 @@ class BirchTree(Tree):
     leaf_block = birchleaf_block
     trunk_height_range = 5, 7
 
-class TallCactus(object):
-    trunk_block = tallcactus_block
-    trunk_height_range = 1, 10
-    grows_on = sand_block, sandstone_block
 
-    @classmethod
-    def add_to_world(cls, world, position):
-        trunk = Trunk(position, block=cls.trunk_block,
-                      height_range=cls.trunk_height_range)
-
-        for item in trunk.blocks.items():
-            world.init_block(*item)
-
-class Cactus(object):
-    trunk_block = cactus_block
-    trunk_height_range = 1, 6
-    grows_on = sand_block, sandstone_block
-
-    @classmethod
-    def add_to_world(cls, world, position):
-        trunk = Trunk(position, block=cls.trunk_block,
-                      height_range=cls.trunk_height_range)
-
-        for item in trunk.blocks.items():
-            world.init_block(*item)
-
-class WaterMelon(object):
-    trunk_block = melon_block
-    trunk_height_range = 1, 2
-    grows_on = grass_block, dirt_block, snowgrass_block
-
-    @classmethod
-    def add_to_world(cls, world, position):
-        trunk = Trunk(position, block=cls.trunk_block,
-                      height_range=cls.trunk_height_range)
-
-        for item in trunk.blocks.items():
-            world.init_block(*item)
-
-class Pumpkin(object):
-    trunk_block = pumpkin_block
-    trunk_height_range = 1, 2
-    grows_on = grass_block, dirt_block, snowgrass_block
-
-    @classmethod
-    def add_to_world(cls, world, position):
-        trunk = Trunk(position, block=cls.trunk_block,
-                      height_range=cls.trunk_height_range)
-
-        for item in trunk.blocks.items():
-            world.init_block(*item)
-
-class YFlowers(object):
-    trunk_block = yflowers_block
-    trunk_height_range = 1, 2
-    grows_on = grass_block, dirt_block
-
-    @classmethod
-    def add_to_world(cls, world, position):
-        trunk = Trunk(position, block=cls.trunk_block,
-                      height_range=cls.trunk_height_range)
-
-        for item in trunk.blocks.items():
-            world.init_block(*item)
-
-class Potato(object):
-    trunk_block = potato_block
-    trunk_height_range = 1, 2
-    grows_on = grass_block, dirt_block
-
-    @classmethod
-    def add_to_world(cls, world, position):
-        trunk = Trunk(position, block=cls.trunk_block,
-                      height_range=cls.trunk_height_range)
-
-        for item in trunk.blocks.items():
-            world.init_block(*item)
-
-class Carrot(object):
-    trunk_block = carrot_block
-    trunk_height_range = 1, 2
-    grows_on = grass_block, dirt_block
-
-    @classmethod
-    def add_to_world(cls, world, position):
-        trunk = Trunk(position, block=cls.trunk_block,
-                      height_range=cls.trunk_height_range)
-
-        for item in trunk.blocks.items():
-            world.init_block(*item)
-
-class Reed(object):
-    trunk_block = reed_block
-    trunk_height_range = 1, 4
-    grows_on = sand_block, dirt_block, reed_block
-
-    @classmethod
-    def add_to_world(cls, world, position):
-        trunk = Trunk(position, block=cls.trunk_block,
-                      height_range=cls.trunk_height_range)
-
-        for item in trunk.blocks.items():
-            world.init_block(*item)
-
-class Rose(object):
-    trunk_block = rose_block
-    trunk_height_range = 1, 2
-    grows_on = grass_block, dirt_block
-
-    @classmethod
-    def add_to_world(cls, world, position):
-        trunk = Trunk(position, block=cls.trunk_block,
-                      height_range=cls.trunk_height_range)
-
-        for item in trunk.blocks.items():
-            world.init_block(*item)
-
-class Fern(object):
-    trunk_block = fern_block
-    trunk_height_range = 1, 2
-    grows_on = grass_block, dirt_block
-
-    @classmethod
-    def add_to_world(cls, world, position):
-        trunk = Trunk(position, block=cls.trunk_block,
-                      height_range=cls.trunk_height_range)
-
-        for item in trunk.blocks.items():
-            world.init_block(*item)
-
-class WildGrass0(object):
-    trunk_block = wildgrass0_block
-    trunk_height_range = 1, 2
-    grows_on = grass_block, dirt_block
-
-    @classmethod
-    def add_to_world(cls, world, position):
-        trunk = Trunk(position, block=cls.trunk_block,
-                      height_range=cls.trunk_height_range)
-
-        for item in trunk.blocks.items():
-            world.init_block(*item)
-
-class WildGrass1(object):
-    trunk_block = wildgrass1_block
-    trunk_height_range = 1, 2
-    grows_on = grass_block, dirt_block
-
-    @classmethod
-    def add_to_world(cls, world, position):
-        trunk = Trunk(position, block=cls.trunk_block,
-                      height_range=cls.trunk_height_range)
-
-        for item in trunk.blocks.items():
-            world.init_block(*item)
-
-class WildGrass2(object):
-    trunk_block = wildgrass2_block
-    trunk_height_range = 1, 2
-    grows_on = grass_block, dirt_block
-
-    @classmethod
-    def add_to_world(cls, world, position):
-        trunk = Trunk(position, block=cls.trunk_block,
-                      height_range=cls.trunk_height_range)
-
-        for item in trunk.blocks.items():
-            world.init_block(*item)
-
-class WildGrass3(object):
-    trunk_block = wildgrass3_block
-    trunk_height_range = 1, 2
-    grows_on = grass_block, dirt_block
-
-    @classmethod
-    def add_to_world(cls, world, position):
-        trunk = Trunk(position, block=cls.trunk_block,
-                      height_range=cls.trunk_height_range)
-
-        for item in trunk.blocks.items():
-            world.init_block(*item)
-
-class WildGrass4(object):
-    trunk_block = wildgrass4_block
-    trunk_height_range = 1, 2
-    grows_on = grass_block, dirt_block
-
-    @classmethod
-    def add_to_world(cls, world, position):
-        trunk = Trunk(position, block=cls.trunk_block,
-                      height_range=cls.trunk_height_range)
-
-        for item in trunk.blocks.items():
-            world.init_block(*item)
-
-class WildGrass5(object):
-    trunk_block = wildgrass5_block
-    trunk_height_range = 1, 2
-    grows_on = grass_block, dirt_block
-
-    @classmethod
-    def add_to_world(cls, world, position):
-        trunk = Trunk(position, block=cls.trunk_block,
-                      height_range=cls.trunk_height_range)
-
-        for item in trunk.blocks.items():
-            world.init_block(*item)
-
-class WildGrass6(object):
-    trunk_block = wildgrass6_block
-    trunk_height_range = 1, 2
-    grows_on = grass_block, dirt_block
-
-    @classmethod
-    def add_to_world(cls, world, position):
-        trunk = Trunk(position, block=cls.trunk_block,
-                      height_range=cls.trunk_height_range)
-
-        for item in trunk.blocks.items():
-            world.init_block(*item)
-
-class WildGrass7(object):
-    trunk_block = wildgrass7_block
-    trunk_height_range = 1, 2
-    grows_on = grass_block, dirt_block
-
-    @classmethod
-    def add_to_world(cls, world, position):
-        trunk = Trunk(position, block=cls.trunk_block,
-                      height_range=cls.trunk_height_range)
-
-        for item in trunk.blocks.items():
-            world.init_block(*item)
-
-class DesertGrass(object):
-    trunk_block = desertgrass_block
-    trunk_height_range = 1, 2
-    grows_on = sand_block, sandstone_block
-
-    @classmethod
-    def add_to_world(cls, world, position):
-        trunk = Trunk(position, block=cls.trunk_block,
-                      height_range=cls.trunk_height_range)
-
-        for item in trunk.blocks.items():
-            world.init_block(*item)
-
-TREES = (
-    OakTree,
-    JungleTree,
-    BirchTree,
-    Cactus,  # FIXME: A cactus isn't really a tree.
-    TallCactus,
+SMALL_PLANTS = set((
     WaterMelon,
     Pumpkin,
     YFlowers,
     Potato,
     Carrot,
-    Reed,
     Rose,
     Fern,
     WildGrass0,
@@ -354,6 +223,27 @@ TREES = (
     WildGrass6,
     WildGrass7,
     DesertGrass,
-)
+))
+
+TALL_PLANTS = set((
+    Cactus,
+    TallCactus,
+    Reed,
+))
+
+PLANTS = SMALL_PLANTS | TALL_PLANTS
+
+TREES = set((
+    OakTree,
+    JungleTree,
+    BirchTree,
+))
+
+
+VEGETATION = PLANTS | TREES
 
 TREE_BLOCKS = tuple(tree.trunk_block for tree in TREES)
+
+PLANT_BLOCKS = tuple(plant.block for plant in PLANTS)
+
+VEGETATION_BLOCKS = PLANT_BLOCKS + TREE_BLOCKS

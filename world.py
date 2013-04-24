@@ -227,8 +227,7 @@ class World(dict):
         previous = ()
         for _ in xrange(max_distance * m):
             key = normalize((x, y, z))
-            if key != previous and key in self and (self[key].density != 0.5 or hitwater) and (y - key[1] + 0.5) <= self[key].height:
-            #if key != previous and key in self and (self[key].density != 0.5 or hitwater):
+            if key != previous and key in self and (self[key].density != 0.5 or hitwater):
                 return key, previous
             previous = key
             x, y, z = x + dx, y + dy, z + dz
