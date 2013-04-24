@@ -88,6 +88,7 @@ class Tree(object):
                         continue
                     world.add_block((xl, yl, zl), cls.leaf_block, force=False,
                                     sync=sync)
+<<<<<<< HEAD
 
 
 #
@@ -104,10 +105,18 @@ class Pumpkin(SmallPlant):
     block = pumpkin_block
     grows_on = grass_block, dirt_block, snowgrass_block
 
+=======
+
+
+#
+# Small plants
+#
+>>>>>>> db798572e82f2d499564773be057c2781e354aee
 
 class YFlowers(SmallPlant):
     block = yflowers_block
 
+<<<<<<< HEAD
 
 class Potato(SmallPlant):
     block = potato_block
@@ -178,6 +187,55 @@ class TallCactus(Trunk):
     grows_on = sand_block, sandstone_block
 
 
+=======
+class WaterMelon(SmallPlant):
+    block = melon_block
+    grows_on = grass_block, dirt_block, snowgrass_block
+
+
+class Pumpkin(SmallPlant):
+    block = pumpkin_block
+    grows_on = grass_block, dirt_block, snowgrass_block
+
+
+class YFlowers(SmallPlant):
+    block = yflowers_block
+
+
+class Potato(SmallPlant):
+    block = potato_block
+
+
+class Carrot(SmallPlant):
+    block = carrot_block
+
+
+class Rose(SmallPlant):
+    block = rose_block
+
+
+class Fern(SmallPlant):
+    block = fern_block
+
+
+#
+# Tall plants
+#
+
+
+class Cactus(Trunk):
+    block = cactus_block
+    height_range = 1, 4
+    grows_on = sand_block, sandstone_block
+
+
+class TallCactus(Trunk):
+    block = tallcactus_block
+    height_range = 1, 10
+    grows_on = sand_block, sandstone_block
+
+
+>>>>>>> db798572e82f2d499564773be057c2781e354aee
 class Reed(Trunk):
     block = reed_block
     height_range = 1, 4
@@ -214,6 +272,7 @@ SMALL_PLANTS = set((
     Carrot,
     Rose,
     Fern,
+<<<<<<< HEAD
     WildGrass0,
     WildGrass1,
     WildGrass2,
@@ -223,6 +282,8 @@ SMALL_PLANTS = set((
     WildGrass6,
     WildGrass7,
     DesertGrass,
+=======
+>>>>>>> db798572e82f2d499564773be057c2781e354aee
 ))
 
 TALL_PLANTS = set((
