@@ -419,17 +419,24 @@ class Window(pyglet.window.Window):
         # When flying gravity has no effect and speed is increased.
         self.flying = False
 
+        # Strafing is moving lateral to the direction you are facing,
+        # e.g. moving to the left or right while continuing to face forward.
+        #
         # First element is -1 when moving forward, 1 when moving back, and 0
         # otherwise. The second element is -1 when moving left, 1 when moving
         # right, and 0 otherwise.
         self.strafe = [0, 0]
 
-        # Current (x, y, z) position in the world, specified with floats.
+        # Current (x, y, z) position in the world, specified with floats. Note
+        # that, perhaps unlike in math class, the y-axis is the vertical axis.
         self.position = (0, 0, 0)
 
         # First element is rotation of the player in the x-z plane (ground
         # plane) measured from the z-axis down. The second is the rotation
-        # angle from the ground plane up.
+        # angle from the ground plane up. Rotation is in degrees.
+        #
+        # The vertical plane rotation ranges from -90 (looking straight down) to
+        # 90 (looking straight up). The horizontal rotation range is unbounded.
         self.rotation = (0, 0)
 
         # Which sector the player is currently in.
@@ -478,7 +485,12 @@ class Window(pyglet.window.Window):
 
         """
         x, y = self.rotation
+        # y ranges from -90 to 90, or -pi/2 to pi/2, so m ranges from 0 to 1 and
+        # is 1 when looking ahead parallel to the ground and 0 when looking
+        # straight up or down.
         m = math.cos(math.radians(y))
+        # dy ranges from -1 to 1 and is -1 when looking straight down and 1 when
+        # looking straight up.
         dy = math.sin(math.radians(y))
         dx = math.cos(math.radians(x - 90)) * m
         dz = math.sin(math.radians(x - 90)) * m
@@ -497,20 +509,26 @@ class Window(pyglet.window.Window):
         if any(self.strafe):
             x, y = self.rotation
             strafe = math.degrees(math.atan2(*self.strafe))
+            y_angle = math.radians(y)
+            x_angle = math.radians(x + strafe)
             if self.flying:
-                m = math.cos(math.radians(y))
-                dy = math.sin(math.radians(y))
+                m = math.cos(y_angle)
+                dy = math.sin(y_angle)
                 if self.strafe[1]:
+                    # Moving left or right.
                     dy = 0.0
                     m = 1
                 if self.strafe[0] > 0:
+                    # Moving backwards.
                     dy *= -1
-                dx = math.cos(math.radians(x + strafe)) * m
-                dz = math.sin(math.radians(x + strafe)) * m
+                # When you are flying up or down, you have less left and right
+                # motion.
+                dx = math.cos(x_angle) * m
+                dz = math.sin(x_angle) * m
             else:
                 dy = 0.0
-                dx = math.cos(math.radians(x + strafe))
-                dz = math.sin(math.radians(x + strafe))
+                dx = math.cos(x_angle)
+                dz = math.sin(x_angle)
         else:
             dy = 0.0
             dx = 0.0
