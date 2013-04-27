@@ -812,8 +812,6 @@ def setup_fog():
     glHint(GL_FOG_HINT, GL_DONT_CARE)
     # Specify the equation used to compute the blending factor.
     glFogi(GL_FOG_MODE, GL_LINEAR)
-    # Set the fog density.
-    glFogf(GL_FOG_DENSITY, 0.35)
     # How close and far away fog starts and ends. The closer the start and end,
     # the denser the fog in the fog range.
     glFogf(GL_FOG_START, 20.0)
