@@ -8,6 +8,7 @@ from pyglet.gl import *
 from pyglet.graphics import TextureGroup
 from pyglet.window import key
 
+TICKS_PER_SEC = 60
 
 # Size of sectors used to ease block loading.
 SECTOR_SIZE = 16
@@ -411,7 +412,7 @@ class Model(object):
 
         """
         start = time.clock()
-        while self.queue and time.clock() - start < 1 / 60.0:
+        while self.queue and time.clock() - start < 1.0 / TICKS_PER_SEC:
             self._dequeue()
 
     def process_entire_queue(self):
@@ -481,9 +482,9 @@ class Window(pyglet.window.Window):
             x=10, y=self.height - 10, anchor_x='left', anchor_y='top',
             color=(0, 0, 0, 255))
 
-        # This call schedules the `update()` method to be called 60 times a
-        # second. This is the main game event loop.
-        pyglet.clock.schedule_interval(self.update, 1.0 / 60)
+        # This call schedules the `update()` method to be called
+        # TICKS_PER_SEC. This is the main game event loop.
+        pyglet.clock.schedule_interval(self.update, 1.0 / TICKS_PER_SEC)
 
     def set_exclusive_mouse(self, exclusive):
         """ If `exclusive` is True, the game will capture the mouse, if False
