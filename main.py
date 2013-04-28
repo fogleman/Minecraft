@@ -28,6 +28,8 @@ MAX_JUMP_HEIGHT = 1.0 # About the height of a block.
 JUMP_SPEED = math.sqrt(2 * GRAVITY * MAX_JUMP_HEIGHT)
 TERMINAL_VELOCITY = 50
 
+PLAYER_HEIGHT = 2
+
 def cube_vertices(x, y, z, n):
     """ Return the vertices of the cube at position x, y, z with size 2*n.
 
@@ -598,7 +600,7 @@ class Window(pyglet.window.Window):
             dy += self.dy * dt
         # collisions
         x, y, z = self.position
-        x, y, z = self.collide((x + dx, y + dy, z + dz), 2)
+        x, y, z = self.collide((x + dx, y + dy, z + dz), PLAYER_HEIGHT)
         self.position = (x, y, z)
 
     def collide(self, position, height):
@@ -618,6 +620,10 @@ class Window(pyglet.window.Window):
             The new position of the player taking into account collisions.
 
         """
+        # How much overlap with a dimension of a surrounding block you need to
+        # have to count as a collision. If 0, touching terrain at all counts as
+        # a collision. If .49, you sink into the ground, as if walking through
+        # tall grass. If >= .5, you'll fall through the ground.
         pad = 0.25
         p = list(position)
         np = normalize(position)
@@ -625,6 +631,7 @@ class Window(pyglet.window.Window):
             for i in xrange(3):  # check each dimension independently
                 if not face[i]:
                     continue
+                # How much overlap you have with this dimension.
                 d = (p[i] - np[i]) * face[i]
                 if d < pad:
                     continue
@@ -632,11 +639,12 @@ class Window(pyglet.window.Window):
                     op = list(np)
                     op[1] -= dy
                     op[i] += face[i]
-                    op = tuple(op)
-                    if op not in self.model.world:
+                    if tuple(op) not in self.model.world:
                         continue
                     p[i] -= (d - pad) * face[i]
                     if face == (0, -1, 0) or face == (0, 1, 0):
+                        # You are colliding with the ground or ceiling, so stop
+                        # falling / rising.
                         self.dy = 0
                     break
         return tuple(p)
