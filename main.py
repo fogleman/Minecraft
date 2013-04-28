@@ -6,7 +6,7 @@ from collections import deque
 from pyglet import image
 from pyglet.gl import *
 from pyglet.graphics import TextureGroup
-from pyglet.window import key
+from pyglet.window import key, mouse
 
 TICKS_PER_SEC = 60
 
@@ -669,14 +669,15 @@ class Window(pyglet.window.Window):
         if self.exclusive:
             vector = self.get_sight_vector()
             block, previous = self.model.hit_test(self.position, vector)
-            if button == pyglet.window.mouse.LEFT:
-                if block:
-                    texture = self.model.world[block]
-                    if texture != STONE:
-                        self.model.remove_block(block)
-            else:
+            if (button == mouse.RIGHT) or \
+                    ((button == mouse.LEFT) and (modifiers & key.MOD_CTRL)):
+                # ON OSX, control + left click = right click.
                 if previous:
                     self.model.add_block(previous, self.block)
+            elif button == pyglet.window.mouse.LEFT and block:
+                texture = self.model.world[block]
+                if texture != STONE:
+                    self.model.remove_block(block)
         else:
             self.set_exclusive_mouse(True)
 
