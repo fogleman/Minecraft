@@ -30,7 +30,7 @@ class saveModule(object):
         worldMod = worldMod.split('\n')
         
         for blockLine in worldMod:
-			# remove the last empty line
+            # remove the last empty line
             if blockLine != '':
                 coords, blockType = blockLine.split('=>')
                 # convert the json list into tuple; json ONLY get lists but we need tuples
@@ -47,8 +47,8 @@ class saveModule(object):
         worldString = ''
         
         for block in model.world:
-			# convert the block coords into json
-			# convert with the translation dictionary the block type into a readable word
+            # convert the block coords into json
+            # convert with the translation dictionary the block type into a readable word
             worldString += json.dumps(block) + '=>' + self.coordDictSave[ str(model.world[block]) ] + '\n'
 
         fh.write(worldString)
