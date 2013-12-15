@@ -436,6 +436,12 @@ class Window(pyglet.window.Window):
         # When flying gravity has no effect and speed is increased.
         self.flying = False
 
+        #toggles all gui elements including the reticle and block highlighing
+        self.toggleGui = True
+
+        #toggles the text in the upper left corner
+        self.toggleLabel = False
+
         # Strafing is moving lateral to the direction you are facing,
         # e.g. moving to the left or right while continuing to face forward.
         #
@@ -730,6 +736,10 @@ class Window(pyglet.window.Window):
         elif symbol in self.num_keys:
             index = (symbol - self.num_keys[0]) % len(self.inventory)
             self.block = self.inventory[index]
+        elif symbol == key.F1:
+            self.toggleGui = not self.toggleGui
+        elif symbol == key.F3:
+            self.toggleLabel = not self.toggleLabel
 
     def on_key_release(self, symbol, modifiers):
         """ Called when the player releases a key. See pyglet docs for key
@@ -806,10 +816,12 @@ class Window(pyglet.window.Window):
         self.set_3d()
         glColor3d(1, 1, 1)
         self.model.batch.draw()
-        self.draw_focused_block()
-        self.set_2d()
-        self.draw_label()
-        self.draw_reticle()
+        if self.toggleGui:
+            self.draw_focused_block()
+            self.set_2d()
+            if self.toggleLabel:
+                self.draw_label()
+            self.draw_reticle()
 
     def draw_focused_block(self):
         """ Draw black edges around the block that is currently under the
