@@ -90,6 +90,11 @@ See the [wiki](https://github.com/fogleman/Minecraft/wiki) for this project to i
 - Mouse left-click: remove block
 - Mouse right-click: create block
 
+### Miscellaneous
+
+- F1: toggles reticle, block highlight, and fps counter
+- F3: toggles just the fps counter
+
 ### Quitting
 
 - ESC: release mouse, then close window
