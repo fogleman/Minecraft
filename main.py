@@ -16,6 +16,9 @@ SECTOR_SIZE = 16
 WALKING_SPEED = 5
 FLYING_SPEED = 15
 
+LOOK_SPEED_X = 0.15
+LOOK_SPEED_Y = 0.15
+
 GRAVITY = 20.0
 MAX_JUMP_HEIGHT = 1.0 # About the height of a block.
 # To derive the formula for calculating jump speed, first solve
@@ -436,10 +439,10 @@ class Window(pyglet.window.Window):
         # When flying gravity has no effect and speed is increased.
         self.flying = False
 
-        #toggles all gui elements including the reticle and block highlighing
+        # Wether or not all gui elements are drawn
         self.toggleGui = True
 
-        #toggles the text in the upper left corner
+        # Wether or not the fps counter and player coordinates are drawn
         self.toggleLabel = False
 
         # Strafing is moving lateral to the direction you are facing,
@@ -700,9 +703,8 @@ class Window(pyglet.window.Window):
 
         """
         if self.exclusive:
-            m = 0.15
             x, y = self.rotation
-            x, y = x + dx * m, y + dy * m
+            x, y = x + dx * LOOK_SPEED_X, y + dy * LOOK_SPEED_Y
             y = max(-90, min(90, y))
             self.rotation = (x, y)
 
