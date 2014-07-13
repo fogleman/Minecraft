@@ -3,7 +3,13 @@ import random
 import time
 
 from collections import deque
-from pyglet import image
+try:
+  from pyglet import image
+except ImportError:
+  print "Please install python pyglet module"
+  print "Exiting..."
+  exit(1)
+
 from pyglet.gl import *
 from pyglet.graphics import TextureGroup
 from pyglet.window import key, mouse
