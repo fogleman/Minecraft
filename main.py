@@ -1,6 +1,7 @@
 import math
 import random
 import time
+import pyglet
 
 from collections import deque
 from pyglet import image
