@@ -3,10 +3,14 @@ import main
 main.main()
 
 """
-class World:
+class World(Model):
+
+  def __init__(self):
+    super.__init__
   
   def set_block(x, y, z, texture):
     t = (x, y, z)
+    Model.remove_block(t)
     texture.upper()
     if isinstance(texture, str):
       if texture = "SAND":
