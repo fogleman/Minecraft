@@ -3,10 +3,10 @@ import main
 main.main()
 
 """
-class World(Model):
+class World(Window):
 
   def __init__(self):
-    super.__init__
+    super()
   
   def set_block(x, y, z, texture):
     t = (x, y, z)
