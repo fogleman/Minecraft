@@ -10,7 +10,6 @@ class World(Window):
   
   def set_block(x, y, z, texture):
     t = x, y, z
-    Model.remove_block(t)
     texture.upper()
     if isinstance(texture, (basestring, int, float, long)):
       if texture = "SAND" or texture == 1:
