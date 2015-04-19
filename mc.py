@@ -39,5 +39,5 @@ class World(main.Window):
     World.rotation = (xz, ra)
 
 def run(w):
-  if isinstance(w, (Window, World)):
+  if isinstance(w, (main.Window)):
     main.main(w)
