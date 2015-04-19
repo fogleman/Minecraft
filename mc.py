@@ -1,9 +1,9 @@
 import main
 
-main.main()
+#main.main()
 
-"""
-class World(Window):
+#"""
+class World(main.Window):
   
   def add_block(x, y, z, texture):
     t = x, y, z
@@ -41,4 +41,4 @@ class World(Window):
   
   def setRotation(xz, ra):
     World.rotation = (xz, ra)
-"""
+#"""
