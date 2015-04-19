@@ -1,5 +1,4 @@
 import main
-import pyglet
 
 class World(main.Window):
 
