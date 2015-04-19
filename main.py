@@ -889,6 +889,12 @@ def main():
     setup()
     pyglet.app.run()
 
+def main(window):
+    if isinstance (window, Window):
+        window.set_exclusive_mouse(True)
+        setup()
+        pyglet.app.run()
+
 
 if __name__ == '__main__':
     main()

@@ -1,10 +1,8 @@
 import main
+import pyglet
 
-#main.main()
-
-#"""
 class World(main.Window):
-  
+
   def add_block(x, y, z, texture):
     t = x, y, z
     textureToPass = texture
@@ -19,13 +17,11 @@ class World(main.Window):
         textureToPass = main.STONE
       else:
         textureToPass = main.GRASS
-    #if isinstance(texture, tuple):
-      #textureToPass = texture
     Model.add_block(t, textureToPass)
   
   def remove_block(x, y, z):
     t = x, y, z
-    Modle.remove_block(t)
+    Model.remove_block(t)
   
   def set_block(x, y, z, texture):
     add_block(x, y, z, texture)
@@ -41,4 +37,7 @@ class World(main.Window):
   
   def setRotation(xz, ra):
     World.rotation = (xz, ra)
-#"""
+
+def run(w):
+  if isinstance(w, (Window, World)):
+    main.main(w)
