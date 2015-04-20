@@ -42,4 +42,4 @@ class World(main.Window):
 
 def run(w):
   if isinstance(w, (main.Window)):
-    main.main(w)
+    main.mainWindow(w)
