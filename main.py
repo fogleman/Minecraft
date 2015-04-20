@@ -842,13 +842,6 @@ class Window(pyglet.window.Window):
         """
         glColor3d(0, 0, 0)
         self.reticle.draw(GL_LINES)
-        
-    def getModel(self):
-        """ Return the model obejct associated with the Window
-        
-        """
-        return self.model
-
 
 def setup_fog():
     """ Configure the OpenGL fog properties.
