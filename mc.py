@@ -1,6 +1,8 @@
 import main
 
 class World(main.Window):
+  
+  
 
   def add_block(x, y, z, texture):
     t = x, y, z
@@ -16,11 +18,11 @@ class World(main.Window):
         textureToPass = main.STONE
       else:
         textureToPass = main.GRASS
-    Model.add_block(t, textureToPass)
+    model.add_block(t, textureToPass)
   
   def remove_block(x, y, z):
     t = x, y, z
-    Model.remove_block(t)
+    model.remove_block(t)
   
   def set_block(x, y, z, texture):
     add_block(x, y, z, texture)
