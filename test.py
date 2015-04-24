@@ -1,4 +1,6 @@
 import mc
 
-world = mc.World()
-mc.run(world)
+mc.normal_world()
+
+#world = mc.World()
+#mc.run(world)
