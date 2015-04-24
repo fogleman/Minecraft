@@ -149,9 +149,6 @@ class Model(object):
 
         self._initialize()
 
-    def initialize(self):
-        self._initialize()
-
     def _initialize(self):
         """ Initialize the world by placing all the blocks.
 
