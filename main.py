@@ -930,7 +930,6 @@ def main_window(window):
         window.set_exclusive_mouse(True)
         setup()
         pyglet.app.run()
-        return window
 
 
 if __name__ == '__main__':
