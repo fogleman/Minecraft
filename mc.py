@@ -37,6 +37,4 @@ def run(world):
     main.main_window(world)
     
 def normal_world():
-  w = World()
-  main.main_window(w)
-  return w
+  main.main()
