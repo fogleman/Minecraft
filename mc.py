@@ -1,42 +1,35 @@
 import main
 
-class World(main.Window):
+class World (main.Window):
 
-  def add_block(x, y, z, texture):
-    t = x, y, z
-    textureToPass = texture
-    if isinstance(texture, (basestring, int, float, long)):
-      if isinstance(texture, basestring):
-        texture.upper()
+  def __init__(self):
+    main.Window.__init__(self, width=800, height=600, caption='Pyglet', resizable=True)
+  
+  def add_block(self, x, y, z, texture):
+    position = (x, y - 1, z)
+    if isinstance(texture, (str, int, float, long)):
+      if isinstance(texture, str):
+        texture = texture.upper()
       if texture == "SAND" or texture == 1:
-        textureToPass = main.SAND
+        texture = SAND
       elif texture == "BRICK" or texture == 2:
-        textureToPass = main.BRICK
+        texture = BRICK
       elif texture == "STONE" or texture == 3:
-        textureToPass = main.STONE
+        texture = STONE
       else:
-        textureToPass = main.GRASS
-    super.model.add_block(t, textureToPass)
+        texture = GRASS
+    self.model.add_block(position, texture)
   
-  def remove_block(x, y, z):
-    t = x, y, z
-    super.model.remove_block(t)
+  def remove_block(self, x, y, z):
+    position = (x, y - 1, z)
+    self.model.remove_block(position)
   
-  def set_block(x, y, z, texture):
-    add_block(x, y, z, texture)
-  
-  def setFlying(fly):
-    super.flying = fly
-  
-  #def setStrafe(forwardBack, leftRight):
-    #World.strafe = [forwardBack, leftRight]
-  
-  def setPosition(x, y, z):
-    super.position = (x, y, z)
-  
-  def setRotation(xz, ra):
-    super.rotation = (xz, ra)
+  def set_block(self, x, y, z, texture):
+    self.add_block(x, y, z, texture)
 
 def run(world):
-  if isinstance(world, (main.Window)):
-    main.mainWindow(world)
+  if isinstance(world, main.Window):
+    main.main_window(world)
+    
+def normal_world():
+  main.main()

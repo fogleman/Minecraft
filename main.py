@@ -430,6 +430,20 @@ class Window(pyglet.window.Window):
     def __init__(self, *args, **kwargs):
         super(Window, self).__init__(*args, **kwargs)
 
+        self.walking_speed = WALKING_SPEED
+
+        self.flying_speed = FLYING_SPEED
+
+        self.gravity = GRAVITY
+
+        self.max_jump_height = MAX_JUMP_HEIGHT
+
+        self.jump_speed = JUMP_SPEED
+
+        self.terminal_velocity = TERMINAL_VELOCITY
+
+        self.player_height = PLAYER_HEIGHT
+
         # Whether or not the window exclusively captures the mouse.
         self.exclusive = False
 
@@ -495,6 +509,29 @@ class Window(pyglet.window.Window):
         """
         super(Window, self).set_exclusive_mouse(exclusive)
         self.exclusive = exclusive
+        
+    def set_walking_speed(self, speed):
+      self.walking_speed = speed
+      
+    def set_flying_speed(self, speed):
+      self.flying_speed = speed
+
+    def set_gravity(self, g):
+      self.gravity = g
+      self.jump_speed = math.sqrt(2 * self.gravity * self.max_jump_height)
+
+    def set_max_jump_height(self, height):
+      self.max_jump_height = height
+      self.jump_speed = math.sqrt(2 * self.gravity * self.max_jump_height)
+
+    def set_jump_speed(self, speed):
+      self.jump_speed = speed
+
+    def set_terminal_velocity(self, velocity):
+      self.terminal_velocity = velocity
+
+    def set_player_height(self, height):
+      self.player_height = height
 
     def get_sight_vector(self):
         """ Returns the current line of sight vector indicating the direction
@@ -585,7 +622,7 @@ class Window(pyglet.window.Window):
 
         """
         # walking
-        speed = FLYING_SPEED if self.flying else WALKING_SPEED
+        speed = self.flying_speed if self.flying else self.walking_speed
         d = dt * speed # distance covered this tick.
         dx, dy, dz = self.get_motion_vector()
         # New position in space, before accounting for gravity.
@@ -595,12 +632,12 @@ class Window(pyglet.window.Window):
             # Update your vertical speed: if you are falling, speed up until you
             # hit terminal velocity; if you are jumping, slow down until you
             # start falling.
-            self.dy -= dt * GRAVITY
-            self.dy = max(self.dy, -TERMINAL_VELOCITY)
+            self.dy -= dt * self.gravity
+            self.dy = max(self.dy, -(self.terminal_velocity))
             dy += self.dy * dt
         # collisions
         x, y, z = self.position
-        x, y, z = self.collide((x + dx, y + dy, z + dz), PLAYER_HEIGHT)
+        x, y, z = self.collide((x + dx, y + dy, z + dz), self.player_height)
         self.position = (x, y, z)
 
     def collide(self, position, height):
@@ -722,7 +759,7 @@ class Window(pyglet.window.Window):
             self.strafe[1] += 1
         elif symbol == key.SPACE:
             if self.dy == 0:
-                self.dy = JUMP_SPEED
+                self.dy = self.jump_speed
         elif symbol == key.ESCAPE:
             self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
@@ -888,7 +925,7 @@ def main():
     setup()
     pyglet.app.run()
 
-def mainWindow(window):
+def main_window(window):
     if isinstance (window, Window):
         window.set_exclusive_mouse(True)
         setup()
