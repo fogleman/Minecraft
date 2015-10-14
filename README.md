@@ -29,7 +29,7 @@ use / configure to setup a world and run it. Something along these lines...
 
 The API could contain functionality for the following:
 
-- Easily configurable parameters like gravity, jump velocity, walking speed, etc. :white_check_mark:
+- Easily configurable parameters like gravity, jump velocity, walking speed, etc.
 - Hooks for terrain generation.
 
 ## How to Run
