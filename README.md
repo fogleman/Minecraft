@@ -28,9 +28,9 @@ The API could contain functionality for the following:
 
 ## How to Run
 
-    pip install pyglet
-    git clone https://github.com/fogleman/Minecraft.git
-    cd Minecraft
+    git clone https://github.com/ocarneiro/mine.py
+    cd mine.py
+    pip install -r requirements.txt
     python main.py
 
 ### Mac
