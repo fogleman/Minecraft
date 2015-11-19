@@ -10,3 +10,4 @@ Thinking about where to go next, I thought about building a detached world serve
 
 Dockercraft uses a FOSS (free and open source software) Minecraft-compatible server called [cuberite](http://cuberite.org/), so there's no need to reinvent the wheel here! How about plugin **mine.py** to cuberite? Let's see how it goes...
 
+Turns out there's a lot of existing clients [documented here](http://wiki.vg/Client_List). It seems reasonable to use one of them to connect cuberite and mine.py.
