@@ -6,17 +6,13 @@ This software connects to servers such as [cuberite](http://cuberite.org/) to pr
 
 This is the proposed architecture:
 
-   Server (like cuberite)
-          |
-          |
-   Middleware (like SpockBot)
-          |
-          |
+   Server (like cuberite)  
+         |  
+         |  
+   Middleware (like SpockBot)  
+         |  
+         |  
     mine.py (this software)
-
-Simple Minecraft-inspired demo written in Python and Pyglet.
-
-http://www.youtube.com/watch?v=kC3lwK631X8
 
 ## Roadmap
 
