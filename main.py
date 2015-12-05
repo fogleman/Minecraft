@@ -95,6 +95,7 @@ class Model(object):
         self.initialize()
 
     def initialize(self):
+        """ Creates random world model """
         n = 80
         s = 1
         y = 0
@@ -273,6 +274,7 @@ class Model(object):
 
 
 class Window(pyglet.window.Window):
+    """ Overwrites pyglet Window object with a custom version """
 
     def __init__(self, *args, **kwargs):
         super(Window, self).__init__(*args, **kwargs)
@@ -289,6 +291,7 @@ class Window(pyglet.window.Window):
         self.num_keys = [
             key._1, key._2, key._3, key._4, key._5,
             key._6, key._7, key._8, key._9, key._0]
+        # creates world model and makes initial setup
         self.model = Model()
         self.label = pyglet.text.Label('', font_name='Arial',
                                        font_size=18, x=10,
@@ -542,7 +545,7 @@ def setup():
 
 
 def main():
-    window = Window(width=800, height=600, caption='Pyglet', resizable=True)
+    window = Window(width=800, height=600, caption='mine.py', resizable=True)
     window.set_exclusive_mouse(True)
     setup()
     pyglet.app.run()
