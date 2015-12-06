@@ -2,6 +2,9 @@
 
 texture_positions_map = {}
 texture_positions_map['grass'] = ((1, 0), (0, 1), (0, 0))
+texture_positions_map['sand'] = ((1, 1), (1, 1), (1, 1))
+texture_positions_map['brick'] = ((2, 0), (2, 0), (2, 0))
+texture_positions_map['stone'] = ((2, 1), (2, 1), (2, 1))
 
 
 class Block:
@@ -29,3 +32,6 @@ class Block:
 
 
 GRASS = Block('grass')
+BRICK = Block('brick')
+SAND = Block('sand')
+STONE = Block('stone')
