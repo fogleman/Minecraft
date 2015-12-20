@@ -16,8 +16,8 @@ This is the proposed architecture:
 
 ## Roadmap
 
-    - version 0.1.0 - commented, Python3, PEP8'd, working fork of fogleman's
-    - version 0.1.1 - objected-oriented blocks definition (refactor)
+    - version 0.1.0 - commented, Python3, PEP8'd, working fork of fogleman's (done!)
+    - version 0.1.1 - objected-oriented blocks definition (refactor)  (done!)
     - version 0.1.2 - replace unittest with pytest
     - version 0.2.0 - reorganize code into classes (Block, World, Player...)
     - version 0.3.0 - connection to a server
