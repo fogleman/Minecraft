@@ -65,17 +65,19 @@ class Model(object):
 
     def initialize(self):
         """ Creates random world model """
-        n = 80
-        s = 1
+        n = 80  # half the width of the world
+        s = 1   # step for world generation
         y = 0
+        # creates a base of stone with grass over it
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
                 self.init_block((x, y - 2, z), GRASS)
                 self.init_block((x, y - 3, z), STONE)
+                # creates a wall on the edges of the world
                 if x in (-n, n) or z in (-n, n):
                     for dy in xrange(-2, 3):
                         self.init_block((x, y + dy, z), STONE)
-        o = n - 10
+        o = n - 10  # o = half the width for hills to appear
         for _ in xrange(120):
             a = random.randint(-o, o)
             b = random.randint(-o, o)
@@ -83,7 +85,9 @@ class Model(object):
             h = random.randint(1, 6)
             s = random.randint(4, 8)
             d = 1
+            # t = type of block
             t = random.choice([GRASS, SAND, BRICK])
+            # generates hills from random block
             for y in xrange(c, c + h):
                 for x in xrange(a - s, a + s + 1):
                     for z in xrange(b - s, b + s + 1):
