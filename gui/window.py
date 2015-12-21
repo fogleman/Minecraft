@@ -4,7 +4,7 @@ import sys
 import random
 import math
 import time
-import block
+import world.block as block
 
 # Python3 = uses range instead of range
 if sys.version_info[0] >= 3:
@@ -55,7 +55,7 @@ class Model(object):
 
     def __init__(self):
         self.batch = pyglet.graphics.Batch()
-        self.group = TextureGroup('texture.png')
+        self.group = TextureGroup('gui/texture.png')
         self.world = {}
         self.shown = {}
         self._shown = {}
