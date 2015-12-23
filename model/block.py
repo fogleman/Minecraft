@@ -8,6 +8,9 @@ texture_positions_map['stone'] = ((2, 1), (2, 1), (2, 1))
 
 
 class Block:
+    """ Represents a block made of one out of different materials available.
+    This class should contain info to be used by different renderers.
+    As it is now, it has texture information only used by the gui version. """
 
     def __init__(self, madeof='grass'):
         self.madeof = madeof

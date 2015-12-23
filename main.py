@@ -1,8 +1,8 @@
 from __future__ import division
 from pyglet.gl import *
-# from pyglet.window import key
 import sys
 from gui.window import Window, Model
+from model.world import World
 
 # Python3 = uses range instead of range
 if sys.version_info[0] >= 3:
@@ -28,6 +28,7 @@ def setup():
 
 
 def main():
+    world = World()
     window = Window(width=800, height=600, caption='mine.py',
                     resizable=True)
     window.set_exclusive_mouse(True)

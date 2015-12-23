@@ -4,7 +4,7 @@ import sys
 import random
 import math
 import time
-import world.block as block
+import model.block as block
 
 # Python3 = uses range instead of range
 if sys.version_info[0] >= 3:

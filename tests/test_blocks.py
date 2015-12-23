@@ -1,7 +1,7 @@
 import unittest
 
-from world.block import Block
-import world.block as block
+from model.block import Block
+import model.block as block
 
 
 class BlockTest(unittest.TestCase):
