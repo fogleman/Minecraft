@@ -4,7 +4,7 @@ import sys
 from gui.window import Window, Model
 from model.world import World
 
-# Python3 = uses range instead of range
+# Python3 = uses range instead of xrange
 if sys.version_info[0] >= 3:
     xrange = range
 
@@ -30,7 +30,7 @@ def setup():
 def main():
     world = World()
     window = Window(width=800, height=600, caption='mine.py',
-                    resizable=True)
+                    resizable=True, world=world)
     window.set_exclusive_mouse(True)
     setup()
     pyglet.app.run()

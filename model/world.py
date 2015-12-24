@@ -1,2 +1,4 @@
 class World:
-    pass
+
+    def __init__(self):
+        self.model = {}

@@ -13,10 +13,10 @@ if sys.version_info[0] >= 3:
 
 SECTOR_SIZE = 16
 
-GRASS = BlockTexture(block.GRASS).texture  # tex_coords((1, 0), (0, 1), (0, 0))
-SAND = BlockTexture(block.SAND).texture  # tex_coords((1, 1), (1, 1), (1, 1))
-BRICK = BlockTexture(block.BRICK).texture  # tex_coords((2, 0), (2, 0), (2, 0))
-STONE = BlockTexture(block.STONE).texture  # tex_coords((2, 1), (2, 1), (2, 1))
+GRASS = BlockTexture(block.GRASS).texture
+SAND = BlockTexture(block.SAND).texture
+BRICK = BlockTexture(block.BRICK).texture
+STONE = BlockTexture(block.STONE).texture
 
 
 def cube_vertices(x, y, z, n):
@@ -54,10 +54,10 @@ def sectorize(position):
 
 class Model(object):
 
-    def __init__(self):
+    def __init__(self, world):
         self.batch = pyglet.graphics.Batch()
         self.group = TextureGroup('gui/texture.png')
-        self.world = {}
+        self.world = world.model
         self.shown = {}
         self._shown = {}
         self.sectors = {}
@@ -264,7 +264,7 @@ class TextureGroup(pyglet.graphics.Group):
 class Window(pyglet.window.Window):
     """ Overwrites pyglet Window object with a custom version """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, world, *args, **kwargs):
         super(Window, self).__init__(*args, **kwargs)
         self.exclusive = False
         self.flying = False
@@ -280,7 +280,7 @@ class Window(pyglet.window.Window):
             key._1, key._2, key._3, key._4, key._5,
             key._6, key._7, key._8, key._9, key._0]
         # creates world model and makes initial setup
-        self.model = Model()
+        self.model = Model(world)
         self.label = pyglet.text.Label('', font_name='Arial',
                                        font_size=18, x=10,
                                        y=self.height - 10,
