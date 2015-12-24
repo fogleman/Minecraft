@@ -19,7 +19,7 @@ def setup_fog():
     glFogf(GL_FOG_END, 60.0)
 
 
-def setup():
+def setup():  # TODO move it to a GUI specific module/class
     glClearColor(0.5, 0.69, 1.0, 1)
     glEnable(GL_CULL_FACE)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)

@@ -57,7 +57,7 @@ class Model(object):
     def __init__(self, world):
         self.batch = pyglet.graphics.Batch()
         self.group = TextureGroup('gui/texture.png')
-        self.world = world.model
+        self.world = world
         self.shown = {}
         self._shown = {}
         self.sectors = {}
@@ -65,9 +65,13 @@ class Model(object):
         self.initialize()
 
     def initialize(self):
+        self.generate_floor()
+        self.generate_hills()
+
+    def generate_floor(self):
         """ Creates random world model """
-        n = 80  # half the width of the world
-        s = 1   # step for world generation
+        n = int(self.world.size/2)
+        s = 1  # step for world generation
         y = 0
         # creates a base of stone with grass over it
         for x in xrange(-n, n + 1, s):
@@ -78,6 +82,9 @@ class Model(object):
                 if x in (-n, n) or z in (-n, n):
                     for dy in xrange(-2, 3):
                         self.init_block((x, y + dy, z), STONE)
+
+    def generate_hills(self):
+        n = int(self.world.size/2)
         o = n - 10  # o = half the width for hills to appear
         for _ in xrange(120):
             a = random.randint(-o, o)
@@ -106,7 +113,7 @@ class Model(object):
         previous = None
         for _ in xrange(max_distance * m):
             key = normalize((x, y, z))
-            if key != previous and key in self.world:
+            if key != previous and key in self.world.model:
                 return key, previous
             previous = key
             x, y, z = x + dx / m, y + dy / m, z + dz / m
@@ -115,7 +122,7 @@ class Model(object):
     def exposed(self, position):
         x, y, z = position
         for dx, dy, dz in FACES:
-            if (x + dx, y + dy, z + dz) not in self.world:
+            if (x + dx, y + dy, z + dz) not in self.world.model:
                 return True
         return False
 
@@ -123,9 +130,9 @@ class Model(object):
         self.add_block(position, texture, False)
 
     def add_block(self, position, texture, sync=True):
-        if position in self.world:
+        if position in self.world.model:
             self.remove_block(position, sync)
-        self.world[position] = texture
+        self.world.model[position] = texture
         self.sectors.setdefault(sectorize(position), []).append(position)
         if sync:
             if self.exposed(position):
@@ -133,7 +140,7 @@ class Model(object):
             self.check_neighbors(position)
 
     def remove_block(self, position, sync=True):
-        del self.world[position]
+        del self.world.model[position]
         self.sectors[sectorize(position)].remove(position)
         if sync:
             if position in self.shown:
@@ -144,7 +151,7 @@ class Model(object):
         x, y, z = position
         for dx, dy, dz in FACES:
             key = (x + dx, y + dy, z + dz)
-            if key not in self.world:
+            if key not in self.world.model:
                 continue
             if self.exposed(key):
                 if key not in self.shown:
@@ -154,12 +161,12 @@ class Model(object):
                     self.hide_block(key)
 
     def show_blocks(self):
-        for position in self.world:
+        for position in self.world.model:
             if position not in self.shown and self.exposed(position):
                 self.show_block(position)
 
     def show_block(self, position, immediate=True):
-        texture = self.world[position]
+        texture = self.world.model[position]
         self.shown[position] = texture
         if immediate:
             self._show_block(position, texture)
@@ -370,7 +377,7 @@ class Window(pyglet.window.Window):
                     op[1] -= dy
                     op[i] += face[i]
                     op = tuple(op)
-                    if op not in self.model.world:
+                    if op not in self.model.world.model:
                         continue
                     p[i] -= (d - pad) * face[i]
                     if face == (0, -1, 0) or face == (0, 1, 0):
@@ -391,7 +398,7 @@ class Window(pyglet.window.Window):
             block, previous = self.model.hit_test(self.position, vector)
             if button == pyglet.window.mouse.LEFT:
                 if block:
-                    texture = self.model.world[block]
+                    texture = self.model.world.model[block]
                     if texture != STONE:
                         self.model.remove_block(block)
             else:
@@ -506,7 +513,7 @@ class Window(pyglet.window.Window):
         x, y, z = self.position
         self.label.text = '%02d (%.2f, %.2f, %.2f) %d / %d' % (
             pyglet.clock.get_fps(), x, y, z,
-            len(self.model._shown), len(self.model.world))
+            len(self.model._shown), len(self.model.world.model))
         self.label.draw()
 
     def draw_reticle(self):
