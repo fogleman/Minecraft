@@ -3,6 +3,7 @@ from pyglet.gl import *
 import sys
 from gui.window import Window, Model
 from model.world import World
+from txtui import txtmap
 
 # Python3 = uses range instead of xrange
 if sys.version_info[0] >= 3:
@@ -37,3 +38,4 @@ def main(world):
 if __name__ == '__main__':
     world = World()
     main(world)
+    txtmap.draw_line(world)
