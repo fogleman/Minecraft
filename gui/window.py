@@ -13,10 +13,10 @@ if sys.version_info[0] >= 3:
 
 SECTOR_SIZE = 16
 
-GRASS = BlockTexture(block.GRASS).texture
-SAND = BlockTexture(block.SAND).texture
-BRICK = BlockTexture(block.BRICK).texture
-STONE = BlockTexture(block.STONE).texture
+GRASS = block.GRASS
+SAND = block.SAND
+BRICK = block.BRICK
+STONE = block.STONE
 
 
 def cube_vertices(x, y, z, n):
@@ -128,13 +128,13 @@ class Model(object):
                 return True
         return False
 
-    def init_block(self, position, texture):
-        self.add_block(position, texture, False)
+    def init_block(self, position, block_type):
+        self.add_block(position, block_type, False)
 
-    def add_block(self, position, texture, sync=True):
+    def add_block(self, position, block_type, sync=True):
         if position in self.world.model:
             self.remove_block(position, sync)
-        self.world.model[position] = texture
+        self.world.model[position] = block_type
         self.sectors.setdefault(sectorize(position), []).append(position)
         if sync:
             if self.exposed(position):
@@ -168,7 +168,7 @@ class Model(object):
                 self.show_block(position)
 
     def show_block(self, position, immediate=True):
-        texture = self.world.model[position]
+        texture = BlockTexture(self.world.model[position]).texture
         self.shown[position] = texture
         if immediate:
             self._show_block(position, texture)

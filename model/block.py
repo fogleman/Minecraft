@@ -1,5 +1,4 @@
-""" A block with texture """
-
+""" Basic unit of the game. Cube of 1x1x1 """
 inventory = {}
 inventory['grass'] = 2
 inventory['sand'] = 2
