@@ -14,6 +14,8 @@ class Block:
         self.type_num = inventory[madeof]
         self.madeof = madeof
 
+    def __repr__(self):
+        return self.madeof
 
 GRASS = Block('grass')
 BRICK = Block('brick')
