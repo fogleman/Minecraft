@@ -120,6 +120,8 @@ class Model(object):
         return None, None
 
     def exposed(self, position):
+        """ If there's no block next to the faces of this one,
+        then it's exposed """
         x, y, z = position
         for dx, dy, dz in FACES:
             if (x + dx, y + dy, z + dz) not in self.world.model:
