@@ -27,8 +27,7 @@ def setup():  # TODO move it to a GUI specific module/class
     setup_fog()
 
 
-def main():
-    world = World()
+def main(world):
     window = Window(width=800, height=600, caption='mine.py',
                     resizable=True, world=world)
     window.set_exclusive_mouse(True)
@@ -36,4 +35,5 @@ def main():
     pyglet.app.run()
 
 if __name__ == '__main__':
-    main()
+    world = World()
+    main(world)
