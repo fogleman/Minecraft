@@ -4,7 +4,7 @@
 
 A python implementation from scratch of the popular infinite world game Minecraft. (Work in progress)
 
-This is a long endeavor that already was forked more than 600 times in [various direction](https://github.com/fogleman/Minecraft/network).
+This is a long endeavor that already was forked more than 600 times in [many different directions](https://github.com/fogleman/Minecraft/network).
 
 ## My take on it
 
