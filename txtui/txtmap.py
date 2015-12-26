@@ -1,14 +1,11 @@
 """ Draws an ascii version of the map"""
 
 
-def draw_line(world):
-    y = 0  # on the floor
-    x = 0  # center x
-    z = 0  # center z
+def draw(world, y = -1, x = 0, z = 0):
 
-    for v in range(-10, 10):
+    for v in range(-10 + z, 10 + z):
         line = ''
-        for h in range(-20, 20):
+        for h in range(-20 + x, 20 + x):
             key = (h, y, v)
             if key in world.model.keys():
                 block = world.model[key]

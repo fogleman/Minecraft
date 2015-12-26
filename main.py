@@ -38,4 +38,4 @@ def main(world):
 if __name__ == '__main__':
     world = World()
     main(world)
-    txtmap.draw_line(world)
+    # txtmap.draw(world)
