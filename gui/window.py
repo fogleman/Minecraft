@@ -5,6 +5,7 @@ import random
 import math
 import time
 import model.block as block
+from model.block import GRASS, SAND, BRICK, STONE
 from gui.texture import BlockTexture, TextureGroup
 
 # Python3 = uses range instead of range
@@ -12,11 +13,6 @@ if sys.version_info[0] >= 3:
     xrange = range
 
 SECTOR_SIZE = 16
-
-GRASS = block.GRASS
-SAND = block.SAND
-BRICK = block.BRICK
-STONE = block.STONE
 
 
 def cube_vertices(x, y, z, n):
