@@ -5,7 +5,7 @@ import random
 import math
 import time
 import model.block as block
-from gui.texture import BlockTexture
+from gui.texture import BlockTexture, TextureGroup
 
 # Python3 = uses range instead of range
 if sys.version_info[0] >= 3:
@@ -254,20 +254,6 @@ class Model(object):
     def process_entire_queue(self):
         while self.queue:
             self.dequeue()
-
-
-class TextureGroup(pyglet.graphics.Group):
-
-    def __init__(self, path):
-        super(TextureGroup, self).__init__()
-        self.texture = pyglet.image.load(path).get_texture()
-
-    def set_state(self):
-        glEnable(self.texture.target)
-        glBindTexture(self.texture.target, self.texture.id)
-
-    def unset_state(self):
-        glDisable(self.texture.target)
 
 
 class Window(pyglet.window.Window):

@@ -1,5 +1,7 @@
 """ Texture for gui rendering """
 
+from pyglet.gl import *
+
 texture_positions_map = {}
 texture_positions_map['grass'] = ((1, 0), (0, 1), (0, 0))
 texture_positions_map['sand'] = ((1, 1), (1, 1), (1, 1))
@@ -29,3 +31,17 @@ class BlockTexture:
         result.extend(bottom)
         result.extend(side * 4)
         return result
+
+
+class TextureGroup(pyglet.graphics.Group):
+
+    def __init__(self, path):
+        super(TextureGroup, self).__init__()
+        self.texture = pyglet.image.load(path).get_texture()
+
+    def set_state(self):
+        glEnable(self.texture.target)
+        glBindTexture(self.texture.target, self.texture.id)
+
+    def unset_state(self):
+        glDisable(self.texture.target)
