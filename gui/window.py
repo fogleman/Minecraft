@@ -65,11 +65,10 @@ class Model(object):
         self.generate_hills()
 
     def generate_floor(self):
-        """ Creates random world model """
+        """ creates a base of stone with grass over it """
         n = int(self.world.size/2)
         s = 1  # step for world generation
         y = 0
-        # creates a base of stone with grass over it
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
                 self.init_block((x, y - 2, z), GRASS)
@@ -80,6 +79,7 @@ class Model(object):
                         self.init_block((x, y + dy, z), STONE)
 
     def generate_hills(self):
+        """ creates random portions of different materials """
         n = int(self.world.size/2)
         o = n - 10  # o = half the width for hills to appear
         for _ in xrange(120):
@@ -103,6 +103,20 @@ class Model(object):
                 s -= d
 
     def hit_test(self, position, vector, max_distance=8):
+        """ Line of sight search from current position. If a block is
+        intersected it is returned, along with the block previously in the line
+        of sight. If no block is found, return None, None.
+
+        Parameters
+        ----------
+        position : tuple of len 3
+            The (x, y, z) position to check visibility from.
+        vector : tuple of len 3
+            The line of sight vector.
+        max_distance : int
+            How many blocks away to search for a hit.
+
+        """
         m = 8
         x, y, z = position
         dx, dy, dz = vector
@@ -258,9 +272,15 @@ class Window(pyglet.window.Window):
     def __init__(self, world, *args, **kwargs):
         super(Window, self).__init__(*args, **kwargs)
         self.exclusive = False
+
+        # When flying gravity has no effect and speed is increased.
         self.flying = False
         self.strafe = [0, 0]
+
+        # Current (x, y, z) position in the world, specified with floats. Note
+        # that, perhaps unlike in math class, the y-axis is the vertical axis.
         self.position = (0, 0, 0)
+
         self.rotation = (0, 0)
         self.sector = None
         self.reticle = None
@@ -284,6 +304,9 @@ class Window(pyglet.window.Window):
         self.exclusive = exclusive
 
     def get_sight_vector(self):
+        """ Returns the current line of sight vector indicating the direction
+        the player is looking.
+        """
         x, y = self.rotation
         m = math.cos(math.radians(y))
         dy = math.sin(math.radians(y))
@@ -483,6 +506,9 @@ class Window(pyglet.window.Window):
         self.draw_reticle()
 
     def draw_focused_block(self):
+        """ Draw black edges around the block that is currently under the
+        crosshairs.
+        """
         vector = self.get_sight_vector()
         block = self.model.hit_test(self.position, vector)[0]
         if block:

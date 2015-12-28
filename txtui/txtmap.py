@@ -1,7 +1,7 @@
 """ Draws an ascii version of the map"""
 
 
-def draw(world, y = -1, x = 0, z = 0):
+def draw(world, y=-1, x=0, z=0):
 
     for v in range(-10 + z, 10 + z):
         line = ''
