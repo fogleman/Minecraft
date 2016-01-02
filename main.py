@@ -1,21 +1,14 @@
-import sys
-import random
 import math
+import random
 import time
-import model.block as block
-from model.block import GRASS, SAND, BRICK, STONE
-from gui.texture import BlockTexture
+
 from collections import deque
 from pyglet import image
 from pyglet.gl import *
 from pyglet.graphics import TextureGroup
 from pyglet.window import key, mouse
 
-# Python3 = uses range instead of range
-if sys.version_info[0] >= 3:
-    xrange = range
-
-TEXTURE_PATH = 'gui/texture.png'
+from past.builtins import xrange  # Python3
 
 TICKS_PER_SEC = 60
 
@@ -44,22 +37,53 @@ def cube_vertices(x, y, z, n):
 
     """
     return [
-        x-n, y+n, z-n, x-n, y+n, z+n, x+n, y+n, z+n, x+n, y+n, z-n,  # top
-        x-n, y-n, z-n, x+n, y-n, z-n, x+n, y-n, z+n, x-n, y-n, z+n,  # bottom
-        x-n, y-n, z-n, x-n, y-n, z+n, x-n, y+n, z+n, x-n, y+n, z-n,  # left
-        x+n, y-n, z+n, x+n, y-n, z-n, x+n, y+n, z-n, x+n, y+n, z+n,  # right
-        x-n, y-n, z+n, x+n, y-n, z+n, x+n, y+n, z+n, x-n, y+n, z+n,  # front
-        x+n, y-n, z-n, x-n, y-n, z-n, x-n, y+n, z-n, x+n, y+n, z-n,  # back
+        x-n,y+n,z-n, x-n,y+n,z+n, x+n,y+n,z+n, x+n,y+n,z-n,  # top
+        x-n,y-n,z-n, x+n,y-n,z-n, x+n,y-n,z+n, x-n,y-n,z+n,  # bottom
+        x-n,y-n,z-n, x-n,y-n,z+n, x-n,y+n,z+n, x-n,y+n,z-n,  # left
+        x+n,y-n,z+n, x+n,y-n,z-n, x+n,y+n,z-n, x+n,y+n,z+n,  # right
+        x-n,y-n,z+n, x+n,y-n,z+n, x+n,y+n,z+n, x-n,y+n,z+n,  # front
+        x+n,y-n,z-n, x-n,y-n,z-n, x-n,y+n,z-n, x+n,y+n,z-n,  # back
     ]
 
 
+def tex_coord(x, y, n=4):
+    """ Return the bounding vertices of the texture square.
+
+    """
+    m = 1.0 / n
+    dx = x * m
+    dy = y * m
+    return dx, dy, dx + m, dy, dx + m, dy + m, dx, dy + m
+
+
+def tex_coords(top, bottom, side):
+    """ Return a list of the texture squares for the top, bottom and side.
+
+    """
+    top = tex_coord(*top)
+    bottom = tex_coord(*bottom)
+    side = tex_coord(*side)
+    result = []
+    result.extend(top)
+    result.extend(bottom)
+    result.extend(side * 4)
+    return result
+
+
+TEXTURE_PATH = 'gui/texture.png'
+
+GRASS = tex_coords((1, 0), (0, 1), (0, 0))
+SAND = tex_coords((1, 1), (1, 1), (1, 1))
+BRICK = tex_coords((2, 0), (2, 0), (2, 0))
+STONE = tex_coords((2, 1), (2, 1), (2, 1))
+
 FACES = [
-    (0, 1, 0),
-    (0, -1, 0),
+    ( 0, 1, 0),
+    ( 0,-1, 0),
     (-1, 0, 0),
-    (1, 0, 0),
-    (0, 0, 1),
-    (0, 0, -1),
+    ( 1, 0, 0),
+    ( 0, 0, 1),
+    ( 0, 0,-1),
 ]
 
 
@@ -100,7 +124,7 @@ def sectorize(position):
 
 class Model(object):
 
-    def __init__(self, world):
+    def __init__(self):
 
         # A Batch is a collection of vertex lists for batched rendering.
         self.batch = pyglet.graphics.Batch()
@@ -110,7 +134,7 @@ class Model(object):
 
         # A mapping from position to the texture of the block at that position.
         # This defines all the blocks that are currently in the world.
-        self.world = world
+        self.world = {}
 
         # Same mapping as `world` but only contains blocks that are shown.
         self.shown = {}
@@ -125,33 +149,27 @@ class Model(object):
         # _show_block() and _hide_block() calls
         self.queue = deque()
 
-        self.initialize()
+        self._initialize()
 
-    def initialize(self):
-        self.generate_floor()
-        self.generate_hills()
+    def _initialize(self):
+        """ Initialize the world by placing all the blocks.
 
-    def generate_floor(self):
-        """ creates a base of stone with grass over it """
-        n = int(self.world.size/2)
-        s = 1  # step for world generation
+        """
+        n = 80  # 1/2 width and height of world
+        s = 1  # step size
         y = 0  # initial y height
-
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
-                self.init_block((x, y - 2, z), GRASS)
-                self.init_block((x, y - 3, z), STONE)
-                # creates a wall on the edges of the world
+                # create a layer stone an grass everywhere.
+                self.add_block((x, y - 2, z), GRASS, immediate=False)
+                self.add_block((x, y - 3, z), STONE, immediate=False)
                 if x in (-n, n) or z in (-n, n):
                     # create outer walls.
                     for dy in xrange(-2, 3):
-                        self.init_block((x, y + dy, z), STONE)
+                        self.add_block((x, y + dy, z), STONE, immediate=False)
 
-    def generate_hills(self):
-        """ creates random portions of different materials """
-        n = int(self.world.size/2)
-        o = n - 10  # o = half the width for hills to appear
         # generate the hills randomly
+        o = n - 10
         for _ in xrange(120):
             a = random.randint(-o, o)  # x position of the hill
             b = random.randint(-o, o)  # z position of the hill
@@ -160,7 +178,6 @@ class Model(object):
             s = random.randint(4, 8)  # 2 * s is the side length of the hill
             d = 1  # how quickly to taper off the hills
             t = random.choice([GRASS, SAND, BRICK])
-            # generates hills from random block
             for y in xrange(c, c + h):
                 for x in xrange(a - s, a + s + 1):
                     for z in xrange(b - s, b + s + 1):
@@ -168,7 +185,7 @@ class Model(object):
                             continue
                         if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
                             continue
-                        self.init_block((x, y, z), t)
+                        self.add_block((x, y, z), t, immediate=False)
                 s -= d  # decrement side lenth so hills taper off
 
     def hit_test(self, position, vector, max_distance=8):
@@ -192,7 +209,7 @@ class Model(object):
         previous = None
         for _ in xrange(max_distance * m):
             key = normalize((x, y, z))
-            if key != previous and key in self.world.model:
+            if key != previous and key in self.world:
                 return key, previous
             previous = key
             x, y, z = x + dx / m, y + dy / m, z + dz / m
@@ -205,29 +222,27 @@ class Model(object):
         """
         x, y, z = position
         for dx, dy, dz in FACES:
-            if (x + dx, y + dy, z + dz) not in self.world.model:
+            if (x + dx, y + dy, z + dz) not in self.world:
                 return True
         return False
 
-    def init_block(self, position, block_type):
-        self.add_block(position, block_type, False)
-
-    def add_block(self, position, block_type, immediate=True):
-        """ Add a block of the given `block_type` in `position` of the world.
+    def add_block(self, position, texture, immediate=True):
+        """ Add a block with the given `texture` and `position` to the world.
 
         Parameters
         ----------
         position : tuple of len 3
             The (x, y, z) position of the block to add.
-        block_type : as defined in the Block class
+        texture : list of len 3
+            The coordinates of the texture squares. Use `tex_coords()` to
+            generate.
         immediate : bool
             Whether or not to draw the block immediately.
 
         """
-        if position in self.world.model:
+        if position in self.world:
             self.remove_block(position, immediate)
-        self.world.model[position] = block_type
-        
+        self.world[position] = texture
         self.sectors.setdefault(sectorize(position), []).append(position)
         if immediate:
             if self.exposed(position):
@@ -245,7 +260,7 @@ class Model(object):
             Whether or not to immediately remove block from canvas.
 
         """
-        del self.world.model[position]
+        del self.world[position]
         self.sectors[sectorize(position)].remove(position)
         if immediate:
             if position in self.shown:
@@ -262,7 +277,7 @@ class Model(object):
         x, y, z = position
         for dx, dy, dz in FACES:
             key = (x + dx, y + dy, z + dz)
-            if key not in self.world.model:
+            if key not in self.world:
                 continue
             if self.exposed(key):
                 if key not in self.shown:
@@ -283,12 +298,12 @@ class Model(object):
             Whether or not to show the block immediately.
 
         """
-        texture = BlockTexture(self.world.model[position]).texture
+        texture = self.world[position]
         self.shown[position] = texture
         if immediate:
             self._show_block(position, texture)
         else:
-           self._enqueue(self._show_block, position, texture)
+            self._enqueue(self._show_block, position, texture)
 
     def _show_block(self, position, texture):
         """ Private implementation of the `show_block()` method.
@@ -305,7 +320,7 @@ class Model(object):
         x, y, z = position
         vertex_data = cube_vertices(x, y, z, 0.5)
         texture_data = list(texture)
-       # create vertex list
+        # create vertex list
         # FIXME Maybe `add_indexed()` should be used instead
         self._shown[position] = self.batch.add(24, GL_QUADS, self.group,
             ('v3f/static', vertex_data),
@@ -412,10 +427,9 @@ class Model(object):
             self._dequeue()
 
 
-
 class Window(pyglet.window.Window):
-    """ Overwrites pyglet Window object with a custom version """
-    def __init__(self, world, *args, **kwargs):
+
+    def __init__(self, *args, **kwargs):
         super(Window, self).__init__(*args, **kwargs)
 
         # Whether or not the window exclusively captures the mouse.
@@ -463,8 +477,9 @@ class Window(pyglet.window.Window):
         self.num_keys = [
             key._1, key._2, key._3, key._4, key._5,
             key._6, key._7, key._8, key._9, key._0]
-        # creates world model and makes initial setup
-        self.model = Model(world)
+
+        # Instance of the model that handles the world.
+        self.model = Model()
 
         # The label that is displayed in the top left of the canvas.
         self.label = pyglet.text.Label('', font_name='Arial', font_size=18,
@@ -486,6 +501,7 @@ class Window(pyglet.window.Window):
     def get_sight_vector(self):
         """ Returns the current line of sight vector indicating the direction
         the player is looking.
+
         """
         x, y = self.rotation
         # y ranges from -90 to 90, or -pi/2 to pi/2, so m ranges from 0 to 1 and
@@ -625,7 +641,7 @@ class Window(pyglet.window.Window):
                     op = list(np)
                     op[1] -= dy
                     op[i] += face[i]
-                    if tuple(op) not in self.model.world.model:
+                    if tuple(op) not in self.model.world:
                         continue
                     p[i] -= (d - pad) * face[i]
                     if face == (0, -1, 0) or face == (0, 1, 0):
@@ -661,7 +677,7 @@ class Window(pyglet.window.Window):
                 if previous:
                     self.model.add_block(previous, self.block)
             elif button == pyglet.window.mouse.LEFT and block:
-                texture = self.model.world.model[block]
+                texture = self.model.world[block]
                 if texture != STONE:
                     self.model.remove_block(block)
         else:
@@ -775,7 +791,7 @@ class Window(pyglet.window.Window):
         glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        gluPerspective(65.0, width / float(height), 0.1, 60.0)
+        gluPerspective(65.0, width // float(height), 0.1, 60.0)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         x, y = self.rotation
@@ -800,6 +816,7 @@ class Window(pyglet.window.Window):
     def draw_focused_block(self):
         """ Draw black edges around the block that is currently under the
         crosshairs.
+
         """
         vector = self.get_sight_vector()
         block = self.model.hit_test(self.position, vector)[0]
@@ -818,7 +835,7 @@ class Window(pyglet.window.Window):
         x, y, z = self.position
         self.label.text = '%02d (%.2f, %.2f, %.2f) %d / %d' % (
             pyglet.clock.get_fps(), x, y, z,
-            len(self.model._shown), len(self.model.world.model))
+            len(self.model._shown), len(self.model.world))
         self.label.draw()
 
     def draw_reticle(self):
@@ -827,3 +844,53 @@ class Window(pyglet.window.Window):
         """
         glColor3d(0, 0, 0)
         self.reticle.draw(GL_LINES)
+
+
+def setup_fog():
+    """ Configure the OpenGL fog properties.
+
+    """
+    # Enable fog. Fog "blends a fog color with each rasterized pixel fragment's
+    # post-texturing color."
+    glEnable(GL_FOG)
+    # Set the fog color.
+    glFogfv(GL_FOG_COLOR, (GLfloat * 4)(0.5, 0.69, 1.0, 1))
+    # Say we have no preference between rendering speed and quality.
+    glHint(GL_FOG_HINT, GL_DONT_CARE)
+    # Specify the equation used to compute the blending factor.
+    glFogi(GL_FOG_MODE, GL_LINEAR)
+    # How close and far away fog starts and ends. The closer the start and end,
+    # the denser the fog in the fog range.
+    glFogf(GL_FOG_START, 20.0)
+    glFogf(GL_FOG_END, 60.0)
+
+
+def setup():
+    """ Basic OpenGL configuration.
+
+    """
+    # Set the color of "clear", i.e. the sky, in rgba.
+    glClearColor(0.5, 0.69, 1.0, 1)
+    # Enable culling (not rendering) of back-facing facets -- facets that aren't
+    # visible to you.
+    glEnable(GL_CULL_FACE)
+    # Set the texture minification/magnification function to GL_NEAREST (nearest
+    # in Manhattan distance) to the specified texture coordinates. GL_NEAREST
+    # "is generally faster than GL_LINEAR, but it can produce textured images
+    # with sharper edges because the transition between texture elements is not
+    # as smooth."
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+    setup_fog()
+
+
+def main():
+    window = Window(width=800, height=600, caption='Pyglet', resizable=True)
+    # Hide the mouse cursor and prevent the mouse from leaving the window.
+    window.set_exclusive_mouse(True)
+    setup()
+    pyglet.app.run()
+
+
+if __name__ == '__main__':
+    main()

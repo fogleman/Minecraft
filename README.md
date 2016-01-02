@@ -1,16 +1,47 @@
-# mine.py (WIP)
+# Minecraft
 
 ## Objective
 
-A python implementation from scratch of the popular infinite world game Minecraft. (Work in progress)
+Simple Minecraft-inspired demo written in Python and Pyglet.
+
+http://www.youtube.com/watch?v=kC3lwK631X8
 
 This is a long endeavor that already was forked more than 600 times in [many different directions](https://github.com/fogleman/Minecraft/network).
 
-## My take on it
+**Like this project?**
 
-I think the original code created by fogleman is genius work! To make it a fully functional API as he proposed in his vision, however, it needs a little help. I'm working on refactoring it to allow a more object-oriented code structure. The idea here is to isolate the logic into units that could be reused by other modules or projects.
+You might also like my other Minecraft clone written in C using modern OpenGL (GL shader language). It performs better, has better terrain generation and saves state to a sqlite database. See here:
 
-You can read details of what I found in the [history/README.md](https://github.com/ocarneiro/mine.py/tree/master/history) file.
+https://github.com/fogleman/Craft
+
+## Goals and Vision
+
+I would like to see this project turn into an educational tool. Kids love Minecraft and Python is a great first language.
+This is a good opportunity to get children excited about programming.
+
+The code should become well commented and more easily configurable. It should be easy to make some simple changes
+and see the results quickly.
+
+I think it would be great to turn the project into more of a library / API... a Python package that you import and then use / configure to setup a world and run it. Something along these lines...
+
+    import mc
+    
+    world = mc.World(...)
+    world.set_block(x, y, z, mc.DIRT)
+    mc.run(world)
+
+The API could contain functionality for the following:
+
+- Easily configurable parameters like gravity, jump velocity, walking speed, etc.
+- Hooks for terrain generation.
+
+## Two different approaches
+
+[main.py](main.py) is the original code created by fogleman. It's a showcase of the power and simplicity of Python. Having only 2 files, main.py and texture.png, you should be all set to run a complete version of this Minecraft clone.
+
+[mine.py](mine.py) is intended to be the fully functional API proposed in the *Goals and Vision* section. It was refactored to be more object-oriented and easier to maintain and expand. With this version you should be able to use a text-based rendered version of the world generated. Read more about that below on the *Into the future* section.
+
+You can read details about the evolution of this code in the [history/README.md](https://github.com/ocarneiro/mine.py/tree/master/history) file.
 
 ## Roadmap
 
@@ -26,8 +57,8 @@ You can read details of what I found in the [history/README.md](https://github.c
 
 ## How to Run
 
-    git clone https://github.com/ocarneiro/mine.py
-    cd mine.py
+    git clone https://github.com/fogleman/Minecraft.git
+    cd Minecraft
     pip install -r requirements.txt
     python main.py
 
@@ -62,8 +93,8 @@ You can read details of what I found in the [history/README.md](https://github.c
 
 You can run this game using 
 
-    python -i main.py
-    
+    python -i mine.py
+ 
 And then explore some of the objects already created. You can see an ASCII representation of the generated world, for instance:
 
     >>> txtmap.draw(world)
@@ -73,21 +104,21 @@ And if you want to see the same map using as references other heights (y=2, for 
     >>> txtmap.draw(world, 2)
     >>> # or #
     >>> txtmap.draw(world, y=2)
-    
+ 
 It's been a lot of fun to play with text representations of the blocks, so you should see more commits in this direction in the near future.
 
 ### Client GUI approach
 
 This could grow into a client gui to access Minecraft-compatible servers.
 
-This software would connect to servers such as [cuberite](http://cuberite.org/) to provide them an interactive screen that ressembles Minecraft. It uses a middleware like [SpockBot](https://github.com/SpockBotMC/SpockBot) and generates images using code derived from [fogleman's Minecraft](https://github.com/fogleman/Minecraft).
+This software would connect to servers such as [cuberite](http://cuberite.org/) to provide them an interactive screen that ressembles Minecraft. It would use a middleware like [SpockBot](https://github.com/SpockBotMC/SpockBot) and generate the corresponding images.
 
 It could work in an architecture such as this:
 
-   Server (like cuberite)  
-         |  
-         |  
-   Middleware (like SpockBot)  
-         |  
-         |  
+   Server (like cuberite)
+         |
+         |
+   Middleware (like SpockBot)
+         |
+         |
     mine.py (this software)
