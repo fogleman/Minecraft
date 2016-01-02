@@ -2,3 +2,5 @@ env
 *.swp
 __pycache__
 .*
+env2
+*/*.pyc

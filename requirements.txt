@@ -1,2 +1,2 @@
+future==0.15.2
 pyglet==1.2.4
-wheel==0.24.0
