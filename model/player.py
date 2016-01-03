@@ -7,3 +7,4 @@ class Player:
 
     def __init__(self):
         self.flying = False
+        self.position = (0, 0, 0)

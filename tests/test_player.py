@@ -44,4 +44,5 @@ from model.player import Player
 
 def test_player_should_start_clean():
     player = Player()
-    assert player.flying is False
+    assert not player.flying
+    assert player.position == (0, 0, 0)
