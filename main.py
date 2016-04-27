@@ -601,6 +601,8 @@ class Window(pyglet.window.Window):
         # collisions
         x, y, z = self.position
         x, y, z = self.collide((x + dx, y + dy, z + dz), PLAYER_HEIGHT)
+        # fix bug for jumping outside the wall and falling to infinity. 
+        y = max(-1.25, y)
         self.position = (x, y, z)
 
     def collide(self, position, height):
