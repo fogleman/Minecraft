@@ -819,7 +819,9 @@ class Window(pyglet.window.Window):
             self.draw_reticle()
         self.set_2d()
         self.draw_label()
-        self.is_initializing = False
+        if self.is_initializing:
+            self.loading_label.delete()
+            self.is_initializing = False
 
     def draw_focused_block(self):
         """ Draw black edges around the block that is currently under the
