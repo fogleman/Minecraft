@@ -21,11 +21,14 @@ and see the results quickly.
 I think it would be great to turn the project into more of a library / API... a Python package that you import and then
 use / configure to setup a world and run it. Something along these lines...
 
-    import mc
-    
-    world = mc.World(...)
-    world.set_block(x, y, z, mc.DIRT)
-    mc.run(world)
+
+```python
+import mc
+
+world = mc.World(...)
+world.set_block(x, y, z, mc.DIRT)
+mc.run(world)
+```
 
 The API could contain functionality for the following:
 
@@ -34,26 +37,34 @@ The API could contain functionality for the following:
 
 ## How to Run
 
-    pip install pyglet
-    git clone https://github.com/fogleman/Minecraft.git
-    cd Minecraft
-    python main.py
+```shell
+pip install pyglet
+git clone https://github.com/fogleman/Minecraft.git
+cd Minecraft
+python main.py
+```
 
 ### Mac
 
 On Mac OS X, you may have an issue with running Pyglet in 64-bit mode. Try running Python in 32-bit mode first:
 
-    arch -i386 python main.py
+```shell
+arch -i386 python main.py
+```
 
 If that doesn't work, set Python to run in 32-bit mode by default:
 
-    defaults write com.apple.versioner.python Prefer-32-Bit -bool yes 
+```shell
+defaults write com.apple.versioner.python Prefer-32-Bit -bool yes 
+```
 
 This assumes you are using the OS X default Python.  Works on Lion 10.7 with the default Python 2.7, and may work on other versions too.  Please raise an issue if not.
     
 Or try Pyglet 1.2 alpha, which supports 64-bit mode:  
 
-    pip install https://pyglet.googlecode.com/files/pyglet-1.2alpha1.tar.gz 
+```shell
+pip install https://pyglet.googlecode.com/files/pyglet-1.2alpha1.tar.gz 
+```
 
 ### If you don't have pip or git
 
