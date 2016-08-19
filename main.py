@@ -8,6 +8,27 @@ from pyglet.gl import *
 from pyglet.graphics import TextureGroup
 from pyglet.window import key, mouse
 
+""" GLOBAL PARAMETERS
+
+"""
+# Checks the command line arguments for flags that may be set.
+# Specifically, this looks at sys.argv, which is a list of
+# the file name, followed by each called argument.
+# It must be greater than 1 for there to exist any arguments
+# in the list, otherwise it will only contain the file name.
+from sys import argv
+FRAMERATE = False
+if argv and len(argv) > 1:
+
+    # The first argument of the list is not an argument,
+    # so we skip it using list slicing.
+    for command_line_argument in argv[1:]:
+
+        # The --fps command line argument will display the current
+        # framerate of the executed program.
+        if command_line_argument == '--fps':
+            FRAMERATE = True
+
 TICKS_PER_SEC = 60
 
 # Size of sectors used to ease block loading.
@@ -488,6 +509,14 @@ class Window(pyglet.window.Window):
         # TICKS_PER_SEC. This is the main game event loop.
         pyglet.clock.schedule_interval(self.update, 1.0 / TICKS_PER_SEC)
 
+        if FRAMERATE:
+            self.last_measured_framerate_time = time.time()
+            # This tracks the amount of frames that
+            # have passed since our last update.
+            self.frames_passed = 0
+            # This is our visible label for the frames
+            self.framerate = pyglet.text.Label(text='Unknown', font_name='Verdana', font_size=8, x=10, y=10, color=(255,255,255,255))
+
     def set_exclusive_mouse(self, exclusive):
         """ If `exclusive` is True, the game will capture the mouse, if False
         the game will ignore the mouse.
@@ -809,6 +838,8 @@ class Window(pyglet.window.Window):
         self.draw_focused_block()
         self.set_2d()
         self.draw_label()
+        if FRAMERATE:
+            self.draw_fps()
         self.draw_reticle()
 
     def draw_focused_block(self):
@@ -835,6 +866,19 @@ class Window(pyglet.window.Window):
             pyglet.clock.get_fps(), x, y, z,
             len(self.model._shown), len(self.model.world))
         self.label.draw()
+
+    def draw_fps(self):
+        """ Draw the fps measurement at the bottom left of the screen
+
+        """
+        if time.time() - self.last_measured_framerate_time >= 1:
+            self.framerate.text = str(self.frames_passed)
+            self.frames_passed = 0
+            self.last_measured_framerate_time = time.time()
+        else:
+            self.frames_passed += 1
+
+        self.framerate.draw()
 
     def draw_reticle(self):
         """ Draw the crosshairs in the center of the screen.
