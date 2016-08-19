@@ -505,10 +505,6 @@ class Window(pyglet.window.Window):
             x=10, y=self.height - 10, anchor_x='left', anchor_y='top',
             color=(0, 0, 0, 255))
 
-        # This call schedules the `update()` method to be called
-        # TICKS_PER_SEC. This is the main game event loop.
-        pyglet.clock.schedule_interval(self.update, 1.0 / TICKS_PER_SEC)
-
         if FRAMERATE:
             self.last_measured_framerate_time = time.time()
             # This tracks the amount of frames that
@@ -516,6 +512,10 @@ class Window(pyglet.window.Window):
             self.frames_passed = 0
             # This is our visible label for the frames
             self.framerate = pyglet.text.Label(text='Unknown', font_name='Verdana', font_size=8, x=10, y=10, color=(255,255,255,255))
+
+        # This call schedules the `update()` method to be called
+        # TICKS_PER_SEC. This is the main game event loop.
+        pyglet.clock.schedule_interval(self.update, 1.0 / TICKS_PER_SEC)
 
     def set_exclusive_mouse(self, exclusive):
         """ If `exclusive` is True, the game will capture the mouse, if False
