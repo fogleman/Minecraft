@@ -44,6 +44,12 @@ cd Minecraft
 python main.py
 ```
 
+You may also use the optional "--fps" flag to display a framerate ticker in the bottom left corner of the window as so:
+
+```shell
+python main.py --fps
+```
+
 ### Mac
 
 On Mac OS X, you may have an issue with running Pyglet in 64-bit mode. Try running Python in 32-bit mode first:
@@ -55,15 +61,15 @@ arch -i386 python main.py
 If that doesn't work, set Python to run in 32-bit mode by default:
 
 ```shell
-defaults write com.apple.versioner.python Prefer-32-Bit -bool yes 
+defaults write com.apple.versioner.python Prefer-32-Bit -bool yes
 ```
 
 This assumes you are using the OS X default Python.  Works on Lion 10.7 with the default Python 2.7, and may work on other versions too.  Please raise an issue if not.
-    
+
 Or try Pyglet 1.2 alpha, which supports 64-bit mode:  
 
 ```shell
-pip install https://pyglet.googlecode.com/files/pyglet-1.2alpha1.tar.gz 
+pip install https://pyglet.googlecode.com/files/pyglet-1.2alpha1.tar.gz
 ```
 
 ### If you don't have pip or git
