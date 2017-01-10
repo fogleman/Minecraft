@@ -490,6 +490,16 @@ class Window(pyglet.window.Window):
             x=10, y=self.height - 10, anchor_x='left', anchor_y='top',
             color=(0, 0, 0, 255))
 
+        # The 'preupdate()' method is called from inherited classes before updating frames
+        # If there wasn't any inheritence then an empty lambda exists
+        if not hasattr(self, 'preupdate'):
+            self.preupdate = lambda dt: None
+
+        # The 'postupdate()' method is called from inherited classes after updating frames
+        # If there wasn't any inheritence then an empty lambda exists
+        if not hasattr(self, 'postupdate'):
+            self.postupdate = lambda dt: None
+
         # This call schedules the `update()` method to be called
         # TICKS_PER_SEC. This is the main game event loop.
         pyglet.clock.schedule_interval(self.update, 1.0 / TICKS_PER_SEC)
@@ -568,6 +578,8 @@ class Window(pyglet.window.Window):
             The change in time since the last call.
 
         """
+
+        self.preupdate(dt)
         self.model.process_queue()
         sector = sectorize(self.position)
         if sector != self.sector:
@@ -579,6 +591,7 @@ class Window(pyglet.window.Window):
         dt = min(dt, 0.2)
         for _ in xrange(m):
             self._update(dt / m)
+        self.postupdate(dt)
 
     def _update(self, dt):
         """ Private implementation of the `update()` method. This is where most
@@ -887,14 +900,15 @@ def setup():
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
     setup_fog()
 
+def run(world):
+    setup()
+    pyglet.app.run()
 
 def main():
     window = Window(width=800, height=600, caption='Pyglet', resizable=True)
     # Hide the mouse cursor and prevent the mouse from leaving the window.
     window.set_exclusive_mouse(True)
-    setup()
-    pyglet.app.run()
-
+    run(window)
 
 if __name__ == '__main__':
     main()
