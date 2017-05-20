@@ -27,7 +27,7 @@ MAX_JUMP_HEIGHT = 1.0 # About the height of a block.
 # due to gravity and v_t = 0. This gives:
 #    t = - v_0 / a
 # Use t and the desired MAX_JUMP_HEIGHT to solve for v_0 (jump speed) in
-#    s = s_0 + v_0 * t + (a * t^2) / 2
+#    
 JUMP_SPEED = math.sqrt(2 * GRAVITY * MAX_JUMP_HEIGHT)
 TERMINAL_VELOCITY = 50
 
@@ -81,9 +81,11 @@ SAND = tex_coords((1, 1), (1, 1), (1, 1))
 BRICK = tex_coords((2, 0), (2, 0), (2, 0))
 STONE = tex_coords((2, 1), (2, 1), (2, 1))
 DIRT = tex_coords((0, 1), (0, 1), (0, 1))
+HEDGE = tex_coords((1,0), (1,0), (1,0)) 
 
+#TEXTURE_PATH = 'minecraft_tree_wood.png'
 
-
+WOOD = tex_coords((0,2),(0,2),(0,2))
 FACES = [
     ( 0, 1, 0),
     ( 0,-1, 0),
@@ -167,13 +169,14 @@ class Model(object):
         y = 0  # initial y height
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
-                # create a layer stone an grass everywhere.
+                # create a layer stone and grass everywhere.
                 self.add_block((x, y - 2, z), GRASS, immediate=False)
-                self.add_block((x, y - 3, z), STONE, immediate=False)
+                for i in range(10):
+                	self.add_block((x, y - (3+i), z), STONE, immediate=False)
                 if x in (-n, n) or z in (-n, n):
                     # create outer walls.
                     for dy in xrange(-2, 3):
-                        self.add_block((x, y + dy, z), STONE, immediate=False)
+                        self.add_block((x, y + dy, z), HEDGE, immediate=False)
 
         # generate the hills randomly
         o = n - 10
@@ -475,7 +478,7 @@ class Window(pyglet.window.Window):
         self.dy = 0
 
         # A list of blocks the player can place. Hit num keys to cycle.
-        self.inventory = [BRICK, GRASS, SAND, DIRT]
+        self.inventory = [BRICK, GRASS, SAND, DIRT, HEDGE, WOOD]
 
         # The current block the user can place. Hit num keys to cycle.
         self.block = self.inventory[0]
@@ -685,8 +688,7 @@ class Window(pyglet.window.Window):
                     self.model.add_block(previous, self.block)
             elif button == pyglet.window.mouse.LEFT and block:
                 texture = self.model.world[block]
-                if texture != STONE:
-                    self.model.remove_block(block)
+                self.model.remove_block(block)
         else:
             self.set_exclusive_mouse(True)
 
