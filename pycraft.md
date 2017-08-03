@@ -9,7 +9,7 @@ You will need:
 - Python 3
 - A text editor (e.g. Atom)
 - The project source code (https://github.com/lukebrowell/Minecraft)
-- Full OpenGL (The RaspberryPi-1 has OpenGL-ES which wont work here, and the RPi2/3 have a beta driver which I have not tested, for best results use a Mac or PC)
+- Full OpenGL (The RaspberryPi-1 has OpenGL-ES which wont work here, and the RPi2/3 have a beta driver which you woul dneed to activate on the latest version of the OS, if in doubt use a Mac or PC)
 
 ---
 ### Overview
