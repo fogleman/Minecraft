@@ -451,8 +451,8 @@ class Window(pyglet.window.Window):
         # right, and 0 otherwise.
         self.strafe = [0, 0]
 
-	#True if sprinting
-	self.sprinting = False
+        #True if sprinting
+        self.sprinting = False
 
         # Current (x, y, z) position in the world, specified with floats. Note
         # that, perhaps unlike in math class, the y-axis is the vertical axis.
@@ -596,11 +596,11 @@ class Window(pyglet.window.Window):
         """
         # walking
         if self.flying:
-			speed = FLYING_SPEED
+                        speed = FLYING_SPEED
         elif self.sprinting:
-			speed = SPRINTING_SPEED
+                        speed = SPRINTING_SPEED
         else:
-			speed = WALKING_SPEED
+                        speed = WALKING_SPEED
         d = dt * speed # distance covered this tick.
         dx, dy, dz = self.get_motion_vector()
         # New position in space, before accounting for gravity.
@@ -744,7 +744,6 @@ class Window(pyglet.window.Window):
             self.flying = not self.flying
         elif symbol == key.LSHIFT:
             self.sprinting = True
-            print "Sprinting"
         elif symbol in self.num_keys:
             index = (symbol - self.num_keys[0]) % len(self.inventory)
             self.block = self.inventory[index]
