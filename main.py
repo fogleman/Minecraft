@@ -16,7 +16,8 @@ TICKS_PER_SEC = 60
 # Size of sectors used to ease block loading.
 SECTOR_SIZE = 16
 
-WALKING_SPEED = 5
+WALKING_SPEED = 2
+RUNNING_SPEED = 5
 FLYING_SPEED = 15
 
 GRAVITY = 20.0
@@ -442,6 +443,9 @@ class Window(pyglet.window.Window):
         # When flying gravity has no effect and speed is increased.
         self.flying = False
 
+        # Determine if player is running. If false, then player is walking.
+        self.running = False
+
         # Strafing is moving lateral to the direction you are facing,
         # e.g. moving to the left or right while continuing to face forward.
         #
@@ -591,7 +595,7 @@ class Window(pyglet.window.Window):
 
         """
         # walking
-        speed = FLYING_SPEED if self.flying else WALKING_SPEED
+        speed = FLYING_SPEED if self.flying else RUNNING_SPEED if self.running else WALKING_SPEED
         d = dt * speed # distance covered this tick.
         dx, dy, dz = self.get_motion_vector()
         # New position in space, before accounting for gravity.
@@ -733,6 +737,8 @@ class Window(pyglet.window.Window):
             self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
             self.flying = not self.flying
+        elif symbol == key.LSHIFT:
+            self.running = True
         elif symbol in self.num_keys:
             index = (symbol - self.num_keys[0]) % len(self.inventory)
             self.block = self.inventory[index]
@@ -757,6 +763,8 @@ class Window(pyglet.window.Window):
             self.strafe[1] += 1
         elif symbol == key.D:
             self.strafe[1] -= 1
+        elif symbol == key.LSHIFT:
+            self.running = False
 
     def on_resize(self, width, height):
         """ Called when the window is resized to a new `width` and `height`.
