@@ -4,7 +4,13 @@ import sys
 import math
 import random
 import time
-
+import os.path
+import xml.etree.ElementTree as ET
+import xml.etree.cElementTree as ET
+from xml.etree.ElementTree import Element, SubElement, Comment, ElementTree
+from xml.etree import ElementTree
+from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import SubElement
 from collections import deque
 from pyglet import image
 from pyglet.gl import *
@@ -171,26 +177,36 @@ class Model(object):
                     # create outer walls.
                     for dy in xrange(-2, 3):
                         self.add_block((x, y + dy, z), STONE, immediate=False)
-
+        if os.path.exists('savedworld.xml')==True:#if a save file exists, generate the hills and blocks form that world
+            print "hello"
+            blocks=ET.parse('savedworld.xml')
+            root=blocks.getroot()
+            x=0
+            for child in root:
+                y=child.attrib
+                
+                self.add_block((float(y['X']),float(y['Y']),float(y['Z'])),tex_coords((float(y['AX']),float(y['AY'])),(float(y['BX']),float(y['BY'])),(float(y['CX']),float(y['CY']))), immediate=False)
+                x=x+1
+        else:#else if there is no saveworld.xml randomly generate hills as before
         # generate the hills randomly
-        o = n - 10
-        for _ in xrange(120):
-            a = random.randint(-o, o)  # x position of the hill
-            b = random.randint(-o, o)  # z position of the hill
-            c = -1  # base of the hill
-            h = random.randint(1, 6)  # height of the hill
-            s = random.randint(4, 8)  # 2 * s is the side length of the hill
-            d = 1  # how quickly to taper off the hills
-            t = random.choice([GRASS, SAND, BRICK])
-            for y in xrange(c, c + h):
-                for x in xrange(a - s, a + s + 1):
-                    for z in xrange(b - s, b + s + 1):
-                        if (x - a) ** 2 + (z - b) ** 2 > (s + 1) ** 2:
-                            continue
-                        if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
-                            continue
-                        self.add_block((x, y, z), t, immediate=False)
-                s -= d  # decrement side lenth so hills taper off
+            o = n - 10
+            for _ in xrange(120):
+                a = random.randint(-o, o)  # x position of the hill
+                b = random.randint(-o, o)  # z position of the hill
+                c = -1  # base of the hill
+                h = random.randint(1, 6)  # height of the hill
+                s = random.randint(4, 8)  # 2 * s is the side length of the hill
+                d = 1  # how quickly to taper off the hills
+                t = random.choice([GRASS, SAND, BRICK])
+                for y in xrange(c, c + h):
+                    for x in xrange(a - s, a + s + 1):
+                        for z in xrange(b - s, b + s + 1):
+                            if (x - a) ** 2 + (z - b) ** 2 > (s + 1) ** 2:
+                                continue
+                            if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
+                                continue
+                            self.add_block((x, y, z), t, immediate=False)
+                    s -= d  # decrement side lenth so hills taper off
 
     def hit_test(self, position, vector, max_distance=8):
         """ Line of sight search from current position. If a block is
@@ -252,7 +268,11 @@ class Model(object):
             if self.exposed(position):
                 self.show_block(position)
             self.check_neighbors(position)
+    
 
+        
+    
+    
     def remove_block(self, position, immediate=True):
         """ Remove the block at the given `position`.
 
@@ -736,6 +756,8 @@ class Window(pyglet.window.Window):
         elif symbol in self.num_keys:
             index = (symbol - self.num_keys[0]) % len(self.inventory)
             self.block = self.inventory[index]
+        elif symbol ==key.Q:
+            save_game(self.model.world)#calls save game on world dictionary
 
     def on_key_release(self, symbol, modifiers):
         """ Called when the player releases a key. See pyglet docs for key
@@ -850,8 +872,46 @@ class Window(pyglet.window.Window):
         """
         glColor3d(0, 0, 0)
         self.reticle.draw(GL_LINES)
-
-
+def get_texture(texture):
+    """this method takes in the texture stored as a valuein model.world dictionary
+    and outputs a list of the 6 numbers used in text_coords to define each texture
+    on line 79"""
+    isGrass=True
+    isStone=True
+    isBrick=True
+    isSand=True
+    for i in range(0,3):# only checks first three elements in list as this is when textures differ
+        if GRASS[i]!=texture[i]:# if the digits are wrong set the boolean to false
+            isGrass=False
+    for i in range(0,3):    
+        if STONE[i]!=texture[i]:
+            isStone=False
+    for i in range(0,3):
+        if BRICK[i]!=texture[i]:
+            isBrick=False
+    for i in range(0,3):
+        if SAND[i]!=texture[i]:
+            isSand=False
+    if isGrass==True:#check which boolean is still true, this is the texture, return that texture
+        return (1, 0, 0, 1, 0, 0)
+    if isStone==True:
+        return (2, 1, 2, 1, 2, 1)
+    if isBrick==True:
+        return (2, 0, 2, 0, 2, 0)
+    if isSand == True:
+        return (1, 1, 1, 1, 1, 1)
+def save_game(world):#press q to load
+    """this will read in the model.world dictionary and save each block to an xml file to be loaded from in the future""" 
+    u=0
+    BLOCKWORLD=Element("BLOCKWORLD")
+    for key in world:
+        coords= get_texture(world[key])
+        BLOCK=SubElement(BLOCKWORLD,'BLOCK'+str(u), X=str(key[0]), Y=str(key[1]), Z=str(key[2]),AX=str(coords[0]), AY=str(coords[1]), BX=str(coords[2]), BY=str(coords[3]), CX=str(coords[4]), CY=str(coords[5]))
+    f=open("savedworld.xml", 'w')
+    f.write( '<?xml version="1.0"?>' )
+    f.write(ElementTree.tostring(BLOCKWORLD))
+    f.close()
+        
 def setup_fog():
     """ Configure the OpenGL fog properties.
 
@@ -895,6 +955,7 @@ def main():
     # Hide the mouse cursor and prevent the mouse from leaving the window.
     window.set_exclusive_mouse(True)
     setup()
+    
     pyglet.app.run()
 
 
