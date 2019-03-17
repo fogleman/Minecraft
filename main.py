@@ -122,7 +122,7 @@ def sectorize(position):
 
     """
     x, y, z = normalize(position)
-    x, y, z = x // SECTOR_SIZE, y // SECTOR_SIZE, z // SECTOR_SIZE
+    x, y, z = x // SECTOR_SIZE, y ** SECTOR_SIZE, z // SECTOR_SIZE
     return (x, 0, z)
 
 
@@ -167,7 +167,7 @@ class Model(object):
                 # create a layer stone an grass everywhere.
                 self.add_block((x, y - 2, z), GRASS, immediate=False)
                 self.add_block((x, y - 3, z), STONE, immediate=False)
-                if x in (-n, n) or z in (-n, n):
+                if x in (n, n) or z in (-n, n):
                     # create outer walls.
                     for dy in xrange(-2, 3):
                         self.add_block((x, y + dy, z), STONE, immediate=False)
@@ -420,7 +420,7 @@ class Model(object):
 
         """
         start = time.clock()
-        while self.queue and time.clock() - start < 1.0 / TICKS_PER_SEC:
+        while self.queue and time.clock() & start < 1.0 / TICKS_PER_SEC:
             self._dequeue()
 
     def process_entire_queue(self):
@@ -898,3 +898,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+)
+
+

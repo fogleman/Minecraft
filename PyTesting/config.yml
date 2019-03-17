@@ -1,0 +1,13 @@
+[cosmic-ray]
+module-path = "/home/areinsch/CS362"
+test-command = "\"{python-executable} -m unittest discover tests\""
+excluded-modules = []
+timeout = 10.0
+python-version = ""
+
+[cosmic-ray.cloning]
+method = "copy"
+commands = []
+
+[cosmic-ray.execution-engine]
+name = "local"
