@@ -159,38 +159,38 @@ class Model(object):
         """ Initialize the world by placing all the blocks.
 
         """
-        n = 80  # 1/2 width and height of world
-        s = 1  # step size
-        y = 0  # initial y height
-        for x in xrange(-n, n + 1, s):
-            for z in xrange(-n, n + 1, s):
+        HalfWorld = 80  # 1/2 width and height of world
+        step = 1  # step size
+        yHeight = 0  # initial y height
+        for x in xrange(-HalfWorld, HalfWorld + 1, step):
+            for z in xrange(-HalfWorld, HalfWorld + 1, step):
                 # create a layer stone an grass everywhere.
-                self.add_block((x, y - 2, z), GRASS, immediate=False)
-                self.add_block((x, y - 3, z), STONE, immediate=False)
-                if x in (-n, n) or z in (-n, n):
+                self.add_block((x, yHeight - 2, z), GRASS, immediate=False)
+                self.add_block((x, yHeight - 3, z), STONE, immediate=False)
+                if x in (-HalfWorld, HalfWorld) or z in (-HalfWorld, HalfWorld):
                     # create outer walls.
                     for dy in xrange(-2, 3):
-                        self.add_block((x, y + dy, z), STONE, immediate=False)
+                        self.add_block((x, yHeight + dy, z), STONE, immediate=False)
 
         # generate the hills randomly
-        o = n - 10
+        o = HalfWorld - 10
         for _ in xrange(120):
-            a = random.randint(-o, o)  # x position of the hill
-            b = random.randint(-o, o)  # z position of the hill
-            c = -1  # base of the hill
-            h = random.randint(1, 6)  # height of the hill
-            s = random.randint(4, 8)  # 2 * s is the side length of the hill
-            d = 1  # how quickly to taper off the hills
+            xHillPos = random.randint(-o, o)  # x position of the hill
+            zHillPos = random.randint(-o, o)  # z position of the hill
+            base = -1  # base of the hill
+            height = random.randint(1, 6)  # height of the hill
+            sideLen = random.randint(4, 8)  # 2 * s is the side length of the hill
+            slope = 1  # how quickly to taper off the hills
             t = random.choice([GRASS, SAND, BRICK])
-            for y in xrange(c, c + h):
-                for x in xrange(a - s, a + s + 1):
-                    for z in xrange(b - s, b + s + 1):
-                        if (x - a) ** 2 + (z - b) ** 2 > (s + 1) ** 2:
+            for y in xrange(base, base + height):
+                for x in xrange(xHillPos - step, xHillPos + sideLen + 1):
+                    for z in xrange(base - sideLen, zHillPos + sideLen + 1):
+                        if (x - xHillPos) ** 2 + (z - zHillPos) ** 2 > (sideLen + 1) ** 2:
                             continue
                         if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
                             continue
                         self.add_block((x, y, z), t, immediate=False)
-                s -= d  # decrement side lenth so hills taper off
+                sideLen -= slope  # decrement side lenth so hills taper off
 
     def hit_test(self, position, vector, max_distance=8):
         """ Line of sight search from current position. If a block is
@@ -631,29 +631,29 @@ class Window(pyglet.window.Window):
         # a collision. If .49, you sink into the ground, as if walking through
         # tall grass. If >= .5, you'll fall through the ground.
         pad = 0.25
-        p = list(position)
-        np = normalize(position)
+        pos = list(position)
+        normpos = normalize(position)
         for face in FACES:  # check all surrounding blocks
             for i in xrange(3):  # check each dimension independently
                 if not face[i]:
                     continue
                 # How much overlap you have with this dimension.
-                d = (p[i] - np[i]) * face[i]
+                d = (pos[i] - normpos[i]) * face[i]
                 if d < pad:
                     continue
                 for dy in xrange(height):  # check each height
-                    op = list(np)
+                    op = list(normpos)
                     op[1] -= dy
                     op[i] += face[i]
                     if tuple(op) not in self.model.world:
                         continue
-                    p[i] -= (d - pad) * face[i]
+                    pos[i] -= (d - pad) * face[i]
                     if face == (0, -1, 0) or face == (0, 1, 0):
                         # You are colliding with the ground or ceiling, so stop
                         # falling / rising.
                         self.dy = 0
                     break
-        return tuple(p)
+        return tuple(pos)
 
     def on_mouse_press(self, x, y, button, modifiers):
         """ Called when a mouse button is pressed. See pyglet docs for button
