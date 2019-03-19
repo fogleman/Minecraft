@@ -16,7 +16,7 @@ TICKS_PER_SEC = 60
 # Size of sectors used to ease block loading.
 SECTOR_SIZE = 16
 
-WALKING_SPEED = 5
+WALKING_SPEED = 5                                                         #Constant Variables that are set to determin the fly speed and walk speed of the player character
 FLYING_SPEED = 15
 
 GRAVITY = 20.0
@@ -31,9 +31,9 @@ MAX_JUMP_HEIGHT = 1.0 # About the height of a block.
 JUMP_SPEED = math.sqrt(2 * GRAVITY * MAX_JUMP_HEIGHT)
 TERMINAL_VELOCITY = 50
 
-PLAYER_HEIGHT = 2
+PLAYER_HEIGHT = 2                                                 #The 2 here is equivlent to the hieght of two blocks
 
-if sys.version_info[0] >= 3:
+if sys.version_info[0] >= 3:                                      #Depending on the version bing used, this will also effect the range of a player vision or field of view
     xrange = range
 
 def cube_vertices(x, y, z, n):
@@ -47,9 +47,9 @@ def cube_vertices(x, y, z, n):
     cube vertices: 24-tuple of ints
 	"""
     return [
-        x-n,y+n,z-n, x-n,y+n,z+n, x+n,y+n,z+n, x+n,y+n,z-n,  # top
-        x-n,y-n,z-n, x+n,y-n,z-n, x+n,y-n,z+n, x-n,y-n,z+n,  # bottom
-        x-n,y-n,z-n, x-n,y-n,z+n, x-n,y+n,z+n, x-n,y+n,z-n,  # left
+        x-n,y+n,z-n, x-n,y+n,z+n, x+n,y+n,z+n, x+n,y+n,z-n,  # top    Each of these rows being calcualted represent one set of vertices on cube, which one they
+        x-n,y-n,z-n, x+n,y-n,z-n, x+n,y-n,z+n, x-n,y-n,z+n,  # bottom represent can be seen with the associated label. This is important for player collision 
+        x-n,y-n,z-n, x-n,y-n,z+n, x-n,y+n,z+n, x-n,y+n,z-n,  # left   and fitting the blocks togther properly. 
         x+n,y-n,z+n, x+n,y-n,z-n, x+n,y+n,z-n, x+n,y+n,z+n,  # right
         x-n,y-n,z+n, x+n,y-n,z+n, x+n,y+n,z+n, x-n,y+n,z+n,  # front
         x+n,y-n,z-n, x-n,y-n,z-n, x-n,y+n,z-n, x+n,y+n,z-n,  # back
@@ -66,11 +66,11 @@ def tex_coord(x, y, n=4):
     -------
    8 integers, the bounding coordinates of each texture square
     """
-    m = 1.0 / n
-    dx = x * m
+    m = 1.0 / n                                               #This values is essentially hard coded to be .25 as n=4 in the function definition  
+    dx = x * m                                                
     dy = y * m
-    return dx, dy, dx + m, dy, dx + m, dy + m, dx, dy + m
-
+    return dx, dy, dx + m, dy, dx + m, dy + m, dx, dy + m    #This return is what sends that proper coordinates each texture, as it important to change due to      
+                                                             #possible difference in height for where the block can be placed, which is why it is not hard coded.
 
 def tex_coords(top, bottom, side):
     """ Return a list of the texture squares for the top, bottom and side.
@@ -81,8 +81,8 @@ def tex_coords(top, bottom, side):
     -------
     result - tuple of texture mappings for the 6 sides of the block
 	"""
-    top = tex_coord(*top)
-    bottom = tex_coord(*bottom)
+    top = tex_coord(*top)                                 #This will call the function above and then store each value as tuple before sending 
+    bottom = tex_coord(*bottom)                           #these values back as a return. 
     side = tex_coord(*side)
     result = []
     result.extend(top)
@@ -91,15 +91,15 @@ def tex_coords(top, bottom, side):
     return result
 
 
-TEXTURE_PATH = 'texture.png'
-
-GRASS = tex_coords((1, 0), (0, 1), (0, 0))
-SAND = tex_coords((1, 1), (1, 1), (1, 1))
-BRICK = tex_coords((2, 0), (2, 0), (2, 0))
+TEXTURE_PATH = 'texture.png'                          #This calls the texture.png file that comes with the program which is what allows the program to 
+                                                      #properly get the textures that are used in the program.
+GRASS = tex_coords((1, 0), (0, 1), (0, 0))            
+SAND = tex_coords((1, 1), (1, 1), (1, 1))             #Each of these hard coded variables are used to acess to the correct textures for each block
+BRICK = tex_coords((2, 0), (2, 0), (2, 0))            #so no block gets the wrong texture. 
 STONE = tex_coords((2, 1), (2, 1), (2, 1))
 
-FACES = [
-    ( 0, 1, 0),
+FACES = [                                             #This is set so a block in particular can check around itself in any possible direction and will                   
+    ( 0, 1, 0),                                       #be very important in later functions. 
     ( 0,-1, 0),
     (-1, 0, 0),
     ( 1, 0, 0),
@@ -119,8 +119,8 @@ def normalize(position):
     block_position : tuple of ints of len 3
     """
     x, y, z = position
-    x, y, z = (int(round(x)), int(round(y)), int(round(z)))
-    return (x, y, z)
+    x, y, z = (int(round(x)), int(round(y)), int(round(z)))  #This uses round to make sure the values presented are whole numbers and not decimals
+    return (x, y, z)                                         # as they could be due to the nature of the game.
 
 
 def sectorize(position):
@@ -133,8 +133,8 @@ def sectorize(position):
     sector : tuple of len 3
     """
     x, y, z = normalize(position)
-    x, y, z = x // SECTOR_SIZE, y // SECTOR_SIZE, z // SECTOR_SIZE
-    return (x, 0, z)
+    x, y, z = x // SECTOR_SIZE, y // SECTOR_SIZE, z // SECTOR_SIZE  #SECTOR_SIZE was determined as a constant above, this is used to create sectors for 
+    return (x, 0, z)                                                #determining the position of the player easier. 
 
 
 class Model(object):
@@ -173,33 +173,33 @@ class Model(object):
 		Initialize the world by creating all the blocks and giving them coordinates in the world map.
 		Uses hard coded variables to initialize the size of the world, and random variables to generate terrain
         """
-        HalfWorld = 80  # 1/2 width and height of world
-        step = 1  # step size
-        yHeight = 0  # initial y height
+        HalfWorld = 80  # 1/2 width and height of world, with this being half of the created world
+        step = 1  # step size, with 1 then being in relation to 1 block. 
+        yHeight = 0  # initial y height, with 0 represented on the ingame coordinated system.
         for x in xrange(-HalfWorld, HalfWorld + 1, step):
             for z in xrange(-HalfWorld, HalfWorld + 1, step):
-                # create a layer stone an grass everywhere.
-                self.add_block((x, yHeight - 2, z), GRASS, immediate=False)
+                # create a layer stone an grass everywhere. Stone is the unbreakable block which is used a base for the world
+                self.add_block((x, yHeight - 2, z), GRASS, immediate=False)   #Grass is created one a layer above the unbreakable stone blocks 
                 self.add_block((x, yHeight - 3, z), STONE, immediate=False)
                 if x in (-HalfWorld, HalfWorld) or z in (-HalfWorld, HalfWorld):
-                    # create outer walls.
+                    # create outer walls, these outer walls are the ingame unbreakable walls that can be seen. 
                     for dy in xrange(-2, 3):
-                        self.add_block((x, yHeight + dy, z), STONE, immediate=False)
+                        self.add_block((x, yHeight + dy, z), STONE, immediate=False)             #Stone cannot be broken
 
-        # generate the hills randomly
-        o = HalfWorld - 10
+        # generate the hills randomly, it is important to note that hills can be generated within each other leading to overlaps
+        o = HalfWorld - 10    #Hills themselves will begin to be generated a set distance away from the player    
         for _ in xrange(120):
             xHillPos = random.randint(-o, o)  # x position of the hill
-            zHillPos = random.randint(-o, o)  # z position of the hill
-            base = -1  # base of the hill
-            height = random.randint(1, 6)  # height of the hill
+            zHillPos = random.randint(-o, o)  # z position of the hill, Y position is less importat as this game primarily runs off of X and Z
+            base = -1  # base of the hill starts a single block above the base grass while being one below where the player is 
+            height = random.randint(1, 6)  # height of the hills
             sideLen = random.randint(4, 8)  # 2 * s is the side length of the hill
-            slope = 1  # how quickly to taper off the hills
-            t = random.choice([GRASS, SAND, BRICK])
-            for y in xrange(base, base + height):
-                for x in xrange(xHillPos - step, xHillPos + sideLen + 1):
+            slope = 1  # how quickly to taper off the hills, is the amound each slope is generated by as it goes from the top
+            t = random.choice([GRASS, SAND, BRICK]) #The unbreakable stone is not an option
+            for y in xrange(base, base + height):  #Two for loops that will be usd to generate the blocks into a hill
+                for x in xrange(xHillPos - step, xHillPos + sideLen + 1): 
                     for z in xrange(base - sideLen, zHillPos + sideLen + 1):
-                        if (x - xHillPos) ** 2 + (z - zHillPos) ** 2 > (sideLen + 1) ** 2:
+                        if (x - xHillPos) ** 2 + (z - zHillPos) ** 2 > (sideLen + 1) ** 2: #checks to make sure each hill is generated properly
                             continue
                         if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
                             continue
@@ -219,17 +219,17 @@ class Model(object):
         max_distance : int
             How many blocks away to search for a hit.
         """
-        m = 8
+        m = 8               #constatn defined that is used to dertermine the players maximum distance
         x, y, z = position
         dx, dy, dz = vector
         previous = None
-        for _ in xrange(max_distance * m):
+        for _ in xrange(max_distance * m): #Checks for any block in range, even if stone 
             key = normalize((x, y, z))
-            if key != previous and key in self.world:
+            if key != previous and key in self.world:  #If there is block in sight on the break key is called
                 return key, previous
             previous = key
             x, y, z = x + dx / m, y + dy / m, z + dz / m
-        return None, None
+        return None, None                              #If there is no block when the break key is called
 
     def exposed(self, position):
         """ Returns False if given `position` is surrounded on all 6 sides by
@@ -240,8 +240,8 @@ class Model(object):
             The (x, y, z) position to check visibility of.
         """
         x, y, z = position
-        for dx, dy, dz in FACES:
-            if (x + dx, y + dy, z + dz) not in self.world:
+        for dx, dy, dz in FACES:          #This will check the balues agianst the possible surrondings which is FACES
+            if (x + dx, y + dy, z + dz) not in self.world:   #If there is nothing on 6 sides then it will return true
                 return True
         return False
 
@@ -258,11 +258,11 @@ class Model(object):
             Whether or not to draw the block immediately.
         """
         if position in self.world:
-            self.remove_block(position, immediate)
+            self.remove_block(position, immediate)  
         self.world[position] = texture
         self.sectors.setdefault(sectorize(position), []).append(position)
-        if immediate:
-            if self.exposed(position):
+        if immediate:                            #this is nesscary call as in the function immediate is hard codded to be true
+            if self.exposed(position):           #this will check the surrounding of a block to make sure it can be placed    
                 self.show_block(position)
             self.check_neighbors(position)
 
@@ -275,11 +275,11 @@ class Model(object):
         immediate : bool
             Whether or not to immediately remove block from canvas.
         """
-        del self.world[position]
-        self.sectors[sectorize(position)].remove(position)
-        if immediate:
+        del self.world[position]                 #removes the block at position 
+        self.sectors[sectorize(position)].remove(position) #checks the sector of the player and the position in it
+        if immediate:                      #immediate is hard coded to be true in the function definition 
             if position in self.shown:
-                self.hide_block(position)
+                self.hide_block(position)        #This will then check the results of this 
             self.check_neighbors(position)
 
     def check_neighbors(self, position):
@@ -295,11 +295,11 @@ class Model(object):
             The (x, y, z) position to check visibility from.
         """
         x, y, z = position
-        for dx, dy, dz in FACES:
+        for dx, dy, dz in FACES:  #Uses Faces to check surroundings of the block
             key = (x + dx, y + dy, z + dz)
             if key not in self.world:
                 continue
-            if self.exposed(key):
+            if self.exposed(key):       #This is used to check and see what on the block is exposed then load the proper texture for the exposed sides
                 if key not in self.shown:
                     self.show_block(key)
             else:
@@ -318,11 +318,11 @@ class Model(object):
             Whether or not to show the block immediately.
         """
         texture = self.world[position]
-        self.shown[position] = texture
+        self.shown[position] = texture #Gets the postition of the texture
         if immediate:
-            self._show_block(position, texture)
+            self._show_block(position, texture) #immediate is had coded to be true in fucntion definiton, but this may be called in string which is what there is an else
         else:
-            self._enqueue(self._show_block, position, texture)
+            self._enqueue(self._show_block, position, texture) #This specifically adds the texturest that are nesscary to to display the block correctly in queue
 
     def _show_block(self, position, texture):
         """ Private implementation of the `show_block()` method.
@@ -341,7 +341,7 @@ class Model(object):
         texture_data = list(texture)
         # create vertex list
         # FIXME Maybe `add_indexed()` should be used instead
-        self._shown[position] = self.batch.add(24, GL_QUADS, self.group,
+        self._shown[position] = self.batch.add(24, GL_QUADS, self.group, 
             ('v3f/static', vertex_data),
             ('t2f/static', texture_data))
 
@@ -357,10 +357,10 @@ class Model(object):
             Whether or not to immediately remove the block from the canvas.
         """
         self.shown.pop(position)
-        if immediate:
-            self._hide_block(position)
+        if immediate:      #hardcoded in definition but if called in string it will be need to be queued
+            self._hide_block(position)   #hides the texture of the block that is surrounded
         else:
-            self._enqueue(self._hide_block, position)
+            self._enqueue(self._hide_block, position) #queues the hide
 
     def _hide_block(self, position):
         """ Private implementation of the 'hide_block()` method.
@@ -371,7 +371,7 @@ class Model(object):
         position : tuple of len 3
             The (x, y, z) position of the block to hide.
         """
-        self._shown.pop(position).delete()
+        self._shown.pop(position).delete() 
 
     def show_sector(self, sector):
         """ Ensure all blocks in the given sector that should be shown are
@@ -381,7 +381,7 @@ class Model(object):
         sector : tuple of len 3
             The area of the horizontal plane which is being checked for shown blocks
         """
-        for position in self.sectors.get(sector, []):
+        for position in self.sectors.get(sector, []): #checks a sectors blocks if they are exposed then the textures will be set
             if position not in self.shown and self.exposed(position):
                 self.show_block(position, False)
 
@@ -393,7 +393,7 @@ class Model(object):
         sector : tuple of len 3
             The area of the horizontal plane which is being checked for hidden blocks
         """
-        for position in self.sectors.get(sector, []):
+        for position in self.sectors.get(sector, []): #this will then check the sectors textures to be hidden if not exposed on faces
             if position in self.shown:
                 self.hide_block(position, False)
 
@@ -411,8 +411,8 @@ class Model(object):
         before_set = set()
         after_set = set()
         pad = 4
-        for dx in xrange(-pad, pad + 1):
-            for dy in [0]:  # xrange(-pad, pad + 1):
+        for dx in xrange(-pad, pad + 1):        
+            for dy in [0]:  # xrange(-pad, pad + 1): This cacluated below to show which sectore the player moves to or from
                 for dz in xrange(-pad, pad + 1):
                     if dx ** 2 + dy ** 2 + dz ** 2 > (pad + 1) ** 2:
                         continue
@@ -425,7 +425,7 @@ class Model(object):
         show = after_set - before_set
         hide = before_set - after_set
         for sector in show:
-            self.show_sector(sector)
+            self.show_sector(sector)   
         for sector in hide:
             self.hide_sector(sector)
 
@@ -437,12 +437,12 @@ class Model(object):
 			The function which is being enqueued to be called lateral
 		args : list of function arguements
         """
-        self.queue.append((func, args))
+        self.queue.append((func, args)) #appends a function call to the queue of fucntions that will be called
 
     def _dequeue(self):
         """ Pop the top function from the internal queue and call it.
         """
-        func, args = self.queue.popleft()
+        func, args = self.queue.popleft() #after doing a commadn fucntion it will then be removed from the overall queue
         func(*args)
 
     def process_queue(self):
@@ -452,8 +452,8 @@ class Model(object):
         add_block() or remove_block() was called with immediate=False
         """
         start = time.clock()
-        while self.queue and time.clock() - start < 1.0 / TICKS_PER_SEC:
-            self._dequeue()
+        while self.queue and time.clock() - start < 1.0 / TICKS_PER_SEC:  #The TICKS is used as the time it will parse through the QUEUE before taking a break 
+            self._dequeue()                                                #this is hard coded as 60 above
 
     def process_entire_queue(self):
         """ Process the entire queue with no breaks.
@@ -534,8 +534,8 @@ class Window(pyglet.window.Window):
         the game will ignore the mouse. When captured the mouse is locked to the 
 		center of the game window and affects the in game viewpoint
         """
-        super(Window, self).set_exclusive_mouse(exclusive)
-        self.exclusive = exclusive
+        super(Window, self).set_exclusive_mouse(exclusive) #This is specifcally called thanks to the esc key being called
+        self.exclusive = exclusive                         #locks the mouse
 
     def get_sight_vector(self):
         """ Returns the current line of sight vector indicating the direction
@@ -568,8 +568,8 @@ class Window(pyglet.window.Window):
         if any(self.strafe):
             x, y = self.rotation
             strafe = math.degrees(math.atan2(*self.strafe))
-            y_angle = math.radians(y)
-            x_angle = math.radians(x + strafe)
+            y_angle = math.radians(y)             #This is set thanks to the math being imported 
+            x_angle = math.radians(x + strafe)    #this sets the base values for the movments
             if self.flying:
                 m = math.cos(y_angle)
                 dy = math.sin(y_angle)
@@ -578,10 +578,10 @@ class Window(pyglet.window.Window):
                     dy = 0.0
                     m = 1
                 if self.strafe[0] > 0:
-                    # Moving backwards.
+                    # Moving backwards. while keeping the camera straight is a strafe
                     dy *= -1
                 # When you are flying up or down, you have less left and right
-                # motion.
+                # motion, which is important as it limits and might be seen as an error if not read
                 dx = math.cos(x_angle) * m
                 dz = math.sin(x_angle) * m
             else:
@@ -589,7 +589,7 @@ class Window(pyglet.window.Window):
                 dx = math.cos(x_angle)
                 dz = math.sin(x_angle)
         else:
-            dy = 0.0
+            dy = 0.0   #if not moving in any direction than teh values should not change
             dx = 0.0
             dz = 0.0
         return (dx, dy, dz)
@@ -604,11 +604,11 @@ class Window(pyglet.window.Window):
             The change in time since the last call.
         """
         self.model.process_queue()
-        sector = sectorize(self.position)
+        sector = sectorize(self.position)     #Gets the sector so it can be updated
         if sector != self.sector:
-            self.model.change_sectors(self.sector, sector)
+            self.model.change_sectors(self.sector, sector) #It views the surronding sectors for use
             if self.sector is None:
-                self.model.process_entire_queue()
+                self.model.process_entire_queue() #This goes through the queue checking each sectors uses
             self.sector = sector
         m = 8
         dt = min(dt, 0.2)
@@ -672,7 +672,7 @@ class Window(pyglet.window.Window):
                 d = (pos[i] - normpos[i]) * face[i]
                 if d < pad:
                     continue
-                for dy in xrange(height):  # check each height
+                for dy in xrange(height):  # check each height of each block to check agianst the blocks themselves
                     op = list(normpos)
                     op[1] -= dy
                     op[i] += face[i]
@@ -702,16 +702,16 @@ class Window(pyglet.window.Window):
             mouse button was clicked.
         """
         if self.exclusive:
-            vector = self.get_sight_vector()
-            block, previous = self.model.hit_test(self.position, vector)
+            vector = self.get_sight_vector() #gets how ar maximum view for the player is 
+            block, previous = self.model.hit_test(self.position, vector) #this will then check agiasnt which block if any it is pressed
             if (button == mouse.RIGHT) or \
                     ((button == mouse.LEFT) and (modifiers & key.MOD_CTRL)):
                 # ON OSX, control + left click = right click.
                 if previous:
                     self.model.add_block(previous, self.block)
             elif button == pyglet.window.mouse.LEFT and block:
-                texture = self.model.world[block]
-                if texture != STONE:
+                texture = self.model.world[block] #Checks the proper texture agianst the click
+                if texture != STONE:   #STONE is defined as unbreakable right here
                     self.model.remove_block(block)
         else:
             self.set_exclusive_mouse(True)
@@ -731,7 +731,7 @@ class Window(pyglet.window.Window):
         if self.exclusive:
             m = 0.15
             x, y = self.rotation
-            x, y = x + dx * m, y + dy * m
+            x, y = x + dx * m, y + dy * m #Calculating for how fast the players vision and viewpoint changes
             y = max(-90, min(90, y))
             self.rotation = (x, y)
 
@@ -752,22 +752,22 @@ class Window(pyglet.window.Window):
             Number representing any modifying keys that were pressed.
         """
         if symbol == key.W:
-            self.strafe[0] -= 1
+            self.strafe[0] -= 1 #sets -1 if W for forward
         elif symbol == key.S:
-            self.strafe[0] += 1
+            self.strafe[0] += 1 #sets +1 if S is pressed for backwards
         elif symbol == key.A:
-            self.strafe[1] -= 1
+            self.strafe[1] -= 1 #sets -1 if D is pressed for right
         elif symbol == key.D:
-            self.strafe[1] += 1
+            self.strafe[1] += 1 #sets +1 if A is pressed for left
         elif symbol == key.SPACE:
-            if self.dy == 0:
+            if self.dy == 0:  #if space is pressed used jump speed to jump
                 self.dy = JUMP_SPEED
         elif symbol == key.ESCAPE:
-            self.set_exclusive_mouse(False)
+            self.set_exclusive_mouse(False) #esc sets exclusive mouse
         elif symbol == key.TAB:
-            self.flying = not self.flying
+            self.flying = not self.flying #tab will set flying generated off of fly speed
         elif symbol in self.num_keys:
-            index = (symbol - self.num_keys[0]) % len(self.inventory)
+            index = (symbol - self.num_keys[0]) % len(self.inventory) #sets which block is placed on right click
             self.block = self.inventory[index]
 
     def on_key_release(self, symbol, modifiers):
@@ -784,13 +784,13 @@ class Window(pyglet.window.Window):
             Number representing any modifying keys that were pressed.
         """
         if symbol == key.W:
-            self.strafe[0] += 1
+            self.strafe[0] += 1 #on release of W +1 is set to stop moving forwards
         elif symbol == key.S:
-            self.strafe[0] -= 1
+            self.strafe[0] -= 1#on release of S -1 is set to stop moving backward
         elif symbol == key.A:
-            self.strafe[1] += 1
+            self.strafe[1] += 1#on release of A +1 is set to stop moving left
         elif symbol == key.D:
-            self.strafe[1] -= 1
+            self.strafe[1] -= 1#on release of D -1 is set to stop moving right
 
     def on_resize(self, width, height):
         """ Called when the window is resized to a new `width` and `height`.
@@ -801,9 +801,9 @@ class Window(pyglet.window.Window):
 		width: px width of new window
 		height: px height of new window
         """
-        # label
+        # label, used to set the height constant
         self.label.y = height - 10
-        # reticle
+        # reticle, to represent where the viewpoint of the player is 
         if self.reticle:
             self.reticle.delete()
         x, y = self.width // 2, self.height // 2
@@ -816,10 +816,10 @@ class Window(pyglet.window.Window):
         """Helper function to configure OpenGL to draw in 2d.
 		See OpenGL documentation for more.
         """
-        width, height = self.get_size()
+        width, height = self.get_size() #Checks wrer the view is looking and then the sets the value for 2D implementation
         glDisable(GL_DEPTH_TEST)
-        glViewport(0, 0, width, height)
-        glMatrixMode(GL_PROJECTION)
+        glViewport(0, 0, width, height) #helps to set he view point of the player using GL
+        glMatrixMode(GL_PROJECTION)  
         glLoadIdentity()
         glOrtho(0, width, 0, height, -1, 1)
         glMatrixMode(GL_MODELVIEW)
@@ -831,7 +831,7 @@ class Window(pyglet.window.Window):
         """
         width, height = self.get_size()
         glEnable(GL_DEPTH_TEST)
-        glViewport(0, 0, width, height)
+        glViewport(0, 0, width, height) #gets the view port so it can properly generate a 3D enviroment for the player
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         gluPerspective(65.0, width / float(height), 0.1, 60.0)
@@ -846,22 +846,22 @@ class Window(pyglet.window.Window):
     def on_draw(self):
         """ Called by pyglet to draw the canvas.
         """
-        self.clear()
-        self.set_3d()
+        self.clear() #clears the entire map canvas
+        self.set_3d() #sets the 3D view of the program
         glColor3d(1, 1, 1)
         self.model.batch.draw()
         self.draw_focused_block()
-        self.set_2d()
+        self.set_2d()       #sets the 2D view for the program 
         self.draw_label()
-        self.draw_reticle()
+        self.draw_reticle() #sets the players cross hair reticle on the screen 
 
     def draw_focused_block(self):
         """ Draw black edges around the block that is currently under the
         crosshairs.
         """
-        vector = self.get_sight_vector()
+        vector = self.get_sight_vector() #gets the sight of the player
         block = self.model.hit_test(self.position, vector)[0]
-        if block:
+        if block: #if ther is block then it will check agianst vertices of the block and draw around it to set the focus on that block
             x, y, z = block
             vertex_data = cube_vertices(x, y, z, 0.51)
             glColor3d(0, 0, 0)
@@ -874,7 +874,7 @@ class Window(pyglet.window.Window):
 		Label shows players current FPS, and x,y,z coordinate location.
         """
         x, y, z = self.position
-        self.label.text = '%02d (%.2f, %.2f, %.2f) %d / %d' % (
+        self.label.text = '%02d (%.2f, %.2f, %.2f) %d / %d' % ( #This sets the top left lables for the player so they can see coordinates and other information 
             pyglet.clock.get_fps(), x, y, z,
             len(self.model._shown), len(self.model.world))
         self.label.draw()
@@ -882,8 +882,8 @@ class Window(pyglet.window.Window):
     def draw_reticle(self):
         """ Draw the crosshairs in the center of the screen.
         """
-        glColor3d(0, 0, 0)
-        self.reticle.draw(GL_LINES)
+        glColor3d(0, 0, 0)   #Sets the color of the cross hairs from GL
+        self.reticle.draw(GL_LINES)  #creates a simple reticle from Lines
 
 
 def setup_fog():
@@ -927,7 +927,7 @@ def setup():
 def main():
     window = Window(width=800, height=600, caption='Pyglet', resizable=True)
     # Hide the mouse cursor and prevent the mouse from leaving the window.
-    window.set_exclusive_mouse(True)
+    window.set_exclusive_mouse(True) #this is done on the exclusive set when esc is pressed
     setup()
     pyglet.app.run()
 
