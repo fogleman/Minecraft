@@ -13,7 +13,7 @@ class NoiseGen:
     def __init__(self, seed):
         self.seed = seed
         self.noiseParams = NoiseParameters(
-            7, 50, 450, 0.3, 20
+            9, 51, 470, 0.25, 32
         )
 
     def _getNoise2(self, n):
@@ -61,7 +61,7 @@ class NoiseGen:
 
         result = (((totalValue / 2.1) + 1.2) * self.noiseParams.amplitude) + self.noiseParams.heightOffset
 
-        return (totalValue / 10) + self.noiseParams.heightOffset
+        return (totalValue / 5) + self.noiseParams.heightOffset
 
 
 
