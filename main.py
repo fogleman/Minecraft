@@ -11,6 +11,8 @@ from pyglet.gl import *
 from pyglet.graphics import TextureGroup
 from pyglet.window import key, mouse
 
+from world_gen import NoiseGen
+
 TICKS_PER_SEC = 60
 
 # Size of sectors used to ease block loading.
@@ -159,9 +161,29 @@ class Model(object):
         """ Initialize the world by placing all the blocks.
 
         """
-        n = 80  # 1/2 width and height of world
+        gen = NoiseGen(454242)
+
+        n = 100  # 1/2 width and height of world
         s = 1  # step size
         y = 0  # initial y height
+
+        #too lazy to do this properly lol
+        heightMap = []
+        for x in xrange(0, n + 1, s):
+            for z in xrange(0, n + 1, s):
+                heightMap.append(0)
+
+        
+
+        for x in xrange(0, n + 1, s):
+            for z in xrange(0, n + 1, s):
+                self.add_block((x, y - 2, z), GRASS, immediate=False)
+                self.add_block((x, y - 3, z), STONE, immediate=False)
+
+
+
+
+
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
                 # create a layer stone an grass everywhere.
