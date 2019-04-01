@@ -164,7 +164,7 @@ class Model(object):
         """ Initialize the world by placing all the blocks.
 
         """
-        gen = NoiseGen(123456789)
+        gen = NoiseGen(452692)
 
         n = 128 #size of the world
         s = 1  # step size
@@ -467,7 +467,7 @@ class Window(pyglet.window.Window):
 
         # Current (x, y, z) position in the world, specified with floats. Note
         # that, perhaps unlike in math class, the y-axis is the vertical axis.
-        self.position = (30, 50, 30)
+        self.position = (30, 50, 80)
 
         # First element is rotation of the player in the x-z plane (ground
         # plane) measured from the z-axis down. The second is the rotation
@@ -906,7 +906,7 @@ def setup():
 
 
 def main():
-    window = Window(width=1280, height=720, caption='Minecraft In 10 Seconds', resizable=True)
+    window = Window(width=1280, height=720, caption='Minecraft In 5 Seconds', resizable=True)
     # Hide the mouse cursor and prevent the mouse from leaving the window.
     window.set_exclusive_mouse(True)
     setup()
