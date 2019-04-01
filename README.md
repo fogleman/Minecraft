@@ -1,45 +1,18 @@
 # Minecraft
 
-Simple Minecraft-inspired demo written in Python and Pyglet.
 
-http://www.youtube.com/watch?v=kC3lwK631X8
+This is a modded version of Fogleman's "Minecraft" which was created for an April Fools video.
 
-**Like this project?**
+https://github.com/fogleman/Minecraft
 
-You might also like my other Minecraft clone written in C using modern OpenGL (GL shader language). It performs better, has better terrain generation and saves state to a sqlite database. See here:
+Video here: <TO DO>
 
-https://github.com/fogleman/Craft
-
-## Goals and Vision
-
-I would like to see this project turn into an educational tool. Kids love Minecraft and Python is a great first language.
-This is a good opportunity to get children excited about programming.
-
-The code should become well commented and more easily configurable. It should be easy to make some simple changes
-and see the results quickly.
-
-I think it would be great to turn the project into more of a library / API... a Python package that you import and then
-use / configure to setup a world and run it. Something along these lines...
-
-
-```python
-import mc
-
-world = mc.World(...)
-world.set_block(x, y, z, mc.DIRT)
-mc.run(world)
-```
-
-The API could contain functionality for the following:
-
-- Easily configurable parameters like gravity, jump velocity, walking speed, etc.
-- Hooks for terrain generation.
 
 ## How to Run
 
 ```shell
 pip install pyglet
-git clone https://github.com/fogleman/Minecraft.git
+git clone https://github.com/Hopson97/Minecraft-In-5-Seconds.git
 cd Minecraft
 python main.py
 ```
@@ -80,27 +53,3 @@ For git:
 
 See the [wiki](https://github.com/fogleman/Minecraft/wiki) for this project to install Python, and other tips.
 
-## How to Play
-
-### Moving
-
-- W: forward
-- S: back
-- A: strafe left
-- D: strafe right
-- Mouse: look around
-- Space: jump
-- Tab: toggle flying mode
-
-### Building
-
-- Selecting type of block to create:
-    - 1: brick
-    - 2: grass
-    - 3: sand
-- Mouse left-click: remove block
-- Mouse right-click: create block
-
-### Quitting
-
-- ESC: release mouse, then close window
