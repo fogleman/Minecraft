@@ -84,6 +84,7 @@ BRICK = tex_coords((2, 0), (2, 0), (2, 0))
 STONE = tex_coords((2, 1), (2, 1), (2, 1))
 WOOD = tex_coords((3, 1), (3, 1), (3, 1))
 LEAF = tex_coords((3, 0), (3, 0), (3, 0))
+WATER = tex_coords((0, 2), (0, 2), (0, 2))
 
 FACES = [
     ( 0, 1, 0),
@@ -182,21 +183,29 @@ class Model(object):
         for x in xrange(0, n, s):
             for z in xrange(0, n, s):
                 h = heightMap[z + x * n]
+                if (h < 15):
+                    self.add_block((x, h, z), SAND, immediate=False)
+                    for y in range (h, 15):
+                        self.add_block((x, y, z), WATER, immediate=False)
+                    continue
+                if (h < 18):
+                    self.add_block((x, h, z), SAND, immediate=False)
                 self.add_block((x, h, z), GRASS, immediate=False)
                 for y in xrange(h - 1, 0, -1):
                     self.add_block((x, y, z), STONE, immediate=False)
                 #Maybe add tree at this (x, z)
-                if random.randrange(0, 1000) > 995:
-                    treeHeight = random.randrange(5, 7)
-                    #Tree trunk
-                    for y in xrange(h + 1, h + treeHeight):
-                        self.add_block((x, y, z), WOOD, immediate=False)
-                    #Tree leaves
-                    leafh = h + treeHeight
-                    for lz in xrange(z + -2, z + 3):
-                        for lx in xrange(x + -2, x + 3): 
-                            for ly in xrange(3):
-                                self.add_block((lx, leafh + ly, lz), LEAF, immediate=False)
+                if (h > 20):
+                    if random.randrange(0, 1000) > 990:
+                        treeHeight = random.randrange(5, 7)
+                        #Tree trunk
+                        for y in xrange(h + 1, h + treeHeight):
+                            self.add_block((x, y, z), WOOD, immediate=False)
+                        #Tree leaves
+                        leafh = h + treeHeight
+                        for lz in xrange(z + -2, z + 3):
+                            for lx in xrange(x + -2, x + 3): 
+                                for ly in xrange(3):
+                                    self.add_block((lx, leafh + ly, lz), LEAF, immediate=False)
 
     def hit_test(self, position, vector, max_distance=8):
         """ Line of sight search from current position. If a block is
