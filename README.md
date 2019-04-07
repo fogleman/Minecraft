@@ -5,7 +5,7 @@ This is a modded version of Fogleman's "Minecraft" which was created for an Apri
 
 https://github.com/fogleman/Minecraft
 
-Video here: <TO DO>
+Video here: https://www.youtube.com/watch?v=S4EUQD9QIzc&lc=z23mubkgxpapjvhot04t1aokgeofqomvondp5x4qnz1abk0h00410
 
 
 ## How to Run
