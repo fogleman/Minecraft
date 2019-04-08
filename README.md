@@ -13,7 +13,7 @@ Video here: https://www.youtube.com/watch?v=S4EUQD9QIzc&lc=z23mubkgxpapjvhot04t1
 ```shell
 pip install pyglet
 git clone https://github.com/Hopson97/Minecraft-In-5-Seconds.git
-cd Minecraft
+cd Minecraft-In-5-Seconds
 python main.py
 ```
 
