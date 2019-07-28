@@ -1,39 +1,13 @@
 # Minecraft
 
-Simple Minecraft-inspired demo written in Python and Pyglet.
+Minecraft-inspired demo written in Python and Pyglet.
 
 http://www.youtube.com/watch?v=kC3lwK631X8
 
-**Like this project?**
-
-You might also like my other Minecraft clone written in C using modern OpenGL (GL shader language). It performs better, has better terrain generation and saves state to a sqlite database. See here:
-
-https://github.com/fogleman/Craft
-
 ## Goals and Vision
 
-I would like to see this project turn into an educational tool. Kids love Minecraft and Python is a great first language.
-This is a good opportunity to get children excited about programming.
-
-The code should become well commented and more easily configurable. It should be easy to make some simple changes
-and see the results quickly.
-
-I think it would be great to turn the project into more of a library / API... a Python package that you import and then
-use / configure to setup a world and run it. Something along these lines...
-
-
-```python
-import mc
-
-world = mc.World(...)
-world.set_block(x, y, z, mc.DIRT)
-mc.run(world)
-```
-
-The API could contain functionality for the following:
-
-- Easily configurable parameters like gravity, jump velocity, walking speed, etc.
-- Hooks for terrain generation.
+The purpose of this code is as an engaging educational tool.
+Everyone loves games; and taking them apart to see how they work is the best way to learn to code.
 
 ## How to Run
 
@@ -70,8 +44,8 @@ pip install https://pyglet.googlecode.com/files/pyglet-1.2alpha1.tar.gz
 
 For pip:
 
-- Mac or Linux: install with `sudo easy_install pip` (Mac or Linux) - or (Linux) find a package called something like 'python-pip' in your package manager.
-- Windows: [install Distribute then Pip](http://stackoverflow.com/a/12476379/992887) using the linked .MSI installers.
+- Mac or Linux: install with `sudo easy_install pip` (Mac or Linux) - or (Linux) find a package called 'python-pip' in your package manager.
+- Windows: [install Python 2 Distribution then Pip](http://stackoverflow.com/a/12476379/992887) using the linked .MSI installers.
 
 For git:
 
@@ -104,3 +78,5 @@ See the [wiki](https://github.com/fogleman/Minecraft/wiki) for this project to i
 ### Quitting
 
 - ESC: release mouse, then close window
+
+Please view the Presentation file in this folder for more instructions.
