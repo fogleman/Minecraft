@@ -30,6 +30,7 @@ python main.py
     - 1: brick
     - 2: grass
     - 3: sand
+	- 4: debug block
 - Mouse left-click: remove block
 - Mouse right-click: create block
 
