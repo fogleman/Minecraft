@@ -1,6 +1,9 @@
 # Minecraft
 
-Simple Minecraft-inspired demo written in Python and Pyglet.
+Simple Minecraft-inspired demo written in Python and Pyglet. 
+Minecraft is a 3D based game with simulations of electrical
+ circuitry and line and block based coding. 
+This game is mainly played by kids form 7-12.
 
 http://www.youtube.com/watch?v=kC3lwK631X8
 
