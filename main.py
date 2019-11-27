@@ -779,8 +779,13 @@ class Window(pyglet.window.Window):
         """
         width, height = self.get_size()
         glDisable(GL_DEPTH_TEST)
-        viewport = self.get_viewport_size()
-        glViewport(0, 0, max(1, viewport[0]), max(1, viewport[1]))
+
+        if hasattr(self, "get_viewport_size") and callable(getattr(self, "get_viewport_size")):
+            viewport = self.get_viewport_size()
+            glViewport(0, 0, max(1, viewport[0]), max(1, viewport[1]))
+        else:
+            glViewport(0, 0, max(1, width), max(1, height))
+
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         glOrtho(0, max(1, width), 0, max(1, height), -1, 1)
@@ -793,8 +798,13 @@ class Window(pyglet.window.Window):
         """
         width, height = self.get_size()
         glEnable(GL_DEPTH_TEST)
-        viewport = self.get_viewport_size()
-        glViewport(0, 0, max(1, viewport[0]), max(1, viewport[1]))
+
+        if hasattr(self, "get_viewport_size") and callable(getattr(self, "get_viewport_size")):
+            viewport = self.get_viewport_size()
+            glViewport(0, 0, max(1, viewport[0]), max(1, viewport[1]))
+        else:
+            glViewport(0, 0, max(1, width), max(1, height))
+
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         gluPerspective(65.0, width / float(height), 0.1, 60.0)
