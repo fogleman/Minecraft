@@ -53,3 +53,5 @@ For git:
 
 See the [wiki](https://github.com/fogleman/Minecraft/wiki) for this project to install Python, and other tips.
 
+
+[![Run on Repl.it](https://repl.it/badge/github/Hopson97/Minecraft-In-5-Seconds)](https://repl.it/github/Hopson97/Minecraft-In-5-Seconds)
