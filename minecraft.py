@@ -18,7 +18,7 @@ TICKS_PER_SEC = 60
 # Size of sectors used to ease block loading.
 SECTOR_SIZE = 16
 
-WALKING_SPEED = 5
+WALKING_SPEED = 6
 FLYING_SPEED = 15
 
 GRAVITY = 20.0
@@ -457,6 +457,11 @@ class Window(pyglet.window.Window):
         # When flying gravity has no effect and speed is increased.
         self.flying = False
 
+        # Used for constant jumping. If the space bar is held down, this is true, otherwise, it's false
+        self.jumping = False
+
+        self.jumped = False
+
         # Strafing is moving lateral to the direction you are facing,
         # e.g. moving to the left or right while continuing to face forward.
         #
@@ -607,6 +612,17 @@ class Window(pyglet.window.Window):
         """
         # walking
         speed = FLYING_SPEED if self.flying else WALKING_SPEED
+
+        if self.jumping:
+            if self.dy == 0:
+                self.dy = JUMP_SPEED
+                self.jumped = True
+        else:
+            if self.dy == 0:
+                self.jumped = False
+        if self.jumped:
+            speed += 0.7
+
         d = dt * speed # distance covered this tick.
         dx, dy, dz = self.get_motion_vector()
         # New position in space, before accounting for gravity.
@@ -742,8 +758,7 @@ class Window(pyglet.window.Window):
         elif symbol == key.D:
             self.strafe[1] += 1
         elif symbol == key.SPACE:
-            if self.dy == 0:
-                self.dy = JUMP_SPEED
+            self.jumping = True
         elif symbol == key.ESCAPE:
             self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
@@ -772,6 +787,8 @@ class Window(pyglet.window.Window):
             self.strafe[1] += 1
         elif symbol == key.D:
             self.strafe[1] -= 1
+        elif symbol == key.SPACE:
+            self.jumping = False
 
     def on_resize(self, width, height):
         """ Called when the window is resized to a new `width` and `height`.
