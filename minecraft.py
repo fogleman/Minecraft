@@ -18,8 +18,12 @@ TICKS_PER_SEC = 60
 # Size of sectors used to ease block loading.
 SECTOR_SIZE = 16
 
-WALKING_SPEED = 6
+# Movement variables
+WALKING_SPEED = 5
 FLYING_SPEED = 15
+CROUCH_SPEED = 2
+SPRINT_SPEED = 7
+SPRINT_FOV = SPRINT_SPEED / 2
 
 GRAVITY = 20.0
 MAX_JUMP_HEIGHT = 1.0 # About the height of a block.
@@ -33,7 +37,9 @@ MAX_JUMP_HEIGHT = 1.0 # About the height of a block.
 JUMP_SPEED = math.sqrt(2 * GRAVITY * MAX_JUMP_HEIGHT)
 TERMINAL_VELOCITY = 50
 
+# Player variables
 PLAYER_HEIGHT = 2
+PLAYER_FOV = 80.0
 
 if sys.version_info[0] >= 3:
     xrange = range
@@ -434,8 +440,8 @@ class Model(object):
         add_block() or remove_block() was called with immediate=False
 
         """
-        start = time.clock()
-        while self.queue and time.clock() - start < 1.0 / TICKS_PER_SEC:
+        start = time.process_time()
+        while self.queue and time.process_time() - start < 1.0 / TICKS_PER_SEC:
             self._dequeue()
 
     def process_entire_queue(self):
@@ -457,10 +463,23 @@ class Window(pyglet.window.Window):
         # When flying gravity has no effect and speed is increased.
         self.flying = False
 
-        # Used for constant jumping. If the space bar is held down, this is true, otherwise, it's false
+        # Used for constant jumping. If the space bar is held down,
+        # this is true, otherwise, it's false
         self.jumping = False
 
+        # If the player actually jumped, this is true
         self.jumped = False
+
+        # If this is true, a crouch offset is added to the final glTranslate
+        self.crouch = False
+
+        # Player sprint
+        self.sprinting = False
+
+        # This is an offset value so stuff like speed potions can also be easily added
+        self.fov_offset = 0
+
+        self.collision_types = {"top": False, "bottom": False, "right": False, "left": False}
 
         # Strafing is moving lateral to the direction you are facing,
         # e.g. moving to the left or right while continuing to face forward.
@@ -611,14 +630,21 @@ class Window(pyglet.window.Window):
 
         """
         # walking
-        speed = FLYING_SPEED if self.flying else WALKING_SPEED
+        if self.flying:
+            speed = FLYING_SPEED
+        elif self.sprinting:
+            speed = SPRINT_SPEED
+        elif self.crouch:
+            speed = CROUCH_SPEED
+        else:
+            speed = WALKING_SPEED
 
         if self.jumping:
-            if self.dy == 0:
+            if self.collision_types["top"]:
                 self.dy = JUMP_SPEED
                 self.jumped = True
         else:
-            if self.dy == 0:
+            if self.collision_types["top"]:
                 self.jumped = False
         if self.jumped:
             speed += 0.7
@@ -636,9 +662,20 @@ class Window(pyglet.window.Window):
             self.dy = max(self.dy, -TERMINAL_VELOCITY)
             dy += self.dy * dt
         # collisions
-        x, y, z = self.position
+        old_pos = self.position
+        x, y, z = old_pos
         x, y, z = self.collide((x + dx, y + dy, z + dz), PLAYER_HEIGHT)
         self.position = (x, y, z)
+
+        # Sptinting stuff. If the player stops moving in the x and z direction, the player stops sprinting
+        # and the sprint fov is subtracted from the fov offset
+        if old_pos[0]-self.position[0] == 0 and old_pos[2]-self.position[2] == 0:
+            disablefov = False
+            if self.sprinting:
+                disablefov = True
+            self.sprinting = False
+            if disablefov:
+                self.fov_offset -= SPRINT_FOV
 
     def collide(self, position, height):
         """ Checks to see if the player at the given `position` and `height`
@@ -664,6 +701,7 @@ class Window(pyglet.window.Window):
         pad = 0.25
         p = list(position)
         np = normalize(position)
+        self.collision_types = {"top":False,"bottom":False,"right":False,"left":False}
         for face in FACES:  # check all surrounding blocks
             for i in xrange(3):  # check each dimension independently
                 if not face[i]:
@@ -679,9 +717,13 @@ class Window(pyglet.window.Window):
                     if tuple(op) not in self.model.world:
                         continue
                     p[i] -= (d - pad) * face[i]
-                    if face == (0, -1, 0) or face == (0, 1, 0):
-                        # You are colliding with the ground or ceiling, so stop
-                        # falling / rising.
+                    # If you are colliding with the ground or ceiling, stop
+                    # falling / rising.
+                    if face == (0, -1, 0):
+                        self.collision_types["top"] = True
+                        self.dy = 0
+                    if face == (0, 1, 0):
+                        self.collision_types["bottom"] = True
                         self.dy = 0
                     break
         return tuple(p)
@@ -761,6 +803,16 @@ class Window(pyglet.window.Window):
             self.jumping = True
         elif symbol == key.ESCAPE:
             self.set_exclusive_mouse(False)
+        elif symbol == key.LSHIFT:
+            self.crouch = True
+            if self.sprinting:
+                self.fov_offset -= SPRINT_FOV
+                self.sprinting = False
+        elif symbol == key.R:
+            if not self.crouch:
+                if not self.sprinting:
+                    self.fov_offset += SPRINT_FOV
+                self.sprinting = True
         elif symbol == key.TAB:
             self.flying = not self.flying
         elif symbol in self.num_keys:
@@ -789,6 +841,8 @@ class Window(pyglet.window.Window):
             self.strafe[1] -= 1
         elif symbol == key.SPACE:
             self.jumping = False
+        elif symbol == key.LSHIFT:
+            self.crouch = False
 
     def on_resize(self, width, height):
         """ Called when the window is resized to a new `width` and `height`.
@@ -829,14 +883,17 @@ class Window(pyglet.window.Window):
         glViewport(0, 0, max(1, viewport[0]), max(1, viewport[1]))
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        gluPerspective(65.0, width / float(height), 0.1, 60.0)
+        gluPerspective(PLAYER_FOV + self.fov_offset, width / float(height), 0.1, 60.0)
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         x, y = self.rotation
         glRotatef(x, 0, 1, 0)
         glRotatef(-y, math.cos(math.radians(x)), 0, math.sin(math.radians(x)))
         x, y, z = self.position
-        glTranslatef(-x, -y, -z)
+        if self.crouch:
+            glTranslatef(-x, -y+0.2, -z)
+        else:
+            glTranslatef(-x, -y, -z)
 
     def on_draw(self):
         """ Called by pyglet to draw the canvas.
