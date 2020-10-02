@@ -1,4 +1,4 @@
-# Minecraft
+# Minecraft - A Amazing Project
 
 Simple Minecraft-inspired demo written in Python and Pyglet.
 
