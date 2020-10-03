@@ -12,7 +12,7 @@ https://github.com/fogleman/Craft
 
 ## Goals and Vision
 
-I would like to see this project turn into an educational tool. Kids love Minecraft and Python is a great first language.
+I would like to see this project turn into an educational tool. Kids love playing Minecraft and Python is a great first language.
 This is a good opportunity to get children excited about programming.
 
 The code should become well commented and more easily configurable. It should be easy to make some simple changes
@@ -52,7 +52,8 @@ On Mac OS X, you may have an issue with running Pyglet in 64-bit mode. Try runni
 arch -i386 python main.py
 ```
 
-If that doesn't work, set Python to run in 32-bit mode by default:
+If that doesn't work,Right-click the python.exe file, or a shortcut to the python.exe file, and select Properties. Click the Compatibility tab. Then check Run this program in compatibility mode for and select an appropriate option. Then try launching it again:
+
 
 ```shell
 defaults write com.apple.versioner.python Prefer-32-Bit -bool yes 
