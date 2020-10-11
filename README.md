@@ -4,6 +4,9 @@ Simple Minecraft-inspired demo written in Python and Pyglet.
 
 http://www.youtube.com/watch?v=kC3lwK631X8
 
+this flok is py shenjackyuanjie
+
+
 **Like this project?**
 
 You might also like my other Minecraft clone written in C using modern OpenGL (GL shader language). It performs better, has better terrain generation and saves state to a sqlite database. See here:
