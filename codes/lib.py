@@ -7,7 +7,7 @@ import time
 
 from collections import deque
 from pyglet import image
-from pyglet.gl import *
+# from pyglet.gl import *
 from pyglet.graphics import TextureGroup
 from pyglet.window import key, mouse
 

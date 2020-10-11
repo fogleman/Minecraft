@@ -10,7 +10,7 @@ from pyglet import image
 from pyglet.gl import *
 from pyglet.graphics import TextureGroup
 from pyglet.window import key, mouse
-from lib import *
+from codes.lib import *
 
 TICKS_PER_SEC = 60
 
@@ -831,7 +831,7 @@ def setup_fog():
     glFogi(GL_FOG_MODE, GL_LINEAR)
     # How close and far away fog starts and ends. The closer the start and end,
     # the denser the fog in the fog range.
-    glFogf(GL_FOG_START, 20.0)
+    glFogf(GL_FOG_START, 40.0)
     glFogf(GL_FOG_END, 60.0)
 
 
@@ -855,7 +855,7 @@ def setup():
 
 
 def main():
-    window = Window(width=800, height=600, caption='Pyglet', resizable=True)
+    window = Window(width=800, height=600, caption='minecraft PE', resizable=True)
     # Hide the mouse cursor and prevent the mouse from leaving the window.
     window.set_exclusive_mouse(True)
     setup()
