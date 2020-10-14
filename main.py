@@ -11,6 +11,7 @@ from pyglet.gl import *
 from pyglet.graphics import TextureGroup
 from pyglet.window import key, mouse
 from codes.lib import *
+from codes import *
 
 TICKS_PER_SEC = 60
 
@@ -821,6 +822,7 @@ def setup_fog():
     """ Configure the OpenGL fog properties.
 
     """
+    """
     # Enable fog. Fog "blends a fog color with each rasterized pixel fragment's
     # post-texturing color."
     glEnable(GL_FOG)
@@ -834,6 +836,7 @@ def setup_fog():
     # the denser the fog in the fog range.
     glFogf(GL_FOG_START, 50.0)
     glFogf(GL_FOG_END, 60.0)
+    """
 
 
 def setup():
@@ -856,7 +859,7 @@ def setup():
 
 
 def main():
-    window = Window(width=800, height=600,
+    window = Window(width=1800, height=800,
                     caption='minecraft PE', resizable=True)
     # Hide the mouse cursor and prevent the mouse from leaving the window.
     window.set_exclusive_mouse(True)
