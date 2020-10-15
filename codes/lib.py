@@ -67,8 +67,18 @@ def get_TEXTURES(main_path):
     return
 
 def folder_open(path, open_all=False, re_match=None):
-    """
-    path
+    """folder opener by shenjackyuanjie
+    Parameters
+    ----------
+    path : str of path
+
+    open_all : bool open every folder?
+
+    re_match : re.compile do match?
+
+    Returns
+    -------
+    list of what you want
     """
     main_lists = os.listdir(path)
     get_items = []
