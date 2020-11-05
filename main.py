@@ -66,9 +66,7 @@ def normalize(position):
 
     Returns
     -------
-    block_position : tuple of ints of len 3
-
-    """
+    block_position : tuple of ints of len 3"""
     x, y, z = position
     x, y, z = (int(round(x)), int(round(y)), int(round(z)))
     return (x, y, z)
@@ -83,9 +81,7 @@ def sectorize(position):
 
     Returns
     -------
-    sector : tuple of len 3
-
-    """
+    sector : tuple of len 3"""
     x, y, z = normalize(position)
     x, y, z = x // SECTOR_SIZE, y // SECTOR_SIZE, z // SECTOR_SIZE
     return (x, 0, z)
@@ -121,9 +117,7 @@ class Model(object):
         self._initialize()
 
     def _initialize(self):
-        """ Initialize the world by placing all the blocks.
-
-        """
+        """ Initialize the world by placing all the blocks."""
         n = 80  # 1/2 width and height of world
         s = 1  # step size
         y = 0  # initial y height
@@ -169,9 +163,7 @@ class Model(object):
         vector : tuple of len 3
             The line of sight vector.
         max_distance : int
-            How many blocks away to search for a hit.
-
-        """
+            How many blocks away to search for a hit."""
         m = 8
         x, y, z = position
         dx, dy, dz = vector
@@ -186,9 +178,7 @@ class Model(object):
 
     def exposed(self, position):
         """ Returns False is given `position` is surrounded on all 6 sides by
-        blocks, True otherwise.
-
-        """
+        blocks, True otherwise."""
         x, y, z = position
         for dx, dy, dz in FACES:
             if (x + dx, y + dy, z + dz) not in self.world:
@@ -206,9 +196,7 @@ class Model(object):
             The coordinates of the texture squares. Use `tex_coords()` to
             generate.
         immediate : bool
-            Whether or not to draw the block immediately.
-
-        """
+            Whether or not to draw the block immediately."""
         if position in self.world:
             self.remove_block(position, immediate)
         self.world[position] = texture
@@ -226,9 +214,7 @@ class Model(object):
         position : tuple of len 3
             The (x, y, z) position of the block to remove.
         immediate : bool
-            Whether or not to immediately remove block from canvas.
-
-        """
+            Whether or not to immediately remove block from canvas."""
         del self.world[position]
         self.sectors[sectorize(position)].remove(position)
         if immediate:
@@ -240,9 +226,7 @@ class Model(object):
         """ Check all blocks surrounding `position` and ensure their visual
         state is current. This means hiding blocks that are not exposed and
         ensuring that all exposed blocks are shown. Usually used after a block
-        is added or removed.
-
-        """
+        is added or removed."""
         x, y, z = position
         for dx, dy, dz in FACES:
             key = (x + dx, y + dy, z + dz)
