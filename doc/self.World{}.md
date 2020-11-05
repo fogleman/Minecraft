@@ -2,8 +2,9 @@
 ### now
 
 ```
-self.World = {}
-{[x, y, z]: TEXTURE}
+self.World = {
+    [x, y, z]: TEXTURE
+    }
 ```
 
 ## TEXTURE:
@@ -18,6 +19,10 @@ STONE = tex_coords((2, 1), (2, 1), (2, 1))
 ### want to be
 
 ```
-self.World = {}
-{[chunk_id]: {[x, y, z]: [block_states, ]}}
+self.World = {
+    [chunk_id]: {
+        [x, y, z]: 
+        [block_id, block_states]
+        }
+    }
 ```
