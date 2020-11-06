@@ -1,0 +1,11 @@
+{
+    "textures" : {
+        "blocks" : {
+            "grass_block" : {
+                "top" : "grass_block_side",
+                "side" : "grass_block_top",
+                "buttom" : "dirt"
+            }
+        }
+    }
+}

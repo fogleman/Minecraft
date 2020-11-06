@@ -4,6 +4,7 @@ import sys
 import math
 import random
 import time
+import logging
 
 from collections import deque
 from pyglet import image
@@ -13,7 +14,14 @@ from pyglet.window import key, mouse
 from codes.lib import *
 from codes import *
 
-TICKS_PER_SEC = 60
+# get time when the prgram to start the logging
+start_time = time.time()
+start_time_date = time.strftime("%Y-%m-%d %H-%M-%S", time.gmtime(start_time))
+
+# logging started
+logging.basicConfig(filename=".\\log\\"+start_time_date+".txt")
+
+TICKS_PER_SEC = 20
 
 # Size of sectors used to ease block loading.
 SECTOR_SIZE = 16
@@ -267,15 +275,18 @@ class Model(object):
             The (x, y, z) position of the block to show.
         texture : list of len 3
             The coordinates of the texture squares. Use `tex_coords()` to
-            generate.
-
-        """
+            generate."""
         x, y, z = position
         vertex_data = cube_vertices(x, y, z, 0.5)
         texture_data = list(texture)
         # create vertex list
         # FIXME Maybe `add_indexed()` should be used instead
-        self._shown[position] = self.batch.add(24, GL_QUADS, self.group,
+        try:
+            texture_test = old_load_textures(TEXTURE_PATH)
+            self._shown[position] = self.batch.add(24, GL_QUADS, texture_test,
+            ('v3f/static', vertex_data),('t2f/static', texture_data))
+        except:
+            self._shown[position] = self.batch.add(24, GL_QUADS, self.group,
                                                ('v3f/static', vertex_data),
                                                ('t2f/static', texture_data))
 
@@ -843,9 +854,12 @@ def setup():
 def main():
     window = Window(width=800, height=600,
                     caption='minecraft PE', resizable=True)
+    logging.info('start up the main window!')
     # Hide the mouse cursor and prevent the mouse from leaving the window.
     window.set_exclusive_mouse(True)
+    logging.debug('lock the mouse')
     setup()
+    logging.info('setup finish!')
     pyglet.app.run()
 
 
