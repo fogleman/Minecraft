@@ -21,7 +21,7 @@ start_time_date = time.strftime("%Y-%m-%d %H-%M-%S", time.gmtime(start_time))
 # logging started
 logging.basicConfig(filename=".\\log\\"+start_time_date+".txt")
 
-TICKS_PER_SEC = 20
+TICKS_PER_SEC = 60
 
 # Size of sectors used to ease block loading.
 SECTOR_SIZE = 16
