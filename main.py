@@ -15,21 +15,25 @@ from pyglet.window import key, mouse
 from codes.lib import *
 from codes import *
 
-# ---------- option start ----------
-log_level = logging.DEBUG # log level
-TICKS_PER_SEC = 60 # FPS
-WALKING_SPEED = 5
-FLYING_SPEED = 15
-# ---------- option end ----------
-
 # get time when the prgram to start the logging
 start_time = time.time()
 start_time_date = time.strftime("%Y-%m-%d %H-%M-%S", time.gmtime(start_time))
 
-# logging started
-logging.basicConfig(filename=".\\log\\"+start_time_date+".txt")
-logging.basicConfig(level=log_level)
+# ---------- option start ----------
+log_level = logging.DEBUG  # log level
+log_file_name = ".\\log\\"+start_time_date + ".log"
+# minecraft/log/2020-11-07 12-23-22
+TICKS_PER_SEC = 60  # FPS
+WALKING_SPEED = 5
+FLYING_SPEED = 15
+# ---------- option end ----------
 
+# logging started
+logging.basicConfig(filename=log_file_name, level=log_level,
+                    format="[%(asctime)s] : %(message)s", datefmt="%d %H:%M:%S")
+
+logging.info("Minecraft Python Edition   Started    ")
+logging.info("running on python vision "+ sys.version[:2])
 # Size of sectors used to ease block loading.
 SECTOR_SIZE = 16
 
@@ -288,11 +292,11 @@ class Model(object):
         try:
             texture_test = codes.load_textures.old_l_t(TEXTURE_PATH)
             self._shown[position] = self.batch.add(24, GL_QUADS, texture_test,
-            ('v3f/static', vertex_data),('t2f/static', texture_data))
+                                                   ('v3f/static', vertex_data), ('t2f/static', texture_data))
         except:
             self._shown[position] = self.batch.add(24, GL_QUADS, self.group,
-                                               ('v3f/static', vertex_data),
-                                               ('t2f/static', texture_data))
+                                                   ('v3f/static', vertex_data),
+                                                   ('t2f/static', texture_data))
 
     def hide_block(self, position, immediate=True):
         """ Hide the block at the given `position`. Hiding does not remove the
@@ -383,13 +387,13 @@ class Model(object):
         add_block() or remove_block() was called with immediate=False
 
         """
-        if sys.version_info[0] <= 3.8:
-            start = time.clock()
-            while self.queue and time.clock() - start < 1.0 / TICKS_PER_SEC:
-                self._dequeue()
-        else: # sys.version_info[0] >= 3.8:
+        try:
             start = time.perf_counter()
             while self.queue and time.perf_counter() - start < 1.0 / TICKS_PER_SEC:
+                self._dequeue()
+        except:
+            start = time.clock()
+            while self.queue and time.clock() - start < 1.0 / TICKS_PER_SEC:
                 self._dequeue()
 
     def process_entire_queue(self):
