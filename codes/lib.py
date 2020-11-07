@@ -12,7 +12,6 @@ from pyglet import image
 # from pyglet.gl import *
 from pyglet.graphics import TextureGroup
 from pyglet.window import key, mouse
-from codes import *
 
 
 def cube_vertices(x, y, z, n):
