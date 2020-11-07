@@ -28,12 +28,12 @@ WALKING_SPEED = 5
 FLYING_SPEED = 15
 # ---------- option end ----------
 
-# logging started
+# MAINLOG.started
 logging.basicConfig(filename=log_file_name, level=log_level,
-                    format="[%(asctime)s]:[%(levelname)s] %(message)s", datefmt="%Y%m%d %H:%M:%S")
-
-logging.info("Minecraft Python Edition   Started    ")
-logging.info("running on python vision " + sys.version[:5])
+                    format="[%(asctime)s][%(name)s]:[%(levelname)s] %(message)s", datefmt="%Y%m%d %H:%M:%S")
+MAINLOG = logging.getLogger("main logger")
+MAINLOG.info("Minecraft Python Edition   Started    ")
+MAINLOG.info("running on python vision " + sys.version[:5])
 # Size of sectors used to ease block loading.
 SECTOR_SIZE = 16
 
@@ -289,14 +289,14 @@ class Model(object):
         texture_data = list(texture)
         # create vertex list
         # FIXME Maybe `add_indexed()` should be used instead
-        try:
-            texture_test = codes.load_textures.old_l_t(TEXTURE_PATH)
-            self._shown[position] = self.batch.add(24, GL_QUADS, texture_test,
-                                                   ('v3f/static', vertex_data), ('t2f/static', texture_data))
+        texture_test = codes.load_textures.old_l_t(TEXTURE_PATH)
+        self._shown[position] = self.batch.add(24, GL_QUADS, texture_test,('v3f/static', vertex_data), ('t2f/static', texture_data))
+        """
         except:
             self._shown[position] = self.batch.add(24, GL_QUADS, self.group,
                                                    ('v3f/static', vertex_data),
                                                    ('t2f/static', texture_data))
+        """
 
     def hide_block(self, position, immediate=True):
         """ Hide the block at the given `position`. Hiding does not remove the
@@ -845,9 +845,9 @@ def setup_fog():
     fog_end = 60.0
     glFogf(GL_FOG_START, fog_start)
     glFogf(GL_FOG_END, fog_end)
-    logging.debug("fog will start at %f" % (fog_start))
-    logging.debug("fog will end at %f" % (fog_end))
-    logging.info("fog setup finish")
+    MAINLOG.debug("fog will start at %f" % (fog_start))
+    MAINLOG.debug("fog will end at %f" % (fog_end))
+    MAINLOG.info("fog setup finish")
 
 
 def setup():
@@ -866,19 +866,19 @@ def setup():
     # as smooth."
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-    logging.debug("some openGL setup done")
+    MAINLOG.debug("some openGL setup done")
     setup_fog()
 
 
 def main():
     window = Window(width=800, height=600,
                     caption='minecraft PE', resizable=True)
-    logging.info('start up the main window!')
+    MAINLOG.info('start up the main window!')
     # Hide the mouse cursor and prevent the mouse from leaving the window.
     window.set_exclusive_mouse(True)
-    logging.debug('lock the mouse')
+    MAINLOG.debug('lock the mouse')
     setup()
-    logging.info('setup finish!')
+    MAINLOG.info('setup finish!')
     pyglet.app.run()
 
 

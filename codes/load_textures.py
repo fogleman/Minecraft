@@ -1,4 +1,3 @@
-
 import json
 import pyglet
 from pyglet import image
@@ -17,4 +16,4 @@ def l_t(block_id, block_states):
     """
     l_t stand for load_textures
     """
-    pass
+    return
