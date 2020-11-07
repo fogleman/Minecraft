@@ -14,20 +14,23 @@ from pyglet.window import key, mouse
 from codes.lib import *
 from codes import *
 
+# ---------- option start ----------
+log_level = logging.DEBUG # log level
+TICKS_PER_SEC = 60 # FPS
+WALKING_SPEED = 5
+FLYING_SPEED = 15
+# ---------- option end ----------
+
 # get time when the prgram to start the logging
 start_time = time.time()
 start_time_date = time.strftime("%Y-%m-%d %H-%M-%S", time.gmtime(start_time))
 
 # logging started
 logging.basicConfig(filename=".\\log\\"+start_time_date+".txt")
-
-TICKS_PER_SEC = 60
+logging.basicConfig(level=log_level)
 
 # Size of sectors used to ease block loading.
 SECTOR_SIZE = 16
-
-WALKING_SPEED = 5
-FLYING_SPEED = 15
 
 GRAVITY = 20.0
 MAX_JUMP_HEIGHT = 1.0
