@@ -5,6 +5,7 @@ import math
 import random
 import time
 import logging
+import codes
 
 from collections import deque
 from pyglet import image
@@ -285,7 +286,7 @@ class Model(object):
         # create vertex list
         # FIXME Maybe `add_indexed()` should be used instead
         try:
-            texture_test = old_load_textures(TEXTURE_PATH)
+            texture_test = codes.load_textures.old_l_t(TEXTURE_PATH)
             self._shown[position] = self.batch.add(24, GL_QUADS, texture_test,
             ('v3f/static', vertex_data),('t2f/static', texture_data))
         except:
@@ -382,9 +383,14 @@ class Model(object):
         add_block() or remove_block() was called with immediate=False
 
         """
-        start = time.perf_counter()
-        while self.queue and time.perf_counter() - start < 1.0 / TICKS_PER_SEC:
-            self._dequeue()
+        if sys.version_info[0] <= 3.8:
+            start = time.clock()
+            while self.queue and time.clock() - start < 1.0 / TICKS_PER_SEC:
+                self._dequeue()
+        else: # sys.version_info[0] >= 3.8:
+            start = time.perf_counter()
+            while self.queue and time.perf_counter() - start < 1.0 / TICKS_PER_SEC:
+                self._dequeue()
 
     def process_entire_queue(self):
         """ Process the entire queue with no breaks.
