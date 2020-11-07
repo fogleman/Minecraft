@@ -13,7 +13,6 @@ from pyglet.gl import *
 from pyglet.graphics import TextureGroup
 from pyglet.window import key, mouse
 from codes.lib import *
-from codes import *
 
 # get time when the prgram to start the logging
 start_time = time.time()
@@ -289,7 +288,7 @@ class Model(object):
         texture_data = list(texture)
         # create vertex list
         # FIXME Maybe `add_indexed()` should be used instead
-        texture_test = codes.load_textures.old_l_t(TEXTURE_PATH)
+        texture_test = codes.texture_load.old_l_t(TEXTURE_PATH)
         self._shown[position] = self.batch.add(24, GL_QUADS, texture_test,('v3f/static', vertex_data), ('t2f/static', texture_data))
         """
         except:
