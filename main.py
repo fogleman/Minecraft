@@ -30,10 +30,10 @@ FLYING_SPEED = 15
 
 # logging started
 logging.basicConfig(filename=log_file_name, level=log_level,
-                    format="[%(asctime)s] : %(message)s", datefmt="%d %H:%M:%S")
+                    format="[%(asctime)s] : %(message)s", datefmt="%Y%m%d %H:%M:%S")
 
 logging.info("Minecraft Python Edition   Started    ")
-logging.info("running on python vision "+ sys.version[:2])
+logging.info("running on python vision " + sys.version[:5])
 # Size of sectors used to ease block loading.
 SECTOR_SIZE = 16
 
@@ -841,8 +841,13 @@ def setup_fog():
     glFogi(GL_FOG_MODE, GL_LINEAR)
     # How close and far away fog starts and ends. The closer the start and end,
     # the denser the fog in the fog range.
-    glFogf(GL_FOG_START, 40.0)
-    glFogf(GL_FOG_END, 60.0)
+    fog_start = 40.0
+    fog_end = 60.0
+    glFogf(GL_FOG_START, fog_start)
+    glFogf(GL_FOG_END, fog_end)
+    logging.debug("fog will start at %f" % (fog_start))
+    logging.debug("fog will end at %f" % (fog_end))
+    logging.info("fog setup finish")
 
 
 def setup():
@@ -861,6 +866,7 @@ def setup():
     # as smooth."
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+    logging.debug("some openGL setup done")
     setup_fog()
 
 
