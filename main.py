@@ -30,7 +30,7 @@ FLYING_SPEED = 15
 
 # logging started
 logging.basicConfig(filename=log_file_name, level=log_level,
-                    format="[%(asctime)s] : %(message)s", datefmt="%Y%m%d %H:%M:%S")
+                    format="[%(asctime)s]:[%(levelname)s] %(message)s", datefmt="%Y%m%d %H:%M:%S")
 
 logging.info("Minecraft Python Edition   Started    ")
 logging.info("running on python vision " + sys.version[:5])
