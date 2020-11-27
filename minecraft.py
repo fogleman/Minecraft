@@ -799,6 +799,8 @@ class Window(pyglet.window.Window):
             self.strafe[1] -= 1
         elif symbol == key.D:
             self.strafe[1] += 1
+        elif symbol == key.C:
+            self.fov_offset -= 60.0
         elif symbol == key.SPACE:
             self.jumping = True
         elif symbol == key.ESCAPE:
@@ -843,6 +845,8 @@ class Window(pyglet.window.Window):
             self.jumping = False
         elif symbol == key.LSHIFT:
             self.crouch = False
+        elif symbol == key.C:
+            self.fov_offset += 60.0
 
     def on_resize(self, width, height):
         """ Called when the window is resized to a new `width` and `height`.
