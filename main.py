@@ -6,8 +6,9 @@ import random
 import time
 
 from collections import deque
-from pyglet import image
-from pyglet.gl import *
+
+import pyglet
+from pyglet import image, gl
 from pyglet.graphics import TextureGroup
 from pyglet.window import key, mouse
 
@@ -326,7 +327,7 @@ class Model(object):
         texture_data = list(texture)
         # create vertex list
         # FIXME Maybe `add_indexed()` should be used instead
-        self._shown[position] = self.batch.add(24, GL_QUADS, self.group,
+        self._shown[position] = self.batch.add(24, gl.GL_QUADS, self.group,
             ('v3f/static', vertex_data),
             ('t2f/static', texture_data))
 
@@ -431,7 +432,7 @@ class Model(object):
             self._dequeue()
 
 
-class Window(pyglet.window.Window):
+class Window(gl.pyglet.window.Window):
 
     def __init__(self, *args, **kwargs):
         super(Window, self).__init__(*args, **kwargs)
@@ -778,33 +779,33 @@ class Window(pyglet.window.Window):
 
         """
         width, height = self.get_size()
-        glDisable(GL_DEPTH_TEST)
+        gl.glDisable(gl.GL_DEPTH_TEST)
         viewport = self.get_viewport_size()
-        glViewport(0, 0, max(1, viewport[0]), max(1, viewport[1]))
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        glOrtho(0, max(1, width), 0, max(1, height), -1, 1)
-        glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
+        gl.glViewport(0, 0, max(1, viewport[0]), max(1, viewport[1]))
+        gl.glMatrixMode(gl.GL_PROJECTION)
+        gl.glLoadIdentity()
+        gl.glOrtho(0, max(1, width), 0, max(1, height), -1, 1)
+        gl.glMatrixMode(gl.GL_MODELVIEW)
+        gl.glLoadIdentity()
 
     def set_3d(self):
         """ Configure OpenGL to draw in 3d.
 
         """
         width, height = self.get_size()
-        glEnable(GL_DEPTH_TEST)
+        gl.glEnable(gl.GL_DEPTH_TEST)
         viewport = self.get_viewport_size()
-        glViewport(0, 0, max(1, viewport[0]), max(1, viewport[1]))
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        gluPerspective(65.0, width / float(height), 0.1, 60.0)
-        glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
+        gl.glViewport(0, 0, max(1, viewport[0]), max(1, viewport[1]))
+        gl.glMatrixMode(gl.GL_PROJECTION)
+        gl.glLoadIdentity()
+        gl.gluPerspective(65.0, width / float(height), 0.1, 60.0)
+        gl.glMatrixMode(gl.GL_MODELVIEW)
+        gl.glLoadIdentity()
         x, y = self.rotation
-        glRotatef(x, 0, 1, 0)
-        glRotatef(-y, math.cos(math.radians(x)), 0, math.sin(math.radians(x)))
+        gl.glRotatef(x, 0, 1, 0)
+        gl.glRotatef(-y, math.cos(math.radians(x)), 0, math.sin(math.radians(x)))
         x, y, z = self.position
-        glTranslatef(-x, -y, -z)
+        gl.glTranslatef(-x, -y, -z)
 
     def on_draw(self):
         """ Called by pyglet to draw the canvas.
@@ -812,7 +813,7 @@ class Window(pyglet.window.Window):
         """
         self.clear()
         self.set_3d()
-        glColor3d(1, 1, 1)
+        gl.glColor3d(1, 1, 1)
         self.model.batch.draw()
         self.draw_focused_block()
         self.set_2d()
@@ -829,10 +830,10 @@ class Window(pyglet.window.Window):
         if block:
             x, y, z = block
             vertex_data = cube_vertices(x, y, z, 0.51)
-            glColor3d(0, 0, 0)
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
-            pyglet.graphics.draw(24, GL_QUADS, ('v3f/static', vertex_data))
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+            gl.glColor3d(0, 0, 0)
+            gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINE)
+            pyglet.graphics.draw(24, gl.GL_QUADS, ('v3f/static', vertex_data))
+            gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL)
 
     def draw_label(self):
         """ Draw the label in the top left of the screen.
@@ -848,8 +849,8 @@ class Window(pyglet.window.Window):
         """ Draw the crosshairs in the center of the screen.
 
         """
-        glColor3d(0, 0, 0)
-        self.reticle.draw(GL_LINES)
+        gl.glColor3d(0, 0, 0)
+        self.reticle.draw(gl.GL_LINES)
 
 
 def setup_fog():
@@ -858,17 +859,17 @@ def setup_fog():
     """
     # Enable fog. Fog "blends a fog color with each rasterized pixel fragment's
     # post-texturing color."
-    glEnable(GL_FOG)
+    gl.glEnable(gl.GL_FOG)
     # Set the fog color.
-    glFogfv(GL_FOG_COLOR, (GLfloat * 4)(0.5, 0.69, 1.0, 1))
+    gl.glFogfv(gl.GL_FOG_COLOR, (gl.GLfloat * 4)(0.5, 0.69, 1.0, 1))
     # Say we have no preference between rendering speed and quality.
-    glHint(GL_FOG_HINT, GL_DONT_CARE)
+    gl.glHint(gl.GL_FOG_HINT, gl.GL_DONT_CARE)
     # Specify the equation used to compute the blending factor.
-    glFogi(GL_FOG_MODE, GL_LINEAR)
+    gl.glFogi(gl.GL_FOG_MODE, gl.GL_LINEAR)
     # How close and far away fog starts and ends. The closer the start and end,
     # the denser the fog in the fog range.
-    glFogf(GL_FOG_START, 20.0)
-    glFogf(GL_FOG_END, 60.0)
+    gl.glFogf(gl.GL_FOG_START, 20.0)
+    gl.glFogf(gl.GL_FOG_END, 60.0)
 
 
 def setup():
@@ -876,17 +877,17 @@ def setup():
 
     """
     # Set the color of "clear", i.e. the sky, in rgba.
-    glClearColor(0.5, 0.69, 1.0, 1)
+    gl.glClearColor(0.5, 0.69, 1.0, 1)
     # Enable culling (not rendering) of back-facing facets -- facets that aren't
     # visible to you.
-    glEnable(GL_CULL_FACE)
+    gl.glEnable(gl.GL_CULL_FACE)
     # Set the texture minification/magnification function to GL_NEAREST (nearest
     # in Manhattan distance) to the specified texture coordinates. GL_NEAREST
     # "is generally faster than GL_LINEAR, but it can produce textured images
     # with sharper edges because the transition between texture elements is not
     # as smooth."
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+    gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST)
+    gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
     setup_fog()
 
 
