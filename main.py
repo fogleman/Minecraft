@@ -20,7 +20,7 @@ WALKING_SPEED = 5
 FLYING_SPEED = 15
 
 GRAVITY = 20.0
-MAX_JUMP_HEIGHT = 1.0 # About the height of a block.
+MAX_JUMP_HEIGHT = 1.0  # About the height of a block.
 # To derive the formula for calculating jump speed, first solve
 #    v_t = v_0 + a * t
 # for the time at which you achieve maximum height, where a is the acceleration
@@ -35,6 +35,7 @@ PLAYER_HEIGHT = 2
 
 if sys.version_info[0] >= 3:
     xrange = range
+
 
 def cube_vertices(x, y, z, n):
     """ Return the vertices of the cube at position x, y, z with size 2*n.
@@ -592,7 +593,7 @@ class Window(pyglet.window.Window):
         """
         # walking
         speed = FLYING_SPEED if self.flying else WALKING_SPEED
-        d = dt * speed # distance covered this tick.
+        d = dt * speed  # distance covered this tick.
         dx, dy, dz = self.get_motion_vector()
         # New position in space, before accounting for gravity.
         dx, dy, dz = dx * d, dy * d, dz * d
