@@ -17,6 +17,7 @@ TICKS_PER_SEC = 60
 SECTOR_SIZE = 16
 
 WALKING_SPEED = 5
+SPRINTING_SPEED = 10
 FLYING_SPEED = 15
 
 GRAVITY = 20.0
@@ -450,6 +451,9 @@ class Window(pyglet.window.Window):
         # right, and 0 otherwise.
         self.strafe = [0, 0]
 
+        #True if sprinting
+        self.sprinting = False
+
         # Current (x, y, z) position in the world, specified with floats. Note
         # that, perhaps unlike in math class, the y-axis is the vertical axis.
         self.position = (0, 0, 0)
@@ -591,7 +595,12 @@ class Window(pyglet.window.Window):
 
         """
         # walking
-        speed = FLYING_SPEED if self.flying else WALKING_SPEED
+        if self.flying:
+                        speed = FLYING_SPEED
+        elif self.sprinting:
+                        speed = SPRINTING_SPEED
+        else:
+                        speed = WALKING_SPEED
         d = dt * speed # distance covered this tick.
         dx, dy, dz = self.get_motion_vector()
         # New position in space, before accounting for gravity.
@@ -733,6 +742,8 @@ class Window(pyglet.window.Window):
             self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
             self.flying = not self.flying
+        elif symbol == key.LSHIFT:
+            self.sprinting = True
         elif symbol in self.num_keys:
             index = (symbol - self.num_keys[0]) % len(self.inventory)
             self.block = self.inventory[index]
@@ -757,6 +768,8 @@ class Window(pyglet.window.Window):
             self.strafe[1] += 1
         elif symbol == key.D:
             self.strafe[1] -= 1
+        elif symbol == key.LSHIFT:
+            self.sprinting = False
 
     def on_resize(self, width, height):
         """ Called when the window is resized to a new `width` and `height`.
