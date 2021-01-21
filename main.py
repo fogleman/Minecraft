@@ -552,6 +552,10 @@ class Window(pyglet.window.Window):
                 dy = 0.0
                 dx = math.cos(x_angle)
                 dz = math.sin(x_angle)
+        elif self.flying and not self.dy == 0:
+            dx = 0.0
+            dy = self.dy
+            dz = 0.0
         else:
             dy = 0.0
             dx = 0.0
@@ -727,7 +731,9 @@ class Window(pyglet.window.Window):
         elif symbol == key.D:
             self.strafe[1] += 1
         elif symbol == key.SPACE:
-            if self.dy == 0:
+            if self.flying:
+                self.dy = 0.5 * JUMP_SPEED
+            elif self.dy == 0:
                 self.dy = JUMP_SPEED
         elif symbol == key.ESCAPE:
             self.set_exclusive_mouse(False)
@@ -757,6 +763,8 @@ class Window(pyglet.window.Window):
             self.strafe[1] += 1
         elif symbol == key.D:
             self.strafe[1] -= 1
+        elif symbol == key.SPACE:
+            self.dy = 0
 
     def on_resize(self, width, height):
         """ Called when the window is resized to a new `width` and `height`.
