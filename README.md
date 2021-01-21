@@ -71,7 +71,7 @@ pip install https://pyglet.googlecode.com/files/pyglet-1.2alpha1.tar.gz
 For pip:
 
 - Mac or Linux: install with `sudo easy_install pip` (Mac or Linux) - or (Linux) find a package called something like 'python-pip' in your package manager.
-- Windows: [install Distribute then Pip](http://stackoverflow.com/a/12476379/992887) using the linked .MSI installers.
+- Windows: [install Distribute then Pip](http://docs.python-guide.org/en/latest/starting/install/win/#distribute-pip) using the linked .MSI installers.
 
 For git:
 
