@@ -462,6 +462,12 @@ class Window(pyglet.window.Window):
         # 90 (looking straight up). The horizontal rotation range is unbounded.
         self.rotation = (0, 0)
 
+        # Changes to player rotation is stored here by the on_mouse_motion
+        # callback and the player rotation is updated in the update method
+        # at the same time as the position. Without this, rotation is jittery
+        # while moving and rotating simultaneously
+        self.rotation_buf = (0, 0)
+
         # Which sector the player is currently in.
         self.sector = None
 
@@ -590,6 +596,11 @@ class Window(pyglet.window.Window):
             The change in time since the last call.
 
         """
+        # rotation
+        x, y = self.rotation
+        dx, dy = self.rotation_buf
+        self.rotation = (x+dx, y+dy)
+        self.rotation_buf = (0, 0)
         # walking
         speed = FLYING_SPEED if self.flying else WALKING_SPEED
         d = dt * speed # distance covered this tick.
@@ -701,10 +712,10 @@ class Window(pyglet.window.Window):
         """
         if self.exclusive:
             m = 0.15
-            x, y = self.rotation
-            x, y = x + dx * m, y + dy * m
+            x, y = dx * m, dy * m
             y = max(-90, min(90, y))
-            self.rotation = (x, y)
+            old_x, old_y = self.rotation_buf
+            self.rotation_buf = (old_x+x, old_y+y)
 
     def on_key_press(self, symbol, modifiers):
         """ Called when the player presses a key. See pyglet docs for key
