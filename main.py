@@ -749,14 +749,16 @@ class Window(pyglet.window.Window):
             Number representing any modifying keys that were pressed.
 
         """
-        if symbol == key.W:
-            self.strafe[0] += 1
-        elif symbol == key.S:
-            self.strafe[0] -= 1
-        elif symbol == key.A:
-            self.strafe[1] += 1
-        elif symbol == key.D:
-            self.strafe[1] -= 1
+        self.strafe[0] = 0
+        self.strafe[1] = 0
+        # if symbol == key.W:
+        #     self.strafe[0] += 1
+        # elif symbol == key.S:
+        #     self.strafe[0] -= 1
+        # elif symbol == key.A:
+        #     self.strafe[1] += 1
+        # elif symbol == key.D:
+        #     self.strafe[1] -= 1
 
     def on_resize(self, width, height):
         """ Called when the window is resized to a new `width` and `height`.
