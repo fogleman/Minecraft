@@ -6,6 +6,7 @@ import random
 import time
 
 from collections import deque
+import pyglet
 from pyglet import image
 from pyglet.gl import *
 from pyglet.graphics import TextureGroup
@@ -325,7 +326,6 @@ class Model(object):
         vertex_data = cube_vertices(x, y, z, 0.5)
         texture_data = list(texture)
         # create vertex list
-        # FIXME Maybe `add_indexed()` should be used instead
         self._shown[position] = self.batch.add(24, GL_QUADS, self.group,
             ('v3f/static', vertex_data),
             ('t2f/static', texture_data))
@@ -465,7 +465,7 @@ class Window(pyglet.window.Window):
         # Which sector the player is currently in.
         self.sector = None
 
-        # The crosshairs at the center of the screen.
+        # The crosshairs at the center of the screen (stored as coordinates).
         self.reticle = None
 
         # Velocity in the y (upward) direction.

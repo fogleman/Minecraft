@@ -37,12 +37,43 @@ The API could contain functionality for the following:
 
 ## How to Run
 
-```shell
-pip install pyglet
-git clone https://github.com/fogleman/Minecraft.git
-cd Minecraft
-python main.py
+### Método Rápido (Recomendado)
+
+```bash
+./run.sh
 ```
+
+O script `run.sh` criará automaticamente o ambiente virtual e instalará as dependências se necessário.
+
+### Método Manual
+
+1. Crie um ambiente virtual:
+```bash
+python3 -m venv venv
+source venv/bin/activate  # No Windows: venv\Scripts\activate
+```
+
+2. Instale as dependências:
+```bash
+pip install -r requirements.txt
+```
+
+3. Execute o jogo:
+```bash
+python3 main.py
+```
+
+## Requisitos
+
+- Python 3.6 ou superior
+- pyglet 1.5.31 (versão específica para compatibilidade com OpenGL fixed pipeline)
+- OpenGL (geralmente já instalado no sistema)
+
+## Notas Importantes
+
+- Este projeto usa **pyglet 1.5.31** que suporta OpenGL fixed pipeline (glMatrixMode, gluPerspective, etc.)
+- Versões mais novas do pyglet (2.x+) não são compatíveis pois usam OpenGL moderno
+- O arquivo `requirements.txt` especifica a versão correta do pyglet
 
 ### Mac
 
@@ -59,12 +90,6 @@ defaults write com.apple.versioner.python Prefer-32-Bit -bool yes
 ```
 
 This assumes you are using the OS X default Python.  Works on Lion 10.7 with the default Python 2.7, and may work on other versions too.  Please raise an issue if not.
-    
-Or try Pyglet 1.2 alpha, which supports 64-bit mode:  
-
-```shell
-pip install https://pyglet.googlecode.com/files/pyglet-1.2alpha1.tar.gz 
-```
 
 ### If you don't have pip or git
 
@@ -84,23 +109,23 @@ See the [wiki](https://github.com/fogleman/Minecraft/wiki) for this project to i
 
 ### Moving
 
-- W: forward
-- S: back
-- A: strafe left
-- D: strafe right
-- Mouse: look around
-- Space: jump
-- Tab: toggle flying mode
+- **W**: forward
+- **S**: back
+- **A**: strafe left
+- **D**: strafe right
+- **Mouse**: look around
+- **Space**: jump
+- **Tab**: toggle flying mode
 
 ### Building
 
 - Selecting type of block to create:
-    - 1: brick
-    - 2: grass
-    - 3: sand
-- Mouse left-click: remove block
-- Mouse right-click: create block
+    - **1**: brick
+    - **2**: grass
+    - **3**: sand
+- **Mouse left-click**: remove block
+- **Mouse right-click**: create block
 
 ### Quitting
 
-- ESC: release mouse, then close window
+- **ESC**: release mouse, then close window
