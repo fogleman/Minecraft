@@ -51,9 +51,20 @@ def cube_vertices(x, y, z, n):
     ]
 
 
-def tex_coord(x, y, n=4):
+def tex_coord(x, y, n=8):
     """ Return the bounding vertices of the texture square.
 
+    Parameters
+    ----------
+    x, y : int
+        Coordenadas na grade de texturas (0 a n-1)
+    n : int
+        Tamanho da grade (padrão 8 para grade 8x8)
+    
+    Returns
+    -------
+    tuple
+        Coordenadas de textura (dx, dy, dx+m, dy, dx+m, dy+m, dx, dy+m)
     """
     m = 1.0 / n
     dx = x * m
@@ -61,13 +72,28 @@ def tex_coord(x, y, n=4):
     return dx, dy, dx + m, dy, dx + m, dy + m, dx, dy + m
 
 
-def tex_coords(top, bottom, side):
+def tex_coords(top, bottom, side, n=8):
     """ Return a list of the texture squares for the top, bottom and side.
 
+    Parameters
+    ----------
+    top : tuple of int
+        Coordenadas (x, y) da textura do topo do bloco
+    bottom : tuple of int
+        Coordenadas (x, y) da textura da base do bloco
+    side : tuple of int
+        Coordenadas (x, y) da textura das laterais do bloco
+    n : int
+        Tamanho da grade de texturas (padrão 8 para grade 8x8)
+    
+    Returns
+    -------
+    list
+        Lista de coordenadas de textura para todas as faces do cubo
     """
-    top = tex_coord(*top)
-    bottom = tex_coord(*bottom)
-    side = tex_coord(*side)
+    top = tex_coord(*top, n=n)
+    bottom = tex_coord(*bottom, n=n)
+    side = tex_coord(*side, n=n)
     result = []
     result.extend(top)
     result.extend(bottom)
@@ -75,12 +101,85 @@ def tex_coords(top, bottom, side):
     return result
 
 
-TEXTURE_PATH = 'texture.png'
+def tex_coords_rocks(top, bottom, side):
+    """ Função auxiliar para calcular coordenadas de textura de rochas.
+    Usa grade 12x12 da textura rochas.webp.
+    
+    Parameters
+    ----------
+    top : tuple of int
+        Coordenadas (x, y) da textura do topo (0-11)
+    bottom : tuple of int
+        Coordenadas (x, y) da textura da base (0-11)
+    side : tuple of int
+        Coordenadas (x, y) da textura das laterais (0-11)
+    
+    Returns
+    -------
+    list
+        Lista de coordenadas de textura para todas as faces do cubo
+    """
+    return tex_coords(top, bottom, side, n=12)
 
-GRASS = tex_coords((1, 0), (0, 1), (0, 0))
-SAND = tex_coords((1, 1), (1, 1), (1, 1))
-BRICK = tex_coords((2, 0), (2, 0), (2, 0))
-STONE = tex_coords((2, 1), (2, 1), (2, 1))
+
+# Caminhos das texturas
+TEXTURE_PATH_MAIN = 'texture.png'  # Textura principal (grade 8x8) para blocos gerais
+TEXTURE_PATH_ROCKS = './assets/texturas/rochas.webp'  # Textura de rochas (grade 12x12)
+TEXTURE_PATH = TEXTURE_PATH_MAIN  # Mantido para compatibilidade (será substituído)
+
+# ============================================================================
+# BLOCOS EXISTENTES
+# ============================================================================
+# Blocos originais do jogo (coordenadas ajustadas para grade 8x8)
+# Usando texture.png (grade 8x8)
+GRASS = tex_coords((2, 0), (0, 2), (0, 0))  # Era (1,0), (0,1), (0,0) na grade 4x4
+SAND = tex_coords((2, 2), (2, 2), (2, 2))  # Era (1,1), (1,1), (1,1) na grade 4x4
+BRICK = tex_coords((4, 0), (4, 0), (4, 0))  # Era (2,0), (2,0), (2,0) na grade 4x4
+# STONE agora usa rochas.webp (definido abaixo)
+
+# ============================================================================
+# MADEIRAS
+# ============================================================================
+# Madeiras de diferentes tipos de árvores
+# Texturas criadas na linha 3 (x=3) da grade 8x8
+OAK_WOOD = tex_coords((3, 0), (3, 0), (3, 0))  # Madeira de carvalho
+SPRUCE_WOOD = tex_coords((3, 1), (3, 1), (3, 1))  # Madeira de pinheiro
+BIRCH_WOOD = tex_coords((3, 2), (3, 2), (3, 2))  # Madeira de bétula
+JUNGLE_WOOD = tex_coords((3, 3), (3, 3), (3, 3))  # Madeira de selva
+
+# ============================================================================
+# MINÉRIOS
+# ============================================================================
+# Minérios que podem ser encontrados no subsolo
+# Texturas criadas na linha 4 (x=4) da grade 8x8
+IRON_ORE = tex_coords((4, 0), (4, 0), (4, 0))  # Minério de ferro
+GOLD_ORE = tex_coords((4, 1), (4, 1), (4, 1))  # Minério de ouro
+DIAMOND_ORE = tex_coords((4, 2), (4, 2), (4, 2))  # Minério de diamante
+COAL_ORE = tex_coords((4, 3), (4, 3), (4, 3))  # Minério de carvão
+EMERALD_ORE = tex_coords((4, 4), (4, 4), (4, 4))  # Minério de esmeralda
+
+# ============================================================================
+# PEDRAS VARIADAS
+# ============================================================================
+# Diferentes tipos de pedra
+# Usando textura rochas.webp com grade 12x12
+# Coordenadas de 0 a 11 na grade 12x12
+GRANITE = tex_coords_rocks((0, 0), (0, 0), (0, 0))  # Granito - posição (0,0) na grade 12x12
+DIORITE = tex_coords_rocks((1, 0), (1, 0), (1, 0))  # Diorito - posição (1,0) na grade 12x12
+ANDESITE = tex_coords_rocks((2, 0), (2, 0), (2, 0))  # Andesito - posição (2,0) na grade 12x12
+COBBLESTONE = tex_coords_rocks((3, 0), (3, 0), (3, 0))  # Pedra - posição (3,0) na grade 12x12
+STONE = tex_coords_rocks((4, 0), (4, 0), (4, 0))  # Pedra comum - posição (4,0) na grade 12x12
+STONE_BRICKS = tex_coords_rocks((5, 0), (5, 0), (5, 0))  # Tijolos de pedra - posição (5,0) na grade 12x12
+
+# ============================================================================
+# BLOCOS DE CONSTRUÇÃO
+# ============================================================================
+# Blocos decorativos e de construção
+# Texturas criadas na linha 6 (x=6) da grade 8x8
+GLASS = tex_coords((6, 0), (6, 0), (6, 0))  # Vidro
+CONCRETE = tex_coords((6, 1), (6, 1), (6, 1))  # Concreto
+WOODEN_PLANKS = tex_coords((6, 2), (6, 2), (6, 2))  # Tábuas de madeira
+# STONE_BRICKS agora usa rochas.webp (definido acima)
 
 FACES = [
     ( 0, 1, 0),
@@ -133,9 +232,16 @@ class Model(object):
 
         # A Batch is a collection of vertex lists for batched rendering.
         self.batch = pyglet.graphics.Batch()
+        self.batch_rocks = pyglet.graphics.Batch()  # Batch separado para rochas
 
-        # A TextureGroup manages an OpenGL texture.
-        self.group = TextureGroup(image.load(TEXTURE_PATH).get_texture())
+        # TextureGroups para diferentes texturas
+        # Textura principal (texture.png) para blocos gerais
+        self.group = TextureGroup(image.load(TEXTURE_PATH_MAIN).get_texture())
+        # Textura de rochas (rochas.webp) para blocos de pedra/rocha
+        self.group_rocks = TextureGroup(image.load(TEXTURE_PATH_ROCKS).get_texture())
+        
+        # Nota: Blocos de rocha são identificados na função _is_rock_block()
+        # usando comparação de referência (is) com as constantes definidas acima
 
         # A mapping from position to the texture of the block at that position.
         # This defines all the blocks that are currently in the world.
@@ -168,6 +274,20 @@ class Model(object):
                 # create a layer stone an grass everywhere.
                 self.add_block((x, y - 2, z), GRASS, immediate=False)
                 self.add_block((x, y - 3, z), STONE, immediate=False)
+                
+                # Adiciona minérios aleatórios em camadas subterrâneas
+                if random.random() < 0.02:  # 2% de chance de minério
+                    ore_type = random.choice([COAL_ORE, IRON_ORE, GOLD_ORE])
+                    self.add_block((x, y - 4, z), ore_type, immediate=False)
+                elif random.random() < 0.005:  # 0.5% de chance de minério raro
+                    rare_ore = random.choice([DIAMOND_ORE, EMERALD_ORE])
+                    self.add_block((x, y - 5, z), rare_ore, immediate=False)
+                
+                # Adiciona pedras variadas ocasionalmente
+                if random.random() < 0.1:  # 10% de chance
+                    stone_type = random.choice([GRANITE, DIORITE, ANDESITE, COBBLESTONE])
+                    self.add_block((x, y - 4, z), stone_type, immediate=False)
+                
                 if x in (-n, n) or z in (-n, n):
                     # create outer walls.
                     for dy in xrange(-2, 3):
@@ -182,7 +302,13 @@ class Model(object):
             h = random.randint(1, 6)  # height of the hill
             s = random.randint(4, 8)  # 2 * s is the side length of the hill
             d = 1  # how quickly to taper off the hills
-            t = random.choice([GRASS, SAND, BRICK])
+            # Variedade de blocos para as colinas incluindo novos tipos
+            t = random.choice([
+                GRASS, SAND, BRICK, 
+                OAK_WOOD, SPRUCE_WOOD, 
+                GRANITE, DIORITE, ANDESITE,
+                COBBLESTONE, STONE_BRICKS
+            ])
             for y in xrange(c, c + h):
                 for x in xrange(a - s, a + s + 1):
                     for z in xrange(b - s, b + s + 1):
@@ -310,6 +436,24 @@ class Model(object):
         else:
             self._enqueue(self._show_block, position, texture)
 
+    def _is_rock_block(self, texture):
+        """ Verifica se uma textura pertence a um bloco de rocha.
+        
+        Parameters
+        ----------
+        texture : list
+            Coordenadas de textura do bloco
+            
+        Returns
+        -------
+        bool
+            True se o bloco é uma rocha, False caso contrário
+        """
+        # Compara a textura com os blocos de rocha conhecidos usando referência
+        # (texturas são definidas como constantes, então podemos usar 'is')
+        return (texture is STONE or texture is GRANITE or texture is DIORITE or 
+                texture is ANDESITE or texture is COBBLESTONE or texture is STONE_BRICKS)
+
     def _show_block(self, position, texture):
         """ Private implementation of the `show_block()` method.
 
@@ -325,8 +469,17 @@ class Model(object):
         x, y, z = position
         vertex_data = cube_vertices(x, y, z, 0.5)
         texture_data = list(texture)
+        
+        # Escolhe o batch e grupo de textura baseado no tipo de bloco
+        if self._is_rock_block(texture):
+            batch = self.batch_rocks
+            group = self.group_rocks
+        else:
+            batch = self.batch
+            group = self.group
+        
         # create vertex list
-        self._shown[position] = self.batch.add(24, GL_QUADS, self.group,
+        self._shown[position] = batch.add(24, GL_QUADS, group,
             ('v3f/static', vertex_data),
             ('t2f/static', texture_data))
 
@@ -472,7 +625,19 @@ class Window(pyglet.window.Window):
         self.dy = 0
 
         # A list of blocks the player can place. Hit num keys to cycle.
-        self.inventory = [BRICK, GRASS, SAND]
+        # Inventário expandido com novos blocos organizados por categoria
+        self.inventory = [
+            # Blocos básicos originais
+            GRASS, SAND, BRICK, STONE,
+            # Madeiras
+            OAK_WOOD, SPRUCE_WOOD, BIRCH_WOOD, JUNGLE_WOOD,
+            # Minérios
+            IRON_ORE, GOLD_ORE, DIAMOND_ORE, COAL_ORE, EMERALD_ORE,
+            # Pedras variadas
+            GRANITE, DIORITE, ANDESITE, COBBLESTONE,
+            # Blocos de construção
+            GLASS, CONCRETE, WOODEN_PLANKS, STONE_BRICKS
+        ]
 
         # The current block the user can place. Hit num keys to cycle.
         self.block = self.inventory[0]
@@ -813,7 +978,9 @@ class Window(pyglet.window.Window):
         self.clear()
         self.set_3d()
         glColor3d(1, 1, 1)
+        # Renderiza ambos os batches (blocos gerais e rochas)
         self.model.batch.draw()
+        self.model.batch_rocks.draw()
         self.draw_focused_block()
         self.set_2d()
         self.draw_label()
