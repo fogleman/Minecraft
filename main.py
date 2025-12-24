@@ -51,7 +51,7 @@ def cube_vertices(x, y, z, n):
     ]
 
 
-def tex_coord(x, y, n=8):
+def tex_coord(x, y, n=4):
     """ Return the bounding vertices of the texture square.
 
     Parameters
@@ -72,7 +72,7 @@ def tex_coord(x, y, n=8):
     return dx, dy, dx + m, dy, dx + m, dy + m, dx, dy + m
 
 
-def tex_coords(top, bottom, side, n=8):
+def tex_coords(top, bottom, side, n=4):
     """ Return a list of the texture squares for the top, bottom and side.
 
     Parameters
@@ -132,10 +132,11 @@ TEXTURE_PATH = TEXTURE_PATH_MAIN  # Mantido para compatibilidade (será substitu
 # ============================================================================
 # Blocos originais do jogo (coordenadas ajustadas para grade 8x8)
 # Usando texture.png (grade 8x8)
-GRASS = tex_coords((2, 0), (0, 2), (0, 0))  # Era (1,0), (0,1), (0,0) na grade 4x4
-SAND = tex_coords((2, 2), (2, 2), (2, 2))  # Era (1,1), (1,1), (1,1) na grade 4x4
-BRICK = tex_coords((4, 0), (4, 0), (4, 0))  # Era (2,0), (2,0), (2,0) na grade 4x4
-# STONE agora usa rochas.webp (definido abaixo)
+
+GRASS = tex_coords((1, 0), (0, 1), (0, 0))
+SAND = tex_coords((1, 1), (1, 1), (1, 1))
+BRICK = tex_coords((1, 0), (2, 0), (2, 0))
+STONE = tex_coords((2, 1), (2, 1), (2, 1))
 
 # ============================================================================
 # MADEIRAS
@@ -168,7 +169,7 @@ GRANITE = tex_coords_rocks((0, 0), (0, 0), (0, 0))  # Granito - posição (0,0) 
 DIORITE = tex_coords_rocks((1, 0), (1, 0), (1, 0))  # Diorito - posição (1,0) na grade 12x12
 ANDESITE = tex_coords_rocks((2, 0), (2, 0), (2, 0))  # Andesito - posição (2,0) na grade 12x12
 COBBLESTONE = tex_coords_rocks((3, 0), (3, 0), (3, 0))  # Pedra - posição (3,0) na grade 12x12
-STONE = tex_coords_rocks((4, 0), (4, 0), (4, 0))  # Pedra comum - posição (4,0) na grade 12x12
+# STONE = tex_coords_rocks((4, 0), (4, 0), (4, 0))  # Pedra comum - posição (4,0) na grade 12x12
 STONE_BRICKS = tex_coords_rocks((5, 0), (5, 0), (5, 0))  # Tijolos de pedra - posição (5,0) na grade 12x12
 
 # ============================================================================
@@ -451,7 +452,7 @@ class Model(object):
         """
         # Compara a textura com os blocos de rocha conhecidos usando referência
         # (texturas são definidas como constantes, então podemos usar 'is')
-        return (texture is STONE or texture is GRANITE or texture is DIORITE or 
+        return (texture is GRANITE or texture is DIORITE or 
                 texture is ANDESITE or texture is COBBLESTONE or texture is STONE_BRICKS)
 
     def _show_block(self, position, texture):
