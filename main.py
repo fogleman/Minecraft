@@ -4,12 +4,15 @@ import sys
 import math
 import random
 import time
+from ctypes import c_float
 
 from collections import deque
 from pyglet import image
 from pyglet.gl import *
+from pyglet.gl.gl_compat import *
 from pyglet.graphics import TextureGroup
 from pyglet.window import key, mouse
+import pyglet.window
 
 TICKS_PER_SEC = 60
 
@@ -57,7 +60,7 @@ def tex_coord(x, y, n=4):
     m = 1.0 / n
     dx = x * m
     dy = y * m
-    return dx, dy, dx + m, dy, dx + m, dy + m, dx, dy + m
+    return dx, dy, 0, dx + m, dy, 0, dx + m, dy + m, 0, dx, dy + m, 0
 
 
 def tex_coords(top, bottom, side):
@@ -135,6 +138,18 @@ class Model(object):
 
         # A TextureGroup manages an OpenGL texture.
         self.group = TextureGroup(image.load(TEXTURE_PATH).get_texture())
+
+        # Create a vertex domain for rendering blocks.
+        self.domain = self.batch.get_domain(
+            indexed=False,
+            instanced=False,
+            mode=GL_QUADS,
+            group=self.group,
+            attributes={
+                'position': {'format': 'f', 'count': 3, 'location': 0, 'instance': False},
+                'tex_coords': {'format': 'f', 'count': 3, 'location': 2, 'instance': False},
+            }
+        )
 
         # A mapping from position to the texture of the block at that position.
         # This defines all the blocks that are currently in the world.
@@ -325,10 +340,10 @@ class Model(object):
         vertex_data = cube_vertices(x, y, z, 0.5)
         texture_data = list(texture)
         # create vertex list
-        # FIXME Maybe `add_indexed()` should be used instead
-        self._shown[position] = self.batch.add(24, GL_QUADS, self.group,
-            ('v3f/static', vertex_data),
-            ('t2f/static', texture_data))
+        vlist = self.domain.create(24)
+        vlist.position[:] = vertex_data
+        vlist.tex_coords[:] = texture_data
+        self._shown[position] = vlist
 
     def hide_block(self, position, immediate=True):
         """ Hide the block at the given `position`. Hiding does not remove the
@@ -485,6 +500,11 @@ class Window(pyglet.window.Window):
         # Instance of the model that handles the world.
         self.model = Model()
 
+        # FPS tracking
+        self._fps_time = time.perf_counter()
+        self._fps_frames = 0
+        self._fps = 0
+
         # The label that is displayed in the top left of the canvas.
         self.label = pyglet.text.Label('', font_name='Arial', font_size=18,
             x=10, y=self.height - 10, anchor_x='left', anchor_y='top',
@@ -568,6 +588,12 @@ class Window(pyglet.window.Window):
             The change in time since the last call.
 
         """
+        self._fps_frames += 1
+        t = time.perf_counter()
+        if t - self._fps_time >= 1.0:
+            self._fps = self._fps_frames
+            self._fps_frames = 0
+            self._fps_time = t
         self.model.process_queue()
         sector = sectorize(self.position)
         if sector != self.sector:
@@ -764,14 +790,6 @@ class Window(pyglet.window.Window):
         """
         # label
         self.label.y = height - 10
-        # reticle
-        if self.reticle:
-            self.reticle.delete()
-        x, y = self.width // 2, self.height // 2
-        n = 10
-        self.reticle = pyglet.graphics.vertex_list(4,
-            ('v2i', (x - n, y, x + n, y, x, y - n, x, y + n))
-        )
 
     def set_2d(self):
         """ Configure OpenGL to draw in 2d.
@@ -779,7 +797,7 @@ class Window(pyglet.window.Window):
         """
         width, height = self.get_size()
         glDisable(GL_DEPTH_TEST)
-        viewport = self.get_viewport_size()
+        viewport = self.get_framebuffer_size()
         glViewport(0, 0, max(1, viewport[0]), max(1, viewport[1]))
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
@@ -793,7 +811,7 @@ class Window(pyglet.window.Window):
         """
         width, height = self.get_size()
         glEnable(GL_DEPTH_TEST)
-        viewport = self.get_viewport_size()
+        viewport = self.get_framebuffer_size()
         glViewport(0, 0, max(1, viewport[0]), max(1, viewport[1]))
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
@@ -831,7 +849,7 @@ class Window(pyglet.window.Window):
             vertex_data = cube_vertices(x, y, z, 0.51)
             glColor3d(0, 0, 0)
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
-            pyglet.graphics.draw(24, GL_QUADS, ('v3f/static', vertex_data))
+            pyglet.graphics.draw(24, GL_QUADS, position=('f', vertex_data))
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
 
     def draw_label(self):
@@ -840,7 +858,7 @@ class Window(pyglet.window.Window):
         """
         x, y, z = self.position
         self.label.text = '%02d (%.2f, %.2f, %.2f) %d / %d' % (
-            pyglet.clock.get_fps(), x, y, z,
+            self._fps, x, y, z,
             len(self.model._shown), len(self.model.world))
         self.label.draw()
 
@@ -849,7 +867,20 @@ class Window(pyglet.window.Window):
 
         """
         glColor3d(0, 0, 0)
-        self.reticle.draw(GL_LINES)
+        x, y = self.width // 2, self.height // 2
+        n = 10
+        pyglet.graphics.draw(4, GL_LINES,
+            position=('f', (x - n, y, 0, x + n, y, 0, x, y - n, 0, x, y + n, 0)))
+
+
+def gluPerspective(fov, aspect, near, far):
+    f = 1.0 / math.tan(math.radians(fov) / 2.0)
+    glMultMatrixf((c_float * 16)(
+        f / aspect, 0, 0, 0,
+        0, f, 0, 0,
+        0, 0, (far + near) / (near - far), -1,
+        0, 0, 2 * far * near / (near - far), 0
+    ))
 
 
 def setup_fog():
@@ -891,7 +922,8 @@ def setup():
 
 
 def main():
-    window = Window(width=800, height=600, caption='Pyglet', resizable=True)
+    config = pyglet.gl.Config(double_buffer=True, major_version=2, minor_version=1)
+    window = Window(config=config, width=800, height=600, caption='Pyglet', resizable=True)
     # Hide the mouse cursor and prevent the mouse from leaving the window.
     window.set_exclusive_mouse(True)
     setup()
