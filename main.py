@@ -10,6 +10,7 @@ from pyglet import image
 from pyglet.gl import *
 from pyglet.graphics import TextureGroup
 from pyglet.window import key, mouse
+import pyglet.window
 
 TICKS_PER_SEC = 60
 
